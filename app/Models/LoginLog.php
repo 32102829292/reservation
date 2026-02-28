@@ -7,6 +7,6 @@ class LoginLog extends Model
 {
     protected $table = 'login_logs';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['user_id','login_time'];
-    protected $useTimestamps = true;
+    protected $allowedFields = ['user_id', 'role', 'login_time', 'logout_time', 'created_at', 'updated_at'];
+    protected $useTimestamps = false;
 }

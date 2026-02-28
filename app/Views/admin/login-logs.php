@@ -1,305 +1,227 @@
+<?php
+date_default_timezone_set('Asia/Manila');
+$page = 'login-logs';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Login Logs</title>
-
+    <title>Login Logs | Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #eff6ff;
-            overflow-x: hidden;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
 
-        main {
-            padding-bottom: env(safe-area-inset-bottom, 5.5rem);
-        }
-
-        .logout-btn {
+        /* ── Sidebar (identical to dashboard) ── */
+        .sidebar-card {
+            background: white;
+            border-radius: 32px;
+            border: 1px solid #e2e8f0;
+            height: calc(100vh - 48px);
+            position: sticky;
+            top: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 0.9rem;
-            border-radius: 9999px;
-            background-color: #3b82f6;
-            color: white;
-            font-weight: 500;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .logout-btn:hover {
-            background-color: #2563eb;
+        .sidebar-header {
+            flex-shrink: 0;
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        th {
-            background-color: #f3f4f6;
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-        tr:hover {
-            background-color: #f9fafb;
-        }
-
-        .role-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .role-admin {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-
-        .role-sk {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        .role-user {
-            background-color: #fce7f3;
-            color: #831843;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .search-box input {
+        .sidebar-nav {
             flex: 1;
-            padding: 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px;
         }
 
-        .search-box select {
-            padding: 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .sidebar-footer {
+            flex-shrink: 0;
+            padding: 16px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        @media (max-width: 768px) {
-            table {
-                font-size: 0.875rem;
-            }
+        .sidebar-item { transition: all 0.2s; }
+        .sidebar-item.active { background: #2563eb; color: white; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
 
-            th, td {
-                padding: 0.5rem;
-            }
+        /* ── Mobile nav pill (identical to dashboard) ── */
+        .mobile-nav-pill {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 600px; background: rgba(30,41,59,0.98);
+            backdrop-filter: blur(12px); border-radius: 24px; padding: 6px;
+            z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
         }
+        .mobile-scroll-container {
+            display: flex; gap: 4px; overflow-x: auto;
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+        }
+        .mobile-scroll-container::-webkit-scrollbar { display: none; }
+
+        /* ── Content ── */
+        .content-card { background: white; border-radius: 32px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+
+        .log-table th {
+            text-transform: uppercase; font-size: 0.7rem;
+            letter-spacing: 0.1em; font-weight: 800;
+            color: #64748b; padding: 1.5rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .log-table td { padding: 1.25rem 1rem; border-bottom: 1px solid #f8fafc; font-size: 0.875rem; }
+
+        .status-active { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
     </style>
 </head>
+<body class="flex">
 
-<body class="flex flex-col min-h-screen">
-    <?php $page = $page ?? 'login-logs'; ?>
+    <?php
+    $navItems = [
+        ['url' => '/admin/dashboard',           'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
+        ['url' => '/admin/new-reservation',     'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'new-reservation'],
+        ['url' => '/admin/manage-reservations', 'icon' => 'fa-calendar',        'label' => 'Reservations',    'key' => 'manage-reservations'],
+        ['url' => '/admin/manage-pcs',          'icon' => 'fa-desktop',         'label' => 'Manage PCs',      'key' => 'manage-pcs'],
+        ['url' => '/admin/manage-sk',           'icon' => 'fa-user-shield',     'label' => 'Manage SK',       'key' => 'manage-sk'],
+        ['url' => '/admin/login-logs',          'icon' => 'fa-clock',           'label' => 'Login Logs',      'key' => 'login-logs'],
+        ['url' => '/admin/scanner',             'icon' => 'fa-qrcode',          'label' => 'Scanner',         'key' => 'scanner'],
+        ['url' => '/admin/activity-logs',       'icon' => 'fa-list',            'label' => 'Activity Logs',   'key' => 'activity-logs'],
+        ['url' => '/admin/profile',             'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+    ];
+    ?>
 
-    <div class="flex flex-1 flex-col lg:flex-row">
+    <!-- ── Sidebar ── -->
+    <aside class="hidden lg:flex flex-col w-80 p-6">
+        <div class="sidebar-card">
+            <div class="sidebar-header">
+                <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Control Room</span>
+                <h1 class="text-2xl font-extrabold text-slate-800">Admin<span class="text-blue-600">.</span></h1>
+            </div>
 
-        <aside class="hidden lg:flex flex-col w-64 bg-blue-600 text-white shadow-xl rounded-tr-3xl rounded-br-3xl p-6">
-            <h1 class="text-2xl font-bold mb-10">Admin Panel</h1>
-            <nav class="space-y-4">
-                <a href="/admin/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'dashboard') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-house"></i> Dashboard
-                </a>
-                <a href="/admin/new-reservation" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'new-reservation') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-plus"></i> New Reservation
-                </a>
-                <a href="/admin/manage-reservations" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'manage-reservations') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-calendar"></i> Manage Reservations
-                </a>
-                <a href="/admin/manage-sk" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'manage-sk') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-user-shield"></i> Manage SK Accounts
-                </a>
-                <a href="/admin/login-logs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'login-logs') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-clock"></i> Login Logs
-                </a>
-                <a href="/admin/scanner" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'scanner') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-qrcode"></i> Scanner
-                </a>
-                <a href="/admin/activity-logs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'activity-logs') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-list"></i> Activity Logs
-                </a>
-                <a href="/admin/profile" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'profile') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-regular fa-user"></i> Profile
-                </a>
+            <nav class="sidebar-nav space-y-1">
+                <?php foreach ($navItems as $item):
+                    $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600';
+                ?>
+                    <a href="<?= $item['url'] ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
+                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
+                        <?= $item['label'] ?>
+                    </a>
+                <?php endforeach; ?>
             </nav>
-        </aside>
 
-        <main class="flex-1 p-4 lg:p-6 overflow-auto">
-
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                <h2 class="text-2xl font-semibold text-blue-900 mb-3 md:mb-0">Login Logs</h2>
-                <a href="/logout" class="logout-btn">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+            <div class="sidebar-footer">
+                <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
+                    <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
                 </a>
             </div>
+        </div>
+    </aside>
 
-            <div class="bg-white rounded-2xl p-4 shadow">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search by name or email...">
-                    <select id="monthFilter">
-                        <option value="">All Months</option>
-                        <?php
-                        for ($i = 0; $i < 12; $i++) {
-                            $date = new DateTime('first day of this month');
-                            $date->modify("-$i months");
-                            $value = $date->format('Y-m');
-                            echo "<option value=\"$value\">" . $date->format('M Y') . "</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table id="logsTable">
-                        <thead>
-                            <tr>
-                                <th>User Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Login Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($logs) && is_array($logs)): ?>
-                                <?php foreach ($logs as $log): ?>
-                                    <tr class="log-row" data-month="<?= isset($log['login_time']) ? date('Y-m', strtotime($log['login_time'])) : '' ?>">
-                                        <td><?= $log['name'] ?? 'N/A' ?></td>
-                                        <td><?= $log['email'] ?? 'N/A' ?></td>
-                                        <td>
-                                            <?php
-                                            $role = $log['role'] ?? 'user';
-                                            if ($role === 'admin') {
-                                                echo '<span class="role-badge role-admin">Admin</span>';
-                                            } elseif ($role === 'sk') {
-                                                echo '<span class="role-badge role-sk">SK Officer</span>';
-                                            } else {
-                                                echo '<span class="role-badge role-user">User</span>';
-                                            }
-                                            ?>
-                                        </td>
-                                        <td><?= isset($log['login_time']) ? date('M d, Y H:i:s', strtotime($log['login_time'])) : 'N/A' ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="text-center text-gray-500 py-4">No login logs found</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <nav class="fixed bottom-0 left-0 right-0 bg-blue-600 text-white shadow-xl lg:hidden z-50">
-        <div class="flex overflow-x-auto gap-1 p-2">
-            <a href="/admin/dashboard" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'dashboard') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-house text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Dashboard</span>
-            </a>
-            <a href="/admin/new-reservation" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'new-reservation') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-plus text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">New Reservation</span>
-            </a>
-            <a href="/admin/manage-reservations" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'manage-reservations') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-calendar text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Reservations</span>
-            </a>
-            <a href="/admin/manage-sk" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'manage-sk') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-user-shield text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Manage SK</span>
-            </a>
-            <a href="/admin/login-logs" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'login-logs') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-clock text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Login Logs</span>
-            </a>
-            <a href="/admin/scanner" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'scanner') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-qrcode text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Scanner</span>
-            </a>
-            <a href="/admin/activity-logs" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'activity-logs') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-list text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Activity Logs</span>
-            </a>
-            <a href="/admin/profile" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'profile') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-regular fa-user text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Profile</span>
-            </a>
-            <a href="/logout" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 hover:bg-blue-500">
-                <i class="fa-solid fa-sign-out-alt text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Logout</span>
-            </a>
+    <!-- ── Mobile Nav (matching dashboard exactly) ── -->
+    <nav class="lg:hidden mobile-nav-pill">
+        <div class="mobile-scroll-container text-white px-2">
+            <?php foreach ($navItems as $item):
+                $isActive = ($page == $item['key']);
+                $btnClass = $isActive ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
+            ?>
+                <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $btnClass ?>">
+                    <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
+                    <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+                </a>
+            <?php endforeach; ?>
         </div>
     </nav>
 
-    <script>
-        document.getElementById('searchInput').addEventListener('keyup', filterTable);
-        document.getElementById('monthFilter').addEventListener('change', filterTable);
+    <!-- ── Main ── -->
+    <main class="flex-1 p-6 lg:p-12 pb-32">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h2 class="text-3xl font-black text-slate-900 tracking-tight">Login Logs</h2>
+                <p class="text-slate-500 font-medium">Authentication history and session tracking.</p>
+            </div>
+        </header>
 
-        function filterTable() {
-            const searchInput = document.getElementById('searchInput').value.toLowerCase();
-            const monthFilter = document.getElementById('monthFilter').value;
-            const rows = document.querySelectorAll('.log-row');
-
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                const month = row.dataset.month;
-                const matchesSearch = text.includes(searchInput);
-                const matchesMonth = !monthFilter || month === monthFilter;
-
-                row.style.display = (matchesSearch && matchesMonth) ? '' : 'none';
-            });
-        }
-    </script>
-
-    <script>
-        // Hamburger menu functionality
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const mobileDrawer = document.getElementById('mobileDrawer');
-        const drawerBackdrop = document.getElementById('drawerBackdrop');
-        const drawerContent = document.getElementById('drawerContent');
-
-        hamburgerBtn.addEventListener('click', () => {
-            mobileDrawer.classList.remove('hidden');
-            setTimeout(() => {
-                drawerContent.classList.remove('transform', '-translate-x-full');
-            }, 10);
-        });
-
-        drawerBackdrop.addEventListener('click', closeDrawer);
-        drawerContent.addEventListener('click', (e) => e.stopPropagation());
-
-        function closeDrawer() {
-            drawerContent.classList.add('transform', '-translate-x-full');
-            setTimeout(() => {
-                mobileDrawer.classList.add('hidden');
-            }, 300);
-        }
-    </script>
+        <div class="content-card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="log-table w-full text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th>User Details</th>
+                            <th>Role</th>
+                            <th>Login Timestamp</th>
+                            <th>Logout Timestamp</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700 font-medium">
+                        <?php if (!empty($logs)): ?>
+                            <?php foreach ($logs as $log):
+                                $isOnline = empty($log['logout_time']);
+                                $login  = new DateTime($log['login_time']);
+                                $logout = $log['logout_time'] ? new DateTime($log['logout_time']) : null;
+                            ?>
+                                <tr class="hover:bg-slate-50/50 transition-colors">
+                                    <td>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-slate-900"><?= htmlspecialchars($log['name']) ?></span>
+                                            <span class="text-xs text-slate-400 font-normal"><?= htmlspecialchars($log['email']) ?></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider">
+                                            <?= htmlspecialchars($log['role']) ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="flex flex-col">
+                                            <span><?= $login->format('M d, Y') ?></span>
+                                            <span class="text-[10px] text-slate-400"><?= $login->format('h:i A') ?></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <?php if ($logout): ?>
+                                            <div class="flex flex-col">
+                                                <span><?= $logout->format('M d, Y') ?></span>
+                                                <span class="text-[10px] text-slate-400"><?= $logout->format('h:i A') ?></span>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-slate-300 italic font-normal text-xs">Session active</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($isOnline): ?>
+                                            <span class="status-active px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-2 w-fit">
+                                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                                ACTIVE
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-slate-400 text-[10px] font-bold uppercase pl-3">Closed</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="5" class="py-20 text-center text-slate-400">
+                                    <i class="fa-solid fa-clock text-3xl mb-3 block"></i>
+                                    No logs found.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 
 </body>
-
 </html>

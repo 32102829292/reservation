@@ -9,8 +9,9 @@ class ReservationModel extends Model
 
     protected $allowedFields = [
         'user_id', 'resource_id', 'pc_number', 'reservation_date',
-        'start_time', 'end_time', 'purpose', 'status', 'approved_by',
-        'e_ticket_code', 'created_at'
+        'start_time', 'end_time', 'purpose', 'status', 'claimed', 'claimed_at', 'approved_by',
+        'e_ticket_code', 'created_at', 'visitor_type',
+        'visitor_name', 'user_email'
     ];
 
     protected $useTimestamps = false;
@@ -47,25 +48,46 @@ class ReservationModel extends Model
     }
 
     public function getUserReservations($userId)
-{
-    return $this->db->table('reservations r')
-        ->select('
-            r.id,
-            r.e_ticket_code,
-            r.reservation_date,
-            r.start_time,
-            r.end_time,
-            r.purpose,
-            r.status,
-            r.pc_number,
-            res.resource_name AS resource_name
-        ')
-        ->join('resources res', 'res.id = r.resource_id')
-        ->where('r.user_id', $userId)
-        ->orderBy('r.reservation_date', 'DESC')
-        ->get()
-        ->getResultArray();
-}
+    {
+        return $this->db->table('reservations r')
+            ->select('
+                r.id,
+                r.e_ticket_code,
+                r.reservation_date,
+                r.start_time,
+                r.end_time,
+                r.purpose,
+                r.status,
+                r.claimed,
+                r.claimed_at,
+                r.pc_number,
+                res.name AS resource_name
+            ')
+            ->join('resources res', 'res.id = r.resource_id')
+            ->where('r.user_id', $userId)
+            ->orderBy('r.reservation_date', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Get all user reservation requests (for SK approval)
+     */
+    public function getUserRequests()
+    {
+        return $this->db->table('reservations r')
+            ->select('
+                r.*,
+                resources.name as resource_name,
+                users.name as visitor_name,
+                users.email as user_email
+            ')
+            ->join('resources', 'resources.id = r.resource_id', 'left')
+            ->join('users', 'users.id = r.user_id', 'left')
+            ->orderBy('r.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
 
     public function createReservation($data)
     {
@@ -74,7 +96,6 @@ class ReservationModel extends Model
 
     public function checkFairness($userId)
     {
-        // Count reservations in the last 2 weeks
         $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
         $recentReservations = $this->where('user_id', $userId)
             ->where('created_at >=', $twoWeeksAgo)
@@ -82,16 +103,15 @@ class ReservationModel extends Model
 
         if ($recentReservations >= 3) {
             // Block user for 2 weeks
-            $this->blockUser($userId, 14); // 14 days = 2 weeks
-            return false; // Block the reservation
+            $this->blockUser($userId, 14);
+            return false;
         }
 
-        return true; // Allow the reservation
+        return true;
     }
 
     public function getRemainingReservations($userId)
     {
-        // Count reservations in the last 2 weeks
         $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
         $recentReservations = $this->where('user_id', $userId)
             ->where('created_at >=', $twoWeeksAgo)

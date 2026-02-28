@@ -90,6 +90,7 @@
             echo navItem('/admin/dashboard','fa-solid fa-house','Dashboard','dashboard',$page);
             echo navItem('/admin/new-reservation','fa-solid fa-plus','New Reservation','new-reservation',$page);
             echo navItem('/admin/manage-reservations','fa-solid fa-calendar','Manage Reservations','manage-reservations',$page);
+            echo navItem('/admin/manage-pcs','fa-solid fa-desktop','Manage PCs','manage-pcs',$page);
             echo navItem('/admin/manage-sk','fa-solid fa-user-shield','Manage SK Accounts','manage-sk',$page);
             echo navItem('/admin/login-logs','fa-solid fa-clock','Login Logs','login-logs',$page);
             echo navItem('/admin/scanner','fa-solid fa-qrcode','Scanner','scanner',$page);
@@ -126,6 +127,7 @@
         echo mobileNav('/admin/dashboard','fa-solid fa-house','Dashboard','dashboard',$page);
         echo mobileNav('/admin/new-reservation','fa-solid fa-plus','New Reservation','new-reservation',$page);
         echo mobileNav('/admin/manage-reservations','fa-solid fa-calendar','Reservations','manage-reservations',$page);
+        echo mobileNav('/admin/manage-pcs','fa-solid fa-desktop','Manage PCs','manage-pcs',$page);
         echo mobileNav('/admin/manage-sk','fa-solid fa-user-shield','Manage SK','manage-sk',$page);
         echo mobileNav('/admin/login-logs','fa-solid fa-clock','Login Logs','login-logs',$page);
         echo mobileNav('/admin/scanner','fa-solid fa-qrcode','Scanner','scanner',$page);

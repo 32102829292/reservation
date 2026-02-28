@@ -1,742 +1,552 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>New Reservation</title>
-
+    <title>New Reservation | Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #eff6ff;
-            overflow-x: hidden;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
 
-        main {
-            padding-bottom: env(safe-area-inset-bottom, 5.5rem);
-        }
-
-        .logout-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 0.9rem;
-            border-radius: 9999px;
-            background-color: #3b82f6;
-            color: white;
-            font-weight: 500;
-        }
-
-        .logout-btn:hover {
-            background-color: #2563eb;
-        }
-
-        .form-container {
+        /* ── Sidebar (identical to dashboard) ── */
+        .sidebar-card {
             background: white;
-            border-radius: 1.5rem;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .form-section {
-            margin-bottom: 2rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .form-section:last-child {
-            border-bottom: none;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 1rem;
+            border-radius: 32px;
+            border: 1px solid #e2e8f0;
+            height: calc(100vh - 48px);
+            position: sticky;
+            top: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
+        .sidebar-header {
+            flex-shrink: 0;
+            padding: 16px;                      /* matches dashboard */
+            border-bottom: 1px solid #e2e8f0;   /* matches dashboard */
         }
 
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #374151;
-            font-size: 0.95rem;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="date"],
-        input[type="time"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            font-size: 0.95rem;
-            font-family: inherit;
-        }
-
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        input[type="date"]:focus,
-        input[type="time"]:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .radio-group,
-        .checkbox-group {
-            display: flex;
-            gap: 2rem;
-            margin-top: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .radio-item,
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .radio-item input,
-        .checkbox-item input {
-            width: auto;
-        }
-
-        .pc-list {
-            background: #f9fafb;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .pc-item {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .pc-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .pc-info {
+        .sidebar-nav {
             flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px;
         }
 
-        .pc-info p {
-            margin: 0.25rem 0;
-            font-size: 0.9rem;
-            color: #4b5563;
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .sidebar-footer {
+            flex-shrink: 0;
+            padding: 16px;                      /* matches dashboard */
+            border-top: 1px solid #e2e8f0;      /* matches dashboard */
         }
 
-        .pc-info strong {
-            color: #1f2937;
+        .sidebar-item { transition: all 0.2s; }
+        .sidebar-item.active {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
         }
 
-        .pc-actions {
-            display: flex;
-            gap: 0.5rem;
+        /* ── Mobile nav pill (identical to dashboard) ── */
+        .mobile-nav-pill {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 600px; background: rgba(30,41,59,0.98);
+            backdrop-filter: blur(12px); border-radius: 24px; padding: 6px;
+            z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
         }
+        .mobile-scroll-container {
+            display: flex; gap: 4px; overflow-x: auto;
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+        }
+        .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
-        .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        /* ── Form styles ── */
+        .form-card { background: white; border-radius: 28px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02); }
+        .section-divider { border: none; border-top: 1px solid #f1f5f9; margin: 2rem 0; }
+
+        input, select, textarea {
+            width: 100%; padding: 0.875rem 1rem;
+            border: 1px solid #e2e8f0; font-size: 0.92rem;
+            transition: all 0.2s; background: #fcfdfe;
+            border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1e293b;
         }
+        input:focus, select:focus, textarea:focus {
+            outline: none; border-color: #2563eb; background: white;
+            box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
+        }
+        input[readonly] { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+
+        .type-btn {
+            flex: 1; text-align: center; padding: 0.75rem 1rem;
+            border-radius: 14px; cursor: pointer; font-weight: 700;
+            font-size: 0.85rem; transition: all 0.2s; color: #64748b;
+            border: none; background: transparent; font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .type-btn.active { background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+
+        .autocomplete-wrap { position: relative; }
+        .autocomplete-list {
+            position: absolute; z-index: 50; background: white;
+            border: 1px solid #e2e8f0; border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            max-height: 220px; overflow-y: auto; width: 100%;
+            top: calc(100% + 4px); left: 0;
+        }
+        .autocomplete-item { padding: 12px 16px; cursor: pointer; font-size: 0.88rem; transition: background 0.15s; }
+        .autocomplete-item:hover { background: #eff6ff; color: #2563eb; }
+        .autocomplete-item .sub { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
 
         .btn-primary {
-            background-color: #3b82f6;
-            color: white;
+            background: #2563eb; color: white; border: none;
+            padding: 1rem 2rem; border-radius: 16px; font-weight: 800;
+            font-size: 0.9rem; letter-spacing: 0.05em; cursor: pointer;
+            transition: all 0.25s; font-family: 'Plus Jakarta Sans', sans-serif;
+            display: inline-flex; align-items: center; gap: 8px;
         }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 12px 20px -5px rgba(37,99,235,0.35); }
+        .btn-primary:active { transform: translateY(0); }
 
-        .btn-primary:hover {
-            background-color: #2563eb;
+        .modal-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,23,42,0.65); backdrop-filter: blur(6px);
+            z-index: 200; padding: 1.5rem; overflow-y: auto;
+            align-items: center; justify-content: center;
         }
-
-        .btn-secondary {
-            background-color: #6b7280;
-            color: white;
+        .modal-backdrop.show { display: flex; animation: fadeIn 0.15s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-box {
+            background: white; border-radius: 32px; width: 100%;
+            max-width: 460px; padding: 2.5rem; margin: auto;
+            animation: slideUp 0.2s ease;
+            max-height: 90vh; overflow-y: auto;
         }
+        @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .btn-secondary:hover {
-            background-color: #4b5563;
-        }
+        .mrow { display: flex; justify-content: space-between; align-items: flex-start; padding: 0.6rem 0; border-bottom: 1px solid #f1f5f9; gap: 1rem; }
+        .mrow:last-child { border-bottom: none; }
+        .mrow-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; flex-shrink: 0; }
+        .mrow-value { font-weight: 700; color: #1e293b; font-size: 0.85rem; text-align: right; }
 
-        .btn-danger {
-            background-color: #ef4444;
-            color: white;
-            padding: 0.35rem 0.75rem;
-            font-size: 0.8rem;
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-
-        .btn-warning {
-            background-color: #f59e0b;
-            color: white;
-            padding: 0.35rem 0.75rem;
-            font-size: 0.8rem;
-        }
-
-        .btn-warning:hover {
-            background-color: #d97706;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .maintenance-badge {
-            display: inline-block;
-            background-color: #fef3c7;
-            color: #92400e;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .success-message {
-            background: #ecfdf5;
-            border: 1px solid #10b981;
-            color: #065f46;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        .add-pc-section {
-            background: #eff6ff;
-            border: 2px dashed #3b82f6;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .add-pc-form {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 0.75rem;
-            align-items: flex-end;
-        }
-
-        @media (max-width: 768px) {
-            .form-container {
-                padding: 1.5rem;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .add-pc-form {
-                grid-template-columns: 1fr;
-            }
-
-            .radio-group,
-            .checkbox-group {
-                gap: 1rem;
-            }
-        }
+        .field-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; display: block; margin-bottom: 0.4rem; }
+        .pc-section { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; padding: 1.5rem; }
     </style>
 </head>
+<body class="flex">
 
-<body class="flex flex-col min-h-screen">
-    <?php $page = $page ?? 'new-reservation'; ?>
+    <!-- ── Sidebar ── -->
+    <aside class="hidden lg:flex flex-col w-80 p-6">
+        <div class="sidebar-card">
+            <div class="sidebar-header">
+                <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Control Room</span>
+                <h1 class="text-2xl font-extrabold text-slate-800">Admin<span class="text-blue-600">.</span></h1>
+            </div>
 
-<!-- Hamburger Menu Button for Small Screens -->
-<button id="hamburgerBtn" class="fixed top-4 right-4 z-50 bg-blue-600 text-white p-2 rounded-lg shadow-lg md:hidden">
-    <i class="fa-solid fa-bars"></i>
-</button>
-
-<!-- Mobile Drawer for Small Screens -->
-<div id="mobileDrawer" class="fixed inset-0 z-40 hidden">
-    <div class="absolute inset-0 bg-black bg-opacity-50" id="drawerBackdrop"></div>
-    <div class="absolute left-0 top-0 h-full w-64 bg-blue-600 text-white shadow-xl transform -translate-x-full transition-transform duration-300" id="drawerContent">
-        <div class="p-6">
-            <h1 class="text-2xl font-bold mb-10">Admin Panel</h1>
-            <nav class="space-y-4">
-                <a href="/admin/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition">
-                    <i class="fa-solid fa-house"></i> Dashboard
-                </a>
-                <a href="/admin/new-reservation" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition bg-blue-700 font-semibold">
-                    <i class="fa-solid fa-plus"></i> New Reservation
-                </a>
-                <a href="/admin/manage-reservations" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition">
-                    <i class="fa-solid fa-calendar"></i> Manage Reservations
-                </a>
-                <a href="/admin/manage-sk" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition">
-                    <i class="fa-solid fa-user-shield"></i> Manage SK Accounts
-                </a>
-                <a href="/admin/login-logs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition">
-                    <i class="fa-solid fa-clock"></i> Login Logs
-                </a>
-                <a href="/admin/scanner" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition">
-                    <i class="fa-solid fa-qrcode"></i> Scanner
-                </a>
-                <a href="/admin/activity-logs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition">
-                    <i class="fa-solid fa-list"></i> Activity Logs
-                </a>
-                <a href="/admin/profile" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition">
-                    <i class="fa-regular fa-user"></i> Profile
-                </a>
-            </nav>
-        </div>
-    </div>
-</div>
-
-    <div class="flex flex-1 flex-col lg:flex-row">
-
-        <aside class="hidden lg:flex flex-col w-64 bg-blue-600 text-white shadow-xl rounded-tr-3xl rounded-br-3xl p-6">
-            <h1 class="text-2xl font-bold mb-10">Admin Panel</h1>
-            <nav class="space-y-4">
-                <a href="/admin/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'dashboard') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-house"></i> Dashboard
-                </a>
-                <a href="/admin/new-reservation" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'new-reservation') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-plus"></i> New Reservation
-                </a>
-                <a href="/admin/manage-reservations" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'manage-reservations') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-calendar"></i> Manage Reservations
-                </a>
-                <a href="/admin/manage-sk" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'manage-sk') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-user-shield"></i> Manage SK Accounts
-                </a>
-                <a href="/admin/login-logs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'login-logs') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-clock"></i> Login Logs
-                </a>
-                <a href="/admin/scanner" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'scanner') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-qrcode"></i> Scanner
-                </a>
-                <a href="/admin/activity-logs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'activity-logs') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-list"></i> Activity Logs
-                </a>
-                <a href="/admin/profile" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'profile') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-regular fa-user"></i> Profile
-                </a>
-            </nav>
-        </aside>
-
-        <main class="flex-1 p-4 lg:p-6 overflow-auto">
-
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                <div class="flex items-center gap-3">
-                    <a href="/admin/manage-reservations" class="logout-btn" style="background-color: #6b7280; gap: 0.5rem;">
-                        <i class="fa-solid fa-arrow-left"></i> Back
+            <nav class="sidebar-nav space-y-1">
+                <?php
+                $navItems = [
+                    ['url' => '/admin/dashboard',           'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
+                    ['url' => '/admin/new-reservation',     'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'new-reservation'],
+                    ['url' => '/admin/manage-reservations', 'icon' => 'fa-calendar',        'label' => 'Reservations',    'key' => 'manage-reservations'],
+                    ['url' => '/admin/manage-pcs',          'icon' => 'fa-desktop',         'label' => 'Manage PCs',      'key' => 'manage-pcs'],
+                    ['url' => '/admin/manage-sk',           'icon' => 'fa-user-shield',     'label' => 'Manage SK',       'key' => 'manage-sk'],
+                    ['url' => '/admin/login-logs',          'icon' => 'fa-clock',           'label' => 'Login Logs',      'key' => 'login-logs'],
+                    ['url' => '/admin/scanner',             'icon' => 'fa-qrcode',          'label' => 'Scanner',         'key' => 'scanner'],
+                    ['url' => '/admin/activity-logs',       'icon' => 'fa-list',            'label' => 'Activity Logs',   'key' => 'activity-logs'],
+                    ['url' => '/admin/profile',             'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+                ];
+                foreach ($navItems as $item):
+                    $active = (isset($page) && $page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600';
+                ?>
+                    <a href="<?= $item['url'] ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
+                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
+                        <?= $item['label'] ?>
                     </a>
-                    <h2 class="text-2xl font-semibold text-blue-900">New Reservation</h2>
-                </div>
-                <a href="/logout" class="logout-btn">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                <?php endforeach; ?>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
+                    <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
                 </a>
             </div>
+        </div>
+    </aside>
 
-            <div class="form-container">
-                <div class="success-message" id="successMessage">
-                    <i class="fa-solid fa-check-circle"></i> Reservation created successfully!
-                </div>
-
-                <form id="reservationForm" method="POST" action="/admin/create-reservation">
-
-                    <!-- Visitor Type Section -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fa-solid fa-user-check"></i> Visitor Information
-                        </div>
-
-                        <div class="form-group">
-                            <label>Visitor Type <span style="color: #ef4444;">*</span></label>
-                            <div class="radio-group">
-                                <div class="radio-item">
-                                    <input type="radio" id="resident" name="visitor_type" value="resident" required>
-                                    <label for="resident" style="margin: 0; cursor: pointer;">Resident</label>
-                                </div>
-                                <div class="radio-item">
-                                    <input type="radio" id="visitor" name="visitor_type" value="visitor">
-                                    <label for="visitor" style="margin: 0; cursor: pointer;">Visitor</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="userEmail">Email/User ID <span style="color: #ef4444;">*</span></label>
-                                <input type="text" id="userEmail" name="user_email" placeholder="Enter email or user ID" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="visitorName">Full Name <span style="color: #ef4444;">*</span></label>
-                                <input type="text" id="visitorName" name="visitor_name" placeholder="Enter full name" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="visitorEmail">Contact Email</label>
-                            <input type="email" id="visitorEmail" name="visitor_contact_email" placeholder="Enter contact email">
-                        </div>
-                    </div>
-
-                    <!-- Reservation Details Section -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fa-solid fa-calendar-check"></i> Reservation Details
-                        </div>
-
-                        <div class="form-group">
-                            <label for="resourceSelect">Resource <span style="color: #ef4444;">*</span></label>
-                            <select id="resourceSelect" name="resource_id" class="w-full border rounded-lg p-2" required>
-                                <option value="">Select Resource</option>
-                                <?php foreach ($resources ?? [] as $resource): ?>
-                                    <option value="<?= $resource['id'] ?>"><?= $resource['name'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="resDate">Reservation Date <span style="color: #ef4444;">*</span></label>
-                                <input type="date" id="resDate" name="reservation_date" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="resType">Reservation Type <span style="color: #ef4444;">*</span></label>
-                                <select id="resType" name="reservation_type" required>
-                                    <option value="">Select Type</option>
-                                    <option value="hourly">Hourly</option>
-                                    <option value="daily">Daily</option>
-                                    <option value="weekly">Weekly</option>
-                                    <option value="monthly">Monthly</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="startTime">Start Time <span style="color: #ef4444;">*</span></label>
-                                <input type="time" id="startTime" name="start_time" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="endTime">End Time <span style="color: #ef4444;">*</span></label>
-                                <input type="time" id="endTime" name="end_time" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="purpose">Purpose of Reservation</label>
-                            <textarea id="purpose" name="purpose" rows="3" placeholder="Enter purpose of reservation"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- PC Selection Section -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fa-solid fa-desktop"></i> PC Assignment
-                        </div>
-
-                        <div class="form-group">
-                            <label>Selected PCs <span style="color: #ef4444;">*</span></label>
-                            <div class="pc-list" id="pcList">
-                                <p class="text-gray-500 text-sm">No PCs selected yet</p>
-                            </div>
-                        </div>
-
-                        <div class="form-group" id="pcDropdownGroup" style="display: none;">
-                            <label for="pcDropdown">Select PC <span style="color: #ef4444;">*</span></label>
-                            <select id="pcDropdown" class="pc-dropdown">
-                                <option value="">Select a PC</option>
-                            </select>
-                        </div>
-
-                        <div class="add-pc-section">
-                            <div class="section-title" style="margin-bottom: 1rem;">
-                                <i class="fa-solid fa-plus"></i> Add PC
-                            </div>
-                            <div class="add-pc-form">
-                                <div>
-                                    <label for="pcNumber" style="margin-bottom: 0.5rem;">PC Number</label>
-                                    <input type="text" id="pcNumber" placeholder="e.g., PC-001" style="margin-bottom: 0;">
-                                </div>
-                                <div class="checkbox-item">
-                                    <input type="checkbox" id="maintenanceCheck">
-                                    <label for="maintenanceCheck" style="margin: 0; cursor: pointer;">Under Maintenance</label>
-                                </div>
-                                <button type="button" class="btn btn-primary" onclick="addPC()">
-                                    <i class="fa-solid fa-plus"></i> Add
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="form-section" style="border-bottom: none;">
-                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                            <a href="/admin/manage-reservations" class="btn btn-secondary">
-                                <i class="fa-solid fa-arrow-left"></i> Back
-                            </a>
-                            <button type="reset" class="btn btn-secondary">
-                                <i class="fa-solid fa-redo"></i> Clear
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fa-solid fa-save"></i> Create Reservation
-                            </button>
-                        </div>
-                    </div>
-
-                </form>
-            </div>
-
-        </main>
-    </div>
-
-    <nav class="fixed bottom-0 left-0 right-0 bg-blue-600 text-white shadow-xl lg:hidden z-50">
-        <div class="flex overflow-x-auto gap-1 p-2">
-            <a href="/admin/dashboard" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'dashboard') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-house text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Dashboard</span>
-            </a>
-            <a href="/admin/new-reservation" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'new-reservation') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-plus text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">New Reservation</span>
-            </a>
-            <a href="/admin/manage-reservations" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'manage-reservations') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-calendar text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Reservations</span>
-            </a>
-            <a href="/admin/manage-sk" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'manage-sk') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-user-shield text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Manage SK</span>
-            </a>
-            <a href="/admin/login-logs" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'login-logs') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-clock text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Login Logs</span>
-            </a>
-            <a href="/admin/scanner" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'scanner') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-qrcode text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Scanner</span>
-            </a>
-            <a href="/admin/activity-logs" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'activity-logs') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-list text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Activity Logs</span>
-            </a>
-            <a href="/admin/profile" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'profile') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-regular fa-user text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Profile</span>
-            </a>
-            <a href="/logout" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 hover:bg-blue-500">
-                <i class="fa-solid fa-sign-out-alt text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Logout</span>
-            </a>
+    <!-- ── Mobile Nav (matching dashboard exactly) ── -->
+    <nav class="lg:hidden mobile-nav-pill">
+        <div class="mobile-scroll-container text-white px-2">
+            <?php foreach ($navItems as $item):
+                $isActive = (isset($page) && $page == $item['key']);
+                $btnClass = $isActive ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
+            ?>
+                <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $btnClass ?>">
+                    <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
+                    <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+                </a>
+            <?php endforeach; ?>
         </div>
     </nav>
 
-    <script>
-    let selectedPCs = [];
+    <!-- ── Main ── -->
+    <main class="flex-1 p-6 lg:p-12 pb-32">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+            <div>
+                <h2 class="text-3xl font-black text-slate-900 tracking-tight">New Reservation</h2>
+                <p class="text-slate-500 font-medium">Register a manual entry into the system.</p>
+            </div>
+            <a href="/admin/manage-reservations" class="px-6 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
+                <i class="fa-solid fa-chevron-left text-sm"></i> Back
+            </a>
+        </header>
 
-    // Handle resource selection
-    document.getElementById('resourceSelect').addEventListener('change', function() {
-        const selectedResourceId = this.value;
-        const pcSection = document.getElementById('pcSection');
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="mb-6 px-6 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <?= session()->getFlashdata('error') ?>
+            </div>
+        <?php endif; ?>
 
-        if (selectedResourceId === '1') { // Computer resource
-            pcSection.style.display = 'block';
-        } else {
-            pcSection.style.display = 'none';
-        }
-    });
+        <div class="form-card max-w-3xl mx-auto p-8 lg:p-10">
+            <form id="reservationForm" method="POST" action="<?= base_url('admin/create-reservation') ?>">
+                <?= csrf_field() ?>
 
-        function addPC() {
-            const pcNumber = document.getElementById('pcNumber').value.trim();
-            const isMaintenance = document.getElementById('maintenanceCheck').checked;
+                <input type="hidden" name="visitor_name"  id="finalVisitorName">
+                <input type="hidden" name="user_email"    id="finalUserEmail">
+                <input type="hidden" name="user_id"       id="finalUserId">
+                <input type="hidden" name="visitor_type"  id="finalVisitorType" value="User">
+                <input type="hidden" name="purpose"       id="finalPurpose">
 
-            if (!pcNumber) {
-                alert('Please enter a PC number');
-                return;
-            }
-
-            // Check if PC already added
-            if (selectedPCs.some(pc => pc.number === pcNumber)) {
-                alert('This PC is already added');
-                return;
-            }
-
-            selectedPCs.push({
-                number: pcNumber,
-                maintenance: isMaintenance
-            });
-
-            document.getElementById('pcNumber').value = '';
-            document.getElementById('maintenanceCheck').checked = false;
-
-            updatePCList();
-        }
-
-        function removePC(index) {
-            selectedPCs.splice(index, 1);
-            updatePCList();
-        }
-
-        function toggleMaintenance(index) {
-            selectedPCs[index].maintenance = !selectedPCs[index].maintenance;
-            updatePCList();
-        }
-
-        function updatePCList() {
-            const pcList = document.getElementById('pcList');
-
-            if (selectedPCs.length === 0) {
-                pcList.innerHTML = '<p class="text-gray-500 text-sm">No PCs selected yet</p>';
-                return;
-            }
-
-            pcList.innerHTML = selectedPCs.map((pc, index) => `
-                <div class="pc-item">
-                    <div class="pc-info">
-                        <p><strong>PC Number:</strong> ${pc.number}</p>
-                        <p><strong>Status:</strong> ${pc.maintenance ? '<span class="maintenance-badge"><i class="fa-solid fa-tools"></i> Under Maintenance</span>' : '<span style="color: #10b981;">Available</span>'}</p>
-                    </div>
-                    <div class="pc-actions">
-                        <button type="button" class="btn btn-warning" onclick="toggleMaintenance(${index})">
-                            <i class="fa-solid fa-tools"></i> ${pc.maintenance ? 'Available' : 'Maintenance'}
+                <!-- ① User Type Toggle -->
+                <div class="mb-8">
+                    <span class="field-label mb-3 block">Visitor Classification</span>
+                    <div class="flex bg-slate-100 p-1.5 rounded-[18px]">
+                        <button type="button" class="type-btn active" id="btnUser" onclick="setType('User')">
+                            <i class="fa-solid fa-user mr-2"></i>Registered User
                         </button>
-                        <button type="button" class="btn btn-danger" onclick="removePC(${index})">
-                            <i class="fa-solid fa-trash"></i> Remove
+                        <button type="button" class="type-btn" id="btnVisitor" onclick="setType('Visitor')">
+                            <i class="fa-solid fa-person-walking mr-2"></i>Walk-in Visitor
                         </button>
                     </div>
                 </div>
-            `).join('');
 
-            // Update hidden input for form submission
-            document.getElementById('reservationForm').insertAdjacentHTML('beforeend', 
-                '<input type="hidden" name="pcs" value="' + JSON.stringify(selectedPCs) + '" id="pcsInput">'
-            );
-            const oldInput = document.getElementById('reservationForm').querySelector('input[name="pcs"]:not(#pcsInput)');
-            if (oldInput && oldInput.id !== 'pcsInput') {
-                oldInput.remove();
-            }
+                <hr class="section-divider">
+
+                <!-- ② Personal Details -->
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-id-card"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-800 tracking-tight">Personal Details</h3>
+                    </div>
+
+                    <div id="userFields" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="field-label">Full Name</label>
+                            <div class="autocomplete-wrap">
+                                <input type="text" id="userNameInput" placeholder="Type to search users..." autocomplete="off">
+                                <ul id="autocompleteList" class="autocomplete-list hidden"></ul>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="field-label">Email Address</label>
+                            <input type="email" id="userEmailDisplay" placeholder="Auto-filled on selection" readonly>
+                            <p class="text-[10px] text-slate-400 mt-1">Fills automatically when a user is selected</p>
+                        </div>
+                    </div>
+
+                    <div id="visitorFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="field-label">Full Name</label>
+                            <input type="text" id="visitorNameInput" placeholder="Enter visitor's full name">
+                        </div>
+                        <div>
+                            <label class="field-label">Email Address</label>
+                            <input type="email" id="visitorEmailInput" placeholder="Enter email (optional)">
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <!-- ③ Resource & Schedule -->
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-800 tracking-tight">Resource & Schedule</h3>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="field-label">Select Asset / Resource</label>
+                        <select id="resourceSelect" name="resource_id" required>
+                            <option value="">— Choose a resource —</option>
+                            <?php foreach ($resources as $res): ?>
+                                <option value="<?= $res['id'] ?>" data-name="<?= htmlspecialchars($res['name']) ?>">
+                                    <?= htmlspecialchars($res['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div id="pcSection" class="hidden pc-section mb-5">
+                        <label class="field-label text-blue-700">Assign Workstation</label>
+                        <select id="pcSelect" name="pc_number">
+                            <option value="">— No specific station —</option>
+                            <?php foreach ($pcs as $pc): ?>
+                                <option value="<?= htmlspecialchars($pc['pc_number']) ?>">
+                                    Station <?= htmlspecialchars($pc['pc_number']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                        <div>
+                            <label class="field-label">Date</label>
+                            <input type="date" name="reservation_date" id="resDate" value="<?= date('Y-m-d') ?>" required>
+                        </div>
+                        <div>
+                            <label class="field-label">Start Time</label>
+                            <input type="time" name="start_time" id="startTime" required>
+                        </div>
+                        <div>
+                            <label class="field-label">End Time</label>
+                            <input type="time" name="end_time" id="endTime" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="field-label">Purpose of Visit</label>
+                        <select id="purposeSelect" required>
+                            <option value="">— Select purpose —</option>
+                            <option value="Work">Work</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Study">Study</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div id="purposeOtherWrap" class="hidden mt-3">
+                        <label class="field-label">Please Specify</label>
+                        <input type="text" id="purposeOther" placeholder="Describe the purpose...">
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button type="button" onclick="previewReservation()" class="btn-primary w-full md:w-auto">
+                        <i class="fa-solid fa-eye"></i> Preview & Confirm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- ── Confirmation Modal ── -->
+    <div id="confirmModal" class="modal-backdrop" onclick="handleBackdrop(event)">
+        <div class="modal-box">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-xl shadow-lg shadow-blue-200">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-900">Confirm Reservation</h3>
+                <p class="text-slate-400 text-sm font-medium mt-1">Review details before saving.</p>
+            </div>
+
+            <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-5">
+                <div class="mrow"><span class="mrow-label">Type</span><span class="mrow-value" id="mType"></span></div>
+                <div class="mrow"><span class="mrow-label">Name</span><span class="mrow-value" id="mName"></span></div>
+                <div class="mrow"><span class="mrow-label">Email</span><span class="mrow-value" id="mEmail"></span></div>
+                <div class="mrow"><span class="mrow-label">Asset</span><span class="mrow-value" id="mAsset"></span></div>
+                <div class="mrow"><span class="mrow-label">Station</span><span class="mrow-value" id="mStation"></span></div>
+                <div class="mrow"><span class="mrow-label">Date</span><span class="mrow-value" id="mDate"></span></div>
+                <div class="mrow"><span class="mrow-label">Time</span><span class="mrow-value" id="mTime"></span></div>
+                <div class="mrow"><span class="mrow-label">Purpose</span><span class="mrow-value" id="mPurpose"></span></div>
+            </div>
+
+            <div id="qrWrap" class="hidden bg-white border-2 border-dashed border-blue-100 rounded-2xl p-5 flex flex-col items-center mb-5">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">E-Ticket Preview</p>
+                <canvas id="qrCanvas" class="rounded-xl mx-auto"></canvas>
+                <p id="qrText" class="text-xs text-slate-400 font-mono mt-2 text-center break-all"></p>
+                <button type="button" onclick="downloadQR()" class="mt-3 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 transition">
+                    <i class="fa-solid fa-download"></i> Download E-Ticket
+                </button>
+            </div>
+
+            <div class="flex gap-3" id="modalActions">
+                <button type="button" onclick="closeModal()" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">
+                    Cancel
+                </button>
+                <button type="button" id="confirmBtn" onclick="submitReservation()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check"></i> Confirm & Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const allUsers = <?= json_encode($users ?? []) ?>;
+        let currentType  = 'User';
+        let selectedUser = null;
+
+        function setType(type) {
+            currentType = type;
+            document.getElementById('finalVisitorType').value = type;
+            const isUser = type === 'User';
+            document.getElementById('btnUser').classList.toggle('active', isUser);
+            document.getElementById('btnVisitor').classList.toggle('active', !isUser);
+            document.getElementById('userFields').classList.toggle('hidden', !isUser);
+            document.getElementById('visitorFields').classList.toggle('hidden', isUser);
+            selectedUser = null;
+            document.getElementById('userNameInput').value    = '';
+            document.getElementById('userEmailDisplay').value = '';
+            document.getElementById('visitorNameInput').value  = '';
+            document.getElementById('visitorEmailInput').value = '';
+            document.getElementById('finalUserId').value      = '';
         }
 
-        // Set minimum date to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('resDate').min = today;
+        const userNameInput    = document.getElementById('userNameInput');
+        const autocompleteList = document.getElementById('autocompleteList');
 
-        // Form submission
-        document.getElementById('reservationForm').addEventListener('submit', function(e) {
-            if (selectedPCs.length === 0) {
-                e.preventDefault();
-                alert('Please add at least one PC to the reservation');
-                return;
-            }
+        userNameInput.addEventListener('input', () => {
+            const q = userNameInput.value.toLowerCase().trim();
+            autocompleteList.innerHTML = '';
+            selectedUser = null;
+            if (!q) { autocompleteList.classList.add('hidden'); return; }
+            const matches = allUsers.filter(u =>
+                (u.name      && u.name.toLowerCase().includes(q)) ||
+                (u.full_name && u.full_name.toLowerCase().includes(q)) ||
+                (u.email     && u.email.toLowerCase().includes(q))
+            ).slice(0, 8);
+            if (!matches.length) { autocompleteList.classList.add('hidden'); return; }
+            matches.forEach(u => {
+                const displayName = u.full_name || u.name || '';
+                const li = document.createElement('li');
+                li.className = 'autocomplete-item';
+                li.innerHTML = `<div class="font-semibold">${displayName}</div><div class="sub">${u.email}</div>`;
+                li.addEventListener('mousedown', () => {
+                    selectedUser = u;
+                    userNameInput.value = displayName;
+                    document.getElementById('userEmailDisplay').value = u.email;
+                    document.getElementById('finalUserId').value      = u.id;
+                    autocompleteList.classList.add('hidden');
+                });
+                autocompleteList.appendChild(li);
+            });
+            autocompleteList.classList.remove('hidden');
         });
 
-        // Allow adding PC by pressing Enter
-        document.getElementById('pcNumber').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addPC();
-            }
+        userNameInput.addEventListener('blur', () => {
+            setTimeout(() => autocompleteList.classList.add('hidden'), 150);
         });
 
-        // Handle reservation type change
-        document.getElementById('resType').addEventListener('change', function() {
-            const selectedType = this.value;
-            const pcDropdownGroup = document.getElementById('pcDropdownGroup');
-            const addPcSection = document.querySelector('.add-pc-section');
-
-            if (selectedType === 'computer') {
-                pcDropdownGroup.style.display = 'block';
-                addPcSection.style.display = 'none';
-                populatePCDropdown();
-                // Clear manual PCs when switching to computer
-                selectedPCs = [];
-                updatePCList();
-            } else {
-                pcDropdownGroup.style.display = 'none';
-                addPcSection.style.display = 'block';
-            }
+        document.getElementById('resourceSelect').addEventListener('change', function() {
+            const name = this.options[this.selectedIndex].dataset.name || '';
+            const isComputer = name.toLowerCase().includes('computer') || name.toLowerCase().includes('pc');
+            document.getElementById('pcSection').classList.toggle('hidden', !isComputer);
         });
 
-        // Populate PC dropdown
-        function populatePCDropdown() {
-            const dropdown = document.getElementById('pcDropdown');
-            dropdown.innerHTML = '<option value="">Select a PC</option>';
+        document.getElementById('purposeSelect').addEventListener('change', function() {
+            document.getElementById('purposeOtherWrap').classList.toggle('hidden', this.value !== 'Others');
+        });
 
-            predefinedPCs.forEach(pc => {
-                const option = document.createElement('option');
-                option.value = pc.number;
-                option.textContent = pc.number;
-                if (pc.maintenance) {
-                    option.disabled = true;
-                    option.textContent += ' (Under Maintenance)';
-                }
-                dropdown.appendChild(option);
+        function previewReservation() {
+            const isUser       = currentType === 'User';
+            const name         = isUser ? userNameInput.value.trim() : document.getElementById('visitorNameInput').value.trim();
+            const email        = isUser ? document.getElementById('userEmailDisplay').value.trim() : document.getElementById('visitorEmailInput').value.trim();
+            const resourceEl   = document.getElementById('resourceSelect');
+            const resourceId   = resourceEl.value;
+            const resourceName = resourceEl.options[resourceEl.selectedIndex]?.text || '—';
+            const pcVal        = document.getElementById('pcSelect').value;
+            const date         = document.getElementById('resDate').value;
+            const startTime    = document.getElementById('startTime').value;
+            const endTime      = document.getElementById('endTime').value;
+            const purposeVal   = document.getElementById('purposeSelect').value;
+            const purposeOther = document.getElementById('purposeOther').value.trim();
+            const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
+
+            if (!name)       { alert('Please enter a name.'); return; }
+            if (!resourceId) { alert('Please select a resource.'); return; }
+            if (!date)       { alert('Please select a date.'); return; }
+            if (!startTime)  { alert('Please enter a start time.'); return; }
+            if (!endTime)    { alert('Please enter an end time.'); return; }
+            if (!purposeVal) { alert('Please select a purpose.'); return; }
+            if (isUser && !selectedUser && !document.getElementById('finalUserId').value) {
+                alert('Please select a registered user from the dropdown.'); return;
+            }
+
+            document.getElementById('finalVisitorName').value = name;
+            document.getElementById('finalUserEmail').value   = email;
+            document.getElementById('finalPurpose').value     = purposeFinal;
+
+            document.getElementById('mType').textContent    = isUser ? 'Registered User' : 'Walk-in Visitor';
+            document.getElementById('mName').textContent    = name || '—';
+            document.getElementById('mEmail').textContent   = email || '—';
+            document.getElementById('mAsset').textContent   = resourceName;
+            document.getElementById('mStation').textContent = pcVal ? `Station ${pcVal}` : '—';
+            document.getElementById('mDate').textContent    = date;
+            document.getElementById('mTime').textContent    = `${startTime} – ${endTime}`;
+            document.getElementById('mPurpose').textContent = purposeFinal || '—';
+
+            document.getElementById('qrWrap').classList.add('hidden');
+            document.getElementById('confirmBtn').style.display = '';
+            openModal();
+        }
+
+        function submitReservation() {
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            const code = `ACCESS-${Date.now()}`;
+            document.getElementById('qrText').textContent = code;
+            QRCode.toCanvas(document.getElementById('qrCanvas'), code, {
+                width: 160, margin: 1,
+                color: { dark: '#1e293b', light: '#ffffff' }
+            }, () => {
+                document.getElementById('qrWrap').classList.remove('hidden');
+                btn.style.display = 'none';
+                setTimeout(() => document.getElementById('reservationForm').submit(), 800);
             });
         }
 
-        // Handle PC dropdown selection
-        document.getElementById('pcDropdown').addEventListener('change', function() {
-            const selectedPC = this.value;
-            if (!selectedPC) return;
+        function downloadQR() {
+            const canvas = document.getElementById('qrCanvas');
+            const code   = document.getElementById('qrText').textContent;
+            const link   = document.createElement('a');
+            link.download = `E-Ticket-${code}.png`;
+            link.href     = canvas.toDataURL('image/png');
+            link.click();
+        }
 
-            const pc = predefinedPCs.find(p => p.number === selectedPC);
-            if (pc && !pc.maintenance) {
-                // Check if PC already selected
-                if (selectedPCs.some(p => p.number === selectedPC)) {
-                    alert('This PC is already selected');
-                    this.value = '';
-                    return;
-                }
+        function openModal() {
+            document.getElementById('confirmModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
 
-                selectedPCs.push({
-                    number: selectedPC,
-                    maintenance: false
-                });
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+            document.body.style.overflow = '';
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = false;
+            btn.style.display = '';
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirm & Save';
+        }
 
-                updatePCList();
-                this.value = ''; // Reset dropdown
-            }
-        });
+        function handleBackdrop(e) {
+            if (e.target === document.getElementById('confirmModal')) closeModal();
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     </script>
-
 </body>
-
 </html>

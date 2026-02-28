@@ -1,444 +1,886 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Admin Dashboard</title>
-
+    <title>Dashboard | Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #eff6ff;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc; 
+            color: #1e293b;
             overflow-x: hidden;
         }
 
-        main {
-            padding-bottom: env(safe-area-inset-bottom, 5.5rem);
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn {
+        .app-wrapper {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 0.9rem;
-            border-radius: 9999px;
-            background-color: #3b82f6;
-            color: white;
-            font-weight: 500;
-        }
-
-        .logout-btn:hover {
-            background-color: #2563eb;
-        }
-
-        table {
+            min-height: 100vh;
             width: 100%;
-            border-collapse: collapse;
+            position: relative;
         }
 
-        th,
-        td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+        /* Original Sidebar Styles - Preserved */
+        .sidebar-card {
+            background: white;
+            border-radius: 32px;
+            border: 1px solid #e2e8f0;
+            height: calc(100vh - 48px);
+            position: sticky;
+            top: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            width: 100%;
         }
 
-        th {
-            background-color: #f3f4f6;
-            font-weight: 600;
-            color: #1f2937;
+        .sidebar-header {
+            flex-shrink: 0;
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        tr:hover {
-            background-color: #f9fafb;
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px;
         }
 
-        .btn {
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
-        .btn-approve {
-            background-color: #10b981;
+        .sidebar-footer {
+            flex-shrink: 0;
+            padding: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .sidebar-item {
+            transition: all 0.2s;
+        }
+        .sidebar-item.active {
+            background: #2563eb;
             color: white;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
         }
 
-        .btn-approve:hover {
-            background-color: #059669;
+        .mobile-nav-pill {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 600px; background: rgba(30,41,59,0.98);
+            backdrop-filter: blur(12px); border-radius: 24px; padding: 6px;
+            z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
         }
+        .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
-        .btn-decline {
-            background-color: #ef4444;
-            color: white;
+        main { 
+            flex: 1;
+            min-width: 0;
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-width: calc(100vw - 320px);
         }
-
-        .btn-decline:hover {
-            background-color: #dc2626;
-        }
-
-        .status-pending {
-            background-color: #fbbf24;
-            color: #78350f;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .status-approved {
-            background-color: #86efac;
-            color: #166534;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .status-declined {
-            background-color: #fca5a5;
-            color: #7f1d1d;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        @media (max-width: 768px) {
-            table {
-                font-size: 0.875rem;
+        
+        @media (max-width: 1024px) {
+            main {
+                max-width: 100vw;
             }
+        }
 
-            th,
-            td {
-                padding: 0.5rem;
-            }
+        /* Stat Cards */
+        .stat-card { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 1.25rem; 
+            border: 1px solid #e2e8f0; 
+            transition: transform 0.2s ease;
+            border-left-width: 4px;
+        }
+        .stat-card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); 
+        }
+
+        /* Analytics Cards */
+        .analytics-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            height: 100%;
+        }
+
+        /* Chart containers */
+        .chart-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            margin-top: 1rem;
+            flex: 1;
+        }
+
+        /* Calendar Card */
+        .calendar-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            height: 100%;
+            overflow: hidden;
         }
 
         #calendar {
-            background: white;
+            height: 400px;
+            width: 100%;
+            font-size: 0.8rem;
         }
 
-        .fc {
-            font-family: 'Inter', sans-serif;
+        /* FullCalendar overrides */
+        .fc .fc-toolbar {
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
-
-        .fc-button-primary {
-            background-color: #3b82f6 !important;
-            border-color: #3b82f6 !important;
+        .fc-toolbar-title { font-size: 1rem !important; font-weight: 800 !important; color: #1e293b !important; }
+        .fc-button-primary { 
+            background: #2563eb !important; 
+            border-color: #2563eb !important; 
+            border-radius: 10px !important; 
+            font-family: 'Plus Jakarta Sans', sans-serif !important; 
+            font-weight: 700 !important; 
+            font-size: 0.8rem !important; 
+            padding: 0.3rem 0.6rem !important;
         }
-
-        .fc-button-primary:hover {
-            background-color: #2563eb !important;
+        .fc-button-primary:hover { background: #1d4ed8 !important; }
+        .fc-daygrid-event { 
+            border-radius: 6px !important; 
+            font-size: 0.72rem !important; 
+            font-weight: 700 !important; 
+            padding: 2px 5px !important; 
+            border: none !important; 
+            cursor: pointer !important;
         }
-
-        .fc-button-primary.fc-button-active {
-            background-color: #1e40af !important;
+        .fc-event:hover {
+            transform: scale(1.02);
+            filter: brightness(0.95);
         }
-
-        .fc-daygrid-day.fc-day-other {
-            background-color: #f9fafb;
+        .fc-daygrid-day {
+            cursor: pointer !important;
+            transition: background-color 0.2s;
         }
-
         .fc-daygrid-day:hover {
-            background-color: #f3f4f6;
+            background-color: #eff6ff !important;
+        }
+        .fc-day-today { background: #eff6ff !important; }
+        .fc-day-today .fc-daygrid-day-number { color: #2563eb !important; font-weight: 800 !important; }
+
+        /* Status badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-claimed { background: #f3e8ff; color: #6b21a8; }
+        .status-declined { background: #fee2e2; color: #991b1b; }
+
+        /* Resource badges */
+        .resource-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: inline-block;
         }
 
-        .fc-event {
-            background-color: #3b82f6 !important;
-            border-color: #3b82f6 !important;
+        /* Date details modal */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            padding: 1.5rem;
+            overflow-y: auto;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-backdrop.show {
+            display: flex;
+        }
+        .modal-card {
+            background: white;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .date-detail-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .date-detail-row:hover {
+            background-color: #f8fafc;
+        }
+        .date-detail-row:last-child {
+            border-bottom: none;
+        }
+        .date-detail-time {
+            font-weight: 700;
+            color: #2563eb;
+            min-width: 100px;
+        }
+        .date-detail-resource {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .date-detail-user {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        /* Notification styles */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.2rem 0.4rem;
+            border-radius: 999px;
+            min-width: 1.2rem;
+            text-align: center;
+            border: 2px solid white;
+        }
+
+        .notification-dropdown {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            width: 320px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+            border: 1px solid #e2e8f0;
+            z-index: 1000;
+            display: none;
+        }
+        .notification-dropdown.show { display: block; }
+
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            width: 320px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
         }
     </style>
 </head>
+<body>
+    <div class="app-wrapper">
+        <!-- Date Details Modal -->
+        <div id="dateModal" class="modal-backdrop" onclick="handleModalBackdrop(event)">
+            <div class="modal-card">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-black text-slate-900" id="modalDateTitle"></h3>
+                    <button onclick="closeDateModal()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="modalReservationsList" class="space-y-2">
+                    <!-- Reservations will be loaded here -->
+                </div>
+                <div class="mt-6 text-center text-sm text-slate-500" id="modalEmptyMessage"></div>
+                <button onclick="closeDateModal()" class="mt-6 w-full py-3 bg-slate-100 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">
+                    Close
+                </button>
+            </div>
+        </div>
 
-<body class="flex flex-col min-h-screen">
-    <?php $page = $page ?? 'dashboard'; ?>
+        <!-- Notification Bell -->
+        <div class="fixed top-6 right-6 z-50">
+            <div class="notification-bell" onclick="toggleNotifications()">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg border border-slate-200">
+                    <i class="fa-regular fa-bell text-lg text-slate-600"></i>
+                </div>
+                <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+            </div>
+        </div>
+        
+        <!-- Notification Dropdown -->
+        <div id="notificationDropdown" class="notification-dropdown">
+            <div class="p-3 border-b border-slate-100 font-bold text-sm">Notifications</div>
+            <div id="notificationList" class="max-h-96 overflow-y-auto"></div>
+        </div>
 
-    <div class="flex flex-1 flex-col lg:flex-row">
+        <!-- Sidebar - Original Design Preserved -->
+        <aside class="hidden lg:block w-80 flex-shrink-0 p-6">
+            <div class="sidebar-card">
+                <div class="sidebar-header">
+                    <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Control Room</span>
+                    <h1 class="text-2xl font-extrabold text-slate-800">Admin<span class="text-blue-600">.</span></h1>
+                </div>
+                
+                <nav class="sidebar-nav space-y-1">
+                    <?php
+                    $navItems = [
+                        ['url' => '/admin/dashboard',           'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
+                        ['url' => '/admin/new-reservation',     'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'new-reservation'],
+                        ['url' => '/admin/manage-reservations', 'icon' => 'fa-calendar',        'label' => 'Reservations',    'key' => 'manage-reservations'],
+                        ['url' => '/admin/manage-pcs',          'icon' => 'fa-desktop',         'label' => 'Manage PCs',      'key' => 'manage-pcs'],
+                        ['url' => '/admin/manage-sk',           'icon' => 'fa-user-shield',     'label' => 'Manage SK',       'key' => 'manage-sk'],
+                        ['url' => '/admin/login-logs',          'icon' => 'fa-clock',           'label' => 'Login Logs',      'key' => 'login-logs'],
+                        ['url' => '/admin/scanner',             'icon' => 'fa-qrcode',          'label' => 'Scanner',         'key' => 'scanner'],
+                        ['url' => '/admin/activity-logs',       'icon' => 'fa-list',            'label' => 'Activity Logs',   'key' => 'activity-logs'],
+                        ['url' => '/admin/profile',             'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+                    ];
+                    foreach ($navItems as $item):
+                        $active = (isset($page) && $page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600';
+                    ?>
+                        <a href="<?= $item['url'] ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
+                            <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
+                            <?= $item['label'] ?>
+                            <?php if ($item['key'] == 'dashboard' && ($pending ?? 0) > 0): ?>
+                                <span class="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                    <?= $pending ?>
+                                </span>
+                            <?php endif; ?>
+                        </a>
+                    <?php endforeach; ?>
+                </nav>
 
-        <aside class="hidden lg:flex flex-col w-64 bg-blue-600 text-white shadow-xl rounded-tr-3xl rounded-br-3xl p-6">
-            <h1 class="text-2xl font-bold mb-10">Admin Panel</h1>
-            <nav class="space-y-4">
-                <a href="/admin/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'dashboard') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-house"></i> Dashboard
-                </a>
-                <a href="/admin/new-reservation" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'new-reservation') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-plus"></i> New Reservation
-                </a>
-                <a href="/admin/manage-reservations" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'manage-reservations') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-calendar"></i> Manage Reservations
-                </a>
-                <a href="/admin/manage-sk" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'manage-sk') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-user-shield"></i> Manage SK Accounts
-                </a>
-                <a href="/admin/login-logs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'login-logs') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-clock"></i> Login Logs
-                </a>
-                <a href="/admin/scanner" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'scanner') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-qrcode"></i> Scanner
-                </a>
-                <a href="/admin/activity-logs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'activity-logs') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-solid fa-list"></i> Activity Logs
-                </a>
-                <a href="/admin/profile" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500 transition <?= ($page == 'profile') ? 'bg-blue-700 font-semibold' : 'bg-blue-600' ?>">
-                    <i class="fa-regular fa-user"></i> Profile
-                </a>
-            </nav>
+                <div class="sidebar-footer">
+                    <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
+                        <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
+                    </a>
+                </div>
+            </div>
         </aside>
 
-        <main class="flex-1 p-4 lg:p-6 overflow-auto">
-
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                <h2 class="text-2xl font-semibold text-blue-900 mb-3 md:mb-0">Admin Dashboard</h2>
-                <a href="/logout" class="logout-btn">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+        <!-- Mobile Nav -->
+        <nav class="lg:hidden mobile-nav-pill">
+            <div class="mobile-scroll-container text-white px-2">
+                <?php foreach ($navItems as $item):
+                    $isActive = (isset($page) && $page == $item['key']);
+                    $btnClass = $isActive ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
+                ?>
+                    <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $btnClass ?>">
+                        <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
+                        <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+                    </a>
+                <?php endforeach; ?>
+                <a href="/logout" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition hover:bg-red-500/30 text-red-400">
+                    <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
+                    <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
                 </a>
             </div>
+        </nav>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-                <div class="card bg-blue-500 text-white rounded-2xl p-5 shadow">
-                    <p class="text-sm">Total Reservations</p>
-                    <h3 class="text-3xl font-bold"><?= $total ?? 0 ?></h3>
+        <!-- Main Content -->
+        <main>
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900">Dashboard & Analytics</h2>
+                    <p class="text-sm text-slate-500">Welcome back, Administrator.</p>
                 </div>
-                <div class="card bg-yellow-500 text-white rounded-2xl p-5 shadow">
-                    <p class="text-sm">Pending</p>
-                    <h3 class="text-3xl font-bold"><?= $pending ?? 0 ?></h3>
-                </div>
-                <div class="card bg-green-500 text-white rounded-2xl p-5 shadow">
-                    <p class="text-sm">Approved</p>
-                    <h3 class="text-3xl font-bold"><?= $approved ?? 0 ?></h3>
-                </div>
-                <div class="card bg-red-500 text-white rounded-2xl p-5 shadow">
-                    <p class="text-sm">Declined</p>
-                    <h3 class="text-3xl font-bold"><?= $declined ?? 0 ?></h3>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div class="lg:col-span-2 bg-white rounded-2xl p-4 shadow">
-                    <h3 class="font-semibold text-blue-900 mb-4">Reservation Calendar</h3>
-                    <div id="calendar"></div>
-                </div>
-                <div class="bg-white rounded-2xl p-4 shadow">
-                    <h3 class="font-semibold text-blue-900 mb-4">Pending Reservations</h3>
-                    <div class="space-y-3">
-                        <?php 
-                        $pending_res = array_filter($reservations ?? [], function($res) {
-                            return isset($res['status']) && $res['status'] === 'pending';
-                        });
-                        ?>
-                        <?php if (!empty($pending_res)): ?>
-                            <?php foreach (array_slice($pending_res, 0, 5) as $event): ?>
-                                <div class="border-l-4 border-yellow-500 pl-3 py-2">
-                                    <p class="text-sm font-medium text-gray-900">#<?= $event['id'] ?? 'N/A' ?></p>
-                                    <p class="text-xs text-gray-600">Resource: <?= $event['resource_id'] ?? 'N/A' ?></p>
-                                    <p class="text-xs text-gray-600"><?= date('M d, Y', strtotime($event['date'])) ?></p>
-                                    <span class="inline-block text-xs px-2 py-1 rounded-full mt-1 bg-yellow-100 text-yellow-800">
-                                        Pending
-                                    </span>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <p class="text-sm text-gray-500">No pending reservations</p>
-                        <?php endif; ?>
+                <div class="flex gap-2">
+                    <?php if (($pending ?? 0) > 0): ?>
+                        <div class="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1">
+                            <i class="fa-solid fa-clock text-xs"></i>
+                            <span><?= $pending ?> pending</span>
+                        </div>
+                    <?php endif; ?>
+                    <div class="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-calendar text-xs"></i>
+                        <span><?= date('M j, Y') ?></span>
                     </div>
                 </div>
             </div>
 
-            <!-- FILTER + CSV (added above Recent Reservations) -->
-            <div class="flex flex-wrap gap-3 mb-4">
-                <select id="statusFilter" class="border rounded-lg px-3 py-2 text-sm">
-                    <option value="">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="declined">Declined</option>
-                </select>
+            <!-- Analytics Overview Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Total Reservations -->
+                <div class="analytics-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold uppercase text-slate-400">Total</span>
+                        <span class="text-xs text-blue-600 font-bold">+<?= $monthlyTotal ?? 0 ?> mo</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-800 mb-1"><?= $total ?? 0 ?></div>
+                    <div class="text-xs text-slate-400">Daily avg: <span class="font-bold text-blue-600"><?= $total > 0 ? round($total / 30, 1) : 0 ?></span></div>
+                </div>
 
-                <input id="searchBox" type="text" placeholder="Search" class="border rounded-lg px-3 py-2 text-sm">
+                <!-- Approval Rate -->
+                <div class="analytics-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold uppercase text-slate-400">Approval</span>
+                        <span class="text-xs font-bold text-green-600">
+                            <?php $approvalRate = $total > 0 ? round(($approved / $total) * 100) : 0; echo $approvalRate . '%'; ?>
+                        </span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-800 mb-2"><?= $approved ?? 0 ?> approved</div>
+                    <div class="w-full bg-slate-200 rounded-full h-1.5">
+                        <div class="bg-green-600 rounded-full h-1.5" style="width: <?= $approvalRate ?>%"></div>
+                    </div>
+                </div>
 
-                <button id="downloadCsv" class="border px-4 py-2 rounded-lg text-blue-700 hover:bg-blue-50">
-                    <i class="fa-solid fa-download"></i> CSV
-                </button>
+                <!-- Today's Stats -->
+                <div class="analytics-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold uppercase text-slate-400">Today</span>
+                        <span class="text-xs font-bold text-amber-600"><?= $todayTotal ?? 0 ?> total</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 text-center">
+                        <div>
+                            <div class="text-lg font-black text-amber-600"><?= $todayPending ?? 0 ?></div>
+                            <div class="text-[9px] text-slate-400">Pending</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-black text-green-600"><?= $todayApproved ?? 0 ?></div>
+                            <div class="text-[9px] text-slate-400">Approved</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-black text-purple-600"><?= $todayClaimed ?? 0 ?></div>
+                            <div class="text-[9px] text-slate-400">Claimed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Utilization -->
+                <div class="analytics-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold uppercase text-slate-400">Utilization</span>
+                        <span class="text-xs font-bold text-purple-600"><?= $claimed ?? 0 ?> used</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-800 mb-2">
+                        <?php $utilizationRate = $approved > 0 ? round(($claimed / $approved) * 100) : 0; echo $utilizationRate . '%'; ?>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-1.5">
+                        <div class="bg-purple-600 rounded-full h-1.5" style="width: <?= $utilizationRate ?>%"></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-semibold text-blue-900">Recent Reservations</h3>
-                    <a href="/admin/manage-reservations" class="text-blue-600 hover:text-blue-700 text-sm">View All</a>
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                <!-- Trend Chart -->
+                <div class="chart-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-slate-800">Reservations Trend</h3>
+                            <p class="text-xs text-slate-400">Last 7 days</p>
+                        </div>
+                        <span class="flex items-center gap-1 text-xs">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span class="text-slate-500">Reservations</span>
+                        </span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table id="reservationsTable">
-                        <thead>
-                            <tr>
-                                <th>Reservation ID</th>
-                                <th>User</th>
-                                <th>Resource</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($reservations) && is_array($reservations)): ?>
-                                <?php foreach (array_slice($reservations, 0, 5) as $reservation): ?>
-                                    <tr data-status="<?= $reservation['status'] ?? 'pending' ?>">
-                                        <td>#<?= $reservation['id'] ?? 'N/A' ?></td>
-                                        <td><?= $reservation['user_id'] ?? 'N/A' ?></td>
-                                        <td><?= $reservation['resource_id'] ?? 'N/A' ?></td>
-                                        <td><?= isset($reservation['date']) ? date('M d, Y', strtotime($reservation['date'])) : 'N/A' ?></td>
-                                        <td>
-                                            <?php
-                                            $status = $reservation['status'] ?? 'pending';
-                                            if ($status === 'pending') {
-                                                echo '<span class="status-pending">Pending</span>';
-                                            } elseif ($status === 'approved') {
-                                                echo '<span class="status-approved">Approved</span>';
-                                            } else {
-                                                echo '<span class="status-declined">Declined</span>';
-                                            }
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <form method="POST" style="display: inline;">
-                                                <input type="hidden" name="id" value="<?= $reservation['id'] ?>">
-                                                <?php if ($status === 'pending'): ?>
-                                                    <button type="submit" formaction="/admin/approve" class="btn btn-approve">Approve</button>
-                                                    <button type="submit" formaction="/admin/decline" class="btn btn-decline">Decline</button>
-                                                <?php endif; ?>
-                                            </form>
-                                        </td>
-                                    </tr>
+
+                <!-- Resource Chart -->
+                <div class="chart-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-slate-800">Popular Resources</h3>
+                            <p class="text-xs text-slate-400">Most reserved</p>
+                        </div>
+                        <span class="resource-badge">Top 5</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="resourceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card border-l-4 border-blue-500">
+                    <div class="text-xs font-bold text-slate-400 mb-1">Total</div>
+                    <div class="text-2xl font-black text-slate-800"><?= $total ?? 0 ?></div>
+                </div>
+                <div class="stat-card border-l-4 border-amber-500 <?= ($pending ?? 0) > 0 ? 'bg-amber-50' : '' ?>">
+                    <div class="text-xs font-bold text-slate-400 mb-1">Pending</div>
+                    <div class="text-2xl font-black text-amber-600"><?= $pending ?? 0 ?></div>
+                </div>
+                <div class="stat-card border-l-4 border-emerald-500">
+                    <div class="text-xs font-bold text-slate-400 mb-1">Approved</div>
+                    <div class="text-2xl font-black text-emerald-600"><?= $approved ?? 0 ?></div>
+                </div>
+                <div class="stat-card border-l-4 border-rose-500">
+                    <div class="text-xs font-bold text-slate-400 mb-1">Declined</div>
+                    <div class="text-2xl font-black text-rose-600"><?= $declined ?? 0 ?></div>
+                </div>
+            </div>
+
+            <!-- Calendar + Right Panel -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Calendar -->
+                <div class="lg:col-span-2 calendar-card">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-calendar-day text-blue-600"></i>
+                        <h3 class="font-bold text-slate-800">Reservation Calendar</h3>
+                        <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-500">Click any date</span>
+                    </div>
+                    <div class="flex flex-wrap gap-3 mb-3">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>Pending
+                        </span>
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>Approved
+                        </span>
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                            <span class="w-2 h-2 rounded-full bg-rose-400"></span>Declined
+                        </span>
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                            <span class="w-2 h-2 rounded-full bg-purple-400"></span>Claimed
+                        </span>
+                    </div>
+                    <div id="calendar"></div>
+                </div>
+
+                <!-- Right Panel -->
+                <div class="space-y-4">
+                    <!-- Quick Stats -->
+                    <div class="bg-gradient-to-br from-blue-900 to-blue-800 rounded-2xl p-4 text-white">
+                        <h3 class="font-bold text-sm mb-3">Quick Stats</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-white/10 rounded-xl p-2">
+                                <div class="text-[9px] text-blue-200">Approval</div>
+                                <div class="text-base font-black"><?= $approvalRate ?? 0 ?>%</div>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-2">
+                                <div class="text-[9px] text-blue-200">Utilization</div>
+                                <div class="text-base font-black"><?= $utilizationRate ?? 0 ?>%</div>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-2">
+                                <div class="text-[9px] text-blue-200">Resources</div>
+                                <div class="text-base font-black"><?= $totalResources ?? 0 ?></div>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-2">
+                                <div class="text-[9px] text-blue-200">Users</div>
+                                <div class="text-base font-black"><?= $totalUsers ?? 0 ?></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Reservations -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-3">Recent Reservations</h3>
+                        <div class="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                            <?php if (!empty($reservations)): ?>
+                                <?php foreach (array_slice($reservations, 0, 5) as $res): ?>
+                                    <?php
+                                        $status = $res['status'] ?? 'pending';
+                                        $statusClass = match($status) {
+                                            'approved' => 'status-approved',
+                                            'pending' => 'status-pending',
+                                            'declined', 'canceled' => 'status-declined',
+                                            'claimed' => 'status-claimed',
+                                            default => 'status-pending'
+                                        };
+                                    ?>
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <div class="font-bold text-slate-800"><?= htmlspecialchars($res['resource_name'] ?? 'Resource') ?></div>
+                                                <div class="text-slate-500 mt-0.5"><?= htmlspecialchars($res['visitor_name'] ?? $res['full_name'] ?? 'Guest') ?></div>
+                                            </div>
+                                            <span class="status-badge <?= $statusClass ?>"><?= ucfirst($status) ?></span>
+                                        </div>
+                                        <div class="text-slate-600 mt-2">
+                                            <?= htmlspecialchars($res['reservation_date'] ?? '') ?> · <?= htmlspecialchars($res['start_time'] ?? '') ?>
+                                        </div>
+                                    </div>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <tr>
-                                    <td colspan="6" class="text-center text-gray-500 py-4">No reservations found</td>
-                                </tr>
+                                <p class="text-xs text-slate-400 text-center py-4">No recent reservations</p>
                             <?php endif; ?>
-                        </tbody>
-                    </table>
+                        </div>
+                        <a href="/admin/manage-reservations" class="mt-3 block text-center text-xs font-bold text-blue-600 hover:underline">
+                            View all →
+                        </a>
+                    </div>
                 </div>
             </div>
-
         </main>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-blue-600 text-white shadow-xl lg:hidden z-50">
-        <div class="flex overflow-x-auto gap-1 p-2">
-            <a href="/admin/dashboard" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'dashboard') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-house text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Dashboard</span>
-            </a>
-            <a href="/admin/new-reservation" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'new-reservation') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-plus text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">New Reservation</span>
-            </a>
-            <a href="/admin/manage-reservations" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'manage-reservations') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-calendar text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Reservations</span>
-            </a>
-            <a href="/admin/manage-sk" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'manage-sk') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-user-shield text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Manage SK</span>
-            </a>
-            <a href="/admin/login-logs" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'login-logs') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-clock text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Login Logs</span>
-            </a>
-            <a href="/admin/scanner" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'scanner') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-qrcode text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Scanner</span>
-            </a>
-            <a href="/admin/activity-logs" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'activity-logs') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-solid fa-list text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Activity Logs</span>
-            </a>
-            <a href="/admin/profile" class="flex flex-col items-center justify-center py-2 rounded-lg transition flex-shrink-0 <?= ($page == 'profile') ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500' ?>">
-                <i class="fa-regular fa-user text-lg"></i>
-                <span class="text-[11px] mt-1 text-center leading-tight">Profile</span>
-            </a>
-        </div>
-    </nav>
-
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar');
+        // Store all reservations data for date clicks
+        const allReservationsData = <?= json_encode($reservations ?? []) ?>;
 
-            const reservations = <?= json_encode($reservations ?? []) ?>;
-
-            const events = reservations.map(res => ({
-                title: 'Reservation #' + res.id,
-                start: res.date,
-                backgroundColor: res.status === 'approved' ? '#10b981' : (res.status === 'pending' ? '#f59e0b' : '#ef4444'),
-                borderColor: res.status === 'approved' ? '#059669' : (res.status === 'pending' ? '#d97706' : '#dc2626'),
-                extendedProps: {
-                    resourceId: res.resource_id,
-                    status: res.status
-                }
-            }));
-
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,dayGridWeek,listMonth'
-                },
-                events: events,
-                height: 'auto',
-                eventClick: function(info) {
-                    alert('Resource: ' + info.event.extendedProps.resourceId + '\nStatus: ' + info.event.extendedProps.status);
-                }
+        // Date Modal Functions
+        function openDateModal(date, reservations) {
+            const modal = document.getElementById('dateModal');
+            const dateTitle = document.getElementById('modalDateTitle');
+            const listContainer = document.getElementById('modalReservationsList');
+            const emptyMessage = document.getElementById('modalEmptyMessage');
+            
+            const formattedDate = new Date(date).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
             });
+            dateTitle.textContent = `Reservations for ${formattedDate}`;
+            
+            listContainer.innerHTML = '';
+            
+            if (reservations && reservations.length > 0) {
+                emptyMessage.textContent = '';
+                
+                reservations.sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+                
+                reservations.forEach(res => {
+                    const status = res.claimed ? 'claimed' : (res.status || 'pending').toLowerCase();
+                    const statusClass = {
+                        'approved': 'bg-emerald-100 text-emerald-700',
+                        'pending': 'bg-amber-100 text-amber-700',
+                        'declined': 'bg-rose-100 text-rose-700',
+                        'claimed': 'bg-purple-100 text-purple-700'
+                    }[status] || 'bg-slate-100 text-slate-700';
+                    
+                    const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+                    
+                    const timeStr = res.start_time ? res.start_time.substring(0, 5) : 'All day';
+                    const endTimeStr = res.end_time ? res.end_time.substring(0, 5) : '';
+                    
+                    const row = document.createElement('div');
+                    row.className = 'date-detail-row';
+                    row.innerHTML = `
+                        <div class="date-detail-time">${timeStr}${endTimeStr ? ` - ${endTimeStr}` : ''}</div>
+                        <div class="flex-1">
+                            <div class="date-detail-resource">${res.resource_name || 'Unknown Resource'}</div>
+                            <div class="date-detail-user">${res.visitor_name || res.full_name || 'Guest'}</div>
+                        </div>
+                        <div class="date-detail-status ${statusClass}">${statusText}</div>
+                    `;
+                    
+                    row.addEventListener('click', () => {
+                        window.location.href = `/admin/manage-reservations?id=${res.id}`;
+                    });
+                    
+                    listContainer.appendChild(row);
+                });
+            } else {
+                emptyMessage.textContent = 'No reservations for this date.';
+            }
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
 
-            calendar.render();
-            const statusFilter = document.getElementById('statusFilter');
-            const searchBox = document.getElementById('searchBox');
+        function closeDateModal() {
+            document.getElementById('dateModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
 
-            function filterTable() {
-                document.querySelectorAll('#reservationsTable tbody tr').forEach(row => {
-                    const s = statusFilter.value;
-                    const q = searchBox.value.toLowerCase();
-                    row.style.display = (!s || row.dataset.status === s) && row.innerText.toLowerCase().includes(q) ? '' : 'none';
+        function handleModalBackdrop(event) {
+            if (event.target.classList.contains('modal-backdrop')) {
+                closeDateModal();
+            }
+        }
+
+        // Chart initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Trend Chart
+            const trendCtx = document.getElementById('trendChart')?.getContext('2d');
+            if (trendCtx) {
+                new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: <?= json_encode($chartLabels ?? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) ?>,
+                        datasets: [{
+                            data: <?= json_encode($chartData ?? [0,0,0,0,0,0,0]) ?>,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
                 });
             }
 
-            statusFilter.onchange = filterTable;
-            searchBox.onkeyup = filterTable;
-
-            document.getElementById('downloadCsv').onclick = () => {
-                let csv = 'ID,User,Resource,Date,Status\n';
-                document.querySelectorAll('#reservationsTable tbody tr').forEach(r => {
-                    if (r.style.display !== 'none') {
-                        csv += [...r.children].slice(0, 5).map(td => `"${td.innerText}"`).join(',') + '\n';
+            // Resource Chart
+            const resourceCtx = document.getElementById('resourceChart')?.getContext('2d');
+            if (resourceCtx) {
+                new Chart(resourceCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: <?= json_encode($resourceLabels ?? ['No Data']) ?>,
+                        datasets: [{
+                            data: <?= json_encode($resourceData ?? [1]) ?>,
+                            backgroundColor: ['#2563eb', '#f59e0b', '#8b5cf6', '#10b981', '#ec4899'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: { legend: { display: false } }
                     }
                 });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-                a.download = 'admin_reservations.csv';
-                a.click();
-            };
+            }
 
+            // Calendar
+            const calendarEl = document.getElementById('calendar');
+            if (calendarEl && allReservationsData) {
+                const reservationsByDate = {};
+                allReservationsData.forEach(res => {
+                    if (res.reservation_date) {
+                        if (!reservationsByDate[res.reservation_date]) {
+                            reservationsByDate[res.reservation_date] = [];
+                        }
+                        reservationsByDate[res.reservation_date].push(res);
+                    }
+                });
+
+                const events = allReservationsData
+                    .filter(r => r.reservation_date)
+                    .map(r => {
+                        const status = r.claimed ? 'claimed' : (r.status || 'pending');
+                        const colors = {
+                            approved: '#10b981',
+                            pending: '#fbbf24',
+                            declined: '#f87171',
+                            claimed: '#a855f7'
+                        };
+                        return {
+                            title: r.resource_name || 'Reservation',
+                            start: r.reservation_date + (r.start_time ? 'T' + r.start_time : ''),
+                            end: r.reservation_date + (r.end_time ? 'T' + r.end_time : ''),
+                            backgroundColor: colors[status] || '#94a3b8',
+                            borderColor: 'transparent',
+                            textColor: '#fff'
+                        };
+                    });
+
+                const calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: { left: 'prev,next', center: 'title', right: 'today' },
+                    events: events,
+                    height: 350,
+                    eventDisplay: 'block',
+                    eventMaxStack: 2,
+                    
+                    dateClick: function(info) {
+                        const date = info.dateStr;
+                        const dayReservations = reservationsByDate[date] || [];
+                        openDateModal(date, dayReservations);
+                    },
+                    
+                    eventClick: function(info) {
+                        const date = info.event.startStr.split('T')[0];
+                        const dayReservations = reservationsByDate[date] || [];
+                        openDateModal(date, dayReservations);
+                    },
+                    
+                    dayCellDidMount: function(info) {
+                        const date = info.date.toISOString().split('T')[0];
+                        const dayReservations = reservationsByDate[date];
+                        
+                        if (dayReservations && dayReservations.length > 0) {
+                            const count = dayReservations.length;
+                            const badge = document.createElement('div');
+                            badge.className = 'text-[9px] font-bold text-white bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center ml-auto mr-1 mb-1';
+                            badge.textContent = count;
+                            info.el.querySelector('.fc-daygrid-day-top').appendChild(badge);
+                        }
+                    }
+                });
+
+                calendar.render();
+            }
+        });
+
+        function toggleNotifications() {
+            document.getElementById('notificationDropdown').classList.toggle('show');
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDateModal();
+            }
         });
     </script>
-
-
-
 </body>
-
 </html>
