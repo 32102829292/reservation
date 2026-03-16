@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>You're Offline | SK Reservation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    .pulse-ring {
+      animation: pulseRing 2s ease-out infinite;
+    }
+    @keyframes pulseRing {
+      0%   { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .float {
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-12px); }
+    }
+
+    .dot-bounce { display: inline-flex; gap: 4px; }
+    .dot-bounce span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #16a34a;
+      animation: dotBounce 1.4s ease-in-out infinite;
+    }
+    .dot-bounce span:nth-child(2) { animation-delay: 0.2s; }
+    .dot-bounce span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotBounce {
+      0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+      40%            { transform: scale(1);   opacity: 1;   }
+    }
+
+    .cached-item { transition: all 0.2s; }
+    .cached-item:hover { transform: translateX(4px); }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center px-6 py-12">
+
+  <!-- Background blobs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-green-100 rounded-full opacity-40 blur-3xl"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-emerald-100 rounded-full opacity-40 blur-3xl"></div>
+  </div>
+
+  <div class="relative z-10 max-w-md w-full text-center">
+
+    <!-- Animated icon -->
+    <div class="relative inline-flex items-center justify-center mb-10">
+      <div class="pulse-ring absolute w-32 h-32 rounded-full border-4 border-green-200"></div>
+      <div class="float w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center border border-slate-100">
+        <i class="fas fa-wifi text-4xl text-slate-400"></i>
+      </div>
+    </div>
+
+    <!-- Message -->
+    <h1 class="text-3xl font-black text-slate-900 tracking-tight mb-3">You're offline</h1>
+    <p class="text-slate-500 font-medium mb-2 leading-relaxed">
+      Looks like you lost your connection. Don't worry — your reservation has been saved and will sync automatically when you're back online.
+    </p>
+
+    <!-- Pending reservations count (from your version) -->
+    <div id="pendingCount" class="bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 mb-4">
+      <p class="text-blue-800 font-bold text-sm">
+        <i class="fa-solid fa-clock-rotate-left mr-2"></i>
+        <span id="count">0</span> pending reservation(s) waiting to sync
+      </p>
+    </div>
+
+    <!-- Connection status -->
+    <div id="statusCheck" class="flex items-center justify-center gap-2 text-sm text-slate-400 mb-8">
+      <div class="dot-bounce"><span></span><span></span><span></span></div>
+      <span id="statusText">Checking connection…</span>
+    </div>
+
+    <!-- Cached pages you can still visit -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 mb-6 text-left">
+      <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Available offline</p>
+      <div id="cachedPagesList" class="space-y-1">
+        <p class="text-sm text-slate-400 italic">Checking saved pages…</p>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <button onclick="retryConnection()" id="retryBtn"
+      class="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-2xl transition flex items-center justify-center gap-2 text-sm mb-3">
+      <i class="fas fa-sync mr-2"></i> Try Again
+    </button>
+
+    <p class="text-xs text-slate-400 font-medium">
+      <i class="fas fa-info-circle mr-1"></i>
+      Reservations will sync automatically when connection is restored.
+    </p>
+
+    <!-- Footer -->
+    <p class="mt-8 text-xs text-slate-300 font-medium">
+      SK Reservation System &nbsp;·&nbsp; Offline Mode
+    </p>
+  </div>
+
+  <script>
+    // ── Register SW (from your version) ────────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+
+    // ── Pending count from localStorage (from your version) ───────────────────
+    function updatePendingCount() {
+      const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
+      document.getElementById('count').textContent = pending.length;
+      document.getElementById('pendingCount').style.display =
+        pending.length > 0 ? 'block' : 'none';
+    }
+
+    // ── Show cached pages (from earlier version) ───────────────────────────────
+    async function showCachedPages() {
+      const list = document.getElementById('cachedPagesList');
+      try {
+        const cache = await caches.open('reservation-ci-v1');
+        const keys  = await cache.keys();
+        const pages = keys
+          .map(r => new URL(r.url))
+          .filter(u => u.origin === location.origin && u.pathname !== '/offline.html')
+          .map(u => u.pathname);
+
+        const unique = [...new Set(pages)];
+        if (!unique.length) {
+          list.innerHTML = '<p class="text-sm text-slate-400 italic">No pages cached yet. Visit some pages while online first.</p>';
+          return;
+        }
+
+        const labels = {
+          '/dashboard':        { icon: 'fa-house',        label: 'Dashboard' },
+          '/reservation':      { icon: 'fa-plus',         label: 'New Reservation' },
+          '/reservation-list': { icon: 'fa-calendar',     label: 'My Reservations' },
+          '/profile':          { icon: 'fa-user',         label: 'Profile' },
+          '/sk/dashboard':     { icon: 'fa-house',        label: 'SK Dashboard' },
+          '/admin/dashboard':  { icon: 'fa-house',        label: 'Admin Dashboard' },
+        };
+
+        list.innerHTML = unique.map(path => {
+          const meta = labels[path] || { icon: 'fa-file', label: path };
+          return `
+            <a href="${path}" class="cached-item flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition">
+              <div class="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid ${meta.icon} text-green-600 text-xs"></i>
+              </div>
+              <span class="font-semibold text-sm text-slate-700">${meta.label}</span>
+              <span class="ml-auto text-slate-300">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+              </span>
+            </a>`;
+        }).join('');
+      } catch {
+        list.innerHTML = '<p class="text-sm text-slate-400 italic">Cache unavailable.</p>';
+      }
+    }
+
+    // ── Connection status ──────────────────────────────────────────────────────
+    function updateStatus() {
+      const text = document.getElementById('statusText');
+      const dots = document.querySelector('.dot-bounce');
+      if (navigator.onLine) {
+        dots.style.display = 'none';
+        text.textContent = '✓ Connection restored — reloading…';
+        text.classList.add('text-green-600', 'font-semibold');
+        // Notify SW to skip waiting (from your version)
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+        }
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        text.textContent = 'Still offline';
+      }
+    }
+
+    function retryConnection() {
+      const btn = document.getElementById('retryBtn');
+      btn.innerHTML = '<i class="fas fa-sync fa-spin mr-2"></i> Checking…';
+      fetch('/dashboard', { cache: 'no-store' })
+        .then(() => location.reload())
+        .catch(() => {
+          btn.innerHTML = '<i class="fas fa-sync mr-2"></i> Try Again';
+        });
+    }
+
+    // ── Listen for SW messages (from your version) ─────────────────────────────
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data?.type === 'RESERVATIONS_SYNCED') {
+          updatePendingCount();
+        }
+      });
+    }
+
+    // ── Init ───────────────────────────────────────────────────────────────────
+    window.addEventListener('online',  updateStatus);
+    window.addEventListener('offline', updateStatus);
+
+    updatePendingCount();
+    showCachedPages();
+    updateStatus();
+  </script>
+</body>
+</html>

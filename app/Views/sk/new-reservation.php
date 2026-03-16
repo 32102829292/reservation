@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -8,8 +9,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#16a34a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SK Reserve">
+    <link rel="apple-touch-icon" href="/assets/img/icon-192.png">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
 
         .sidebar-card {
             background: white;
@@ -24,15 +36,46 @@
             overflow: hidden;
         }
 
-        .sidebar-header { flex-shrink: 0; padding: 16px; border-bottom: 1px solid #e2e8f0; }
-        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px; }
-        .sidebar-nav::-webkit-scrollbar { width: 6px; }
-        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #e2e8f0; }
+        .sidebar-header {
+            flex-shrink: 0;
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
 
-        .sidebar-item { transition: all 0.2s; }
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .sidebar-footer {
+            flex-shrink: 0;
+            padding: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .sidebar-item {
+            transition: all 0.2s;
+        }
+
         .sidebar-item.active {
             background: #16a34a;
             color: white;
@@ -40,99 +83,272 @@
         }
 
         .mobile-nav-pill {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 600px; background: rgba(20,83,45,0.98);
-            backdrop-filter: blur(12px); border-radius: 24px; padding: 6px;
-            z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 600px;
+            background: rgba(20, 83, 45, 0.98);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 6px;
+            z-index: 100;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
         }
-        .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
-        /* ── Form styles ── */
-        .form-card { background: white; border-radius: 28px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02); }
-        .section-divider { border: none; border-top: 1px solid #f1f5f9; margin: 2rem 0; }
+        .mobile-scroll-container {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
 
-        input, select, textarea {
-            width: 100%; padding: 0.875rem 1rem;
-            border: 1px solid #e2e8f0; font-size: 0.92rem;
-            transition: all 0.2s; background: #fcfdfe;
-            border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif;
+        .mobile-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 28px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02);
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid #f1f5f9;
+            margin: 2rem 0;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid #e2e8f0;
+            font-size: 0.92rem;
+            transition: all 0.2s;
+            background: #fcfdfe;
+            border-radius: 12px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             color: #1e293b;
         }
-        input:focus, select:focus, textarea:focus {
-            outline: none; border-color: #16a34a; background: white;
-            box-shadow: 0 0 0 4px rgba(22,163,74,0.08);
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #16a34a;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.08);
         }
-        input[readonly] { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+
+        input[readonly] {
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
 
         .type-btn {
-            flex: 1; text-align: center; padding: 0.75rem 1rem;
-            border-radius: 14px; cursor: pointer; font-weight: 700;
-            font-size: 0.85rem; transition: all 0.2s; color: #64748b;
-            border: none; background: transparent; font-family: 'Plus Jakarta Sans', sans-serif;
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem 1rem;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            color: #64748b;
+            border: none;
+            background: transparent;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        .type-btn.active { background: #16a34a; color: white; box-shadow: 0 4px 12px rgba(22,163,74,0.25); }
 
-        .autocomplete-wrap { position: relative; }
-        .autocomplete-list {
-            position: absolute; z-index: 50; background: white;
-            border: 1px solid #e2e8f0; border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            max-height: 220px; overflow-y: auto; width: 100%;
-            top: calc(100% + 4px); left: 0;
+        .type-btn.active {
+            background: #16a34a;
+            color: white;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
         }
-        .autocomplete-item { padding: 12px 16px; cursor: pointer; font-size: 0.88rem; transition: background 0.15s; }
-        .autocomplete-item:hover { background: #f0fdf4; color: #16a34a; }
-        .autocomplete-item .sub { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+
+        .autocomplete-wrap {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            z-index: 50;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            max-height: 220px;
+            overflow-y: auto;
+            width: 100%;
+            top: calc(100% + 4px);
+            left: 0;
+        }
+
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            transition: background 0.15s;
+        }
+
+        .autocomplete-item:hover {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .autocomplete-item .sub {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
 
         .btn-primary {
-            background: #16a34a; color: white; border: none;
-            padding: 1rem 2rem; border-radius: 16px; font-weight: 800;
-            font-size: 0.9rem; letter-spacing: 0.05em; cursor: pointer;
-            transition: all 0.25s; font-family: 'Plus Jakarta Sans', sans-serif;
-            display: inline-flex; align-items: center; gap: 8px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .btn-primary:hover { background: #15803d; transform: translateY(-2px); box-shadow: 0 12px 20px -5px rgba(22,163,74,0.35); }
-        .btn-primary:active { transform: translateY(0); }
+
+        .btn-primary:hover {
+            background: #15803d;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -5px rgba(22, 163, 74, 0.35);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
 
         .modal-backdrop {
-            display: none; position: fixed; inset: 0;
-            background: rgba(15,23,42,0.65); backdrop-filter: blur(6px);
-            z-index: 200; padding: 1.5rem; overflow-y: auto;
-            align-items: center; justify-content: center;
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(6px);
+            z-index: 200;
+            padding: 1.5rem;
+            overflow-y: auto;
+            align-items: center;
+            justify-content: center;
         }
-        .modal-backdrop.show { display: flex; animation: fadeIn 0.15s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-backdrop.show {
+            display: flex;
+            animation: fadeIn 0.15s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
         .modal-box {
-            background: white; border-radius: 32px; width: 100%;
-            max-width: 460px; padding: 2.5rem; margin: auto;
+            background: white;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 460px;
+            padding: 2.5rem;
+            margin: auto;
             animation: slideUp 0.2s ease;
-            max-height: 90vh; overflow-y: auto;
+            max-height: 90vh;
+            overflow-y: auto;
         }
-        @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .mrow { display: flex; justify-content: space-between; align-items: flex-start; padding: 0.6rem 0; border-bottom: 1px solid #f1f5f9; gap: 1rem; }
-        .mrow:last-child { border-bottom: none; }
-        .mrow-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; flex-shrink: 0; }
-        .mrow-value { font-weight: 700; color: #1e293b; font-size: 0.85rem; text-align: right; }
+        @keyframes slideUp {
+            from {
+                transform: translateY(16px);
+                opacity: 0;
+            }
 
-        .field-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; display: block; margin-bottom: 0.4rem; }
-        .pc-section { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 20px; padding: 1.5rem; }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .mrow {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #f1f5f9;
+            gap: 1rem;
+        }
+
+        .mrow:last-child {
+            border-bottom: none;
+        }
+
+        .mrow-label {
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+
+        .mrow-value {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 0.85rem;
+            text-align: right;
+        }
+
+        .field-label {
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 0.4rem;
+        }
+
+        .pc-section {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 20px;
+            padding: 1.5rem;
+        }
     </style>
 </head>
+
 <body class="flex">
 
     <?php
     $navItems = [
-            ['url' => '/sk/dashboard',       'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
-            ['url' => '/sk/reservations',    'icon' => 'fa-calendar-alt',    'label' => 'All Reservations', 'key' => 'reservations'],
-            ['url' => '/sk/new-reservation', 'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'new-reservation'],
-            ['url' => '/sk/user-requests',   'icon' => 'fa-users',           'label' => 'User Requests',   'key' => 'user-requests'],
-            ['url' => '/sk/claimed-reservations', 'icon' => 'fa-check-double', 'label' => 'Claimed',       'key' => 'claimed-reservations'],
-            ['url' => '/sk/my-reservations', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'my-reservations'],
-            ['url' => '/sk/scanner',         'icon' => 'fa-qrcode',          'label' => 'Scanner',         'key' => 'scanner'],
-            ['url' => '/sk/profile',         'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
-        ];
+    ['url' => '/sk/dashboard',            'icon' => 'fa-house',           'label' => 'Dashboard',        'key' => 'dashboard'],
+    ['url' => '/sk/reservations',         'icon' => 'fa-calendar-alt',    'label' => 'All Reservations', 'key' => 'reservations'],
+    ['url' => '/sk/new-reservation',      'icon' => 'fa-plus',            'label' => 'New Reservation',  'key' => 'new-reservation'],
+    ['url' => '/sk/user-requests',        'icon' => 'fa-users',           'label' => 'User Requests',    'key' => 'user-requests'],
+    ['url' => '/sk/my-reservations',      'icon' => 'fa-calendar',        'label' => 'My Reservations',  'key' => 'my-reservations'],
+    ['url' => '/sk/claimed-reservations', 'icon' => 'fa-check-double',    'label' => 'Claimed',          'key' => 'claimed-reservations'],
+    ['url' => '/sk/books',                'icon' => 'fa-book-open',       'label' => 'Library',          'key' => 'books'],
+    ['url' => '/sk/scanner',              'icon' => 'fa-qrcode',          'label' => 'Scanner',          'key' => 'scanner'],
+    ['url' => '/sk/profile',              'icon' => 'fa-regular fa-user', 'label' => 'Profile',          'key' => 'profile'],
+];
     ?>
 
     <!-- ── Sidebar ── -->
@@ -174,7 +390,6 @@
                     <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
                 </a>
             <?php endforeach; ?>
-            <!-- Logout -->
             <a href="/logout" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
                 <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
                 <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
@@ -212,12 +427,12 @@
             <form id="reservationForm" method="POST" action="<?= base_url('sk/create-reservation') ?>">
                 <?= csrf_field() ?>
 
-                <input type="hidden" name="visitor_name"  id="finalVisitorName">
-                <input type="hidden" name="user_email"    id="finalUserEmail">
-                <input type="hidden" name="user_id"       id="finalUserId">
-                <input type="hidden" name="visitor_type"  id="finalVisitorType" value="User">
-                <input type="hidden" name="purpose"       id="finalPurpose">
-                <input type="hidden" name="pcs"           id="finalPcs" value="[]">
+                <input type="hidden" name="visitor_name" id="finalVisitorName">
+                <input type="hidden" name="user_email" id="finalUserEmail">
+                <input type="hidden" name="user_id" id="finalUserId">
+                <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
+                <input type="hidden" name="purpose" id="finalPurpose">
+                <input type="hidden" name="pcs" id="finalPcs" value="[]">
 
                 <!-- ① Visitor Type Toggle -->
                 <div class="mb-8">
@@ -243,7 +458,6 @@
                         <h3 class="font-extrabold text-slate-800 tracking-tight">Personal Details</h3>
                     </div>
 
-                    <!-- Registered user fields -->
                     <div id="userFields" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="field-label">Full Name</label>
@@ -259,7 +473,6 @@
                         </div>
                     </div>
 
-                    <!-- Walk-in visitor fields -->
                     <div id="visitorFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="field-label">Full Name</label>
@@ -283,7 +496,6 @@
                         <h3 class="font-extrabold text-slate-800 tracking-tight">Resource & Schedule</h3>
                     </div>
 
-                    <!-- Resource picker -->
                     <div class="mb-5">
                         <label class="field-label">Select Asset / Resource</label>
                         <select id="resourceSelect" name="resource_id" required>
@@ -296,7 +508,6 @@
                         </select>
                     </div>
 
-                    <!-- PC multi-select (shown when resource is computer-related) -->
                     <div id="pcSection" class="hidden pc-section mb-5">
                         <label class="field-label text-green-700 mb-3 block">Assign Workstation(s)</label>
                         <div id="pcGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
@@ -317,7 +528,6 @@
                         </p>
                     </div>
 
-                    <!-- Date & Time -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
                         <div>
                             <label class="field-label">Date</label>
@@ -333,7 +543,6 @@
                         </div>
                     </div>
 
-                    <!-- Purpose -->
                     <div>
                         <label class="field-label">Purpose of Visit</label>
                         <select id="purposeSelect" required>
@@ -372,17 +581,16 @@
             </div>
 
             <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-5">
-                <div class="mrow"><span class="mrow-label">Type</span>    <span class="mrow-value" id="mType"></span></div>
-                <div class="mrow"><span class="mrow-label">Name</span>    <span class="mrow-value" id="mName"></span></div>
-                <div class="mrow"><span class="mrow-label">Email</span>   <span class="mrow-value" id="mEmail"></span></div>
-                <div class="mrow"><span class="mrow-label">Asset</span>   <span class="mrow-value" id="mAsset"></span></div>
+                <div class="mrow"><span class="mrow-label">Type</span> <span class="mrow-value" id="mType"></span></div>
+                <div class="mrow"><span class="mrow-label">Name</span> <span class="mrow-value" id="mName"></span></div>
+                <div class="mrow"><span class="mrow-label">Email</span> <span class="mrow-value" id="mEmail"></span></div>
+                <div class="mrow"><span class="mrow-label">Asset</span> <span class="mrow-value" id="mAsset"></span></div>
                 <div class="mrow"><span class="mrow-label">Stations</span><span class="mrow-value" id="mStation"></span></div>
-                <div class="mrow"><span class="mrow-label">Date</span>    <span class="mrow-value" id="mDate"></span></div>
-                <div class="mrow"><span class="mrow-label">Time</span>    <span class="mrow-value" id="mTime"></span></div>
+                <div class="mrow"><span class="mrow-label">Date</span> <span class="mrow-value" id="mDate"></span></div>
+                <div class="mrow"><span class="mrow-label">Time</span> <span class="mrow-value" id="mTime"></span></div>
                 <div class="mrow"><span class="mrow-label">Purpose</span> <span class="mrow-value" id="mPurpose"></span></div>
             </div>
 
-            <!-- QR / E-Ticket preview -->
             <div id="qrWrap" class="hidden bg-white border-2 border-dashed border-green-100 rounded-2xl p-5 flex flex-col items-center mb-5">
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">E-Ticket Preview</p>
                 <canvas id="qrCanvas" class="rounded-xl mx-auto"></canvas>
@@ -404,12 +612,11 @@
     </div>
 
     <script>
-        const allUsers   = <?= json_encode($users ?? []) ?>;
-        let currentType  = 'User';
+        const allUsers = <?= json_encode($users ?? []) ?>;
+        let currentType = 'User';
         let selectedUser = null;
-        let selectedPcs  = [];
+        let selectedPcs = [];
 
-        // ── Type toggle ────────────────────────────────────────────────────────
         function setType(type) {
             currentType = type;
             document.getElementById('finalVisitorType').value = type;
@@ -419,28 +626,33 @@
             document.getElementById('userFields').classList.toggle('hidden', !isUser);
             document.getElementById('visitorFields').classList.toggle('hidden', isUser);
             selectedUser = null;
-            document.getElementById('userNameInput').value    = '';
+            document.getElementById('userNameInput').value = '';
             document.getElementById('userEmailDisplay').value = '';
-            document.getElementById('visitorNameInput').value  = '';
+            document.getElementById('visitorNameInput').value = '';
             document.getElementById('visitorEmailInput').value = '';
-            document.getElementById('finalUserId').value      = '';
+            document.getElementById('finalUserId').value = '';
         }
 
-        // ── User autocomplete ──────────────────────────────────────────────────
-        const userNameInput    = document.getElementById('userNameInput');
+        const userNameInput = document.getElementById('userNameInput');
         const autocompleteList = document.getElementById('autocompleteList');
 
         userNameInput.addEventListener('input', () => {
             const q = userNameInput.value.toLowerCase().trim();
             autocompleteList.innerHTML = '';
             selectedUser = null;
-            if (!q) { autocompleteList.classList.add('hidden'); return; }
+            if (!q) {
+                autocompleteList.classList.add('hidden');
+                return;
+            }
             const matches = allUsers.filter(u =>
-                (u.name      && u.name.toLowerCase().includes(q)) ||
+                (u.name && u.name.toLowerCase().includes(q)) ||
                 (u.full_name && u.full_name.toLowerCase().includes(q)) ||
-                (u.email     && u.email.toLowerCase().includes(q))
+                (u.email && u.email.toLowerCase().includes(q))
             ).slice(0, 8);
-            if (!matches.length) { autocompleteList.classList.add('hidden'); return; }
+            if (!matches.length) {
+                autocompleteList.classList.add('hidden');
+                return;
+            }
             matches.forEach(u => {
                 const displayName = u.full_name || u.name || '';
                 const li = document.createElement('li');
@@ -450,7 +662,7 @@
                     selectedUser = u;
                     userNameInput.value = displayName;
                     document.getElementById('userEmailDisplay').value = u.email;
-                    document.getElementById('finalUserId').value      = u.id;
+                    document.getElementById('finalUserId').value = u.id;
                     autocompleteList.classList.add('hidden');
                 });
                 autocompleteList.appendChild(li);
@@ -462,18 +674,15 @@
             setTimeout(() => autocompleteList.classList.add('hidden'), 150);
         });
 
-        // ── Resource → show/hide PC grid ──────────────────────────────────────
-        document.getElementById('resourceSelect').addEventListener('change', function () {
-            const name    = (this.options[this.selectedIndex].dataset.name || '').toLowerCase();
+        document.getElementById('resourceSelect').addEventListener('change', function() {
+            const name = (this.options[this.selectedIndex].dataset.name || '').toLowerCase();
             const showPcs = name.includes('computer') || name.includes('pc') || name.includes('lab');
             document.getElementById('pcSection').classList.toggle('hidden', !showPcs);
-            // Reset selections when resource changes
             selectedPcs = [];
             updatePcHidden();
             document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected-pc'));
         });
 
-        // ── PC multi-select ────────────────────────────────────────────────────
         function togglePc(num, btn) {
             const idx = selectedPcs.indexOf(num);
             if (idx === -1) {
@@ -489,63 +698,81 @@
         }
 
         function updatePcHidden() {
-            document.getElementById('finalPcs').value      = JSON.stringify(selectedPcs);
-            document.getElementById('pcSelectedLabel').textContent = selectedPcs.length
-                ? selectedPcs.join(', ')
-                : 'None';
+            document.getElementById('finalPcs').value = JSON.stringify(selectedPcs);
+            document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ?
+                selectedPcs.join(', ') :
+                'None';
         }
 
-        // ── Purpose "Others" ───────────────────────────────────────────────────
-        document.getElementById('purposeSelect').addEventListener('change', function () {
+        document.getElementById('purposeSelect').addEventListener('change', function() {
             document.getElementById('purposeOtherWrap').classList.toggle('hidden', this.value !== 'Others');
         });
 
-        // ── Preview / validation ───────────────────────────────────────────────
         function previewReservation() {
-            const isUser       = currentType === 'User';
-            const name         = isUser
-                ? userNameInput.value.trim()
-                : document.getElementById('visitorNameInput').value.trim();
-            const email        = isUser
-                ? document.getElementById('userEmailDisplay').value.trim()
-                : document.getElementById('visitorEmailInput').value.trim();
-            const resourceEl   = document.getElementById('resourceSelect');
-            const resourceId   = resourceEl.value;
+            const isUser = currentType === 'User';
+            const name = isUser ?
+                userNameInput.value.trim() :
+                document.getElementById('visitorNameInput').value.trim();
+            const email = isUser ?
+                document.getElementById('userEmailDisplay').value.trim() :
+                document.getElementById('visitorEmailInput').value.trim();
+            const resourceEl = document.getElementById('resourceSelect');
+            const resourceId = resourceEl.value;
             const resourceName = resourceEl.options[resourceEl.selectedIndex]?.text || '—';
-            const pcSection    = !document.getElementById('pcSection').classList.contains('hidden');
-            const date         = document.getElementById('resDate').value;
-            const startTime    = document.getElementById('startTime').value;
-            const endTime      = document.getElementById('endTime').value;
-            const purposeVal   = document.getElementById('purposeSelect').value;
+            const pcSection = !document.getElementById('pcSection').classList.contains('hidden');
+            const date = document.getElementById('resDate').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const purposeVal = document.getElementById('purposeSelect').value;
             const purposeOther = document.getElementById('purposeOther').value.trim();
-            const purposeFinal = purposeVal === 'Others' && purposeOther
-                ? `Others — ${purposeOther}`
-                : purposeVal;
+            const purposeFinal = purposeVal === 'Others' && purposeOther ?
+                `Others — ${purposeOther}` :
+                purposeVal;
 
-            if (!name)       { alert('Please enter a name.'); return; }
-            if (!resourceId) { alert('Please select a resource.'); return; }
-            if (pcSection && selectedPcs.length === 0) {
-                alert('Please select at least one workstation.'); return;
+            if (!name) {
+                alert('Please enter a name.');
+                return;
             }
-            if (!date)       { alert('Please select a date.'); return; }
-            if (!startTime)  { alert('Please enter a start time.'); return; }
-            if (!endTime)    { alert('Please enter an end time.'); return; }
-            if (!purposeVal) { alert('Please select a purpose.'); return; }
+            if (!resourceId) {
+                alert('Please select a resource.');
+                return;
+            }
+            if (pcSection && selectedPcs.length === 0) {
+                alert('Please select at least one workstation.');
+                return;
+            }
+            if (!date) {
+                alert('Please select a date.');
+                return;
+            }
+            if (!startTime) {
+                alert('Please enter a start time.');
+                return;
+            }
+            if (!endTime) {
+                alert('Please enter an end time.');
+                return;
+            }
+            if (!purposeVal) {
+                alert('Please select a purpose.');
+                return;
+            }
             if (isUser && !selectedUser && !document.getElementById('finalUserId').value) {
-                alert('Please select a registered user from the dropdown.'); return;
+                alert('Please select a registered user from the dropdown.');
+                return;
             }
 
             document.getElementById('finalVisitorName').value = name;
-            document.getElementById('finalUserEmail').value   = email;
-            document.getElementById('finalPurpose').value     = purposeFinal;
+            document.getElementById('finalUserEmail').value = email;
+            document.getElementById('finalPurpose').value = purposeFinal;
 
-            document.getElementById('mType').textContent    = isUser ? 'Registered User' : 'Walk-in Visitor';
-            document.getElementById('mName').textContent    = name || '—';
-            document.getElementById('mEmail').textContent   = email || '—';
-            document.getElementById('mAsset').textContent   = resourceName;
+            document.getElementById('mType').textContent = isUser ? 'Registered User' : 'Walk-in Visitor';
+            document.getElementById('mName').textContent = name || '—';
+            document.getElementById('mEmail').textContent = email || '—';
+            document.getElementById('mAsset').textContent = resourceName;
             document.getElementById('mStation').textContent = selectedPcs.length ? selectedPcs.join(', ') : '—';
-            document.getElementById('mDate').textContent    = date;
-            document.getElementById('mTime').textContent    = `${startTime} – ${endTime}`;
+            document.getElementById('mDate').textContent = date;
+            document.getElementById('mTime').textContent = `${startTime} – ${endTime}`;
             document.getElementById('mPurpose').textContent = purposeFinal || '—';
 
             document.getElementById('qrWrap').classList.add('hidden');
@@ -553,7 +780,6 @@
             openModal();
         }
 
-        // ── Submit → generate QR then submit form ──────────────────────────────
         function submitReservation() {
             const btn = document.getElementById('confirmBtn');
             btn.disabled = true;
@@ -561,8 +787,12 @@
             const code = `SK-${Date.now()}`;
             document.getElementById('qrText').textContent = code;
             QRCode.toCanvas(document.getElementById('qrCanvas'), code, {
-                width: 160, margin: 1,
-                color: { dark: '#1e293b', light: '#ffffff' }
+                width: 160,
+                margin: 1,
+                color: {
+                    dark: '#1e293b',
+                    light: '#ffffff'
+                }
             }, () => {
                 document.getElementById('qrWrap').classList.remove('hidden');
                 btn.style.display = 'none';
@@ -572,10 +802,10 @@
 
         function downloadQR() {
             const canvas = document.getElementById('qrCanvas');
-            const code   = document.getElementById('qrText').textContent;
-            const link   = document.createElement('a');
+            const code = document.getElementById('qrText').textContent;
+            const link = document.createElement('a');
             link.download = `E-Ticket-${code}.png`;
-            link.href     = canvas.toDataURL('image/png');
+            link.href = canvas.toDataURL('image/png');
             link.click();
         }
 
@@ -597,7 +827,197 @@
             if (e.target === document.getElementById('confirmModal')) closeModal();
         }
 
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal();
+        });
     </script>
+
+    <!-- ── PWA ── -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', {
+                        scope: '/'
+                    })
+                    .then(reg => {
+                        reg.addEventListener('updatefound', () => {
+                            const newWorker = reg.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    showUpdateBanner();
+                                }
+                            });
+                        });
+                    })
+                    .catch(err => console.warn('[PWA] SW registration failed:', err));
+
+                navigator.serviceWorker.addEventListener('message', event => {
+                    if (!event.data) return;
+                    switch (event.data.type) {
+                        case 'SAVE_PENDING_RESERVATION': {
+                            const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
+                            pending.push(event.data.payload);
+                            localStorage.setItem('pending_reservations', JSON.stringify(pending));
+                            showOfflineSavedToast();
+                            break;
+                        }
+                        case 'FLUSH_PENDING_RESERVATIONS': {
+                            flushPendingReservations();
+                            break;
+                        }
+                        case 'RESERVATIONS_SYNCED': {
+                            console.log('[PWA] Synced');
+                            break;
+                        }
+                    }
+                });
+            });
+        }
+
+        async function flushPendingReservations() {
+            const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
+            if (!pending.length) return;
+            const remaining = [];
+            for (const item of pending) {
+                try {
+                    const formData = new FormData();
+                    Object.entries(item.data).forEach(([key, value]) => formData.append(key, value));
+                    const response = await fetch(item.url, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (!response.ok) remaining.push(item);
+                } catch (e) {
+                    remaining.push(item);
+                }
+            }
+            localStorage.setItem('pending_reservations', JSON.stringify(remaining));
+            if (navigator.serviceWorker.controller)
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'RESERVATIONS_SYNCED'
+                });
+            if (pending.length !== remaining.length)
+                showSyncedToast(pending.length - remaining.length);
+        }
+
+        window.addEventListener('online', async () => {
+            removeBanner('pwa-offline-banner');
+            createBanner('pwa-online-banner', `<i class="fa-solid fa-circle-check" style="color:#fff"></i> Back online!`, '#16a34a', '#fff');
+            setTimeout(() => removeBanner('pwa-online-banner'), 3000);
+            if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                try {
+                    const reg = await navigator.serviceWorker.ready;
+                    await reg.sync.register('sync-reservations');
+                } catch {
+                    flushPendingReservations();
+                }
+            } else {
+                flushPendingReservations();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            createBanner('pwa-offline-banner', `<i class="fa-solid fa-wifi" style="color:#fff;opacity:0.7"></i> You're offline — cached pages still work`, '#1e293b', '#fff');
+        });
+
+        function createBanner(id, html, bg, color) {
+            if (document.getElementById(id)) return;
+            const el = document.createElement('div');
+            el.id = id;
+            el.style.cssText = `position:fixed;top:0;left:0;right:0;z-index:9999;padding:10px 20px;text-align:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;transform:translateY(-100%);transition:transform 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px;background:${bg};color:${color};`;
+            el.innerHTML = html;
+            document.body.prepend(el);
+            requestAnimationFrame(() => {
+                el.style.transform = 'translateY(0)';
+            });
+        }
+
+        function removeBanner(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.transform = 'translateY(-100%)';
+                setTimeout(() => el.remove(), 350);
+            }
+        }
+
+        function showUpdateBanner() {
+            createBanner('pwa-update-banner', `<i class="fa-solid fa-rotate" style="color:#fff"></i> New version available &nbsp;<button onclick="applyUpdate()" style="background:white;color:#2563eb;border:none;padding:3px 12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;">Update now</button>`, '#2563eb', '#fff');
+        }
+
+        function applyUpdate() {
+            if (navigator.serviceWorker.controller)
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'SKIP_WAITING'
+                });
+            location.reload();
+        }
+
+        function showToast(icon, iconColor, title, message, duration = 5000) {
+            let container = document.getElementById('pwa-toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'pwa-toast-container';
+                container.style.cssText = 'position:fixed;bottom:90px;right:16px;z-index:8888;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+                document.body.appendChild(container);
+            }
+            const id = 'toast-' + Date.now();
+            const toast = document.createElement('div');
+            toast.id = id;
+            toast.style.cssText = `background:white;border-radius:16px;padding:12px 16px;box-shadow:0 10px 25px rgba(0,0,0,0.12);border-left:4px solid ${iconColor};display:flex;align-items:center;gap:10px;pointer-events:auto;font-family:'Plus Jakarta Sans',sans-serif;min-width:260px;max-width:340px;animation:toastIn 0.3s ease;`;
+            toast.innerHTML = `<style>@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}</style><div style="width:32px;height:32px;border-radius:10px;background:${iconColor}20;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="${icon}" style="color:${iconColor};font-size:14px;"></i></div><div style="flex:1"><p style="font-weight:800;font-size:13px;color:#1e293b;margin:0;">${title}</p><p style="font-size:11px;color:#64748b;margin:2px 0 0;">${message}</p></div><button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:14px;padding:2px;">✕</button>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                const t = document.getElementById(id);
+                if (t) t.remove();
+            }, duration);
+        }
+
+        function showOfflineSavedToast() {
+            showToast('fa-solid fa-floppy-disk', '#f59e0b', 'Saved offline', "Your reservation will sync when you're back online.");
+        }
+
+        function showSyncedToast(count) {
+            showToast('fa-solid fa-circle-check', '#16a34a', `${count} reservation${count > 1 ? 's' : ''} synced!`, 'Your pending reservations were submitted successfully.');
+        }
+
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            deferredPrompt = e;
+            setTimeout(() => {
+                if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) showInstallChip();
+            }, 10000);
+        });
+
+        function showInstallChip() {
+            if (document.getElementById('pwa-install-chip')) return;
+            const chip = document.createElement('div');
+            chip.id = 'pwa-install-chip';
+            chip.style.cssText = "position:fixed;bottom:90px;right:16px;z-index:999;background:white;border:1px solid #e2e8f0;border-radius:20px;padding:10px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 25px rgba(0,0,0,0.12);font-family:'Plus Jakarta Sans',sans-serif;animation:toastIn 0.3s ease;cursor:pointer;";
+            chip.innerHTML = `<div style="width:32px;height:32px;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-download" style="color:#16a34a;font-size:14px;"></i></div><div><p style="font-weight:800;font-size:13px;color:#1e293b;margin:0;">Install SK Reserve</p><p style="font-size:11px;color:#94a3b8;margin:0;">Works offline, no App Store needed</p></div><button onclick="event.stopPropagation();document.getElementById('pwa-install-chip').remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:14px;margin-left:4px;">✕</button>`;
+            chip.addEventListener('click', async e => {
+                if (e.target.tagName === 'BUTTON') return;
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const {
+                        outcome
+                    } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    chip.remove();
+                }
+            });
+            document.body.appendChild(chip);
+            setTimeout(() => {
+                const c = document.getElementById('pwa-install-chip');
+                if (c) c.remove();
+            }, 12000);
+        }
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+        });
+    </script>
+
 </body>
+
 </html>

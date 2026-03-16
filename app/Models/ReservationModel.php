@@ -97,21 +97,62 @@ class ReservationModel extends Model
     public function checkFairness($userId)
     {
         $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
+        
+        $block = $this->db->table('user_blocks')
+            ->where('user_id', $userId)
+            ->where('blocked_until >=', date('Y-m-d'))
+            ->get()
+            ->getRowArray();
+
+        if ($block) {
+            $recentReservations = $this->where('user_id', $userId)
+                ->where('created_at >=', $twoWeeksAgo)
+                ->countAllResults();
+
+            if ($recentReservations < 3) {
+                $this->db->table('user_blocks')
+                    ->where('user_id', $userId)
+                    ->delete();
+                return ['fair' => true, 'remaining' => 3 - $recentReservations];
+            }
+            return ['fair' => false, 'remaining' => 0, 'blocked' => true, 'until' => $block['blocked_until']];
+        }
+
         $recentReservations = $this->where('user_id', $userId)
             ->where('created_at >=', $twoWeeksAgo)
             ->countAllResults();
 
         if ($recentReservations >= 3) {
-            // Block user for 2 weeks
             $this->blockUser($userId, 14);
-            return false;
+            return ['fair' => false, 'remaining' => 0, 'blocked' => true, 'until' => date('Y-m-d', strtotime('+14 days'))];
         }
 
-        return true;
+        return ['fair' => true, 'remaining' => 3 - $recentReservations];
     }
 
     public function getRemainingReservations($userId)
     {
+        $block = $this->db->table('user_blocks')
+            ->where('user_id', $userId)
+            ->where('blocked_until >=', date('Y-m-d'))
+            ->get()
+            ->getRowArray();
+
+        if ($block) {
+            $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
+            $recentReservations = $this->where('user_id', $userId)
+                ->where('created_at >=', $twoWeeksAgo)
+                ->countAllResults();
+
+            if ($recentReservations < 3) {
+                $this->db->table('user_blocks')
+                    ->where('user_id', $userId)
+                    ->delete();
+                return 3 - $recentReservations;
+            }
+            return 0;
+        }
+
         $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
         $recentReservations = $this->where('user_id', $userId)
             ->where('created_at >=', $twoWeeksAgo)

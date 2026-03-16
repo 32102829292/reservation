@@ -9,6 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <!-- ═══ PWA — add to home screen, offline support, sync ═══ -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#16a34a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SK Reserve">
+    <link rel="apple-touch-icon" href="/assets/img/icon-192.png">
+    <!-- ════════════════════════════════════════════════════════ -->
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -495,11 +503,12 @@
 
     <?php
     $navItems = [
-        ['url' => '/dashboard',       'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
-        ['url' => '/reservation',     'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'reservation'],
-        ['url' => '/reservation-list', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'reservation-list'],
-        ['url' => '/profile',         'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
-    ];
+    ['url' => '/dashboard',        'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
+    ['url' => '/reservation',      'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'reservation'],
+    ['url' => '/reservation-list', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'reservation-list'],
+    ['url' => '/books',            'icon' => 'fa-book-open',       'label' => 'Library',         'key' => 'books'],
+    ['url' => '/profile',          'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+];
     ?>
 
     <!-- Notification Bell -->
@@ -624,8 +633,6 @@
                 <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
                 <input type="hidden" name="purpose" id="finalPurpose">
                 <input type="hidden" name="pcs" id="finalPcs" value="">
-                <!-- IMPORTANT: Add this hidden field for e-ticket code -->
-                <input type="hidden" name="e_ticket_code" id="finalETicketCode" value="">
 
                 <!-- Personal Details - Pre-filled with logged-in user -->
                 <div class="mb-8">
@@ -779,16 +786,6 @@
                 <div class="mrow"><span class="mrow-label">Date</span> <span class="mrow-value" id="mDate"></span></div>
                 <div class="mrow"><span class="mrow-label">Time</span> <span class="mrow-value" id="mTime"></span></div>
                 <div class="mrow"><span class="mrow-label">Purpose</span> <span class="mrow-value" id="mPurpose"></span></div>
-            </div>
-
-            <!-- QR Code / E-Ticket Preview -->
-            <div id="qrWrap" class="hidden bg-white border-2 border-dashed border-green-100 rounded-2xl p-5 flex flex-col items-center mb-5">
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Your E-Ticket</p>
-                <canvas id="qrCanvas" class="rounded-xl mx-auto"></canvas>
-                <p id="qrText" class="text-xs text-slate-400 font-mono mt-2 text-center break-all"></p>
-                <button type="button" onclick="downloadQR()" class="mt-3 flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl font-bold text-xs hover:bg-green-700 transition">
-                    <i class="fa-solid fa-download"></i> Download Ticket
-                </button>
             </div>
 
             <!-- Note about approval -->
@@ -1222,20 +1219,6 @@
             document.getElementById('mTime').textContent = `${startTime} – ${endTime}`;
             document.getElementById('mPurpose').textContent = purposeFinal;
 
-            // Show QR code in modal
-            const qrWrap = document.getElementById('qrWrap');
-            qrWrap.classList.remove('hidden');
-            
-            // Generate QR code with e-ticket format (for preview only)
-            const previewCode = `SK-${currentUser.id}-PREVIEW`;
-            document.getElementById('qrText').textContent = previewCode;
-            
-            QRCode.toCanvas(document.getElementById('qrCanvas'), previewCode, {
-                width: 140,
-                margin: 1,
-                color: { dark: '#1e293b', light: '#ffffff' }
-            }, () => {});
-
             openModal();
         }
 
@@ -1244,34 +1227,7 @@
             const btn = document.getElementById('confirmBtn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
-
-            // Generate unique e-ticket code with user ID and timestamp
-            const eTicketCode = `SK-${currentUser.id}-${Date.now()}`;
-            
-            // Set the e-ticket code in the hidden field
-            document.getElementById('finalETicketCode').value = eTicketCode;
-
-            // Update QR code with the real e-ticket code
-            document.getElementById('qrText').textContent = eTicketCode;
-            
-            QRCode.toCanvas(document.getElementById('qrCanvas'), eTicketCode, {
-                width: 160,
-                margin: 1,
-                color: { dark: '#1e293b', light: '#ffffff' }
-            }, () => {
-                // Submit form after QR generation
-                document.getElementById('reservationForm').submit();
-            });
-        }
-
-        // Download QR code
-        function downloadQR() {
-            const canvas = document.getElementById('qrCanvas');
-            const code = document.getElementById('qrText').textContent;
-            const link = document.createElement('a');
-            link.download = `E-Ticket-${code}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            document.getElementById('reservationForm').submit();
         }
 
         // Modal functions
@@ -1308,6 +1264,208 @@
             }
         });
     </script>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PWA — Service Worker · Offline/Online banners · Background sync · Install
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <script>
+    // 1 ── Register Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                .then(reg => {
+                    // Show "Update available" banner when a new SW version is found
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                showPwaBanner(
+                                    'pwa-update-banner',
+                                    `<i class="fa-solid fa-rotate" style="color:#fff"></i>
+                                     New version available &nbsp;
+                                     <button onclick="applyPwaUpdate()"
+                                       style="background:white;color:#2563eb;border:none;padding:3px 12px;
+                                              border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;
+                                              font-family:inherit;">Update now</button>`,
+                                    '#2563eb'
+                                );
+                            }
+                        });
+                    });
+                })
+                .catch(err => console.warn('[PWA] SW registration failed:', err));
+
+            // Handle messages FROM the service worker
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (!event.data) return;
+
+                switch (event.data.type) {
+                    // SW intercepted a POST while offline → save it for later
+                    case 'SAVE_PENDING_RESERVATION': {
+                        const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
+                        pending.push(event.data.payload);
+                        localStorage.setItem('pending_reservations', JSON.stringify(pending));
+                        // Reuse the existing showToast() already defined on this page
+                        showToast({
+                            title: 'Saved offline 💾',
+                            message: "Your reservation will sync automatically when you're back online."
+                        });
+                        break;
+                    }
+                    // SW background-sync fired → flush the queue
+                    case 'FLUSH_PENDING_RESERVATIONS':
+                        flushPendingReservations();
+                        break;
+                }
+            });
+        });
+    }
+
+    // 2 ── Flush saved reservations to the server
+    async function flushPendingReservations() {
+        const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
+        if (!pending.length) return;
+
+        const remaining = [];
+        for (const item of pending) {
+            try {
+                const fd = new FormData();
+                Object.entries(item.data).forEach(([k, v]) => fd.append(k, v));
+                const response = await fetch(item.url, { method: 'POST', body: fd });
+                if (!response.ok) remaining.push(item);
+            } catch {
+                remaining.push(item); // Still offline
+            }
+        }
+
+        localStorage.setItem('pending_reservations', JSON.stringify(remaining));
+
+        if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'RESERVATIONS_SYNCED' });
+        }
+
+        const synced = pending.length - remaining.length;
+        if (synced > 0) {
+            showToast({
+                title: `${synced} reservation${synced > 1 ? 's' : ''} synced! ✓`,
+                message: 'Your pending reservations were submitted successfully.'
+            });
+        }
+    }
+
+    // 3 ── Online → hide offline banner + trigger sync
+    window.addEventListener('online', async () => {
+        removePwaBanner('pwa-offline-banner');
+        showPwaBanner('pwa-online-banner',
+            `<i class="fa-solid fa-circle-check" style="color:#fff"></i> Back online!`,
+            '#16a34a');
+        setTimeout(() => removePwaBanner('pwa-online-banner'), 3000);
+
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                await reg.sync.register('sync-reservations');
+            } catch {
+                flushPendingReservations();
+            }
+        } else {
+            flushPendingReservations();
+        }
+    });
+
+    // 4 ── Offline → show banner
+    window.addEventListener('offline', () => {
+        showPwaBanner(
+            'pwa-offline-banner',
+            `<i class="fa-solid fa-wifi" style="color:#fff;opacity:0.7"></i>
+             You're offline — cached pages still work`,
+            '#1e293b'
+        );
+    });
+
+    // 5 ── Banner helpers
+    function showPwaBanner(id, html, bg) {
+        if (document.getElementById(id)) return;
+        const el = document.createElement('div');
+        el.id = id;
+        el.style.cssText = `
+            position:fixed;top:0;left:0;right:0;z-index:9999;
+            padding:10px 20px;text-align:center;
+            font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;
+            background:${bg};color:#fff;
+            transform:translateY(-100%);transition:transform 0.3s ease;
+            display:flex;align-items:center;justify-content:center;gap:8px;
+        `;
+        el.innerHTML = html;
+        document.body.prepend(el);
+        requestAnimationFrame(() => { el.style.transform = 'translateY(0)'; });
+    }
+
+    function removePwaBanner(id) {
+        const el = document.getElementById(id);
+        if (el) { el.style.transform = 'translateY(-100%)'; setTimeout(() => el.remove(), 350); }
+    }
+
+    function applyPwaUpdate() {
+        if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+        }
+        location.reload();
+    }
+
+    // 6 ── Add-to-Home-Screen install chip (appears after 10s if not already installed)
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredPrompt = e;
+        setTimeout(() => {
+            if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
+                showInstallChip();
+            }
+        }, 10000);
+    });
+
+    function showInstallChip() {
+        if (document.getElementById('pwa-install-chip')) return;
+        const chip = document.createElement('div');
+        chip.id = 'pwa-install-chip';
+        chip.style.cssText = `
+            position:fixed;bottom:90px;right:16px;z-index:999;
+            background:white;border:1px solid #e2e8f0;border-radius:20px;
+            padding:10px 16px;display:flex;align-items:center;gap:10px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.12);
+            font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;
+        `;
+        chip.innerHTML = `
+            <div style="width:32px;height:32px;background:#f0fdf4;border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-download" style="color:#16a34a;font-size:14px;"></i>
+            </div>
+            <div>
+                <p style="font-weight:800;font-size:13px;color:#1e293b;margin:0;">Install SK Reserve</p>
+                <p style="font-size:11px;color:#94a3b8;margin:0;">Works offline · no App Store needed</p>
+            </div>
+            <button onclick="event.stopPropagation();document.getElementById('pwa-install-chip').remove()"
+                style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:14px;margin-left:4px;">✕</button>
+        `;
+        chip.addEventListener('click', async e => {
+            if (e.target.tagName === 'BUTTON') return;
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                chip.remove();
+            }
+        });
+        document.body.appendChild(chip);
+        setTimeout(() => { const c = document.getElementById('pwa-install-chip'); if (c) c.remove(); }, 12000);
+    }
+
+    window.addEventListener('appinstalled', () => { deferredPrompt = null; });
+    </script>
+    <!-- ══════════════════════════════ END PWA ══════════════════════════════ -->
+
 </body>
 
 </html>

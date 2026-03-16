@@ -23,6 +23,24 @@
                     .catch(error => console.log('SW registration failed'));
             });
         }
+        
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'RESERVATIONS_SYNCED') {
+                window.location.reload();
+            }
+        });
+        
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        function updateOnlineStatus() {
+            const banner = document.getElementById('onlineBanner');
+            if (!navigator.onLine && banner) {
+                banner.classList.remove('hidden');
+            } else if (banner) {
+                banner.classList.add('hidden');
+            }
+        }
     </script>
 
     <style>
@@ -42,6 +60,11 @@
 </head>
 
 <body class="flex flex-col min-h-screen">
+
+<!-- Offline Banner -->
+<div id="onlineBanner" class="hidden fixed top-0 left-0 right-0 bg-yellow-500 text-white py-2 px-4 text-center z-50 font-medium">
+    <i class="fas fa-wifi mr-2"></i> You're offline. Reservations will sync when back online.
+</div>
 
 <?php $page = $page ?? ''; ?>
 

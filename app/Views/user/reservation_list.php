@@ -11,574 +11,650 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
 
-        .sidebar-card {
-            background: white; border-radius: 32px; border: 1px solid #e2e8f0;
-            height: calc(100vh - 48px); position: sticky; top: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-        .sidebar-header { flex-shrink: 0; padding: 16px; border-bottom: 1px solid #e2e8f0; }
-        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px; }
-        .sidebar-nav::-webkit-scrollbar { width: 6px; }
-        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #e2e8f0; }
-        .sidebar-item { transition: all 0.2s; }
-        .sidebar-item.active { background: #16a34a; color: white; box-shadow: 0 10px 15px -3px rgba(22,163,74,0.3); }
+        /* ── Sidebar ── */
+        .sidebar-card { background:white; border-radius:32px; border:1px solid #e2e8f0; height:calc(100vh - 48px); position:sticky; top:24px; box-shadow:0 4px 6px -1px rgba(0,0,0,.05); display:flex; flex-direction:column; overflow:hidden; }
+        .sidebar-header { flex-shrink:0; padding:16px; border-bottom:1px solid #e2e8f0; }
+        .sidebar-nav { flex:1; overflow-y:auto; overflow-x:hidden; padding:8px; }
+        .sidebar-nav::-webkit-scrollbar { width:6px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
+        .sidebar-footer { flex-shrink:0; padding:16px; border-top:1px solid #e2e8f0; }
+        .sidebar-item { transition:all .2s; }
+        .sidebar-item.active { background:#16a34a; color:white; box-shadow:0 10px 15px -3px rgba(22,163,74,.3); }
 
-        .mobile-nav-pill {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 600px; background: rgba(20,83,45,0.98);
-            backdrop-filter: blur(12px); border-radius: 24px; padding: 6px;
-            z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
-        }
-        .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; scroll-behavior: smooth; }
-        .mobile-scroll-container::-webkit-scrollbar { display: none; }
+        /* ── Mobile Nav ── */
+        .mobile-nav-pill { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:92%; max-width:600px; background:rgba(20,83,45,.98); backdrop-filter:blur(12px); border-radius:24px; padding:6px; z-index:100; box-shadow:0 20px 25px -5px rgba(0,0,0,.3); }
+        .mobile-scroll-container { display:flex; gap:4px; overflow-x:auto; scroll-behavior:smooth; }
+        .mobile-scroll-container::-webkit-scrollbar { display:none; }
 
-        main { min-width: 0; }
+        main { min-width:0; }
+        .content-card { background:white; border-radius:32px; border:1px solid #e2e8f0; box-shadow:0 10px 15px -3px rgba(0,0,0,.02); overflow:hidden; }
 
-        .content-card {
-            background: white; border-radius: 32px; border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02); overflow: hidden;
-        }
-
-        .table-wrap { overflow-x: auto; }
-        @media (min-width: 1024px) { .table-wrap { overflow-x: visible; } table { min-width: 0 !important; } }
-        @media (max-width: 1023px) { table { min-width: 760px; } }
-
-        table { width: 100%; border-collapse: separate; border-spacing: 0; }
-        th {
-            background-color: #f8fafc; font-weight: 800; text-transform: uppercase;
-            font-size: 0.7rem; letter-spacing: 0.1em; color: #64748b;
-            padding: 1.25rem 1rem; border-bottom: 1px solid #e2e8f0; white-space: nowrap;
-        }
-        td { padding: 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; font-weight: 500; vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-
-        input, select {
-            background: #fcfdfe; border: 1px solid #e2e8f0; padding: 0.75rem 1.25rem;
-            font-size: 0.9rem; transition: all 0.2s; border-radius: 12px; width: 100%;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        input:focus, select:focus { outline: none; border-color: #16a34a; box-shadow: 0 0 0 4px rgba(22,163,74,0.08); }
-
-        .status-badge { padding: 0.35rem 0.75rem; border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; white-space: nowrap; }
-        .status-pending  { background-color: #fef3c7; color: #92400e; }
-        .status-approved { background-color: #dcfce7; color: #166534; }
-        .status-declined, .status-cancelled { background-color: #fee2e2; color: #991b1b; }
-        .status-claimed { background-color: #f3e8ff; color: #6b21a8; }
-
-        .btn-action { padding: 0.5rem 0.9rem; border-radius: 10px; font-weight: 700; font-size: 0.78rem; transition: all 0.2s; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 5px; font-family: 'Plus Jakarta Sans', sans-serif; white-space: nowrap; }
-        .btn-details { background-color: #f1f5f9; color: #475569; }
-        .btn-details:hover { background-color: #e2e8f0; color: #1e293b; }
-        .btn-cancel { background-color: #fee2e2; color: #991b1b; }
-        .btn-cancel:hover { background-color: #fecaca; }
-        .btn-cancel:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(6px); z-index: 200; padding: 1.5rem; overflow-y: auto; }
-        .modal.show { display: flex; align-items: flex-start; justify-content: center; animation: fadeIn 0.15s ease; }
-        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-        .modal-card { background: white; border-radius: 32px; width: 100%; max-width: 520px; padding: 2.5rem; animation: slideUp 0.2s ease; max-height: 90vh; overflow-y: auto; margin: auto; }
-        @keyframes slideUp { from { transform:translateY(16px); opacity:0; } to { transform:translateY(0); opacity:1; } }
-
-        .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 0.65rem 0; border-bottom: 1px solid #f1f5f9; gap: 1rem; }
-        .detail-row:last-child { border-bottom: none; }
-        .detail-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; flex-shrink: 0; }
-        .detail-value { font-weight: 700; color: #1e293b; font-size: 0.88rem; text-align: right; }
-
-        .empty-state { padding: 4rem 2rem; text-align: center; color: #94a3b8; }
-        .reservation-row { transition: background 0.15s; }
-        .reservation-row:hover td { background-color: #f8fafc; }
+        /* ── Table ── */
+        .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        table { width:100%; border-collapse:separate; border-spacing:0; min-width:520px; }
+        th { background:#f8fafc; font-weight:800; text-transform:uppercase; font-size:.68rem; letter-spacing:.1em; color:#94a3b8; padding:1rem; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+        td { padding:.875rem 1rem; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+        tr:last-child td { border-bottom:none; }
+        .reservation-row { transition:background .15s; }
+        .reservation-row:hover td { background:#f8fafc; }
         .reservation-row[data-status="declined"] td,
-        .reservation-row[data-status="cancelled"] td { opacity: 0.6; }
+        .reservation-row[data-status="cancelled"] td { opacity:.6; }
 
-        .fairness-badge {
-            background: #dbeafe; color: #1e40af; padding: 0.5rem 1rem;
-            border-radius: 100px; font-size: 0.75rem; font-weight: 700;
-            display: inline-flex; align-items: center; gap: 0.5rem;
-        }
+        /* ── Mobile reservation cards ── */
+        .res-card { background:white; border-radius:20px; border:1px solid #e2e8f0; padding:1rem 1.1rem; cursor:pointer; transition:all .18s; position:relative; overflow:hidden; }
+        .res-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:0 4px 4px 0; }
+        .res-card[data-status="pending"]::before   { background:#f59e0b; }
+        .res-card[data-status="approved"]::before  { background:#22c55e; }
+        .res-card[data-status="claimed"]::before   { background:#a855f7; }
+        .res-card[data-status="declined"]::before,
+        .res-card[data-status="cancelled"]::before { background:#ef4444; }
+        .res-card[data-status="expired"]::before   { background:#94a3b8; }
+        .res-card:hover { border-color:#bbf7d0; box-shadow:0 6px 20px -4px rgba(22,163,74,.12); transform:translateY(-1px); }
+        .res-card[data-status="declined"],
+        .res-card[data-status="cancelled"] { opacity:.7; }
 
-        .claimed-badge {
-            background: #f3e8ff;
-            color: #6b21a8;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
+        /* ── Inputs ── */
+        input, select { background:#fcfdfe; border:1px solid #e2e8f0; padding:.75rem 1.25rem; font-size:.9rem; transition:all .2s; border-radius:12px; width:100%; font-family:'Plus Jakarta Sans',sans-serif; }
+        input:focus, select:focus { outline:none; border-color:#16a34a; box-shadow:0 0 0 4px rgba(22,163,74,.08); }
+
+        /* ── Badges ── */
+        .status-badge { padding:.35rem .75rem; border-radius:10px; font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }
+        .status-pending   { background:#fef3c7; color:#92400e; }
+        .status-approved  { background:#dcfce7; color:#166534; }
+        .status-declined  { background:#fee2e2; color:#991b1b; }
+        .status-cancelled { background:#fee2e2; color:#991b1b; }
+        .status-claimed   { background:#f3e8ff; color:#6b21a8; }
+        .status-expired   { background:#f1f5f9; color:#475569; }
+
+        .fairness-badge { background:#dbeafe; color:#1e40af; padding:.5rem 1rem; border-radius:100px; font-size:.75rem; font-weight:700; display:inline-flex; align-items:center; gap:.5rem; }
+
+        /* ── Overlays ── */
+        .overlay { display:none; position:fixed; inset:0; z-index:200; align-items:center; justify-content:center; }
+        .overlay.show { display:flex; animation:fadeBg .15s ease; }
+        @keyframes fadeBg { from{opacity:0} to{opacity:1} }
+        .overlay-bg { position:absolute; inset:0; background:rgba(15,23,42,.65); backdrop-filter:blur(6px); }
+
+        /* ── Modal box ── */
+        .modal-card { position:relative; margin:auto; background:white; border-radius:28px; width:94%; max-width:480px; padding:1.75rem; max-height:92vh; overflow-y:auto; animation:popIn .22s cubic-bezier(.34,1.56,.64,1) both; box-shadow:0 40px 80px rgba(0,0,0,.22); }
+        .modal-card.sm { max-width:360px; }
+        .modal-card::-webkit-scrollbar { width:4px; }
+        .modal-card::-webkit-scrollbar-thumb { background:#e2e8f0; border-radius:4px; }
+        @keyframes popIn { from{opacity:0;transform:scale(.92) translateY(16px)} to{opacity:1;transform:none} }
+
+        /* Sheet handle – mobile only */
+        .sheet-handle { display:none; width:40px; height:4px; background:#e2e8f0; border-radius:9999px; margin:0 auto 1rem; }
+
+        /* Bottom-sheet on mobile */
+        @media(max-width:639px) {
+            .overlay .modal-card { margin:0; width:100%; max-width:100%; border-radius:28px 28px 0 0; max-height:92vh; animation:sheetUp .28s cubic-bezier(.34,1.2,.64,1) both; }
+            .overlay { align-items:flex-end !important; }
+            .sheet-handle { display:block; }
         }
+        @keyframes sheetUp { from{opacity:0;transform:translateY(60px)} to{opacity:1;transform:none} }
+
+        /* ── Modal detail rows ── */
+        .detail-row { display:flex; justify-content:space-between; align-items:flex-start; padding:.6rem 0; border-bottom:1px solid #f1f5f9; gap:1rem; }
+        .detail-row:last-child { border-bottom:none; }
+        .detail-label { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:#94a3b8; flex-shrink:0; }
+        .detail-value { font-weight:700; color:#1e293b; font-size:.85rem; text-align:right; word-break:break-word; max-width:60%; }
+
+        /* ── State sections ── */
+        .ticket-section { background:#f0fdf4; border:2px dashed #86efac; border-radius:20px; padding:1.5rem; display:flex; flex-direction:column; align-items:center; gap:.75rem; }
+        .pending-notice  { background:#fffbeb; border:1px solid #fde68a; border-radius:16px; padding:1.25rem; display:flex; align-items:flex-start; gap:12px; }
+        .claimed-notice  { background:#faf5ff; border:2px dashed #d8b4fe; border-radius:20px; padding:1.5rem; display:flex; flex-direction:column; align-items:center; gap:.5rem; }
+        .expired-notice  { background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:1.25rem; display:flex; align-items:flex-start; gap:12px; }
+
+        /* ── Empty states ── */
+        .empty-state { padding:4rem 2rem; text-align:center; color:#94a3b8; }
+        .card-empty  { padding:3rem 1.5rem; text-align:center; background:white; border-radius:20px; border:1px dashed #e2e8f0; }
     </style>
 </head>
 <body class="flex">
 
-    <?php
-    $navItems = [
-        ['url' => '/dashboard',       'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
-        ['url' => '/reservation',     'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'reservation'],
-        ['url' => '/reservation-list', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'reservation-list'],
-        ['url' => '/profile',         'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
-    ];
-    ?>
+<?php
+$navItems = [
+    ['url' => '/dashboard',        'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
+    ['url' => '/reservation',      'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'reservation'],
+    ['url' => '/reservation-list', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'reservation-list'],
+    ['url' => '/books',            'icon' => 'fa-book-open',       'label' => 'Library',         'key' => 'books'],
+    ['url' => '/profile',          'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+];
+?>
 
-    <!-- Sidebar -->
-    <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
-        <div class="sidebar-card">
-            <div class="sidebar-header">
-                <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Resident Portal</span>
-                <h1 class="text-2xl font-extrabold text-slate-800">my<span class="text-green-600">Space.</span></h1>
+<!-- ══════════════════════════════════════
+     DETAILS MODAL  (bottom-sheet on mobile)
+     ══════════════════════════════════════ -->
+<div id="detailsModal" class="overlay">
+    <div class="overlay-bg" onclick="closeModal('detailsModal')"></div>
+    <div class="modal-card">
+        <div class="sheet-handle"></div>
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-black text-slate-900">Reservation Details</h3>
+            <span id="modalStatusBadge" class="status-badge"></span>
+        </div>
+
+        <div id="modalBody" class="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-4"></div>
+
+        <!-- Pending -->
+        <div id="pendingNotice" class="hidden pending-notice mb-4">
+            <div class="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="fa-regular fa-hourglass-half text-amber-600"></i>
             </div>
-            <nav class="sidebar-nav space-y-1">
-                <?php foreach ($navItems as $item):
-                    $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
-                ?>
-                    <a href="<?= base_url($item['url']) ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
-                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
-                        <?= $item['label'] ?>
-                    </a>
-                <?php endforeach; ?>
-            </nav>
-            <div class="sidebar-footer">
-                <a href="<?= base_url('/logout') ?>" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
-                    <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
-                </a>
+            <div>
+                <p class="font-bold text-amber-800 text-sm">Awaiting Approval</p>
+                <p class="text-xs text-amber-700 mt-0.5">Your e-ticket will appear here once an SK officer approves your reservation.</p>
             </div>
         </div>
-    </aside>
 
-    <!-- Mobile Nav -->
-    <nav class="lg:hidden mobile-nav-pill">
-        <div class="mobile-scroll-container text-white px-2">
+        <!-- Declined / Cancelled -->
+        <div id="rejectedNotice" class="hidden mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3">
+            <i class="fa-solid fa-ban text-red-400"></i>
+            <p class="text-sm font-semibold text-red-700" id="rejectedText"></p>
+        </div>
+
+        <!-- Approved — QR ticket -->
+        <div id="qrSection" class="hidden ticket-section mb-4">
+            <p class="text-[10px] font-black uppercase tracking-widest text-green-700">E-Ticket · Scan to Enter</p>
+            <canvas id="qrCanvas" class="rounded-xl"></canvas>
+            <p id="qrCodeText" class="text-xs text-slate-400 font-mono text-center break-all px-2"></p>
+            <button onclick="downloadTicket()" class="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition">
+                <i class="fa-solid fa-download"></i> Download E-Ticket
+            </button>
+        </div>
+
+        <!-- Claimed -->
+        <div id="claimedNotice" class="hidden claimed-notice mb-4">
+            <i class="fa-solid fa-check-double text-3xl text-purple-500"></i>
+            <p class="font-extrabold text-purple-700">Ticket Already Used</p>
+            <p class="text-xs text-purple-400 text-center">This reservation has been claimed and cannot be used again.</p>
+            <p id="claimedAtText" class="text-[10px] text-purple-400 mt-1"></p>
+        </div>
+
+        <!-- Expired -->
+        <div id="expiredNotice" class="hidden expired-notice mb-4">
+            <div class="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="fa-regular fa-clock text-slate-500"></i>
+            </div>
+            <div>
+                <p class="font-bold text-slate-600 text-sm">Reservation Expired</p>
+                <p class="text-xs text-slate-400 mt-0.5">The date for this reservation has already passed and it was not claimed.</p>
+            </div>
+        </div>
+
+        <button onclick="closeModal('detailsModal')" class="w-full py-3.5 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">Close</button>
+    </div>
+</div>
+
+<!-- Cancel Confirm Modal  (bottom-sheet on mobile) -->
+<div id="cancelModal" class="overlay">
+    <div class="overlay-bg" onclick="closeModal('cancelModal')"></div>
+    <div class="modal-card sm">
+        <div class="sheet-handle"></div>
+        <div class="text-center mb-6">
+            <div class="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-xl font-black">Cancel Reservation?</h3>
+            <p class="text-slate-400 text-sm mt-1">This action cannot be undone.</p>
+            <p class="text-slate-700 text-sm mt-3 font-bold" id="cancelConfirmResource"></p>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="closeModal('cancelModal')" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition">Keep it</button>
+            <button id="confirmCancelBtn" class="flex-1 py-4 bg-red-600 text-white rounded-2xl font-bold hover:bg-red-700 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-xmark"></i> Yes, Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<form id="cancelForm" method="POST" action="" style="display:none">
+    <?= csrf_field() ?>
+    <input type="hidden" name="id" id="cancelId">
+</form>
+
+<!-- ── Sidebar ── -->
+<aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
+    <div class="sidebar-card">
+        <div class="sidebar-header">
+            <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Resident Portal</span>
+            <h1 class="text-2xl font-extrabold text-slate-800">my<span class="text-green-600">Space.</span></h1>
+        </div>
+        <nav class="sidebar-nav space-y-1">
             <?php foreach ($navItems as $item):
-                $isActive = ($page == $item['key']);
-                $btnClass = $isActive ? 'bg-green-700 font-semibold' : 'hover:bg-green-500/30';
+                $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
             ?>
-                <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $btnClass ?>">
-                    <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
-                    <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+                <a href="<?= base_url($item['url']) ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
+                    <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
+                    <?= $item['label'] ?>
                 </a>
             <?php endforeach; ?>
-            <a href="<?= base_url('/logout') ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
-                <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
-                <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="<?= base_url('/logout') ?>" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
+                <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
             </a>
         </div>
-    </nav>
+    </div>
+</aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 min-w-0 p-4 lg:p-12 pb-32">
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <div>
-                <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">My Reservations</h2>
-                <p class="text-slate-500 font-medium">Track and manage your booking requests.</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <?php if (isset($remainingReservations)): ?>
-                    <div class="fairness-badge">
-                        <i class="fa-solid fa-clock"></i>
-                        <?= $remainingReservations ?> of 3 remaining
-                    </div>
-                <?php endif; ?>
-                <div class="text-right flex-shrink-0">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Showing</p>
-                    <p class="text-xl font-black text-green-600" id="totalCount">0</p>
+<!-- ── Mobile Nav ── -->
+<nav class="lg:hidden mobile-nav-pill">
+    <div class="mobile-scroll-container text-white px-2">
+        <?php foreach ($navItems as $item):
+            $btnClass = ($page == $item['key']) ? 'bg-green-700 font-semibold' : 'hover:bg-green-500/30';
+        ?>
+            <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $btnClass ?>">
+                <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
+                <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+            </a>
+        <?php endforeach; ?>
+        <a href="<?= base_url('/logout') ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
+            <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
+            <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
+        </a>
+    </div>
+</nav>
+
+<!-- ── Main ── -->
+<main class="flex-1 min-w-0 p-4 lg:p-12 pb-32">
+
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div>
+            <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">My Reservations</h2>
+            <p class="text-slate-500 font-medium">Track and manage your booking requests.</p>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+            <?php if (isset($remainingReservations)): ?>
+                <div class="fairness-badge">
+                    <i class="fa-solid fa-clock"></i>
+                    <?= $remainingReservations ?> of 3 remaining
                 </div>
-                <a href="<?= base_url('/reservation') ?>" class="flex items-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition flex-shrink-0">
-                    <i class="fa-solid fa-plus"></i> New
-                </a>
+            <?php endif; ?>
+            <div class="text-right flex-shrink-0">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Showing</p>
+                <p class="text-xl font-black text-green-600" id="totalCount">0</p>
             </div>
-        </header>
+            <a href="<?= base_url('/reservation') ?>" class="flex items-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition flex-shrink-0">
+                <i class="fa-solid fa-plus"></i> New
+            </a>
+        </div>
+    </header>
 
-        <?php if (session()->getFlashdata('success')): ?>
-            <div class="mb-6 px-6 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3">
-                <i class="fa-solid fa-circle-check text-green-500"></i>
-                <?= session()->getFlashdata('success') ?>
-            </div>
-        <?php endif; ?>
-        <?php if (session()->getFlashdata('error')): ?>
-            <div class="mb-6 px-6 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3">
-                <i class="fa-solid fa-circle-exclamation text-red-500"></i>
-                <?= session()->getFlashdata('error') ?>
-            </div>
-        <?php endif; ?>
+    <!-- Flash messages -->
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="mb-6 px-6 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3">
+            <i class="fa-solid fa-circle-check text-green-500"></i>
+            <?= session()->getFlashdata('success') ?>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="mb-6 px-6 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3">
+            <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+            <?= session()->getFlashdata('error') ?>
+        </div>
+    <?php endif; ?>
 
-        <div class="content-card">
-            <!-- Filters -->
-            <div class="p-4 lg:p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-3">
-                <div class="relative flex-1 min-w-0">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" id="searchInput" class="pl-10" placeholder="Search by resource, date, purpose…">
-                </div>
-                <select id="statusFilter" class="sm:w-44 flex-shrink-0">
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="claimed">Claimed</option>
-                    <option value="declined">Declined</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
+    <!-- Filters -->
+    <div class="content-card mb-4">
+        <div class="p-4 lg:p-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-1 min-w-0">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="searchInput" class="pl-10" placeholder="Search by resource, date, purpose…" oninput="filterTable()">
             </div>
+            <select id="statusFilter" class="sm:w-44 flex-shrink-0" onchange="filterTable()">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="claimed">Claimed</option>
+                <option value="declined">Declined</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="expired">Expired</option>
+            </select>
+        </div>
+    </div>
 
-            <!-- Table -->
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:56px">ID</th>
-                            <th>Resource</th>
-                            <th>PC Number</th>
-                            <th>Schedule</th>
-                            <th>Purpose</th>
-                            <th>Status</th>
-                            <th class="text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reservationTableBody">
-                        <?php if (empty($reservations)): ?>
-                            <tr><td colspan="7"><div class="empty-state">
+    <div class="px-1 mb-3"><p id="resultHint" class="text-xs font-bold text-slate-400"></p></div>
+
+    <!-- ══════════════════════════════════════
+         DESKTOP TABLE  (md+)
+         ══════════════════════════════════════ -->
+    <div id="desktopTableWrap" class="hidden md:block content-card mb-4">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:52px">ID</th>
+                        <th>Resource</th>
+                        <th>Schedule</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                        <th style="width:80px" class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reservationTableBody">
+                    <?php if (empty($reservations)): ?>
+                        <tr><td colspan="6">
+                            <div class="empty-state">
                                 <i class="fa-solid fa-calendar-xmark text-4xl mb-3 block"></i>
                                 <p class="font-bold text-slate-500">No reservations yet.</p>
                                 <a href="<?= base_url('/reservation') ?>" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition">
                                     <i class="fa-solid fa-plus"></i> Make one now
                                 </a>
-                            </div></td></tr>
-                        <?php else: ?>
-                            <?php foreach ($reservations as $res): ?>
-                                <?php
-                                    $status    = strtolower($res['status'] ?? 'pending');
-                                    // Override status if claimed
-                                    if (!empty($res['claimed']) && $res['claimed'] == 1) {
-                                        $status = 'claimed';
-                                    }
-                                    $resource  = htmlspecialchars($res['resource_name'] ?? ('Resource #' . ($res['resource_id'] ?? '?')));
-                                    $pcNumber  = htmlspecialchars($res['pc_number'] ?? '—');
-                                    $purpose   = htmlspecialchars($res['purpose'] ?: '—');
-                                    
-                                    // Format date
-                                    $date = new DateTime($res['reservation_date']);
-                                    $formattedDate = $date->format('M j, Y');
-                                    
-                                    // Format time
-                                    $startTime = date('g:i A', strtotime($res['start_time']));
-                                    $endTime = date('g:i A', strtotime($res['end_time']));
-                                ?>
-                                <tr class="reservation-row" data-status="<?= $status ?>" data-id="<?= $res['id'] ?>">
-                                    <td><span class="text-slate-400 font-bold">#</span><?= $res['id'] ?></td>
-                                    <td>
-                                        <div class="font-bold text-slate-800"><?= $resource ?></div>
-                                        <?php if (!empty($res['e_ticket_code'])): ?>
-                                            <div class="text-[10px] text-green-600 font-mono mt-1"><?= $res['e_ticket_code'] ?></div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if ($pcNumber && $pcNumber !== '—'): ?>
-                                            <div class="text-xs bg-green-50 text-green-700 font-bold px-2 py-1 rounded-lg inline-block"><?= $pcNumber ?></div>
-                                        <?php else: ?>
-                                            <span class="text-slate-400">—</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <div class="text-slate-700 font-semibold"><?= $formattedDate ?></div>
-                                        <div class="text-xs text-green-600 font-bold mt-0.5"><?= $startTime ?> – <?= $endTime ?></div>
-                                    </td>
-                                    <td><div class="text-slate-600 max-w-[140px] truncate"><?= $purpose ?></div></td>
-                                    <td>
-                                        <?php if ($status === 'claimed'): ?>
-                                            <span class="claimed-badge">
-                                                <i class="fa-solid fa-check-double text-xs"></i> Claimed
-                                            </span>
-                                        <?php else: ?>
-                                            <span class="status-badge status-<?= $status ?>"><?= ucfirst($status) ?></span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-right">
-                                        <div class="flex items-center justify-end gap-1">
-                                            <button onclick="viewDetails(<?= $res['id'] ?>)" class="btn-action btn-details">
-                                                <i class="fa-solid fa-eye"></i> View
-                                            </button>
-                                            <?php if ($status === 'pending'): ?>
-                                                <button onclick="handleCancel(<?= $res['id'] ?>)" class="btn-action btn-cancel" id="cancelBtn-<?= $res['id'] ?>">
-                                                    <i class="fa-solid fa-xmark"></i> Cancel
-                                                </button>
-                                            <?php elseif ($status === 'approved'): ?>
-                                                <span class="inline-flex items-center gap-1 text-xs font-bold text-purple-400 px-2">
-                                                    <i class="fa-solid fa-hourglass-half"></i> Ready
-                                                </span>
-                                            <?php elseif ($status === 'claimed'): ?>
-                                                <span class="inline-flex items-center gap-1 text-xs font-bold text-purple-600 px-2">
-                                                    <i class="fa-solid fa-check-double"></i> Used
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="inline-flex items-center gap-1 text-xs font-bold text-slate-300 px-2">
-                                                    <i class="fa-solid fa-ban"></i>
-                                                </span>
-                                            <?php endif; ?>
+                            </div>
+                        </td></tr>
+                    <?php else: ?>
+                        <?php foreach ($reservations as $res):
+                            $isClaimed = !empty($res['claimed']) && $res['claimed'] == 1;
+                            $status    = $isClaimed ? 'claimed' : strtolower($res['status'] ?? 'pending');
+                            if ($status === 'approved') {
+                                $resDateTime = strtotime($res['reservation_date'] . ' ' . ($res['end_time'] ?? '23:59:59'));
+                                if ($resDateTime < time()) $status = 'expired';
+                            }
+                            $resource      = htmlspecialchars($res['resource_name'] ?? ('Resource #' . ($res['resource_id'] ?? '?')));
+                            $pcNumber      = htmlspecialchars($res['pc_number'] ?? '—');
+                            $purpose       = htmlspecialchars($res['purpose'] ?: '—');
+                            $formattedDate = (new DateTime($res['reservation_date']))->format('M j, Y');
+                            $startTime     = date('g:i A', strtotime($res['start_time']));
+                            $endTime       = date('g:i A', strtotime($res['end_time']));
+                            $searchText    = strtolower("$resource $formattedDate $purpose");
+                        ?>
+                            <tr class="reservation-row"
+                                data-status="<?= $status ?>"
+                                data-id="<?= $res['id'] ?>"
+                                data-search="<?= htmlspecialchars($searchText, ENT_QUOTES) ?>">
+                                <td><span class="text-xs font-black text-slate-400 font-mono">#<?= $res['id'] ?></span></td>
+                                <td>
+                                    <div class="font-bold text-slate-800 text-sm"><?= $resource ?></div>
+                                    <?php if ($pcNumber && $pcNumber !== '—'): ?>
+                                        <div class="flex items-center gap-1 mt-0.5">
+                                            <i class="fa-solid fa-desktop text-[9px] text-slate-400"></i>
+                                            <span class="text-[11px] text-slate-500 font-semibold"><?= $pcNumber ?></span>
                                         </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="noResults" class="hidden empty-state">
-                <i class="fa-solid fa-filter-circle-xmark text-3xl mb-2 block"></i>
-                <p class="font-bold">No reservations match your search.</p>
-            </div>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <div class="text-sm font-bold text-slate-700"><?= $formattedDate ?></div>
+                                    <div class="text-[11px] text-slate-400 font-semibold mt-0.5"><?= $startTime ?> – <?= $endTime ?></div>
+                                </td>
+                                <td><span class="text-sm text-slate-500 font-medium"><?= $purpose ?></span></td>
+                                <td>
+                                    <span class="status-badge status-<?= $status ?>">
+                                        <?php $icons=['pending'=>'fa-regular fa-clock','approved'=>'fa-circle-check','claimed'=>'fa-check-double','declined'=>'fa-xmark','cancelled'=>'fa-ban','expired'=>'fa-regular fa-hourglass']; ?>
+                                        <i class="fa-solid <?= $icons[$status] ?? 'fa-circle' ?> text-[9px]"></i>
+                                        <?= ucfirst($status) ?>
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <button onclick="viewDetails(<?= $res['id'] ?>)"
+                                            class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center transition">
+                                            <i class="fa-solid fa-eye text-xs"></i>
+                                        </button>
+                                        <?php if ($status === 'pending'): ?>
+                                            <button onclick="handleCancel(<?= $res['id'] ?>)"
+                                                class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 flex items-center justify-center transition">
+                                                <i class="fa-solid fa-xmark text-xs"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </div>
-    </main>
-
-    <!-- Details Modal -->
-    <div id="detailsModal" class="modal" onclick="handleModalBackdrop(event, 'detailsModal')">
-        <div class="modal-card">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-black">Reservation Details</h3>
-                <span id="modalStatusBadge" class="status-badge"></span>
-            </div>
-            <div id="modalBody" class="bg-slate-50 rounded-3xl p-5 border border-slate-100 mb-5 space-y-1"></div>
-            
-            <!-- Show claimed info if applicable -->
-            <div id="claimedInfo" class="hidden bg-purple-50 border border-purple-200 rounded-2xl p-4 mb-5 text-center">
-                <i class="fa-solid fa-check-double text-purple-500 mb-2 text-xl"></i>
-                <p class="text-xs text-purple-700 font-medium">
-                    This ticket has already been claimed and used.
-                </p>
-                <?php if (!empty($res['claimed_at'])): ?>
-                    <p class="text-[10px] text-purple-500 mt-1">
-                        Claimed on: <?= date('F j, Y g:i A', strtotime($res['claimed_at'])) ?>
-                    </p>
-                <?php endif; ?>
-            </div>
-
-            <!-- QR Code Section - Only show for approved and not claimed -->
-            <div id="qrSection" class="bg-white border-2 border-dashed border-green-100 rounded-3xl p-6 flex flex-col items-center mb-5">
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">E-Ticket / Access QR</p>
-                <canvas id="qrCanvas" class="mx-auto rounded-xl"></canvas>
-                <p id="qrCodeText" class="text-xs text-slate-400 font-mono mt-3 text-center break-all px-2"></p>
-                <button id="downloadBtn" onclick="downloadTicket()" class="mt-4 flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition">
-                    <i class="fa-solid fa-download"></i> Download E-Ticket
-                </button>
-            </div>
-
-            <!-- Claimed Message -->
-            <div id="claimedMessage" class="hidden bg-purple-50 border-2 border-dashed border-purple-200 rounded-3xl p-6 flex flex-col items-center mb-5">
-                <i class="fa-solid fa-check-double text-4xl text-purple-500 mb-3"></i>
-                <p class="font-bold text-purple-700">Ticket Already Used</p>
-                <p class="text-xs text-purple-500 text-center mt-1">This reservation has already been claimed and cannot be used again.</p>
-            </div>
-
-            <button onclick="closeModal('detailsModal')" class="w-full py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition">Close</button>
+        <div id="noResults" class="hidden empty-state">
+            <i class="fa-solid fa-filter-circle-xmark text-3xl mb-2 block"></i>
+            <p class="font-bold">No reservations match your search.</p>
         </div>
     </div>
 
-    <!-- Cancel Confirm Modal -->
-    <div id="cancelModal" class="modal" onclick="handleModalBackdrop(event, 'cancelModal')">
-        <div class="modal-card" style="max-width:380px;">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-                <h3 class="text-xl font-black">Cancel Reservation?</h3>
-                <p class="text-slate-400 text-sm mt-1 font-medium">This action cannot be undone.</p>
-                <p class="text-slate-600 text-sm mt-3 font-bold" id="cancelConfirmResource"></p>
+    <!-- ══════════════════════════════════════
+         MOBILE CARD LIST  (below md)
+         ══════════════════════════════════════ -->
+    <div id="mobileCardList" class="md:hidden space-y-3">
+        <?php if (empty($reservations)): ?>
+            <div class="card-empty">
+                <i class="fa-solid fa-calendar-xmark text-4xl text-slate-200 mb-3 block"></i>
+                <p class="font-black text-slate-400">No reservations yet.</p>
+                <a href="<?= base_url('/reservation') ?>" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition">
+                    <i class="fa-solid fa-plus"></i> Make one now
+                </a>
             </div>
-            <div class="flex gap-3">
-                <button onclick="closeModal('cancelModal')" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition">Keep it</button>
-                <button id="confirmCancelBtn" class="flex-1 py-4 bg-red-600 text-white rounded-2xl font-bold hover:bg-red-700 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-xmark"></i> Yes, Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <form id="cancelForm" method="POST" action="" style="display:none">
-        <?= csrf_field() ?>
-        <input type="hidden" name="id" id="cancelId">
-    </form>
-
-    <script>
-        const reservationsData = <?= json_encode($reservations ?? []) ?>;
-        let cancelTargetId = null;
-
-        // Filter functionality
-        document.getElementById('searchInput').addEventListener('input', filterTable);
-        document.getElementById('statusFilter').addEventListener('change', filterTable);
-
-        function filterTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            let count = 0;
-            
-            document.querySelectorAll('.reservation-row').forEach(row => {
-                const text = row.textContent.toLowerCase();
-                const matchesSearch = text.includes(searchTerm);
-                const matchesStatus = !statusFilter || row.dataset.status === statusFilter;
-                const visible = matchesSearch && matchesStatus;
-                
-                row.style.display = visible ? '' : 'none';
-                if (visible) count++;
-            });
-            
-            document.getElementById('totalCount').textContent = count;
-            document.getElementById('noResults').classList.toggle('hidden', count > 0);
-        }
-
-        // View details
-        function viewDetails(id) {
-            const res = reservationsData.find(r => r.id == id);
-            if (!res) return;
-
-            const resourceName = res.resource_name || ('Resource #' + res.resource_id);
-            const code = res.e_ticket_code || `SK-${res.id}-${res.reservation_date}`;
-            const pcNumber = res.pc_number || '—';
-            const isClaimed = res.claimed == 1;
-            
-            // Format date
-            const date = new Date(res.reservation_date);
-            const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-            
-            // Format time
-            const startTime = new Date('1970-01-01T' + res.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-            const endTime = new Date('1970-01-01T' + res.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-
-            const badge = document.getElementById('modalStatusBadge');
-            let displayStatus = res.status;
-            if (isClaimed) {
-                displayStatus = 'claimed';
-            }
-            badge.textContent = displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1);
-            badge.className = `status-badge status-${displayStatus.toLowerCase()}`;
-
-            // Build details HTML
-            let detailsHtml = `
-                <div class="detail-row"><span class="detail-label">Reservation #</span><span class="detail-value">#${res.id}</span></div>
-                <div class="detail-row"><span class="detail-label">Resource</span><span class="detail-value">${resourceName}</span></div>
-                <div class="detail-row"><span class="detail-label">PC Number</span><span class="detail-value">${pcNumber}</span></div>
-                <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${formattedDate}</span></div>
-                <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${startTime} – ${endTime}</span></div>
-                <div class="detail-row"><span class="detail-label">Purpose</span><span class="detail-value">${res.purpose || '—'}</span></div>
-                <div class="detail-row"><span class="detail-label">E-Ticket</span><span class="detail-value font-mono text-xs">${code}</span></div>
-            `;
-
-            // Add claimed info if applicable
-            if (isClaimed && res.claimed_at) {
-                const claimedDate = new Date(res.claimed_at).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                detailsHtml += `
-                    <div class="detail-row"><span class="detail-label">Claimed On</span><span class="detail-value">${claimedDate}</span></div>
-                `;
-            }
-
-            document.getElementById('modalBody').innerHTML = detailsHtml;
-
-            // Handle QR code and claimed sections
-            const qrSection = document.getElementById('qrSection');
-            const claimedMessage = document.getElementById('claimedMessage');
-            const downloadBtn = document.getElementById('downloadBtn');
-
-            if (isClaimed) {
-                // Hide QR section, show claimed message
-                qrSection.style.display = 'none';
-                claimedMessage.classList.remove('hidden');
-            } else {
-                // Show QR section, hide claimed message
-                qrSection.style.display = 'flex';
-                claimedMessage.classList.add('hidden');
-                
-                // Generate QR code
-                QRCode.toCanvas(document.getElementById('qrCanvas'), code, {
-                    width: 180,
-                    margin: 1,
-                    color: { dark: '#1e293b', light: '#ffffff' }
-                }, function(error) {
-                    if (error) console.error(error);
-                });
-                document.getElementById('qrCodeText').textContent = code;
-                
-                // Enable/disable download based on status
-                if (res.status.toLowerCase() === 'approved' && !isClaimed) {
-                    downloadBtn.disabled = false;
-                    downloadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                } else {
-                    downloadBtn.disabled = true;
-                    downloadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        <?php else: ?>
+            <?php foreach ($reservations as $res):
+                $isClaimed = !empty($res['claimed']) && $res['claimed'] == 1;
+                $status    = $isClaimed ? 'claimed' : strtolower($res['status'] ?? 'pending');
+                if ($status === 'approved') {
+                    $resDateTime = strtotime($res['reservation_date'] . ' ' . ($res['end_time'] ?? '23:59:59'));
+                    if ($resDateTime < time()) $status = 'expired';
                 }
-            }
+                $resource      = htmlspecialchars($res['resource_name'] ?? ('Resource #' . ($res['resource_id'] ?? '?')));
+                $pcNumber      = htmlspecialchars($res['pc_number'] ?? '');
+                $purpose       = htmlspecialchars($res['purpose'] ?: '—');
+                $formattedDate = (new DateTime($res['reservation_date']))->format('M j, Y');
+                $startTime     = date('g:i A', strtotime($res['start_time']));
+                $endTime       = date('g:i A', strtotime($res['end_time']));
+                $searchText    = strtolower("$resource $formattedDate $purpose");
 
-            openModal('detailsModal');
-        }
+                $avatarBg = [
+                    'pending'  => 'bg-amber-100 text-amber-700',
+                    'approved' => 'bg-emerald-100 text-emerald-700',
+                    'claimed'  => 'bg-purple-100 text-purple-700',
+                    'declined' => 'bg-red-100 text-red-600',
+                    'cancelled'=> 'bg-red-100 text-red-600',
+                    'expired'  => 'bg-slate-100 text-slate-500',
+                ][$status] ?? 'bg-slate-100 text-slate-500';
+            ?>
+                <div class="res-card"
+                     data-id="<?= $res['id'] ?>"
+                     data-status="<?= $status ?>"
+                     data-search="<?= htmlspecialchars($searchText, ENT_QUOTES) ?>"
+                     onclick="viewDetails(<?= $res['id'] ?>)">
 
-        function downloadTicket() {
-            const canvas = document.getElementById('qrCanvas');
-            const code   = document.getElementById('qrCodeText').textContent;
-            const link   = document.createElement('a');
-            link.download = `E-Ticket-${code}.png`;
-            link.href     = canvas.toDataURL('image/png');
-            link.click();
-        }
+                    <!-- Top: resource icon + name + badge -->
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-2xl <?= $avatarBg ?> flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-desktop text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-sm text-slate-800 truncate leading-tight"><?= $resource ?></p>
+                            <?php if ($pcNumber): ?>
+                                <p class="text-[11px] text-slate-400 truncate"><?= $pcNumber ?></p>
+                            <?php endif; ?>
+                        </div>
+                        <span class="status-badge status-<?= $status ?> flex-shrink-0">
+                            <?php $icons=['pending'=>'fa-regular fa-clock','approved'=>'fa-circle-check','claimed'=>'fa-check-double','declined'=>'fa-xmark','cancelled'=>'fa-ban','expired'=>'fa-regular fa-hourglass']; ?>
+                            <i class="fa-solid <?= $icons[$status] ?? 'fa-circle' ?> text-[9px]"></i>
+                            <?= ucfirst($status) ?>
+                        </span>
+                    </div>
 
-        // Cancel functionality
-        function handleCancel(id) {
-            cancelTargetId = id;
-            const res = reservationsData.find(r => r.id == id);
-            const resourceName = res ? (res.resource_name || 'Resource') : '';
-            document.getElementById('cancelConfirmResource').textContent = resourceName ? `"${resourceName}"` : '';
-            
-            // Set the form action dynamically
-            const form = document.getElementById('cancelForm');
-            form.action = '<?= base_url("reservation/cancel") ?>/' + id;
-            
-            openModal('cancelModal');
-        }
+                    <!-- Schedule -->
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <i class="fa-regular fa-calendar text-[10px] text-slate-400 flex-shrink-0"></i>
+                        <p class="text-xs text-slate-500 font-semibold"><?= $formattedDate ?></p>
+                        <span class="text-[10px] text-green-600 font-bold"><?= $startTime ?> – <?= $endTime ?></span>
+                    </div>
 
-        document.getElementById('confirmCancelBtn').addEventListener('click', function() {
-            if (!cancelTargetId) return;
-            
-            this.disabled = true;
-            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Canceling…';
-            
-            document.getElementById('cancelId').value = cancelTargetId;
-            document.getElementById('cancelForm').submit();
-        });
+                    <!-- Purpose -->
+                    <p class="text-[11px] text-slate-400 font-medium truncate mb-3"><?= $purpose ?></p>
 
-        // Modal helpers
-        function openModal(id) { 
-            document.getElementById(id).classList.add('show'); 
-            document.body.style.overflow = 'hidden'; 
-        }
-        
-        function closeModal(id) { 
-            document.getElementById(id).classList.remove('show'); 
-            document.body.style.overflow = ''; 
-            
-            // Reset cancel button if modal was closed
-            if (id === 'cancelModal') {
-                const btn = document.getElementById('confirmCancelBtn');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Yes, Cancel';
-            }
-        }
-        
-        function handleModalBackdrop(e, id) { 
-            if (e.target === document.getElementById(id)) closeModal(id); 
-        }
-        
-        document.addEventListener('keydown', e => { 
-            if (e.key === 'Escape') { 
-                closeModal('detailsModal'); 
-                closeModal('cancelModal'); 
-            } 
-        });
+                    <!-- Footer: cancel for pending, or tap hint -->
+                    <?php if ($status === 'pending'): ?>
+                        <div class="flex gap-2 pt-2.5 border-t border-slate-100" onclick="event.stopPropagation()">
+                            <button onclick="handleCancel(<?= $res['id'] ?>)"
+                                class="flex-1 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-xmark text-[10px]"></i> Cancel
+                            </button>
+                            <button onclick="viewDetails(<?= $res['id'] ?>)"
+                                class="flex-1 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-eye text-[10px]"></i> View
+                            </button>
+                        </div>
+                    <?php else: ?>
+                        <div class="flex items-center justify-between pt-2.5 border-t border-slate-100">
+                            <p class="text-[10px] text-slate-300 font-semibold">#<?= $res['id'] ?></p>
+                            <p class="text-[10px] text-slate-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-chevron-right text-[9px]"></i> Tap to view</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
 
-        // Initialize filter count
-        filterTable();
-    </script>
+    <!-- Mobile no-results -->
+    <div id="mobileEmpty" class="md:hidden card-empty" style="display:none">
+        <i class="fa-solid fa-filter-circle-xmark text-4xl text-slate-200 mb-3 block"></i>
+        <p class="font-black text-slate-400">No reservations match your search.</p>
+    </div>
+
+</main>
+
+<script>
+const reservationsData = <?= json_encode($reservations ?? []) ?>;
+const allTableRows     = Array.from(document.querySelectorAll('#reservationTableBody .reservation-row'));
+const allCards         = Array.from(document.querySelectorAll('#mobileCardList .res-card'));
+let cancelTargetId     = null;
+
+/* ──────────────────────────────────────────
+   FILTERS  (synced across table + cards)
+────────────────────────────────────────── */
+function filterTable() {
+    const q  = document.getElementById('searchInput').value.toLowerCase();
+    const sf = document.getElementById('statusFilter').value;
+    let n = 0;
+
+    const matches = el => {
+        const mQ = !q  || (el.dataset.search || el.textContent).toLowerCase().includes(q);
+        const mS = !sf || el.dataset.status === sf;
+        return mQ && mS;
+    };
+
+    allTableRows.forEach(row => {
+        const show = matches(row); row.style.display = show ? '' : 'none'; if (show) n++;
+    });
+
+    let cardVisible = 0;
+    allCards.forEach(card => {
+        const show = matches(card); card.style.display = show ? '' : 'none'; if (show) cardVisible++;
+    });
+
+    document.getElementById('totalCount').textContent = n;
+    document.getElementById('noResults').classList.toggle('hidden', n > 0);
+    const mobileEmpty = document.getElementById('mobileEmpty');
+    if (allCards.length > 0) mobileEmpty.style.display = cardVisible === 0 ? 'block' : 'none';
+
+    const total = allTableRows.length || allCards.length;
+    document.getElementById('resultHint').textContent = `Showing ${n} of ${total} reservation${total !== 1 ? 's' : ''}`;
+}
+filterTable();
+
+/* ──────────────────────────────────────────
+   VIEW DETAILS
+────────────────────────────────────────── */
+function viewDetails(id) {
+    const res = reservationsData.find(r => r.id == id);
+    if (!res) return;
+
+    const isClaimed  = res.claimed == 1;
+    const rawStatus  = (res.status || 'pending').toLowerCase();
+    const resEndDt   = new Date(res.reservation_date + 'T' + res.end_time);
+    const isExpired  = !isClaimed && rawStatus === 'approved' && resEndDt < new Date();
+    const status     = isClaimed ? 'claimed' : (isExpired ? 'expired' : rawStatus);
+    const isApproved = status === 'approved';
+    const isPending  = status === 'pending';
+    const isRejected = status === 'declined' || status === 'cancelled';
+
+    const resourceName  = res.resource_name || ('Resource #' + res.resource_id);
+    const pcNumber      = res.pc_number || '—';
+    const code          = res.e_ticket_code || null;
+    const fmtDate       = new Date(res.reservation_date).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+    const fmtStart      = new Date('1970-01-01T' + res.start_time).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+    const fmtEnd        = new Date('1970-01-01T' + res.end_time).toLocaleTimeString('en-US',   { hour:'numeric', minute:'2-digit' });
+
+    const badge = document.getElementById('modalStatusBadge');
+    badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+    badge.className   = `status-badge status-${status}`;
+
+    let html = `
+        <div class="detail-row"><span class="detail-label">Reservation #</span><span class="detail-value">#${res.id}</span></div>
+        <div class="detail-row"><span class="detail-label">Resource</span><span class="detail-value">${resourceName}</span></div>
+        <div class="detail-row"><span class="detail-label">PC / Station</span><span class="detail-value">${pcNumber}</span></div>
+        <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${fmtDate}</span></div>
+        <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${fmtStart} – ${fmtEnd}</span></div>
+        <div class="detail-row"><span class="detail-label">Purpose</span><span class="detail-value">${res.purpose || '—'}</span></div>`;
+    if (isClaimed && res.claimed_at) {
+        const fmtClaimed = new Date(res.claimed_at).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+        html += `<div class="detail-row"><span class="detail-label">Claimed On</span><span class="detail-value">${fmtClaimed}</span></div>`;
+    }
+    document.getElementById('modalBody').innerHTML = html;
+
+    ['pendingNotice','rejectedNotice','qrSection','claimedNotice','expiredNotice'].forEach(id => document.getElementById(id).classList.add('hidden'));
+
+    if      (isPending)  { document.getElementById('pendingNotice').classList.remove('hidden'); }
+    else if (isRejected) {
+        document.getElementById('rejectedNotice').classList.remove('hidden');
+        document.getElementById('rejectedText').textContent = status === 'declined' ? 'This reservation was declined by an SK officer.' : 'This reservation was cancelled.';
+    }
+    else if (isApproved && code) {
+        document.getElementById('qrSection').classList.remove('hidden');
+        document.getElementById('qrCodeText').textContent = code;
+        QRCode.toCanvas(document.getElementById('qrCanvas'), code, { width:180, margin:1, color:{ dark:'#1e293b', light:'#ffffff' } });
+    }
+    else if (isApproved && !code) {
+        document.getElementById('pendingNotice').classList.remove('hidden');
+    }
+    else if (status === 'expired') { document.getElementById('expiredNotice').classList.remove('hidden'); }
+    else if (isClaimed) {
+        document.getElementById('claimedNotice').classList.remove('hidden');
+        if (res.claimed_at) {
+            const fc = new Date(res.claimed_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+            document.getElementById('claimedAtText').textContent = 'Used on ' + fc;
+        }
+    }
+
+    openModal('detailsModal');
+}
+
+function downloadTicket() {
+    const canvas = document.getElementById('qrCanvas');
+    const code   = document.getElementById('qrCodeText').textContent;
+    const link   = document.createElement('a');
+    link.download = `E-Ticket-${code}.png`; link.href = canvas.toDataURL('image/png'); link.click();
+}
+
+/* ──────────────────────────────────────────
+   CANCEL
+────────────────────────────────────────── */
+function handleCancel(id) {
+    cancelTargetId = id;
+    const res = reservationsData.find(r => r.id == id);
+    document.getElementById('cancelConfirmResource').textContent = res ? `"${res.resource_name || 'Resource'}"` : '';
+    document.getElementById('cancelForm').action = '<?= base_url("reservation/cancel") ?>/' + id;
+    openModal('cancelModal');
+}
+
+document.getElementById('confirmCancelBtn').addEventListener('click', function() {
+    this.disabled = true;
+    this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Canceling…';
+    document.getElementById('cancelId').value = cancelTargetId;
+    document.getElementById('cancelForm').submit();
+});
+
+/* ──────────────────────────────────────────
+   MODAL HELPERS
+────────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('show');    document.body.style.overflow = 'hidden'; }
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show'); document.body.style.overflow = '';
+    if (id === 'cancelModal') {
+        const btn = document.getElementById('confirmCancelBtn');
+        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Yes, Cancel';
+    }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('detailsModal'); closeModal('cancelModal'); } });
+</script>
 </body>
 </html>

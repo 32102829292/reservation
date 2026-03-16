@@ -85,9 +85,13 @@ class Reservation extends BaseController
                            ->with('error', 'You are currently blocked from making reservations.');
         }
 
-        if (!$reservationModel->checkFairness($userId)) {
+        $fairness = $reservationModel->checkFairness($userId);
+        if (!$fairness['fair']) {
+            $message = isset($fairness['blocked']) 
+                ? 'You have reached the maximum of 3 reservations in a 2-week period. Blocked until ' . $fairness['until']
+                : 'You have reached the maximum of 3 reservations in a 2-week period.';
             return redirect()->back()
-                           ->with('error', 'You have reached the maximum of 3 reservations in a 2-week period.');
+                           ->with('error', $message);
         }
 
         $rules = [

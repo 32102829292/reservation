@@ -12,9 +12,10 @@ class AccountModel extends Model
     protected $allowedFields = [
         'user_id',
         'password',
+        'is_verified',
         'verification_token',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     protected $useTimestamps = false;
