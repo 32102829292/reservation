@@ -29,30 +29,45 @@ class RagController extends Controller
         $words = array_filter(preg_split('/\s+/', strtolower($query)));
         $books = [];
 
-        // Pass 1: search by each word across all fields
+        // Scored keyword search — weights title/author/genre higher than preface
         if (!empty($words)) {
-            $builder = $db->table('books');
-            $builder->select('id, title, author, genre, preface, published_year, total_copies, available_copies');
-            $builder->where('status', 'active');
-            $builder->groupStart();
+            $scoreParts = [];
+            $bindings   = [];
+
             foreach ($words as $word) {
-                $builder->orLike('title',   $word)
-                        ->orLike('author',  $word)
-                        ->orLike('genre',   $word)
-                        ->orLike('preface', $word);
+                $w = '%' . $word . '%';
+                $scoreParts[] = "(CASE WHEN title   LIKE ? THEN 4 ELSE 0 END)";
+                $scoreParts[] = "(CASE WHEN author  LIKE ? THEN 3 ELSE 0 END)";
+                $scoreParts[] = "(CASE WHEN genre   LIKE ? THEN 3 ELSE 0 END)";
+                $scoreParts[] = "(CASE WHEN preface LIKE ? THEN 1 ELSE 0 END)";
+                array_push($bindings, $w, $w, $w, $w);
             }
-            $builder->groupEnd();
-            $builder->limit(8);
-            $books = $builder->get()->getResultArray();
+
+            $scoreExpr   = implode(' + ', $scoreParts);
+            $allBindings = array_merge($bindings, $bindings);
+
+            $sql = "
+                SELECT id, title, author, genre, preface, published_year,
+                       total_copies, available_copies,
+                       ({$scoreExpr}) AS relevance
+                FROM books
+                WHERE status = 'active'
+                  AND ({$scoreExpr}) > 0
+                ORDER BY relevance DESC
+                LIMIT 8
+            ";
+
+            $books = $db->query($sql, $allBindings)->getResultArray();
         }
 
-        // Pass 2: fallback — return all active books if no match found
-        if (empty($books)) {
+        // If keyword search found fewer than 3 results (vague/semantic query),
+        // send the full catalog to Groq and let the LLM do the matching
+        if (count($books) < 3) {
             $books = $db->table('books')
                 ->select('id, title, author, genre, preface, published_year, total_copies, available_copies')
                 ->where('status', 'active')
                 ->orderBy('title', 'ASC')
-                ->limit(8)
+                ->limit(20)
                 ->get()->getResultArray();
         }
 
@@ -63,6 +78,7 @@ class RagController extends Controller
                 'message'    => 'The library catalog is currently empty.',
             ]);
         }
+        // ─────────────────────────────────────────────────────────
 
         // ── AUGMENTATION ─────────────────────────────────────────
         $context = '';
@@ -137,6 +153,7 @@ class RagController extends Controller
 
         // cURL failed
         if ($curlErr) {
+            log_message('error', 'Groq cURL error: ' . $curlErr);
             return $this->response->setJSON([
                 'suggestion' => 'Could not reach the AI service right now. Here are the closest matching books.',
                 'books'      => $books,
@@ -145,6 +162,7 @@ class RagController extends Controller
 
         // API error — still return books with graceful message
         if ($httpCode !== 200) {
+            log_message('error', 'Groq HTTP ' . $httpCode . ': ' . $raw);
             $decoded = json_decode($raw, true);
             $errMsg  = $decoded['error']['message'] ?? 'AI service unavailable.';
             return $this->response->setJSON([
