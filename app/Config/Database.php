@@ -9,23 +9,9 @@ use CodeIgniter\Database\Config;
  */
 class Database extends Config
 {
-    /**
-     * The directory that holds the Migrations and Seeds directories.
-     */
     public string $filesPath = APPPATH . 'Database' . DIRECTORY_SEPARATOR;
-
-    /**
-     * Lets you choose which connection group to use if no other is specified.
-     */
     public string $defaultGroup = 'default';
 
-    /**
-     * The default database connection.
-     * - Local (XAMPP):     uses MySQLi via .env
-     * - Production (Fly):  uses Postgre via Fly secrets
-     *
-     * @var array<string, mixed>
-     */
     public array $default = [
         'DSN'          => '',
         'hostname'     => 'localhost',
@@ -53,11 +39,6 @@ class Database extends Config
         ],
     ];
 
-    /**
-     * This database connection is used when running PHPUnit database tests.
-     *
-     * @var array<string, mixed>
-     */
     public array $tests = [
         'DSN'         => '',
         'hostname'    => '127.0.0.1',
@@ -90,22 +71,28 @@ class Database extends Config
     {
         parent::__construct();
 
-        // Switch to Supabase PostgreSQL on production (Fly.io)
         if (ENVIRONMENT === 'production') {
-            $this->default['hostname'] = env('DB_HOSTNAME', 'localhost');
-            $this->default['username'] = env('DB_USERNAME', 'postgres');
-            $this->default['password'] = env('DB_PASSWORD', '');
-            $this->default['database'] = env('DB_DATABASE', 'postgres');
-            $this->default['DBDriver'] = env('DB_DRIVER',   'Postgre');
-            $this->default['port']     = (int) env('DB_PORT', 5432);
-            $this->default['charset']  = 'utf8';
-            $this->default['DBCollat'] = '';
-            $this->default['schema']   = 'public';
+            $dsn = env('DATABASE_URL', '');
+
+            if (!empty($dsn)) {
+                // Use full connection string (from Supabase)
+                $this->default['DSN']      = $dsn;
+                $this->default['DBDriver'] = 'Postgre';
+                $this->default['schema']   = 'public';
+            } else {
+                // Fallback to individual vars
+                $this->default['hostname'] = env('DB_HOSTNAME', '');
+                $this->default['username'] = env('DB_USERNAME', 'postgres');
+                $this->default['password'] = env('DB_PASSWORD', '');
+                $this->default['database'] = env('DB_DATABASE', 'postgres');
+                $this->default['DBDriver'] = 'Postgre';
+                $this->default['port']     = (int) env('DB_PORT', 5432);
+                $this->default['charset']  = 'utf8';
+                $this->default['DBCollat'] = '';
+                $this->default['schema']   = 'public';
+            }
         }
 
-        // Ensure that we always set the database group to 'tests' if
-        // we are currently running an automated test suite, so that
-        // we don't overwrite live data on accident.
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
         }
