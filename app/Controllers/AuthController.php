@@ -176,7 +176,7 @@ class AuthController extends BaseController
         $sent = $this->sendVerificationEmail($email, $fullName, $verificationToken);
 
         if (!$sent) {
-            $session->setFlashdata('error', 'Account created but email failed. Debug: HOST=' . env('EMAIL_SMTP_HOST') . ' USER=' . env('EMAIL_SMTP_USER') . ' PASS=' . (env('EMAIL_SMTP_PASS') ? 'SET('.strlen(env('EMAIL_SMTP_PASS')).'chars)' : 'EMPTY'));
+            $session->setFlashdata('error', 'Account created but we could not send the verification email. Please contact support.');
             return redirect()->to('/login');
         }
 
@@ -275,63 +275,100 @@ class AuthController extends BaseController
 
     private function sendVerificationEmail(string $to, string $name, string $token): bool
     {
-        $verifyUrl    = base_url("verify-email/{$token}");
-        $config       = new \Config\Email();
+        $verifyUrl = base_url("verify-email/{$token}");
+        $apiKey    = env('BREVO_API_KEY', '');
 
-        // Log config for debugging
-        log_message('info', '[Email Debug] SMTPHost=' . env('EMAIL_SMTP_HOST') .
-            ' SMTPUser=' . env('EMAIL_SMTP_USER') .
-            ' SMTPPass=' . (env('EMAIL_SMTP_PASS') ? 'SET' : 'EMPTY') .
-            ' FromAddress=' . env('EMAIL_FROM_ADDRESS'));
-
-        $emailService = \Config\Services::email($config, false);
-
-        $emailService->clear();
-        $emailService->setTo($to);
-        $emailService->setFrom(
-            env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph'),
-            env('EMAIL_FROM_NAME',    'E-Learning System')
-        );
-        $emailService->setSubject('Verify Your Email Address — E-Learning System');
-        $emailService->setMessage(view('emails/verify_email', [
-            'name'      => $name,
-            'verifyUrl' => $verifyUrl,
-        ]));
-        $emailService->setMailType('html');
-
-        $result = $emailService->send();
-
-        if (!$result) {
-            log_message('error', '[AuthController] Verify email FAILED for ' . $to . ' | ' . $emailService->printDebugger(['headers', 'smtp']));
+        if (empty($apiKey)) {
+            log_message('error', '[AuthController] BREVO_API_KEY is not set');
+            return false;
         }
 
-        return $result;
+        $body = view('emails/verify_email', [
+            'name'      => $name,
+            'verifyUrl' => $verifyUrl,
+        ]);
+
+        $payload = json_encode([
+            'sender'     => ['name' => env('EMAIL_FROM_NAME', 'E-Learning System'), 'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph')],
+            'to'         => [['email' => $to, 'name' => $name]],
+            'subject'    => 'Verify Your Email Address — E-Learning System',
+            'htmlContent'=> $body,
+        ]);
+
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'Accept: application/json',
+                'api-key: ' . $apiKey,
+            ],
+        ]);
+
+        $response   = curl_exec($ch);
+        $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError  = curl_error($ch);
+        curl_close($ch);
+
+        if ($curlError) {
+            log_message('error', '[AuthController] Brevo API curl error: ' . $curlError);
+            return false;
+        }
+
+        if ($httpStatus !== 201) {
+            log_message('error', '[AuthController] Brevo API failed: HTTP ' . $httpStatus . ' | ' . $response);
+            return false;
+        }
+
+        return true;
     }
 
     private function notifyChairmanNewSK(array $user): void
     {
         $chairmanEmail = env('CHAIRMAN_EMAIL', 'chairman@elearning.edu.ph');
-        $manageUrl     = base_url('admin/manage-sk');
-        $config        = new \Config\Email();
-        $emailService  = \Config\Services::email($config, false);
+        $apiKey        = env('BREVO_API_KEY', '');
 
-        $emailService->clear();
-        $emailService->setTo($chairmanEmail);
-        $emailService->setFrom(
-            env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph'),
-            env('EMAIL_FROM_NAME',    'E-Learning System')
-        );
-        $emailService->setSubject('New SK Account Awaiting Your Approval — Action Required');
-        $emailService->setMessage(view('emails/admin_sk_pending', [
+        if (empty($apiKey)) {
+            log_message('error', '[AuthController] BREVO_API_KEY not set for chairman notification');
+            return;
+        }
+
+        $body = view('emails/admin_sk_pending', [
             'skName'    => $user['name'],
             'skEmail'   => $user['email'],
             'appliedAt' => $user['created_at'],
-            'manageUrl' => $manageUrl,
-        ]));
-        $emailService->setMailType('html');
+            'manageUrl' => base_url('admin/manage-sk'),
+        ]);
 
-        if (!$emailService->send()) {
-            log_message('error', '[AuthController] Chairman SK notification FAILED: ' . $emailService->printDebugger(['headers']));
+        $payload = json_encode([
+            'sender'      => ['name' => env('EMAIL_FROM_NAME', 'E-Learning System'), 'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph')],
+            'to'          => [['email' => $chairmanEmail]],
+            'subject'     => 'New SK Account Awaiting Your Approval — Action Required',
+            'htmlContent' => $body,
+        ]);
+
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'Accept: application/json',
+                'api-key: ' . $apiKey,
+            ],
+        ]);
+
+        $response   = curl_exec($ch);
+        $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpStatus !== 201) {
+            log_message('error', '[AuthController] Chairman SK notification failed: HTTP ' . $httpStatus . ' | ' . $response);
         }
     }
 }
