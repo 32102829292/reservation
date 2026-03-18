@@ -105,28 +105,49 @@ class AdminController extends Controller
 
     private function sendSKDecisionEmail(string $to, string $name, string $decision): void
     {
+        $apiKey = env('BREVO_API_KEY', '');
+
+        if (empty($apiKey)) {
+            log_message('error', '[AdminController] BREVO_API_KEY is not set');
+            return;
+        }
+
         $subject = $decision === 'approved'
-            ? '🎉 Your SK Account Has Been Approved!'
+            ? 'Your SK Account Has Been Approved'
             : 'Update on Your SK Account Application';
 
-        $emailService = \Config\Services::email();
-        $emailService->clear();
-        $emailService->setTo($to);
-        $emailService->setFrom(
-            env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph'),
-            env('EMAIL_FROM_NAME',    'E-Learning System')
-        );
-        $emailService->setSubject($subject);
-        $emailService->setMessage(view('emails/sk_decision', [
+        $body = view('emails/sk_decision', [
             'name'     => $name,
             'decision' => $decision,
             'loginUrl' => base_url('login'),
-        ]));
-        $emailService->setMailType('html');
+        ]);
 
-        if (!$emailService->send()) {
-            log_message('error', "[AdminController] SK decision email ({$decision}) FAILED for {$to}: "
-                . $emailService->printDebugger(['headers']));
+        $payload = json_encode([
+            'sender'      => ['name' => env('EMAIL_FROM_NAME', 'E-Learning System'), 'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph')],
+            'to'          => [['email' => $to, 'name' => $name]],
+            'subject'     => $subject,
+            'htmlContent' => $body,
+        ]);
+
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'Accept: application/json',
+                'api-key: ' . $apiKey,
+            ],
+        ]);
+
+        $response   = curl_exec($ch);
+        $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpStatus !== 201) {
+            log_message('error', '[AdminController] SK decision email failed: HTTP ' . $httpStatus . ' | ' . $response);
         }
     }
 
@@ -367,8 +388,12 @@ class AdminController extends Controller
                 ]));
             }
 
-            $this->logActivity('print', $reservationId,
-                "Print log saved for reservation #{$reservationId} — printed: {$printed}, pages: {$pages}");
+            try {
+                $this->logActivity('print', $reservationId,
+                    "Print log saved for reservation #{$reservationId} — printed: " . ($printed ? 'true' : 'false') . ", pages: {$pages}");
+            } catch (\Exception $e) {
+                log_message('error', 'logActivity failed in logPrint: ' . $e->getMessage());
+            }
 
             return $this->response->setJSON(['ok' => true]);
 
