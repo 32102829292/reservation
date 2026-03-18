@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controllers;
 
 use App\Models\ReservationModel;
@@ -51,13 +50,13 @@ class SkController extends BaseController
         $approved = count(array_filter($myReservations, fn($r) => $r['status'] === 'approved'));
         $declined = count(array_filter($myReservations, fn($r) => in_array($r['status'], ['declined', 'canceled'])));
 
-        $claimed = $model->where('claimed', 1)->countAllResults();
+        $claimed = $model->where('claimed', true)->countAllResults();
 
         $today         = date('Y-m-d');
         $todayTotal    = $model->where('reservation_date', $today)->countAllResults();
         $todayApproved = $model->where('reservation_date', $today)->where('status', 'approved')->countAllResults();
         $todayPending  = $model->where('reservation_date', $today)->where('status', 'pending')->countAllResults();
-        $todayClaimed  = $model->where('reservation_date', $today)->where('claimed', 1)->countAllResults();
+        $todayClaimed  = $model->where('reservation_date', $today)->where('claimed', true)->countAllResults();
 
         $thirtyDaysAgo = date('Y-m-d', strtotime('-30 days'));
         $monthlyTotal  = $model->where('reservation_date >=', $thirtyDaysAgo)->countAllResults();
@@ -171,7 +170,7 @@ class SkController extends BaseController
 
         if ($status) {
             if ($status === 'claimed') {
-                $query->where('r.claimed', 1);
+                $query->where('r.claimed', true);
             } else {
                 $query->where('r.status', $status);
             }
@@ -186,7 +185,7 @@ class SkController extends BaseController
 
         $pendingCount  = $model->where('status', 'pending')->countAllResults();
         $approvedCount = $model->where('status', 'approved')->countAllResults();
-        $claimedCount  = $model->where('claimed', 1)->countAllResults();
+        $claimedCount  = $model->where('claimed', true)->countAllResults();
         $declinedCount = $model->where('status', 'declined')->countAllResults();
 
         $rawPrintLogs = $db->table('print_logs')
@@ -441,7 +440,7 @@ class SkController extends BaseController
             'purpose'          => $purpose,
             'pc_numbers'       => !empty($pcs) ? json_encode($pcs) : null,
             'status'           => 'pending',
-            'claimed'          => 0,
+            'claimed'          => false,
             'e_ticket_code'    => $eTicket,
             'created_at'       => date('Y-m-d H:i:s'),
         ];
@@ -511,12 +510,12 @@ class SkController extends BaseController
         $reservation = $reservationModel
             ->where('e_ticket_code', $code)
             ->where('status', 'approved')
-            ->where('claimed', 0)
+            ->where('claimed', false)
             ->first();
 
         if ($reservation) {
             $reservationModel->update($reservation['id'], [
-                'claimed'    => 1,
+                'claimed'    => true,
                 'claimed_at' => date('Y-m-d H:i:s'),
             ]);
             return $this->response->setJSON([
@@ -526,7 +525,7 @@ class SkController extends BaseController
             ]);
         }
 
-        if ($reservationModel->where('e_ticket_code', $code)->where('claimed', 1)->first()) {
+        if ($reservationModel->where('e_ticket_code', $code)->where('claimed', true)->first()) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Ticket already claimed.']);
         }
 
@@ -692,7 +691,7 @@ class SkController extends BaseController
             ->select('reservations.*, resources.name as resource_name, users.name as visitor_name, users.email as user_email')
             ->join('resources', 'resources.id = reservations.resource_id', 'left')
             ->join('users',     'users.id = reservations.user_id',         'left')
-            ->where('reservations.claimed', 1)
+            ->where('reservations.claimed', true)
             ->orderBy('reservations.claimed_at', 'DESC')
             ->findAll();
 
@@ -716,7 +715,7 @@ class SkController extends BaseController
             ->select('reservations.*, resources.name as resource_name, users.name as visitor_name, users.email as user_email')
             ->join('resources', 'resources.id = reservations.resource_id', 'left')
             ->join('users',     'users.id = reservations.user_id',         'left')
-            ->where('reservations.claimed', 1)
+            ->where('reservations.claimed', true)
             ->orderBy('reservations.claimed_at', 'DESC')
             ->findAll();
 
@@ -792,12 +791,8 @@ class SkController extends BaseController
         return $this->response->setJSON(['new_reservations' => $newReservations]);
     }
 
-    // =========================================================================
-    // AI PDF EXTRACTION — public entry point
-    // =========================================================================
     public function extractPdfWithAI()
     {
-        // Remove the set_error_handler so gz warnings never become exceptions
         try {
             return $this->_doExtractPdfWithAI();
         } catch (\Throwable $e) {
@@ -812,9 +807,6 @@ class SkController extends BaseController
         }
     }
 
-    // =========================================================================
-    // AI PDF EXTRACTION — inner logic
-    // =========================================================================
     private function _doExtractPdfWithAI(): \CodeIgniter\HTTP\ResponseInterface
     {
         if (!$this->request->isAJAX()) {
@@ -834,8 +826,7 @@ class SkController extends BaseController
             return $this->response->setJSON(['ok' => false, 'error' => 'No PDF data received.']);
         }
 
-        $maxSize = 14000000;
-        if (strlen($pdfBase64) > $maxSize) {
+        if (strlen($pdfBase64) > 14000000) {
             return $this->response->setJSON(['ok' => false, 'error' => 'PDF is too large. Maximum is 10MB.']);
         }
 
@@ -843,7 +834,6 @@ class SkController extends BaseController
             return $this->response->setJSON(['ok' => false, 'error' => 'cURL is not enabled on this server.']);
         }
 
-        // ── API key ───────────────────────────────────────────────────────
         $apiKey = env('GROQ_API_KEY')
                ?: getenv('GROQ_API_KEY')
                ?: ($_ENV['GROQ_API_KEY']    ?? null)
@@ -853,32 +843,24 @@ class SkController extends BaseController
             return $this->response->setJSON(['ok' => false, 'error' => 'GROQ_API_KEY is not set in your .env file.']);
         }
 
-        // ── Decode PDF ────────────────────────────────────────────────────
         $pdfBinary = base64_decode($pdfBase64, true);
         if ($pdfBinary === false || strlen($pdfBinary) < 10) {
             return $this->response->setJSON(['ok' => false, 'error' => 'Invalid base64 PDF data.']);
         }
 
-        // ── Write temp file ───────────────────────────────────────────────
         $tmpDir  = sys_get_temp_dir() . DIRECTORY_SEPARATOR;
         $tmpPath = $tmpDir . 'sk_pdf_' . uniqid('', true) . '.pdf';
 
         if (@file_put_contents($tmpPath, $pdfBinary) === false) {
-            return $this->response->setJSON([
-                'ok'    => false,
-                'error' => 'Could not write temp file to: ' . $tmpDir,
-            ]);
+            return $this->response->setJSON(['ok' => false, 'error' => 'Could not write temp file to: ' . $tmpDir]);
         }
 
-        // ── Extract text ──────────────────────────────────────────────────
         $method  = 'unknown';
         $pdfText = $this->extractTextFromPdf($tmpPath, $method);
 
         if (file_exists($tmpPath)) {
             @unlink($tmpPath);
         }
-
-        log_message('debug', 'PDF text extraction — method: ' . $method . ', chars: ' . strlen($pdfText));
 
         if (strlen(trim($pdfText)) < 20) {
             return $this->response->setJSON([
@@ -890,21 +872,10 @@ class SkController extends BaseController
 
         $pdfText = mb_substr(trim($pdfText), 0, 8000);
 
-        // ── Groq prompt ───────────────────────────────────────────────────
         $prompt = 'You are a book cataloging assistant. Extract bibliographic information from this PDF text.
 
 Return ONLY a raw JSON object — no markdown, no backticks, no explanation before or after. Exactly these keys:
 {"title":"","author":"","genre":"","published_year":"","isbn":"","preface":""}
-
-Instructions:
-- title: Look for the book title on the first page, cover, title page, or header. It is usually the largest or most prominent text. If you see a clear title, use it even if you are not 100% certain.
-- author: Look for "By [Name]", "Author:", or a name near the title. Check the copyright page too.
-- genre: Infer from the content if not stated. Use: Fiction / Non-Fiction / Science / History / Biography / Self-Help / Children / Academic / etc.
-- published_year: Look for copyright year (©), "Published in", or a year near publisher info. 4-digit year only, or empty string.
-- isbn: Look for ISBN-10 or ISBN-13 near the copyright page. Digits and hyphens only, or empty string.
-- preface: Write a 2-4 sentence description of what this book is about in third person, based on the content.
-
-IMPORTANT: Make your best reasonable guess for title and author based on the text. Only use an empty string if there is truly no possible indication whatsoever.
 
 PDF TEXT:
 ' . $pdfText;
@@ -913,12 +884,9 @@ PDF TEXT:
             'model'       => 'llama-3.3-70b-versatile',
             'max_tokens'  => 800,
             'temperature' => 0,
-            'messages'    => [
-                ['role' => 'user', 'content' => $prompt],
-            ],
+            'messages'    => [['role' => 'user', 'content' => $prompt]],
         ]);
 
-        // ── Call Groq ─────────────────────────────────────────────────────
         $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -935,11 +903,9 @@ PDF TEXT:
         $response   = curl_exec($ch);
         $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError  = curl_error($ch);
-        $curlErrNo  = curl_errno($ch);
         curl_close($ch);
 
         if ($curlError) {
-            log_message('error', 'Groq curl error #' . $curlErrNo . ': ' . $curlError);
             return $this->response->setJSON(['ok' => false, 'error' => 'Network error reaching Groq: ' . $curlError]);
         }
 
@@ -950,9 +916,7 @@ PDF TEXT:
         $groqData = json_decode($response, true);
 
         if ($httpStatus !== 200) {
-            $msg = $groqData['error']['message']
-                ?? ('Groq HTTP ' . $httpStatus . ': ' . substr($response, 0, 200));
-            log_message('error', 'Groq API error: ' . $msg);
+            $msg = $groqData['error']['message'] ?? ('Groq HTTP ' . $httpStatus);
             return $this->response->setJSON(['ok' => false, 'error' => 'Groq error: ' . $msg]);
         }
 
@@ -962,11 +926,9 @@ PDF TEXT:
             return $this->response->setJSON(['ok' => false, 'error' => 'Groq returned empty content.']);
         }
 
-        // Strip markdown fences if present
         $clean = trim(preg_replace('/^```(?:json)?\s*/m', '', $rawText));
         $clean = trim(preg_replace('/```\s*$/m', '', $clean));
 
-        // Extract JSON object even if surrounded by prose
         if (preg_match('/\{[\s\S]*\}/m', $clean, $m)) {
             $clean = $m[0];
         }
@@ -974,7 +936,6 @@ PDF TEXT:
         $extracted = json_decode($clean, true);
 
         if (!is_array($extracted)) {
-            log_message('error', 'Groq bad JSON: ' . substr($rawText, 0, 500));
             return $this->response->setJSON([
                 'ok'    => false,
                 'error' => 'AI response was not valid JSON. Got: ' . mb_substr($rawText, 0, 150),
@@ -982,20 +943,14 @@ PDF TEXT:
         }
 
         foreach (['title', 'author', 'genre', 'published_year', 'isbn', 'preface'] as $key) {
-            if (!isset($extracted[$key])) {
-                $extracted[$key] = '';
-            }
+            if (!isset($extracted[$key])) $extracted[$key] = '';
         }
 
         return $this->response->setJSON(['ok' => true, 'data' => $extracted]);
     }
 
-    // =========================================================================
-    // PDF TEXT EXTRACTION
-    // =========================================================================
     private function extractTextFromPdf(string $filePath, string &$method = ''): string
     {
-        // ── Method 1: pdftotext (poppler-utils) ──────────────────────────
         $shellDisabled = array_map('trim', explode(',', ini_get('disable_functions')));
         if (function_exists('shell_exec') && !in_array('shell_exec', $shellDisabled)) {
             $which = trim((string) @shell_exec('which pdftotext 2>/dev/null'));
@@ -1009,7 +964,6 @@ PDF TEXT:
             }
         }
 
-        // ── Method 2: Decompress zlib streams then parse ──────────────────
         $method  = 'php-zlib';
         $content = @file_get_contents($filePath);
         if ($content === false || strlen($content) < 10) {
@@ -1018,10 +972,8 @@ PDF TEXT:
         }
 
         $text = '';
-
         preg_match_all('/stream\r?\n(.*?)\r?\nendstream/s', $content, $streamMatches);
         foreach ($streamMatches[1] as $streamData) {
-            // Use tryDecompress — never throws, always returns something
             $decompressed = $this->tryDecompress($streamData);
             $streamText   = $this->parseTextFromPdfStream($decompressed);
             if (strlen(trim($streamText)) > 0) {
@@ -1029,7 +981,6 @@ PDF TEXT:
             }
         }
 
-        // ── Method 3: ASCII fallback ──────────────────────────────────────
         if (strlen(trim($text)) < 50) {
             $method = 'php-ascii-fallback';
             $text   = $this->extractAsciiFromPdf($content);
@@ -1043,57 +994,35 @@ PDF TEXT:
 
     private function tryDecompress(string $data): string
     {
-        // Try 1: zlib with header (FlateDecode standard)
         if (strlen($data) >= 2) {
             $result = @gzuncompress($data);
-            if ($result !== false && strlen($result) > 0) {
-                return $result;
-            }
+            if ($result !== false && strlen($result) > 0) return $result;
         }
-
-        // Try 2: raw deflate without header
         if (strlen($data) >= 2) {
             $result = @gzinflate($data);
-            if ($result !== false && strlen($result) > 0) {
-                return $result;
-            }
+            if ($result !== false && strlen($result) > 0) return $result;
         }
-
-        // Try 3: gzip with full header
         if (strlen($data) >= 10 && substr($data, 0, 2) === "\x1f\x8b") {
             $result = @gzdecode($data);
-            if ($result !== false && strlen($result) > 0) {
-                return $result;
-            }
+            if ($result !== false && strlen($result) > 0) return $result;
         }
-
-        // Try 4: strip 2-byte zlib header then raw inflate
         if (strlen($data) > 2) {
             $result = @gzinflate(substr($data, 2));
-            if ($result !== false && strlen($result) > 0) {
-                return $result;
-            }
+            if ($result !== false && strlen($result) > 0) return $result;
         }
-
-        // Not compressed or unknown — return as-is
         return $data;
     }
 
     private function parseTextFromPdfStream(string $stream): string
     {
         $text = '';
-
         preg_match_all('/BT\s*(.*?)\s*ET/s', $stream, $btBlocks);
         foreach ($btBlocks[1] as $block) {
-
-            // Literal strings: (text) Tj or (text) TJ
             preg_match_all('/\(([^)\\\\]*(?:\\\\.[^)\\\\]*)*)\)\s*T[jJ]/m', $block, $tjM);
             foreach ($tjM[1] as $s) {
                 $s = $this->decodePdfString($s);
                 if (strlen(trim($s)) > 0) $text .= $s . ' ';
             }
-
-            // Array notation: [(text)(more)] TJ
             preg_match_all('/\[((?:[^[\]]*|\[.*?\])*)\]\s*TJ/s', $block, $arrM);
             foreach ($arrM[1] as $arr) {
                 preg_match_all('/\(([^)\\\\]*(?:\\\\.[^)\\\\]*)*)\)/', $arr, $sub);
@@ -1103,8 +1032,6 @@ PDF TEXT:
                 }
                 $text .= ' ';
             }
-
-            // Hex strings: <48656c6c6f> Tj
             preg_match_all('/<([0-9a-fA-F\s]+)>\s*T[jJ]/m', $block, $hexM);
             foreach ($hexM[1] as $hex) {
                 $hex = preg_replace('/\s+/', '', $hex);
@@ -1118,10 +1045,8 @@ PDF TEXT:
                     if (strlen(trim($readable)) > 1) $text .= $readable . ' ';
                 }
             }
-
             $text = rtrim($text) . "\n";
         }
-
         return $text;
     }
 
@@ -1132,17 +1057,13 @@ PDF TEXT:
             ["\n",  "\r",  "\t",  "\x08", "\x0C", '(',  ')',   '\\'],
             $s
         );
-
         $s = preg_replace_callback('/\\\\([0-7]{1,3})/', function ($m) {
             return chr(octdec($m[1]));
         }, $s);
-
         if (substr($s, 0, 2) === "\xFE\xFF") {
             $s = mb_convert_encoding(substr($s, 2), 'UTF-8', 'UTF-16BE');
         }
-
         $s = preg_replace('/[^\x20-\x7E\xA0-\xFF\n\r\t]/', ' ', $s);
-
         return trim($s);
     }
 
@@ -1154,15 +1075,12 @@ PDF TEXT:
             $totalChars = strlen($s);
             return $totalChars > 0 && ($wordChars / $totalChars) > 0.5;
         });
-
         $text = implode(' ', $filtered);
-
         $text = preg_replace(
             '/\b(?:obj|endobj|stream|endstream|xref|trailer|startxref|BT|ET|Tf|Td|TD|Tm|TJ|Tj|TL|TS|Tc|Tw|Tz|Tr|PDF|Linearized|FlateDecode|DCTDecode|Length|Width|Height|BBox|Matrix|Filter|Subtype|Type|Font|Page|Pages|Resources|MediaBox|CropBox|Rotate|Annot|Annots|Action|URI|Link|Rect|Border)\b/',
             ' ',
             $text
         );
-
         return $text;
     }
 }

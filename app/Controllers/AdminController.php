@@ -151,13 +151,13 @@ class AdminController extends Controller
         $pending  = $model->where('status', 'pending')->countAllResults();
         $approved = $model->where('status', 'approved')->countAllResults();
         $declined = $model->where('status', 'declined')->countAllResults();
-        $claimed  = $model->where('claimed', 1)->countAllResults();
+        $claimed  = $model->where('claimed', true)->countAllResults();
 
         $today         = date('Y-m-d');
         $todayTotal    = $model->where('reservation_date', $today)->countAllResults();
         $todayApproved = $model->where('reservation_date', $today)->where('status', 'approved')->countAllResults();
         $todayPending  = $model->where('reservation_date', $today)->where('status', 'pending')->countAllResults();
-        $todayClaimed  = $model->where('reservation_date', $today)->where('claimed', 1)->countAllResults();
+        $todayClaimed  = $model->where('reservation_date', $today)->where('claimed', true)->countAllResults();
 
         $thirtyDaysAgo = date('Y-m-d', strtotime('-30 days'));
         $monthlyTotal  = $model->where('reservation_date >=', $thirtyDaysAgo)->countAllResults();
@@ -227,7 +227,7 @@ class AdminController extends Controller
         $printLogs = $db->table('print_logs pl')
             ->select('pl.id, pl.reservation_id, pl.printed, pl.pages,
                       pl.printed_at, pl.e_ticket_code,
-                      COALESCE(u.name, r.visitor_name, "Guest") AS visitor_name,
+                      COALESCE(u.name, r.visitor_name, \'Guest\') AS visitor_name,
                       res.name AS resource_name,
                       r.reservation_date, r.start_time')
             ->join('reservations r',  'r.id = pl.reservation_id', 'left')
@@ -770,7 +770,7 @@ class AdminController extends Controller
         $reservation = $this->reservationModel
             ->where('e_ticket_code', $code)
             ->where('status', 'approved')
-            ->where('claimed', 0)
+            ->where('claimed', false)
             ->first();
 
         if ($reservation) {
@@ -778,7 +778,7 @@ class AdminController extends Controller
 
             try {
                 $this->reservationModel->update($reservation['id'], [
-                    'claimed'    => 1,
+                    'claimed'    => true,
                     'claimed_at' => date('Y-m-d H:i:s'),
                 ]);
 
@@ -808,7 +808,7 @@ class AdminController extends Controller
             }
         }
 
-        if ($this->reservationModel->where('e_ticket_code', $code)->where('claimed', 1)->first()) {
+        if ($this->reservationModel->where('e_ticket_code', $code)->where('claimed', true)->first()) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'This ticket has already been claimed.']);
         }
 
@@ -1073,9 +1073,6 @@ class AdminController extends Controller
         exit;
     }
 
-    // =========================================================================
-    // AI PDF EXTRACTION — public entry point
-    // =========================================================================
     public function extractPdfWithAI()
     {
         try {
@@ -1092,9 +1089,6 @@ class AdminController extends Controller
         }
     }
 
-    // =========================================================================
-    // AI PDF EXTRACTION — inner logic
-    // =========================================================================
     private function _doExtractPdfWithAI(): \CodeIgniter\HTTP\ResponseInterface
     {
         if (!$this->request->isAJAX()) {
@@ -1150,9 +1144,6 @@ class AdminController extends Controller
             @unlink($tmpPath);
         }
 
-        log_message('debug', 'Admin PDF extraction — method: ' . $method . ', chars: ' . strlen($pdfText));
-
-        // ── FIX 1: hard minimum length ────────────────────────────────────
         if (strlen(trim($pdfText)) < 20) {
             return $this->response->setJSON([
                 'ok'    => false,
@@ -1161,9 +1152,6 @@ class AdminController extends Controller
             ]);
         }
 
-        // ── FIX 2: word-quality gate ──────────────────────────────────────
-        // Reject text that is mostly symbols/font-table garbage rather than
-        // actual words. Count letters + digits + spaces vs total characters.
         $wordChars  = preg_match_all('/[a-zA-Z0-9 ]/', $pdfText);
         $totalChars = max(1, strlen($pdfText));
         if (($wordChars / $totalChars) < 0.40) {
@@ -1176,33 +1164,16 @@ class AdminController extends Controller
 
         $pdfText = mb_substr(trim($pdfText), 0, 8000);
 
-        // ── FIX 3: hardened prompt that always forces JSON output ─────────
         $prompt = <<<'PROMPT'
 You are a book cataloging assistant. Your ONLY job is to return a single JSON object.
 
 CRITICAL RULES — you must follow these without exception:
 1. Output ONLY the raw JSON object. No prose, no markdown, no backticks, no explanation before or after.
 2. Never write sentences as field values (except "preface"). Never say "unknown" or "not found".
-3. For "title" and "author" you MUST provide your best guess — even if uncertain. Use the most prominent
-   text as the title. Use any person's name near the title or copyright line as the author.
-   Only use "" if the text is completely blank with zero clues whatsoever.
+3. For "title" and "author" you MUST provide your best guess — even if uncertain.
 
 Return exactly this structure:
 {"title":"","author":"","genre":"","published_year":"","isbn":"","preface":""}
-
-Field instructions:
-- title: REQUIRED best guess. Use the largest/most prominent text on the first page or title page.
-  If multiple candidates exist, pick the one that looks most like a book title.
-  A subtitle may be appended after a colon if helpful. Do NOT leave blank unless the PDF has no text at all.
-- author: REQUIRED best guess. Look for "By [Name]", "Author:", a name beneath the title, or any
-  person's name on the copyright page. If multiple names, pick the primary one.
-  Do NOT leave blank unless the PDF has no text at all.
-- genre: Fiction / Non-Fiction / Science / History / Biography / Self-Help / Children / Academic / etc.
-  Infer from content if not stated explicitly.
-- published_year: 4-digit year from copyright line (©) or publisher info. Empty string if truly absent.
-- isbn: ISBN-10 or ISBN-13, digits and hyphens only. Empty string if truly absent.
-- preface: 2-4 sentences in third person describing what this book is about. If unclear, describe what
-  the text seems to be about. Only use "" if the PDF has no meaningful text at all.
 
 PDF TEXT:
 PROMPT;
@@ -1236,7 +1207,6 @@ PROMPT;
         curl_close($ch);
 
         if ($curlError) {
-            log_message('error', 'Admin Groq curl error #' . $curlErrNo . ': ' . $curlError);
             return $this->response->setJSON(['ok' => false, 'error' => 'Network error reaching Groq: ' . $curlError]);
         }
 
@@ -1248,7 +1218,6 @@ PROMPT;
 
         if ($httpStatus !== 200) {
             $msg = $groqData['error']['message'] ?? ('Groq HTTP ' . $httpStatus . ': ' . substr($response, 0, 200));
-            log_message('error', 'Admin Groq API error: ' . $msg);
             return $this->response->setJSON(['ok' => false, 'error' => 'Groq error: ' . $msg]);
         }
 
@@ -1258,24 +1227,16 @@ PROMPT;
             return $this->response->setJSON(['ok' => false, 'error' => 'Groq returned empty content.']);
         }
 
-        // Strip markdown fences if present
         $clean = trim(preg_replace('/^```(?:json)?\s*/m', '', $rawText));
         $clean = trim(preg_replace('/```\s*$/m', '', $clean));
 
-        // Extract the first JSON object even if surrounded by prose
         if (preg_match('/\{[\s\S]*\}/m', $clean, $m)) {
             $clean = $m[0];
         }
 
         $extracted = json_decode($clean, true);
 
-        // ── FIX 4: prose-response guard ───────────────────────────────────
-        // If Groq still returned a prose response instead of JSON, surface a
-        // clear error rather than a cryptic "AI response was not valid JSON".
         if (!is_array($extracted)) {
-            log_message('error', 'Admin Groq bad JSON: ' . substr($rawText, 0, 500));
-
-            // Detect the specific "collection of images" prose pattern
             $lowerRaw = strtolower($rawText);
             if (str_contains($lowerRaw, 'collection of images')
                 || str_contains($lowerRaw, 'does not contain')
@@ -1285,9 +1246,7 @@ PROMPT;
             ) {
                 return $this->response->setJSON([
                     'ok'    => false,
-                    'error' => 'This PDF does not contain enough readable text for AI extraction. '
-                             . 'It may be a scanned document or image-only PDF. '
-                             . 'Please fill in the book details manually.',
+                    'error' => 'This PDF does not contain enough readable text for AI extraction. Please fill in the book details manually.',
                 ]);
             }
 
@@ -1301,10 +1260,6 @@ PROMPT;
             if (!isset($extracted[$key])) $extracted[$key] = '';
         }
 
-        // ── FIX 5: partial-result warning ────────────────────────────────
-        // Return ok:true so the frontend can still pre-fill whatever fields
-        // were found, but include a warning flag when title or author are
-        // blank so the UI can prompt the user to fill them in manually.
         $missingFields = [];
         if (empty(trim($extracted['title'])))  $missingFields[] = 'title';
         if (empty(trim($extracted['author']))) $missingFields[] = 'author';
@@ -1315,8 +1270,7 @@ PROMPT;
                 'ok'      => true,
                 'warning' => true,
                 'message' => ucfirst($fieldList) . ' wasn\'t detected — please fill ' .
-                             (count($missingFields) === 1 ? 'that in' : 'those in') .
-                             ', then hit Save.',
+                             (count($missingFields) === 1 ? 'that in' : 'those in') . ', then hit Save.',
                 'data'    => $extracted,
             ]);
         }
@@ -1324,9 +1278,6 @@ PROMPT;
         return $this->response->setJSON(['ok' => true, 'data' => $extracted]);
     }
 
-    // =========================================================================
-    // PDF TEXT EXTRACTION
-    // =========================================================================
     private function extractTextFromPdf(string $filePath, string &$method = ''): string
     {
         $shellDisabled = array_map('trim', explode(',', ini_get('disable_functions')));
@@ -1376,22 +1327,18 @@ PROMPT;
             $result = @gzuncompress($data);
             if ($result !== false && strlen($result) > 0) return $result;
         }
-
         if (strlen($data) >= 2) {
             $result = @gzinflate($data);
             if ($result !== false && strlen($result) > 0) return $result;
         }
-
         if (strlen($data) >= 10 && substr($data, 0, 2) === "\x1f\x8b") {
             $result = @gzdecode($data);
             if ($result !== false && strlen($result) > 0) return $result;
         }
-
         if (strlen($data) > 2) {
             $result = @gzinflate(substr($data, 2));
             if ($result !== false && strlen($result) > 0) return $result;
         }
-
         return $data;
     }
 
@@ -1400,13 +1347,11 @@ PROMPT;
         $text = '';
         preg_match_all('/BT\s*(.*?)\s*ET/s', $stream, $btBlocks);
         foreach ($btBlocks[1] as $block) {
-
             preg_match_all('/\(([^)\\\\]*(?:\\\\.[^)\\\\]*)*)\)\s*T[jJ]/m', $block, $tjM);
             foreach ($tjM[1] as $s) {
                 $s = $this->decodePdfString($s);
                 if (strlen(trim($s)) > 0) $text .= $s . ' ';
             }
-
             preg_match_all('/\[((?:[^[\]]*|\[.*?\])*)\]\s*TJ/s', $block, $arrM);
             foreach ($arrM[1] as $arr) {
                 preg_match_all('/\(([^)\\\\]*(?:\\\\.[^)\\\\]*)*)\)/', $arr, $sub);
@@ -1416,7 +1361,6 @@ PROMPT;
                 }
                 $text .= ' ';
             }
-
             preg_match_all('/<([0-9a-fA-F\s]+)>\s*T[jJ]/m', $block, $hexM);
             foreach ($hexM[1] as $hex) {
                 $hex = preg_replace('/\s+/', '', $hex);
@@ -1430,10 +1374,8 @@ PROMPT;
                     if (strlen(trim($readable)) > 1) $text .= $readable . ' ';
                 }
             }
-
             $text = rtrim($text) . "\n";
         }
-
         return $text;
     }
 
@@ -1444,17 +1386,13 @@ PROMPT;
             ["\n",  "\r",  "\t",  "\x08", "\x0C", '(',  ')',   '\\'],
             $s
         );
-
         $s = preg_replace_callback('/\\\\([0-7]{1,3})/', function ($m) {
             return chr(octdec($m[1]));
         }, $s);
-
         if (substr($s, 0, 2) === "\xFE\xFF") {
             $s = mb_convert_encoding(substr($s, 2), 'UTF-8', 'UTF-16BE');
         }
-
         $s = preg_replace('/[^\x20-\x7E\xA0-\xFF\n\r\t]/', ' ', $s);
-
         return trim($s);
     }
 
@@ -1466,14 +1404,12 @@ PROMPT;
             $totalChars = strlen($s);
             return $totalChars > 0 && ($wordChars / $totalChars) > 0.5;
         });
-
         $text = implode(' ', $filtered);
         $text = preg_replace(
             '/\b(?:obj|endobj|stream|endstream|xref|trailer|startxref|BT|ET|Tf|Td|TD|Tm|TJ|Tj|TL|TS|Tc|Tw|Tz|Tr|PDF|Linearized|FlateDecode|DCTDecode|Length|Width|Height|BBox|Matrix|Filter|Subtype|Type|Font|Page|Pages|Resources|MediaBox|CropBox|Rotate|Annot|Annots|Action|URI|Link|Rect|Border)\b/',
             ' ',
             $text
         );
-
         return $text;
     }
 }
