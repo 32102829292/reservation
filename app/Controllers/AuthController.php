@@ -277,6 +277,13 @@ class AuthController extends BaseController
     {
         $verifyUrl    = base_url("verify-email/{$token}");
         $config       = new \Config\Email();
+
+        // Log config for debugging
+        log_message('info', '[Email Debug] SMTPHost=' . env('EMAIL_SMTP_HOST') .
+            ' SMTPUser=' . env('EMAIL_SMTP_USER') .
+            ' SMTPPass=' . (env('EMAIL_SMTP_PASS') ? 'SET' : 'EMPTY') .
+            ' FromAddress=' . env('EMAIL_FROM_ADDRESS'));
+
         $emailService = \Config\Services::email($config, false);
 
         $emailService->clear();
@@ -295,7 +302,7 @@ class AuthController extends BaseController
         $result = $emailService->send();
 
         if (!$result) {
-            log_message('error', '[AuthController] Verify email FAILED for ' . $to . ' | ' . $emailService->printDebugger(['headers']));
+            log_message('error', '[AuthController] Verify email FAILED for ' . $to . ' | ' . $emailService->printDebugger(['headers', 'smtp']));
         }
 
         return $result;
