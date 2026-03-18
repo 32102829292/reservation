@@ -176,7 +176,7 @@ class AuthController extends BaseController
         $sent = $this->sendVerificationEmail($email, $fullName, $verificationToken);
 
         if (!$sent) {
-            $session->setFlashdata('error', 'Account created but we could not send the verification email. Please contact support.');
+            $session->setFlashdata('error', 'Account created but email failed. Debug: HOST=' . env('EMAIL_SMTP_HOST') . ' USER=' . env('EMAIL_SMTP_USER') . ' PASS=' . (env('EMAIL_SMTP_PASS') ? 'SET('.strlen(env('EMAIL_SMTP_PASS')).'chars)' : 'EMPTY'));
             return redirect()->to('/login');
         }
 
