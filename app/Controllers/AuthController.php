@@ -9,10 +9,6 @@ use CodeIgniter\I18n\Time;
 
 class AuthController extends BaseController
 {
-    /* ══════════════════════════════════════════════════════
-     |  LOGIN
-     ══════════════════════════════════════════════════════ */
-
     public function login()
     {
         if (session()->get('isLoggedIn')) {
@@ -45,18 +41,19 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        if (!$user['is_verified']) {
+        // PostgreSQL returns booleans as "t"/"f" strings
+        $isVerified = in_array($user['is_verified'], [true, 1, 't', 'true', '1'], true);
+
+        if (!$isVerified) {
             $session->setFlashdata('error', 'Please verify your email address first. Check your inbox for the verification link.');
             return redirect()->to('/login');
         }
 
-        // SK pending chairman approval
         if ($user['role'] === 'sk' && $user['status'] === 'pending') {
             $session->setFlashdata('error', 'Your SK account is pending approval by the Barangay Chairman. You will be notified via email once a decision is made.');
             return redirect()->to('/login');
         }
 
-        // SK rejected
         if ($user['role'] === 'sk' && $user['status'] === 'rejected') {
             $session->setFlashdata('error', 'Your SK account application was not approved. Please contact the Barangay office for more information.');
             return redirect()->to('/login');
@@ -83,10 +80,6 @@ class AuthController extends BaseController
             default:         return redirect()->to('/dashboard');
         }
     }
-
-    /* ══════════════════════════════════════════════════════
-     |  REGISTER
-     ══════════════════════════════════════════════════════ */
 
     public function register()
     {
@@ -147,7 +140,6 @@ class AuthController extends BaseController
             return redirect()->to('/register');
         }
 
-        // Map to correct DB enum values
         $dbRole = strtolower($role) === 'sk' ? 'sk' : 'user';
 
         $userModel->insert([
@@ -197,10 +189,6 @@ class AuthController extends BaseController
         return redirect()->to('/login');
     }
 
-    /* ══════════════════════════════════════════════════════
-     |  EMAIL VERIFICATION
-     ══════════════════════════════════════════════════════ */
-
     public function verifyEmail($token)
     {
         if (!$token) {
@@ -216,7 +204,9 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        if ($account['is_verified']) {
+        $alreadyVerified = in_array($account['is_verified'], [true, 1, 't', 'true', '1'], true);
+
+        if ($alreadyVerified) {
             session()->setFlashdata('info', 'Your email is already verified. You can log in.');
             return redirect()->to('/login');
         }
@@ -246,10 +236,6 @@ class AuthController extends BaseController
         return redirect()->to('/login');
     }
 
-    /* ══════════════════════════════════════════════════════
-     |  LOGOUT
-     ══════════════════════════════════════════════════════ */
-
     public function logout()
     {
         $session = session();
@@ -274,10 +260,6 @@ class AuthController extends BaseController
         return redirect()->to('/login');
     }
 
-    /* ══════════════════════════════════════════════════════
-     |  DASHBOARD REDIRECT
-     ══════════════════════════════════════════════════════ */
-
     public function redirectDashboard()
     {
         if (!session()->get('isLoggedIn')) {
@@ -290,10 +272,6 @@ class AuthController extends BaseController
             default:         return redirect()->to('/dashboard');
         }
     }
-
-    /* ══════════════════════════════════════════════════════
-     |  PRIVATE EMAIL HELPERS
-     ══════════════════════════════════════════════════════ */
 
     private function sendVerificationEmail(string $to, string $name, string $token): bool
     {
