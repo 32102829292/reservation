@@ -18,7 +18,7 @@ class Email extends BaseConfig
     public string $SMTPUser     = '';
     public string $SMTPPass     = '';
     public int    $SMTPPort      = 587;
-    public int    $SMTPTimeout   = 10;
+    public int    $SMTPTimeout   = 30;
     public bool   $SMTPKeepAlive = false;
     public string $SMTPCrypto    = 'tls';
 
@@ -38,10 +38,13 @@ class Email extends BaseConfig
     {
         parent::__construct();
 
-        $this->fromEmail = env('EMAIL_FROM_ADDRESS', 'prttypriyaa@gmail.com');
-        $this->fromName  = env('EMAIL_FROM_NAME',    'E-Learning Reservation System');
-        $this->SMTPHost  = env('EMAIL_SMTP_HOST',    'smtp-relay.brevo.com');
-        $this->SMTPUser  = env('EMAIL_SMTP_USER',    'a4aed9001@smtp-brevo.com');
-        $this->SMTPPass  = env('EMAIL_SMTP_PASS',    '');
+        $this->fromEmail   = env('EMAIL_FROM_ADDRESS', 'prttypriyaa@gmail.com');
+        $this->fromName    = env('EMAIL_FROM_NAME',    'E-Learning Reservation System');
+        $this->SMTPHost    = env('EMAIL_SMTP_HOST',    'smtp-relay.brevo.com');
+        $this->SMTPUser    = env('EMAIL_SMTP_USER',    'a4aed9001@smtp-brevo.com');
+        $this->SMTPPass    = env('EMAIL_SMTP_PASS',    '');
+        $this->SMTPPort    = (int) env('EMAIL_SMTP_PORT',   587);
+        $this->SMTPCrypto  = env('EMAIL_SMTP_CRYPTO',  'tls');
+        $this->SMTPTimeout = (int) env('EMAIL_SMTP_TIMEOUT', 30);
     }
 }
