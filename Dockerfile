@@ -27,12 +27,9 @@ RUN mkdir -p writable/cache writable/logs writable/session writable/uploads \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/writable
 
-# Create startup script
-RUN echo '#!/bin/sh' > /start.sh \
-    && echo 'php-fpm -D' >> /start.sh \
-    && echo 'nginx -g "daemon off;"' >> /start.sh \
+RUN echo '#!/bin/sh\nphp-fpm -D\nnginx -g "daemon off;"' > /start.sh \
     && chmod +x /start.sh
 
 EXPOSE 80
 
-CMD ["/start.sh"]
+CMD ["sh", "/start.sh"]
