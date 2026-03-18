@@ -73,7 +73,7 @@ class SkController extends BaseController
             ->select('resources.name, COUNT(*) as count')
             ->join('resources', 'resources.id = r.resource_id')
             ->where('r.status', 'approved')
-            ->groupBy('r.resource_id')
+            ->groupBy('r.resource_id, resources.name')
             ->orderBy('count', 'DESC')
             ->limit(5)
             ->get()
