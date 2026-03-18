@@ -5,80 +5,89 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>New SK Account Pending Approval</title>
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:'Segoe UI',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:40px 20px;">
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Georgia',serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:48px 20px;">
   <tr>
     <td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#1e293b;border-radius:16px;overflow:hidden;max-width:600px;width:100%;">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+
+        <!-- Top accent bar -->
+        <tr>
+          <td style="background:#92400e;height:4px;font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
 
         <!-- Header -->
         <tr>
-          <td style="background:linear-gradient(135deg,#d97706,#b45309);padding:40px;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">⏳</div>
-            <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;">New SK Account Request</h1>
-            <p style="color:#fde68a;margin:8px 0 0;font-size:15px;">Action Required — Barangay Chairman</p>
+          <td style="padding:48px 48px 32px;border-bottom:1px solid #e2e8f0;">
+            <p style="margin:0 0 4px;font-family:'Georgia',serif;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#94a3b8;">Action Required — Barangay Chairman</p>
+            <h1 style="margin:0;font-family:'Georgia',serif;font-size:28px;font-weight:normal;color:#0f172a;letter-spacing:-0.5px;">New SK Account Request</h1>
           </td>
         </tr>
 
         <!-- Body -->
         <tr>
-          <td style="padding:40px;">
-            <p style="color:#94a3b8;font-size:15px;margin:0 0 20px;line-height:1.6;">
-              A new SK Officer account has been verified and is awaiting your approval:
+          <td style="padding:40px 48px;">
+            <p style="margin:0 0 28px;font-size:15px;line-height:1.8;color:#475569;font-family:'Georgia',serif;">
+              A new Sangguniang Kabataan Officer account has been verified and is awaiting your review and approval. The details of the applicant are as follows:
             </p>
 
-            <!-- SK Details Card -->
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;border-radius:10px;margin-bottom:28px;">
+            <!-- Details block -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 36px;border:1px solid #e2e8f0;">
               <tr>
-                <td style="padding:24px;">
-                  <table width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td style="padding:8px 0;border-bottom:1px solid #1e293b;">
-                        <span style="color:#64748b;font-size:13px;">Name</span><br>
-                        <span style="color:#e2e8f0;font-size:15px;font-weight:600;"><?= esc($skName) ?></span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding:8px 0;border-bottom:1px solid #1e293b;">
-                        <span style="color:#64748b;font-size:13px;">Email</span><br>
-                        <span style="color:#60a5fa;font-size:15px;"><?= esc($skEmail) ?></span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding:8px 0;">
-                        <span style="color:#64748b;font-size:13px;">Applied At</span><br>
-                        <span style="color:#e2e8f0;font-size:15px;"><?= esc($appliedAt) ?></span>
-                      </td>
-                    </tr>
-                  </table>
+                <td style="padding:16px 20px;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
+                  <p style="margin:0 0 3px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;font-family:'Georgia',serif;">Full Name</p>
+                  <p style="margin:0;font-size:16px;color:#0f172a;font-family:'Georgia',serif;"><?= esc($skName) ?></p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;border-bottom:1px solid #e2e8f0;">
+                  <p style="margin:0 0 3px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;font-family:'Georgia',serif;">Email Address</p>
+                  <p style="margin:0;font-size:15px;color:#1e3a5f;font-family:'Courier New',monospace;"><?= esc($skEmail) ?></p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;background:#f8fafc;">
+                  <p style="margin:0 0 3px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;font-family:'Georgia',serif;">Date Applied</p>
+                  <p style="margin:0;font-size:15px;color:#0f172a;font-family:'Georgia',serif;"><?= esc($appliedAt) ?></p>
                 </td>
               </tr>
             </table>
 
-            <!-- CTA Button -->
-            <table width="100%" cellpadding="0" cellspacing="0">
+            <!-- CTA -->
+            <table cellpadding="0" cellspacing="0" style="margin:0 0 36px;">
               <tr>
-                <td align="center" style="padding:8px 0 28px;">
-                  <a href="<?= esc($manageUrl) ?>" style="display:inline-block;background:linear-gradient(135deg,#d97706,#b45309);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:16px;font-weight:600;">
-                    👤 Review SK Account
+                <td style="background:#92400e;">
+                  <a href="<?= esc($manageUrl) ?>" style="display:inline-block;background:#92400e;color:#ffffff;text-decoration:none;padding:14px 36px;font-family:'Georgia',serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;">
+                    Review Account Application
                   </a>
                 </td>
               </tr>
             </table>
 
-            <p style="color:#64748b;font-size:13px;margin:0;line-height:1.6;">
-              Log in to the admin panel to approve or reject this SK account application.
+            <!-- Divider -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+              <tr>
+                <td style="border-top:1px solid #e2e8f0;font-size:0;">&nbsp;</td>
+              </tr>
+            </table>
+
+            <p style="margin:0;font-size:13px;line-height:1.7;color:#94a3b8;font-family:'Georgia',serif;">
+              Please log in to the administration panel to approve or reject this application. The applicant will be notified of your decision via email.
             </p>
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td style="background:#0f172a;padding:24px;text-align:center;border-top:1px solid #334155;">
-            <p style="color:#475569;font-size:12px;margin:0;">
-              © <?= date('Y') ?> E-Learning Resource Reservation System — Brgy. F De Jesus, Unisan Quezon
-            </p>
+          <td style="padding:24px 48px;background:#f8fafc;border-top:1px solid #e2e8f0;">
+            <p style="margin:0 0 4px;font-size:12px;color:#64748b;font-family:'Georgia',serif;">Brgy. F De Jesus, Unisan, Quezon</p>
+            <p style="margin:0;font-size:11px;color:#94a3b8;font-family:'Georgia',serif;">&copy; <?= date('Y') ?> E-Learning Resource Reservation System. All rights reserved.</p>
           </td>
+        </tr>
+
+        <!-- Bottom accent bar -->
+        <tr>
+          <td style="background:#92400e;height:4px;font-size:0;line-height:0;">&nbsp;</td>
         </tr>
 
       </table>

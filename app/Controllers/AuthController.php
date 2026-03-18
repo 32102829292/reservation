@@ -176,7 +176,8 @@ class AuthController extends BaseController
         $sent = $this->sendVerificationEmail($email, $fullName, $verificationToken);
 
         if (!$sent) {
-            $session->setFlashdata('error', 'Account created but we could not send the verification email. Please contact support.');
+            $brevoError = session()->getFlashdata('brevo_error') ?? 'unknown';
+            $session->setFlashdata('error', 'Email failed: ' . $brevoError);
             return redirect()->to('/login');
         }
 
@@ -315,11 +316,13 @@ class AuthController extends BaseController
 
         if ($curlError) {
             log_message('error', '[AuthController] Brevo API curl error: ' . $curlError);
+            session()->setFlashdata('brevo_error', 'curl: ' . $curlError);
             return false;
         }
 
         if ($httpStatus !== 201) {
             log_message('error', '[AuthController] Brevo API failed: HTTP ' . $httpStatus . ' | ' . $response);
+            session()->setFlashdata('brevo_error', 'HTTP ' . $httpStatus . ': ' . $response);
             return false;
         }
 
