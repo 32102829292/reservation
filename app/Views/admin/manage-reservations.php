@@ -142,7 +142,7 @@
             $edt = strtotime(($res['reservation_date'] ?? '') . ' ' . ($res['end_time'] ?? '23:59'));
             if ($edt && $edt < time()) $s = 'expired';
         }
-        if ((int)($res['claimed'] ?? 0) === 1) $s = 'claimed';
+        $claimedVal = $res['claimed'] ?? false; if (in_array($claimedVal, [true, 1, 't', 'true', '1'], true)) $s = 'claimed';
         $res['_status'] = $s;
         $processed[] = $res;
     }
@@ -588,7 +588,7 @@
 
     const printLogMap = {};
     <?php foreach ($printLogMap as $resId => $pl): ?>
-    printLogMap[<?= (int)$resId ?>] = { printed:<?= isset($pl['printed'])&&(int)$pl['printed']?'true':'false' ?>, pages:<?= (int)($pl['pages']??0) ?>, at:"<?= !empty($pl['printed_at'])?date('M j · g:i A',strtotime($pl['printed_at'])):'' ?>" };
+    printLogMap[<?= (int)$resId ?>] = { printed:<?= isset($pl['printed'])&&in_array($pl['printed'],[true,1,'t','true','1'],true)?'true':'false' ?>, pages:<?= (int)($pl['pages']??0) ?>, at:"<?= !empty($pl['printed_at'])?date('M j · g:i A',strtotime($pl['printed_at'])):'' ?>" };
     <?php endforeach; ?>
 
     let _currentReservationId = null;
