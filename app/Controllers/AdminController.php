@@ -418,7 +418,7 @@ class AdminController extends Controller
         $pcModel          = new PcModel();
         $pcs              = $pcModel->orderBy('pc_number', 'ASC')->findAll();
         $availableCount   = $pcModel->where('status', 'available')->countAllResults();
-        $inUseCount       = $pcModel->where('status', 'in_use')->countAllResults();
+        $inUseCount       = $pcModel->where('status', 'out_of_order')->countAllResults();
         $maintenanceCount = $pcModel->where('status', 'maintenance')->countAllResults();
 
         return view('admin/manage-pcs', [
