@@ -7,13 +7,17 @@ class PrintLogModel extends Model
 {
     protected $table         = 'print_logs';
     protected $primaryKey    = 'id';
-    protected $allowedFields = ['reservation_id', 'printed', 'pages', 'printed_at'];
-    protected $useTimestamps  = false;
+    protected $allowedFields = [
+        'reservation_id',
+        'user_id',
+        'printed',
+        'pages',
+        'printed_at',
+        'printed_by',
+        'e_ticket_code',
+    ];
+    protected $useTimestamps = false;
 
-    /**
-     * Get all logs keyed by reservation_id
-     * [ reservation_id => log_row ]
-     */
     public function getMapByReservation(): array
     {
         $rows = $this->findAll();
@@ -24,10 +28,7 @@ class PrintLogModel extends Model
         return $map;
     }
 
-    /**
-     * Insert or update log for a reservation
-     */
-    public function upsert(int $reservationId, int $printed, int $pages): bool
+    public function upsert(int $reservationId, bool $printed, int $pages): bool
     {
         $existing = $this->where('reservation_id', $reservationId)->first();
 

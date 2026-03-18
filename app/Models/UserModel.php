@@ -6,16 +6,19 @@ class UserModel extends Model {
     protected $table = 'users';
     protected $primaryKey = 'id';
     protected $allowedFields = [
-        'name', 
-        'email', 
-        'phone', 
-        'role', 
-        'password', 
-        'is_approved', 
-        'is_verified', 
-        'verification_token', 
-        'created_at'
+        'name',
+        'full_name',
+        'email',
+        'phone',
+        'role',
+        'password',
+        'status',
+        'is_approved',
+        'is_verified',
+        'verification_token',
+        'created_at',
+        'updated_at',
     ];
 
-    protected $useTimestamps = false; // you have manual created_at
+    protected $useTimestamps = false;
 }
