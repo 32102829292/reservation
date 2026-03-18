@@ -5,59 +5,79 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verify Your Email</title>
 </head>
-<body style="margin:0;padding:0;background:#f9f9f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f8;padding:48px 16px;">
+<body style="margin:0;padding:0;background:#0f1117;font-family:Georgia,'Times New Roman',serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f1117;padding:48px 16px;">
   <tr>
     <td align="center">
-      <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;border:1px solid #e5e5e3;max-width:520px;width:100%;">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
 
-        <!-- Header -->
+        <!-- Hero Header -->
         <tr>
-          <td style="padding:36px 40px 24px;text-align:center;">
-            <img src="<?= base_url('images/logo.png') ?>" alt="SK Brgy. F. De Jesus" width="80" height="80"
-              style="border-radius:50%;display:block;margin:0 auto 14px;box-shadow:0 4px 16px rgba(0,0,0,0.12),0 1px 4px rgba(0,0,0,0.08);object-fit:contain;background:#fff;">
-            <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#1a1a1a;letter-spacing:-0.01em;">Sangguniang Kabataan</p>
-            <p style="margin:0;font-size:12px;color:#8e8e8e;font-weight:400;">Brgy. F. De Jesus, Unisan, Quezon</p>
+          <td style="background:linear-gradient(145deg,#1a0a2e 0%,#16103a 40%,#0d1f4a 100%);border-radius:16px 16px 0 0;padding:0 48px 36px;text-align:center;border:1px solid #2a2060;border-bottom:none;">
+            <!-- Gold top accent -->
+            <div style="height:4px;background:linear-gradient(90deg,#c8102e 0%,#f5c518 50%,#1a3a8a 100%);border-radius:4px 4px 0 0;margin:0 -48px 36px;"></div>
+
+            <!-- Logo -->
+            <img src="<?= base_url('images/logo.png') ?>" alt="SK Brgy. F. De Jesus" width="96" height="96"
+              style="display:block;margin:0 auto 20px;border-radius:50%;box-shadow:0 0 0 4px rgba(245,197,24,0.3),0 0 0 8px rgba(245,197,24,0.1),0 8px 32px rgba(0,0,0,0.5);object-fit:contain;background:#fff;">
+
+            <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:#ffffff;letter-spacing:0.06em;font-family:Georgia,'Times New Roman',serif;">SANGGUNIANG KABATAAN</p>
+            <p style="margin:0;font-size:11px;color:#9b9ec4;letter-spacing:0.14em;text-transform:uppercase;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">Brgy. F. De Jesus &nbsp;&bull;&nbsp; Unisan, Quezon</p>
           </td>
         </tr>
 
-        <!-- Divider -->
-        <tr><td style="padding:0 40px;"><div style="height:1px;background:#e5e5e3;"></div></td></tr>
+        <!-- Gradient divider bar -->
+        <tr><td style="background:linear-gradient(90deg,#c8102e,#f5c518,#1a3a8a);height:3px;border-left:1px solid #2a2060;border-right:1px solid #2a2060;"></td></tr>
 
-        <!-- Body -->
+        <!-- Body Card -->
         <tr>
-          <td style="padding:32px 40px 28px;">
-            <h2 style="margin:0 0 20px;font-size:20px;font-weight:600;color:#1a1a1a;letter-spacing:-0.3px;">Verify your email address</h2>
-            <p style="margin:0 0 12px;font-size:15px;line-height:1.65;color:#3d3d3a;">Hi <?= esc($name) ?>,</p>
-            <p style="margin:0 0 28px;font-size:15px;line-height:1.65;color:#3d3d3a;">
-              Thank you for registering. Please verify your email address to activate your account.
+          <td style="background:#ffffff;padding:44px 48px 36px;border:1px solid #e8e8e6;border-top:none;border-bottom:none;">
+
+            <!-- Label chip -->
+            <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+              <tr>
+                <td style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:20px;padding:5px 14px;">
+                  <span style="font-size:11px;font-weight:600;color:#3730a3;letter-spacing:0.1em;text-transform:uppercase;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">&#9993;&nbsp; Email Verification</span>
+                </td>
+              </tr>
+            </table>
+
+            <h2 style="margin:0 0 14px;font-size:26px;font-weight:700;color:#0f1117;letter-spacing:-0.5px;line-height:1.25;font-family:Georgia,'Times New Roman',serif;">Verify your email address</h2>
+
+            <p style="margin:0 0 10px;font-size:15px;line-height:1.7;color:#374151;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">Hi <strong style="color:#0f1117;"><?= esc($name) ?></strong>,</p>
+            <p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:#374151;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+              Thank you for registering with the SK E-Learning Resource Reservation System. Please verify your email address to activate your account.
             </p>
 
-            <!-- Button -->
-            <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+            <!-- CTA Button -->
+            <table cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
               <tr>
-                <td style="border-radius:8px;background:#1a1a1a;">
-                  <a href="<?= esc($verifyUrl) ?>" style="display:inline-block;padding:13px 28px;font-size:14px;font-weight:500;color:#ffffff;text-decoration:none;border-radius:8px;">
-                    Verify email address
+                <td style="border-radius:10px;background:linear-gradient(135deg,#1a3a8a 0%,#16103a 100%);box-shadow:0 4px 16px rgba(26,58,138,0.35);">
+                  <a href="<?= esc($verifyUrl) ?>" style="display:inline-block;padding:15px 36px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;letter-spacing:0.02em;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+                    Verify email address &rarr;
                   </a>
                 </td>
               </tr>
             </table>
 
-            <p style="margin:0 0 8px;font-size:13px;color:#8e8e8e;">Or copy and paste this link into your browser:</p>
-            <p style="margin:0 0 28px;font-size:12px;color:#6b7280;word-break:break-all;background:#f9f9f8;padding:10px 14px;border-radius:6px;font-family:'SF Mono',Monaco,'Courier New',monospace;"><?= esc($verifyUrl) ?></p>
+            <!-- Fallback link box -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+              <tr>
+                <td style="background:#f8f8f7;border:1px solid #e5e5e3;border-left:3px solid #f5c518;border-radius:0 8px 8px 0;padding:14px 16px;">
+                  <p style="margin:0 0 6px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:0.08em;text-transform:uppercase;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">Or copy this link into your browser</p>
+                  <p style="margin:0;font-size:12px;color:#374151;word-break:break-all;font-family:'SF Mono',Monaco,'Courier New',monospace;"><?= esc($verifyUrl) ?></p>
+                </td>
+              </tr>
+            </table>
 
-            <p style="margin:0;font-size:13px;line-height:1.6;color:#8e8e8e;">If you did not create an account, you can safely ignore this email.</p>
+            <p style="margin:0;font-size:13px;line-height:1.6;color:#9ca3af;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">If you did not create an account, you can safely ignore this email.</p>
           </td>
         </tr>
 
-        <!-- Divider -->
-        <tr><td style="padding:0 40px;"><div style="height:1px;background:#e5e5e3;"></div></td></tr>
-
         <!-- Footer -->
         <tr>
-          <td style="padding:20px 40px 28px;">
-            <p style="margin:0;font-size:12px;color:#b5b3ad;">&copy; <?= date('Y') ?> E-Learning Resource Reservation System &middot; Brgy. F. De Jesus, Unisan, Quezon</p>
+          <td style="background:#16103a;border-radius:0 0 16px 16px;padding:20px 48px 24px;border:1px solid #2a2060;border-top:none;">
+            <p style="margin:0;font-size:12px;color:#6b6f9c;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">&copy; <?= date('Y') ?> E-Learning Resource Reservation System &nbsp;&bull;&nbsp; Brgy. F. De Jesus, Unisan, Quezon</p>
           </td>
         </tr>
 
