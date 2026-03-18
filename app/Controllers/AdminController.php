@@ -203,8 +203,8 @@ class AdminController extends Controller
 
         $pendingSKCount = $db->table('users')
             ->where('role', 'sk')
-            ->where('is_approved', 0)
-            ->where('is_verified', 1)
+            ->where('is_approved', false)
+            ->where('is_verified', true)
             ->countAllResults();
 
         $allBooks = $db->table('books')
@@ -393,9 +393,9 @@ class AdminController extends Controller
             ->orderBy('users.created_at', 'DESC')
             ->findAll();
 
-        $pending  = array_values(array_filter($allSK, fn($u) => (int)$u['is_approved'] === 0));
-        $approved = array_values(array_filter($allSK, fn($u) => (int)$u['is_approved'] === 1));
-        $rejected = array_values(array_filter($allSK, fn($u) => (int)$u['is_approved'] === 2));
+        $pending  = array_values(array_filter($allSK, fn($u) => ($u['status'] ?? '') === 'pending'));
+        $approved = array_values(array_filter($allSK, fn($u) => ($u['status'] ?? '') === 'approved'));
+        $rejected = array_values(array_filter($allSK, fn($u) => ($u['status'] ?? '') === 'rejected'));
 
         return view('admin/manage-sk', [
             'page'          => 'manage-sk',
@@ -646,7 +646,7 @@ class AdminController extends Controller
             $user = (new UserModel())->find($id);
             (new UserModel())->update($id, [
                 'status'      => 'approved',
-                'is_approved' => 1,
+                'is_approved' => true,
                 'updated_at'  => date('Y-m-d H:i:s'),
             ]);
             $this->sendSKDecisionEmail($user['email'], $user['name'], 'approved');
@@ -667,7 +667,7 @@ class AdminController extends Controller
             $user = (new UserModel())->find($id);
             (new UserModel())->update($id, [
                 'status'      => 'rejected',
-                'is_approved' => 2,
+                'is_approved' => false,
                 'updated_at'  => date('Y-m-d H:i:s'),
             ]);
             $this->sendSKDecisionEmail($user['email'], $user['name'], 'rejected');
@@ -929,8 +929,8 @@ class AdminController extends Controller
                 'email'       => $email,
                 'role'        => 'chairman',
                 'status'      => 'active',
-                'is_approved' => 1,
-                'is_verified' => 1,
+                'is_approved' => true,
+                'is_verified' => true,
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s'),
             ]);
@@ -969,8 +969,8 @@ class AdminController extends Controller
                 'email'       => 'admin@demo.com',
                 'role'        => 'chairman',
                 'status'      => 'active',
-                'is_approved' => 1,
-                'is_verified' => 1,
+                'is_approved' => true,
+                'is_verified' => true,
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s'),
             ]);

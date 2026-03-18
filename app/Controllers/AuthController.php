@@ -51,13 +51,13 @@ class AuthController extends BaseController
         }
 
         // SK pending chairman approval
-        if ($user['role'] === 'sk' && (int)$user['is_approved'] === 0) {
+        if ($user['role'] === 'sk' && $user['status'] === 'pending') {
             $session->setFlashdata('error', 'Your SK account is pending approval by the Barangay Chairman. You will be notified via email once a decision is made.');
             return redirect()->to('/login');
         }
 
         // SK rejected
-        if ($user['role'] === 'sk' && (int)$user['is_approved'] === 2) {
+        if ($user['role'] === 'sk' && $user['status'] === 'rejected') {
             $session->setFlashdata('error', 'Your SK account application was not approved. Please contact the Barangay office for more information.');
             return redirect()->to('/login');
         }
@@ -156,8 +156,8 @@ class AuthController extends BaseController
             'email'       => $email,
             'role'        => $dbRole,
             'status'      => 'pending',
-            'is_approved' => ($dbRole === 'sk') ? 0 : 1,
-            'is_verified' => 0,
+            'is_approved' => ($dbRole === 'sk') ? false : true,
+            'is_verified' => false,
             'created_at'  => Time::now('Asia/Manila')->toDateTimeString(),
             'updated_at'  => Time::now('Asia/Manila')->toDateTimeString(),
         ]);
@@ -176,7 +176,7 @@ class AuthController extends BaseController
             'user_id'            => $userId,
             'password'           => password_hash($password, PASSWORD_DEFAULT),
             'verification_token' => $verificationToken,
-            'is_verified'        => 0,
+            'is_verified'        => false,
             'created_at'         => Time::now('Asia/Manila')->toDateTimeString(),
             'updated_at'         => Time::now('Asia/Manila')->toDateTimeString(),
         ]);
@@ -222,14 +222,14 @@ class AuthController extends BaseController
         }
 
         $accountModel->update($account['id'], [
-            'is_verified'        => 1,
+            'is_verified'        => true,
             'verification_token' => null,
             'updated_at'         => Time::now('Asia/Manila')->toDateTimeString(),
         ]);
 
         $userModel = new UserModel();
         $userModel->update($account['user_id'], [
-            'is_verified' => 1,
+            'is_verified' => true,
             'status'      => 'approved',
             'updated_at'  => Time::now('Asia/Manila')->toDateTimeString(),
         ]);
