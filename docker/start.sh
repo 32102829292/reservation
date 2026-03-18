@@ -1,3 +1,4 @@
 #!/bin/sh
 php-fpm -D
-nginx -g "daemon off;"
+echo "php-fpm started"
+nginx -t && nginx -g "daemon off;" || echo "nginx failed to start"
