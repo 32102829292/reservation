@@ -219,13 +219,13 @@ class AuthController extends BaseController
         ]);
 
         $userModel = new UserModel();
+        $user      = $userModel->find($account['user_id']);
+
         $userModel->update($account['user_id'], [
             'is_verified' => true,
-            'status'      => 'approved',
+            'status'      => $user['role'] === 'sk' ? 'pending' : 'approved',
             'updated_at'  => Time::now('Asia/Manila')->toDateTimeString(),
         ]);
-
-        $user = $userModel->find($account['user_id']);
 
         if ($user['role'] === 'sk') {
             $this->notifyChairmanNewSK($user);
