@@ -313,7 +313,7 @@ class SkController extends BaseController
         }
 
         $reservationId = (int)$this->request->getPost('reservation_id');
-        $printed       = (int)$this->request->getPost('printed');
+        $printed       = (bool)$this->request->getPost('printed');
         $pages         = (int)$this->request->getPost('pages');
 
         if (!$reservationId) {

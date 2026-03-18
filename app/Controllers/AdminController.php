@@ -327,7 +327,7 @@ class AdminController extends Controller
         $input = !empty($post) ? $post : $json;
 
         $reservationId = (int)($input['reservation_id'] ?? 0);
-        $printed       = isset($input['printed']) ? (int)$input['printed'] : 0;
+        $printed       = isset($input['printed']) ? (bool)$input['printed'] : false;
         $pages         = (int)($input['pages'] ?? 0);
 
         if (!$reservationId) {
