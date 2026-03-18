@@ -27,8 +27,8 @@ RUN mkdir -p writable/cache writable/logs writable/session writable/uploads \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/writable
 
-RUN echo '#!/bin/sh\nphp-fpm -D\nnginx -g "daemon off;"' > /start.sh \
-    && chmod +x /start.sh
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh
 
 EXPOSE 80
 
