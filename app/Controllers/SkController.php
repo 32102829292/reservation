@@ -23,7 +23,7 @@ class SkController extends BaseController
         $allReservations = $model->db->table('reservations r')
             ->select([
                 'r.*',
-                'COALESCE(u.name, r.visitor_name, r.user_id) AS full_name',
+                'COALESCE(u.name, r.visitor_name, r.user_id::text) AS full_name',
                 'u.email                                      AS user_email',
                 'res.name                                     AS resource_name',
                 'res.description                              AS resource_description',
