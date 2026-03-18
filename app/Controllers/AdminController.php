@@ -2,156 +2,55 @@
 namespace App\Controllers;
 
 use App\Models\ReservationModel;
-use App\Models\UserModel;
-use App\Models\AccountModel;
-use App\Models\LoginLog;
 use App\Models\ActivityLog;
 use App\Models\ResourceModel;
 use App\Models\PcModel;
-use CodeIgniter\Controller;
+use App\Models\UserModel;
 
-class AdminController extends Controller
+class SkController extends BaseController
 {
-    protected $reservationModel;
-    protected $db;
-
-    public function __construct()
-    {
-        $this->reservationModel = new ReservationModel();
-        $this->db = \Config\Database::connect();
-        helper(['form', 'url']);
-    }
-
-    private function logActivity(string $action, ?int $reservationId = null, ?string $details = null): void
-    {
-        $userId = session()->get('user_id');
-        if (!$userId) {
-            log_message('error', 'Attempted to log activity without user session');
-            return;
-        }
-
-        try {
-            $this->db->table('activity_logs')->insert([
-                'user_id'        => $userId,
-                'action'         => $action,
-                'reservation_id' => $reservationId,
-                'details'        => $details,
-                'created_at'     => date('Y-m-d H:i:s'),
-            ]);
-        } catch (\Exception $e) {
-            log_message('error', 'Failed to log activity: ' . $e->getMessage());
-        }
-    }
-
-    private function getValidUserId()
-    {
-        $userId = session()->get('user_id');
-        if ($userId) {
-            $userExists = $this->db->table('users')
-                ->where('id', $userId)
-                ->whereIn('status', ['active', 'pending'])
-                ->countAllResults();
-
-            if ($userExists) return $userId;
-        }
-
-        $email = session()->get('email');
-        if ($email) {
-            $user = $this->db->table('users')
-                ->where('email', $email)
-                ->whereIn('status', ['active', 'pending'])
-                ->get()->getRowArray();
-
-            if ($user) {
-                session()->set('user_id', $user['id']);
-                session()->set('name', $user['name']);
-                session()->set('email', $user['email']);
-                session()->set('role', $user['role']);
-                return $user['id'];
-            }
-        }
-
-        $chairman = $this->db->table('users')
-            ->where('role', 'chairman')
-            ->whereIn('status', ['active', 'pending'])
-            ->orderBy('id', 'ASC')
-            ->get()->getRowArray();
-
-        if ($chairman) {
-            session()->set('user_id', $chairman['id']);
-            session()->set('name', $chairman['name']);
-            session()->set('email', $chairman['email']);
-            session()->set('role', $chairman['role']);
-            session()->set('isLoggedIn', true);
-            return $chairman['id'];
-        }
-
-        $anyUser = $this->db->table('users')
-            ->whereIn('status', ['active', 'pending'])
-            ->orderBy('id', 'ASC')
-            ->get()->getRowArray();
-
-        if ($anyUser) {
-            session()->set('user_id', $anyUser['id']);
-            session()->set('name', $anyUser['name']);
-            session()->set('email', $anyUser['email']);
-            session()->set('role', $anyUser['role'] ?? 'user');
-            session()->set('isLoggedIn', true);
-            return $anyUser['id'];
-        }
-
-        return null;
-    }
-
-    private function sendSKDecisionEmail(string $to, string $name, string $decision): void
-    {
-        $subject = $decision === 'approved'
-            ? '🎉 Your SK Account Has Been Approved!'
-            : 'Update on Your SK Account Application';
-
-        $emailService = \Config\Services::email();
-        $emailService->clear();
-        $emailService->setTo($to);
-        $emailService->setFrom(
-            env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph'),
-            env('EMAIL_FROM_NAME',    'E-Learning System')
-        );
-        $emailService->setSubject($subject);
-        $emailService->setMessage(view('emails/sk_decision', [
-            'name'     => $name,
-            'decision' => $decision,
-            'loginUrl' => base_url('login'),
-        ]));
-        $emailService->setMailType('html');
-
-        if (!$emailService->send()) {
-            log_message('error', "[AdminController] SK decision email ({$decision}) FAILED for {$to}: "
-                . $emailService->printDebugger(['headers']));
-        }
-    }
-
     public function dashboard()
     {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
+        $model = new ReservationModel();
+        $db    = db_connect();
 
-        $model = $this->reservationModel;
-        $db    = $this->db;
+        $skUserId       = session()->get('user_id');
+        $myReservations = $model
+            ->where('user_id', $skUserId)
+            ->orderBy('reservation_date', 'DESC')
+            ->findAll();
 
-        $reservations = $db->table('reservations r')
-            ->select('r.*, res.name AS resource_name, u.name as visitor_name, u.email as user_email')
+        $allReservations = $model->db->table('reservations r')
+            ->select([
+                'r.*',
+                'COALESCE(u.name, r.visitor_name, r.user_id) AS full_name',
+                'u.email                                      AS user_email',
+                'res.name                                     AS resource_name',
+                'res.description                              AS resource_description',
+            ])
+            ->join('users u',       'u.id = r.user_id',       'left')
             ->join('resources res', 'res.id = r.resource_id', 'left')
-            ->join('users u', 'u.id = r.user_id', 'left')
-            ->orderBy('r.id', 'DESC')
-            ->limit(10)
-            ->get()->getResultArray();
+            ->orderBy('r.reservation_date', 'DESC')
+            ->get()
+            ->getResultArray();
 
-        $total    = $model->countAll();
-        $pending  = $model->where('status', 'pending')->countAllResults();
-        $approved = $model->where('status', 'approved')->countAllResults();
-        $declined = $model->where('status', 'declined')->countAllResults();
-        $claimed  = $model->where('claimed', true)->countAllResults();
+        $pendingReservations = $model->db->table('reservations r')
+            ->select('r.*, resources.name as resource_name, users.name as visitor_name, users.email as user_email')
+            ->join('resources', 'resources.id = r.resource_id', 'left')
+            ->join('users',     'users.id = r.user_id',         'left')
+            ->where('r.status', 'pending')
+            ->where('r.user_id !=', $skUserId)
+            ->orderBy('r.created_at', 'DESC')
+            ->limit(10)
+            ->get()
+            ->getResultArray();
+
+        $total    = count($myReservations);
+        $pending  = count(array_filter($myReservations, fn($r) => $r['status'] === 'pending'));
+        $approved = count(array_filter($myReservations, fn($r) => $r['status'] === 'approved'));
+        $declined = count(array_filter($myReservations, fn($r) => in_array($r['status'], ['declined', 'canceled'])));
+
+        $claimed = $model->where('claimed', true)->countAllResults();
 
         $today         = date('Y-m-d');
         $todayTotal    = $model->where('reservation_date', $today)->countAllResults();
@@ -177,7 +76,8 @@ class AdminController extends Controller
             ->groupBy('r.resource_id, resources.name')
             ->orderBy('count', 'DESC')
             ->limit(5)
-            ->get()->getResultArray();
+            ->get()
+            ->getResultArray();
 
         $resourceLabels = [];
         $resourceData   = [];
@@ -195,17 +95,13 @@ class AdminController extends Controller
             $topResources   = [];
         }
 
+        $pendingUserCount = $model
+            ->where('status', 'pending')
+            ->where('user_id !=', $skUserId)
+            ->countAllResults();
+
         $approvalRate    = $total > 0    ? round(($approved / $total) * 100)   : 0;
         $utilizationRate = $approved > 0 ? round(($claimed / $approved) * 100) : 0;
-
-        $totalUsers     = $db->table('users')->where('role', 'resident')->countAllResults();
-        $totalResources = $db->table('resources')->countAllResults();
-
-        $pendingSKCount = $db->table('users')
-            ->where('role', 'SK')
-            ->where('is_approved', 0)
-            ->where('is_verified', 1)
-            ->countAllResults();
 
         $allBooks = $db->table('books')
             ->where('status', 'active')
@@ -218,101 +114,195 @@ class AdminController extends Controller
         $dashBorrowReqs = $db->table('book_borrowings bb')
             ->select('bb.id, bb.status, bb.created_at, b.title as book_title, u.name as resident_name')
             ->join('books b', 'b.id = bb.book_id', 'left')
-            ->join('users u', 'u.id = bb.user_id',  'left')
+            ->join('users u', 'u.id = bb.user_id', 'left')
             ->orderBy('bb.created_at', 'DESC')
             ->get()->getResultArray();
 
         $pendingBorrowings = count(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending'));
 
-        $printLogs = $db->table('print_logs pl')
-            ->select('pl.id, pl.reservation_id, pl.printed, pl.pages,
-                      pl.printed_at, pl.e_ticket_code,
-                      COALESCE(u.name, r.visitor_name, \'Guest\') AS visitor_name,
-                      res.name AS resource_name,
-                      r.reservation_date, r.start_time')
-            ->join('reservations r',  'r.id = pl.reservation_id', 'left')
-            ->join('resources res',   'res.id = r.resource_id',   'left')
-            ->join('users u',         'u.id = r.user_id',         'left')
-            ->orderBy('pl.printed_at', 'DESC')
-            ->limit(50)
-            ->get()->getResultArray();
-
-        return view('admin/dashboard', [
-            'page'             => 'dashboard',
-            'total'            => $total,
-            'pending'          => $pending,
-            'approved'         => $approved,
-            'declined'         => $declined,
-            'claimed'          => $claimed,
-            'monthlyTotal'     => $monthlyTotal,
-            'todayTotal'       => $todayTotal,
-            'todayApproved'    => $todayApproved,
-            'todayPending'     => $todayPending,
-            'todayClaimed'     => $todayClaimed,
-            'chartLabels'      => $chartLabels,
-            'chartData'        => $chartData,
-            'resourceLabels'   => $resourceLabels,
-            'resourceData'     => $resourceData,
-            'topResources'     => $topResources,
-            'approvalRate'     => $approvalRate,
-            'utilizationRate'  => $utilizationRate,
-            'totalUsers'       => $totalUsers,
-            'totalResources'   => $totalResources,
-            'reservations'     => $reservations,
-            'pendingSKCount'   => $pendingSKCount,
-            'dashBooks'        => $allBooks,
-            'dashBorrowReqs'   => $dashBorrowReqs,
-            'bookTotalCount'   => $bookTotalCount,
-            'bookAvailCount'   => $bookAvailCount,
-            'pendingBorrowings'=> $pendingBorrowings,
-            'printLogs'        => $printLogs,
+        return view('sk/dashboard', [
+            'page'                => 'dashboard',
+            'sk_name'             => session()->get('name') ?? session()->get('username'),
+            'reservations'        => $myReservations,
+            'allReservations'     => $allReservations,
+            'pendingReservations' => $pendingReservations,
+            'total'               => $total,
+            'pending'             => $pending,
+            'approved'            => $approved,
+            'declined'            => $declined,
+            'claimed'             => $claimed,
+            'monthlyTotal'        => $monthlyTotal,
+            'todayTotal'          => $todayTotal,
+            'todayApproved'       => $todayApproved,
+            'todayPending'        => $todayPending,
+            'todayClaimed'        => $todayClaimed,
+            'chartLabels'         => $chartLabels,
+            'chartData'           => $chartData,
+            'resourceLabels'      => $resourceLabels,
+            'resourceData'        => $resourceData,
+            'topResources'        => $topResources,
+            'pendingUserCount'    => $pendingUserCount,
+            'approvalRate'        => $approvalRate,
+            'utilizationRate'     => $utilizationRate,
+            'dashBooks'           => $allBooks,
+            'dashBorrowReqs'      => $dashBorrowReqs,
+            'bookTotalCount'      => $bookTotalCount,
+            'bookAvailCount'      => $bookAvailCount,
+            'pendingBorrowings'   => $pendingBorrowings,
         ]);
     }
 
-    public function newReservation()
+    public function reservations()
     {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
+        $model = new ReservationModel();
+        $db    = db_connect();
 
-        return view('admin/new-reservation', [
-            'page'      => 'new-reservation',
-            'resources' => (new ResourceModel())->findAll(),
-            'pcs'       => (new PcModel())->where('status', 'available')->findAll(),
-            'users'     => (new UserModel())->findAll(),
-        ]);
-    }
+        $status = $this->request->getGet('status');
+        $date   = $this->request->getGet('date');
 
-    public function manageReservations()
-    {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $reservations = $this->db->table('reservations r')
-            ->select('r.*, res.name AS resource_name, u.name AS visitor_name, u.email AS user_email,
-                      approver.name AS approver_name, approver.email AS approver_email')
-            ->join('resources res',  'res.id = r.resource_id',    'left')
-            ->join('users u',        'u.id = r.user_id',          'left')
+        $query = $model->db->table('reservations r')
+            ->select('r.*, resources.name as resource_name, users.name as visitor_name, users.email as user_email,
+                approver.name AS approver_name, approver.email AS approver_email')
+            ->join('resources', 'resources.id = r.resource_id',     'left')
+            ->join('users',     'users.id = r.user_id',             'left')
             ->join('users approver', 'approver.id = r.approved_by', 'left')
-            ->orderBy('r.id', 'DESC')
-            ->get()->getResultArray();
+            ->orderBy('r.reservation_date', 'DESC');
 
-        $rawPrintLogs = $this->db->table('print_logs')
+        if ($status) {
+            if ($status === 'claimed') {
+                $query->where('r.claimed', true);
+            } else {
+                $query->where('r.status', $status);
+            }
+        }
+
+        if ($date) {
+            $query->where('r.reservation_date', $date);
+        }
+
+        $reservations = $query->get()->getResultArray();
+        $total        = count($reservations);
+
+        $pendingCount  = $model->where('status', 'pending')->countAllResults();
+        $approvedCount = $model->where('status', 'approved')->countAllResults();
+        $claimedCount  = $model->where('claimed', true)->countAllResults();
+        $declinedCount = $model->where('status', 'declined')->countAllResults();
+
+        $rawPrintLogs = $db->table('print_logs')
             ->select('reservation_id, printed, pages, printed_at')
             ->orderBy('printed_at', 'DESC')
-            ->get()->getResultArray();
+            ->get()
+            ->getResultArray();
 
         $printLogMap = [];
         foreach ($rawPrintLogs as $pl) {
             $printLogMap[(int)$pl['reservation_id']] = $pl;
         }
 
-        return view('admin/manage-reservations', [
-            'page'         => 'manage-reservations',
-            'reservations' => $reservations,
-            'printLogMap'  => $printLogMap,
+        return view('sk/reservations', [
+            'page'          => 'reservations',
+            'reservations'  => $reservations,
+            'printLogMap'   => $printLogMap,
+            'total'         => $total,
+            'pending'       => $pendingCount,
+            'approved'      => $approvedCount,
+            'claimed'       => $claimedCount,
+            'declined'      => $declinedCount,
+            'pendingCount'  => $pendingCount,
+            'approvedCount' => $approvedCount,
+            'claimedCount'  => $claimedCount,
+            'declinedCount' => $declinedCount,
+            'currentStatus' => $status,
+            'currentDate'   => $date,
         ]);
+    }
+
+    public function approve()
+    {
+        $id = $this->request->getPost('id');
+        if (!$id) {
+            return redirect()->back()->with('error', 'Invalid request');
+        }
+
+        $reservationModel = new ReservationModel();
+        $db               = db_connect();
+
+        try {
+            $reservation = $reservationModel->find($id);
+            if (!$reservation) {
+                return redirect()->back()->with('error', 'Reservation not found');
+            }
+
+            $db->transBegin();
+            $reservationModel->update($id, [
+                'status'      => 'approved',
+                'approved_by' => session()->get('user_id'),
+                'updated_at'  => date('Y-m-d H:i:s'),
+            ]);
+            $db->transCommit();
+
+            try {
+                $db->table('activity_logs')->insert([
+                    'user_id'        => session()->get('user_id'),
+                    'action'         => 'approve_user_request',
+                    'reservation_id' => $id,
+                    'created_at'     => date('Y-m-d H:i:s'),
+                ]);
+            } catch (\Exception $e) {
+                log_message('error', 'Failed to log approve activity: ' . $e->getMessage());
+            }
+
+            return redirect()->back()->with('success', 'Reservation approved successfully!');
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            log_message('error', 'Approve failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to approve reservation: ' . $e->getMessage());
+        }
+    }
+
+    public function decline()
+    {
+        $id = $this->request->getPost('id');
+        if (!$id) {
+            return redirect()->back()->with('error', 'Invalid request');
+        }
+
+        $reservationModel = new ReservationModel();
+        $db               = db_connect();
+
+        try {
+            $reservation = $reservationModel->find($id);
+            if (!$reservation) {
+                return redirect()->back()->with('error', 'Reservation not found');
+            }
+
+            $db->transBegin();
+            $reservationModel->update($id, [
+                'status'      => 'declined',
+                'approved_by' => session()->get('user_id'),
+                'updated_at'  => date('Y-m-d H:i:s'),
+            ]);
+            $db->transCommit();
+
+            try {
+                $db->table('activity_logs')->insert([
+                    'user_id'        => session()->get('user_id'),
+                    'action'         => 'decline_user_request',
+                    'reservation_id' => $id,
+                    'created_at'     => date('Y-m-d H:i:s'),
+                ]);
+            } catch (\Exception $e) {
+                log_message('error', 'Failed to log decline activity: ' . $e->getMessage());
+            }
+
+            return redirect()->back()->with('success', 'Reservation declined successfully!');
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            log_message('error', 'Decline failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to decline reservation: ' . $e->getMessage());
+        }
     }
 
     public function logPrint()
@@ -322,19 +312,16 @@ class AdminController extends Controller
                 ->setJSON(['ok' => false, 'error' => 'Unauthorized']);
         }
 
-        $post  = $this->request->getPost();
-        $json  = $this->request->getJSON(true) ?? [];
-        $input = !empty($post) ? $post : $json;
-
-        $reservationId = (int)($input['reservation_id'] ?? 0);
-        $printed       = isset($input['printed']) ? (int)$input['printed'] : 0;
-        $pages         = (int)($input['pages'] ?? 0);
+        $reservationId = (int)$this->request->getPost('reservation_id');
+        $printed       = (int)$this->request->getPost('printed');
+        $pages         = (int)$this->request->getPost('pages');
 
         if (!$reservationId) {
             return $this->response->setJSON(['ok' => false, 'error' => 'Missing reservation_id']);
         }
 
-        $res = $this->db->table('reservations')
+        $db  = db_connect();
+        $res = $db->table('reservations')
             ->select('e_ticket_code, user_id')
             ->where('id', $reservationId)
             ->get()->getRowArray();
@@ -351,406 +338,161 @@ class AdminController extends Controller
         ];
 
         try {
-            $existing = $this->db->table('print_logs')
+            $existing = $db->table('print_logs')
                 ->where('reservation_id', $reservationId)
                 ->get()->getRowArray();
 
             if ($existing) {
-                $this->db->table('print_logs')
+                $db->table('print_logs')
                     ->where('reservation_id', $reservationId)
                     ->update($payload);
             } else {
-                $this->db->table('print_logs')->insert(array_merge($payload, [
+                $db->table('print_logs')->insert(array_merge($payload, [
                     'reservation_id' => $reservationId,
                     'user_id'        => $res['user_id']       ?? null,
                     'e_ticket_code'  => $res['e_ticket_code'] ?? null,
                 ]));
             }
-
-            $this->logActivity('print', $reservationId,
-                "Print log saved for reservation #{$reservationId} — printed: {$printed}, pages: {$pages}");
-
-            return $this->response->setJSON(['ok' => true]);
-
         } catch (\Exception $e) {
-            log_message('error', 'logPrint failed: ' . $e->getMessage());
-            return $this->response->setJSON(['ok' => false, 'error' => 'Database error: ' . $e->getMessage()]);
-        }
-    }
-
-    public function manageSK()
-    {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $userModel = new UserModel();
-
-        $allSK = $userModel
-            ->select('users.*, accounts.is_verified AS email_verified')
-            ->join('accounts', 'accounts.user_id = users.id', 'left')
-            ->where('users.role', 'SK')
-            ->orderBy('users.created_at', 'DESC')
-            ->findAll();
-
-        $pending  = array_values(array_filter($allSK, fn($u) => (int)$u['is_approved'] === 0));
-        $approved = array_values(array_filter($allSK, fn($u) => (int)$u['is_approved'] === 1));
-        $rejected = array_values(array_filter($allSK, fn($u) => (int)$u['is_approved'] === 2));
-
-        return view('admin/manage-sk', [
-            'page'          => 'manage-sk',
-            'skAccounts'    => $allSK,
-            'pending'       => $pending,
-            'approved'      => $approved,
-            'rejected'      => $rejected,
-            'pendingCount'  => count($pending),
-            'approvedCount' => count($approved),
-            'rejectedCount' => count($rejected),
-        ]);
-    }
-
-    public function managePCs()
-    {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $pcModel          = new PcModel();
-        $pcs              = $pcModel->orderBy('pc_number', 'ASC')->findAll();
-        $availableCount   = $pcModel->where('status', 'available')->countAllResults();
-        $inUseCount       = $pcModel->where('status', 'in_use')->countAllResults();
-        $maintenanceCount = $pcModel->where('status', 'maintenance')->countAllResults();
-
-        return view('admin/manage-pcs', [
-            'page'             => 'manage-pcs',
-            'pcs'              => $pcs,
-            'availableCount'   => $availableCount,
-            'inUseCount'       => $inUseCount,
-            'maintenanceCount' => $maintenanceCount,
-        ]);
-    }
-
-    public function addPC()
-    {
-        $pcNumber = $this->request->getPost('pc_number');
-        $status   = $this->request->getPost('status') ?? 'available';
-
-        if (empty($pcNumber)) {
-            return redirect()->back()->with('error', 'PC number is required');
-        }
-
-        $existingPC = $this->db->table('pcs')->where('pc_number', $pcNumber)->get()->getRow();
-        if ($existingPC) {
-            return redirect()->back()->with('error', 'PC number already exists');
-        }
-
-        $userId = session()->get('user_id');
-        if (!$userId) {
-            $anyUser = $this->db->table('users')->select('id')->orderBy('id', 'ASC')->get()->getRow();
-            if ($anyUser) {
-                $userId = $anyUser->id;
-                session()->set('user_id', $userId);
-            } else {
-                return redirect()->back()->with('error', 'No users found in system');
-            }
+            log_message('error', 'SK logPrint — print_logs failed: ' . $e->getMessage());
+            return $this->response->setJSON(['ok' => false, 'error' => 'DB error: ' . $e->getMessage()]);
         }
 
         try {
-            $this->db->table('pcs')->insert([
-                'pc_number'  => $pcNumber,
-                'status'     => $status,
-                'added_by'   => (int) $userId,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
+            $db->table('activity_logs')->insert([
+                'user_id'        => session()->get('user_id'),
+                'action'         => 'print',
+                'reservation_id' => $reservationId,
+                'created_at'     => date('Y-m-d H:i:s'),
             ]);
-
-            $this->logActivity('add_pc', null, "Added PC: $pcNumber");
-            return redirect()->to('/admin/manage-pcs')->with('success', 'PC added successfully.');
         } catch (\Exception $e) {
-            log_message('error', 'PC insert error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
+            log_message('error', 'SK logPrint — activity_logs failed: ' . $e->getMessage());
         }
+
+        return $this->response->setJSON(['ok' => true]);
     }
 
-    public function updatePCStatus()
+    public function newReservation()
     {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
+        $resourceModel = new ResourceModel();
+        $pcModel       = new PcModel();
+        $userModel     = new UserModel();
 
-        $id     = $this->request->getPost('id');
-        $status = $this->request->getPost('status');
-
-        if (!$id || !$status) {
-            return redirect()->back()->with('error', 'Invalid request');
-        }
-
-        $pcModel = new PcModel();
-
-        try {
-            $pc = $pcModel->find($id);
-            if (!$pc) {
-                return redirect()->back()->with('error', 'PC not found.');
-            }
-
-            $pcModel->update($id, ['status' => $status, 'updated_at' => date('Y-m-d H:i:s')]);
-            $this->logActivity('update_pc_status', null, "Updated PC {$pc['pc_number']} status to: $status");
-            return redirect()->to('/admin/manage-pcs')->with('success', 'PC status updated successfully.');
-        } catch (\Exception $e) {
-            log_message('error', 'Error updating PC status: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to update PC status. Please try again.');
-        }
-    }
-
-    public function deletePC($id)
-    {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        if (!is_numeric($id)) {
-            return redirect()->back()->with('error', 'Invalid PC ID.');
-        }
-
-        $pcModel = new PcModel();
-
-        try {
-            $pc = $pcModel->find($id);
-            if (!$pc) {
-                return redirect()->back()->with('error', 'PC not found.');
-            }
-
-            $activeReservations = $this->db->table('reservations')
-                ->where('pc_number', $pc['pc_number'])
-                ->whereIn('status', ['pending', 'approved'])
-                ->countAllResults();
-
-            if ($activeReservations > 0) {
-                return redirect()->back()->with('error', 'Cannot delete PC with active or pending reservations.');
-            }
-
-            $pcModel->delete($id);
-            $this->logActivity('delete_pc', null, "Deleted PC: {$pc['pc_number']}");
-            return redirect()->to('/admin/manage-pcs')->with('success', 'PC deleted successfully.');
-        } catch (\Exception $e) {
-            log_message('error', 'Error deleting PC: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to delete PC. Please try again.');
-        }
+        return view('sk/new-reservation', [
+            'page'      => 'new-reservation',
+            'resources' => $resourceModel->findAll(),
+            'pcs'       => $pcModel->findAll(),
+            'users'     => $userModel->findAll(),
+        ]);
     }
 
     public function createReservation()
     {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
+        $request          = $this->request;
+        $reservationModel = new ReservationModel();
+
+        $visitorType         = $request->getPost('visitor_type');
+        $userId              = $request->getPost('user_id');
+        $userEmail           = $request->getPost('user_email');
+        $visitorName         = $request->getPost('visitor_name');
+        $visitorContactEmail = $request->getPost('visitor_contact_email');
+        $reservationDate     = $request->getPost('reservation_date');
+        $reservationType     = $request->getPost('reservation_type');
+        $startTime           = $request->getPost('start_time');
+        $endTime             = $request->getPost('end_time');
+        $purpose             = $request->getPost('purpose');
+        $resourceId          = $request->getPost('resource_id');
+        $pcsJson             = $request->getPost('pcs');
+        $pcs                 = json_decode($pcsJson, true) ?? [];
+
+        if ($visitorType === 'User' && empty($userId)) {
+            if ($request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Please select a registered user.']);
+            }
+            return redirect()->back()->with('error', 'Please select a registered user.');
         }
 
-        $userType    = $this->request->getPost('visitor_type');
-        $eTicketCode = 'ADMIN' . strtoupper(uniqid());
+        if ($visitorType === 'User' && !empty($userEmail)) {
+            $fairness = $reservationModel->checkFairness($userEmail);
+            if (!$fairness['fair']) {
+                $message = isset($fairness['blocked'])
+                    ? 'AI Fairness Check: Exceeded limit. Blocked until ' . $fairness['until']
+                    : 'AI Fairness Check: Exceeded limit. Blocked for 2 weeks.';
+                if ($request->isAJAX()) {
+                    return $this->response->setJSON(['status' => 'error', 'message' => $message]);
+                }
+                return redirect()->back()->with('error', $message);
+            }
+        }
+
+        $eTicket = $this->generateETicket();
 
         $data = [
-            'resource_id'      => $this->request->getPost('resource_id'),
-            'visitor_name'     => $this->request->getPost('visitor_name'),
-            'visitor_type'     => $userType,
-            'user_email'       => $this->request->getPost('user_email') ?: null,
-            'reservation_date' => $this->request->getPost('reservation_date'),
-            'start_time'       => $this->request->getPost('start_time'),
-            'end_time'         => $this->request->getPost('end_time'),
-            'purpose'          => $this->request->getPost('purpose'),
-            'pc_number'        => $this->request->getPost('pc_number') ?: null,
-            'status'           => 'approved',
-            'approved_by'      => session()->get('user_id'),
-            'e_ticket_code'    => $eTicketCode,
+            'user_id'          => ($visitorType === 'User' && !empty($userId)) ? (int)$userId : null,
+            'visitor_type'     => $visitorType,
+            'visitor_name'     => $visitorName,
+            'visitor_email'    => $visitorContactEmail,
+            'resource_id'      => !empty($resourceId) ? (int)$resourceId : null,
+            'reservation_date' => $reservationDate,
+            'reservation_type' => $reservationType,
+            'start_time'       => $startTime,
+            'end_time'         => $endTime,
+            'purpose'          => $purpose,
+            'pc_numbers'       => !empty($pcs) ? json_encode($pcs) : null,
+            'status'           => 'pending',
+            'claimed'          => false,
+            'e_ticket_code'    => $eTicket,
             'created_at'       => date('Y-m-d H:i:s'),
-            'updated_at'       => date('Y-m-d H:i:s'),
         ];
 
-        if ($userType === 'User') {
-            $userId = $this->request->getPost('user_id');
-            if (!$userId) {
-                return redirect()->back()->with('error', 'Please select a registered user from the list.');
+        try {
+            $reservationModel->insert($data);
+        } catch (\Exception $e) {
+            log_message('error', 'createReservation failed: ' . $e->getMessage());
+            if ($request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to save reservation.']);
             }
-            $data['user_id'] = $userId;
-        } else {
-            $data['user_id'] = null;
+            return redirect()->back()->with('error', 'Failed to save reservation. Please try again.');
         }
 
-        $newId        = $this->reservationModel->insert($data, true);
-        $resource     = (new ResourceModel())->find($data['resource_id']);
-        $resourceName = $resource ? $resource['name'] : 'Unknown Resource';
-
-        $this->logActivity('create', (int) $newId,
-            "Created reservation for {$data['visitor_name']} - {$resourceName} on {$data['reservation_date']}");
-
-        return redirect()->to('/admin/manage-reservations')
-            ->with('success', 'Reservation created successfully. E-Ticket: ' . $eTicketCode);
-    }
-
-    public function approve()
-    {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $id = (int) $this->request->getPost('id');
-        if ($id) {
-            $reservation  = $this->reservationModel->find($id);
-            $resource     = (new ResourceModel())->find($reservation['resource_id']);
-            $resourceName = $resource ? $resource['name'] : 'Unknown Resource';
-
-            $this->reservationModel->update($id, [
-                'status'      => 'approved',
-                'approved_by' => session()->get('user_id'),
-                'updated_at'  => date('Y-m-d H:i:s'),
+        if ($request->isAJAX()) {
+            return $this->response->setJSON([
+                'status'   => 'success',
+                'message'  => 'Reservation created successfully!',
+                'e_ticket' => $eTicket,
             ]);
-
-            $this->logActivity('approve', $id,
-                "Approved reservation #$id for {$reservation['visitor_name']} - {$resourceName}");
         }
 
-        return redirect()->to('/admin/manage-reservations')->with('success', 'Reservation approved.');
+        return redirect()->to('/sk/reservations')->with('success', 'Reservation created successfully!');
     }
 
-    public function decline()
+    private function generateETicket($length = 8)
     {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
+        $chars  = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $ticket = '';
+        for ($i = 0; $i < $length; $i++) {
+            $ticket .= $chars[rand(0, strlen($chars) - 1)];
         }
-
-        $id = (int) $this->request->getPost('id');
-        if ($id) {
-            $reservation  = $this->reservationModel->find($id);
-            $resource     = (new ResourceModel())->find($reservation['resource_id']);
-            $resourceName = $resource ? $resource['name'] : 'Unknown Resource';
-
-            $this->reservationModel->update($id, [
-                'status'      => 'declined',
-                'approved_by' => session()->get('user_id'),
-                'updated_at'  => date('Y-m-d H:i:s'),
-            ]);
-
-            $this->logActivity('decline', $id,
-                "Declined reservation #$id for {$reservation['visitor_name']} - {$resourceName}");
-        }
-
-        return redirect()->to('/admin/manage-reservations')->with('success', 'Reservation declined.');
+        return $ticket;
     }
 
-    public function approveSK()
+    public function profile()
     {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $id = $this->request->getPost('id');
-        if ($id) {
-            $user = (new UserModel())->find($id);
-            (new UserModel())->update($id, [
-                'status'      => 'approved',
-                'is_approved' => 1,
-                'updated_at'  => date('Y-m-d H:i:s'),
-            ]);
-            $this->sendSKDecisionEmail($user['email'], $user['name'], 'approved');
-            $this->logActivity('approve_sk', null, "Approved SK account: {$user['name']} ({$user['email']})");
-        }
-
-        return redirect()->to('/admin/manage-sk')->with('success', 'SK account approved.');
-    }
-
-    public function rejectSK()
-    {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $id = $this->request->getPost('id');
-        if ($id) {
-            $user = (new UserModel())->find($id);
-            (new UserModel())->update($id, [
-                'status'      => 'rejected',
-                'is_approved' => 2,
-                'updated_at'  => date('Y-m-d H:i:s'),
-            ]);
-            $this->sendSKDecisionEmail($user['email'], $user['name'], 'rejected');
-            $this->logActivity('reject_sk', null, "Rejected SK account: {$user['name']} ({$user['email']})");
-        }
-
-        return redirect()->to('/admin/manage-sk')->with('success', 'SK account rejected.');
-    }
-
-    public function loginLogs()
-    {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $logs = (new LoginLog())
-            ->select('login_logs.*, users.name, users.email, users.role')
-            ->join('users', 'users.id = login_logs.user_id', 'left')
-            ->orderBy('login_logs.login_time', 'DESC')
-            ->findAll();
-
-        return view('admin/login-logs', [
-            'page'        => 'login-logs',
-            'logs'        => $logs,
-            'totalLogins' => count($logs),
-            'todayLogins' => (new LoginLog())->where('DATE(login_time)', date('Y-m-d'))->countAllResults(),
-        ]);
-    }
-
-    public function activityLogs()
-    {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $logs = $this->db->table('activity_logs al')
-            ->select('al.id, al.action, al.reservation_id, al.details, al.created_at, u.name, u.email, u.role')
-            ->join('users u', 'u.id = al.user_id', 'left')
-            ->orderBy('al.created_at', 'DESC')
-            ->limit(500)
-            ->get()->getResultArray();
-
-        $totalActivities = count($logs);
-        $todayActivities = $this->db->table('activity_logs')
-            ->where('DATE(created_at)', date('Y-m-d'))
-            ->countAllResults();
-
-        $createCount = $approveCount = $declineCount = $claimCount = 0;
-        foreach ($logs as $log) {
-            switch (strtolower(trim($log['action'] ?? ''))) {
-                case 'create':  $createCount++;  break;
-                case 'approve': $approveCount++; break;
-                case 'decline': $declineCount++; break;
-                case 'claim':   $claimCount++;   break;
-            }
-        }
-
-        return view('admin/activity-logs', [
-            'page'            => 'activity-logs',
-            'logs'            => $logs,
-            'totalActivities' => $totalActivities,
-            'todayActivities' => $todayActivities,
-            'createCount'     => $createCount,
-            'approveCount'    => $approveCount,
-            'declineCount'    => $declineCount,
-            'claimCount'      => $claimCount,
-        ]);
+        $user = (new UserModel())->find(session()->get('user_id'));
+        return view('sk/profile', ['user' => $user, 'page' => 'profile']);
     }
 
     public function scanner()
     {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $allReservations = $this->reservationModel
+        $reservationModel = new ReservationModel();
+        $allReservations  = $reservationModel
             ->select('reservations.*, resources.name as resource_name, users.name as visitor_name, users.email as user_email')
             ->join('resources', 'resources.id = reservations.resource_id', 'left')
-            ->join('users', 'users.id = reservations.user_id', 'left')
+            ->join('users',     'users.id = reservations.user_id',         'left')
             ->orderBy('reservations.created_at', 'DESC')
             ->findAll();
 
-        return view('admin/scanner', [
+        return view('sk/scanner', [
             'page'            => 'scanner',
             'allReservations' => $allReservations,
         ]);
@@ -758,319 +500,295 @@ class AdminController extends Controller
 
     public function validateETicket()
     {
-        if (!session()->has('user_id')) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Please login first']);
-        }
-
         $code = $this->request->getPost('code');
         if (!$code) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'No code provided']);
         }
 
-        $reservation = $this->reservationModel
+        $reservationModel = new ReservationModel();
+
+        $reservation = $reservationModel
             ->where('e_ticket_code', $code)
             ->where('status', 'approved')
             ->where('claimed', false)
             ->first();
 
         if ($reservation) {
-            $this->db->transStart();
-
-            try {
-                $this->reservationModel->update($reservation['id'], [
-                    'claimed'    => true,
-                    'claimed_at' => date('Y-m-d H:i:s'),
-                ]);
-
-                $resource     = (new ResourceModel())->find($reservation['resource_id']);
-                $resourceName = $resource ? $resource['name'] : 'Unknown Resource';
-                $userName     = $reservation['visitor_name'] ?? $reservation['full_name'] ?? 'Guest';
-
-                $this->db->table('activity_logs')->insert([
-                    'user_id'        => session()->get('user_id'),
-                    'action'         => 'claim',
-                    'reservation_id' => $reservation['id'],
-                    'details'        => "Claimed e-ticket for {$userName} - {$resourceName} (ID: {$reservation['id']})",
-                    'created_at'     => date('Y-m-d H:i:s'),
-                ]);
-
-                $this->db->transComplete();
-
-                if ($this->db->transStatus() === false) {
-                    throw new \Exception('Transaction failed');
-                }
-
-                return $this->response->setJSON(['status' => 'success', 'message' => 'E-Ticket validated successfully! Reservation claimed.']);
-            } catch (\Exception $e) {
-                $this->db->transRollback();
-                log_message('error', 'Failed to log claim: ' . $e->getMessage());
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Error processing claim: ' . $e->getMessage()]);
-            }
+            $reservationModel->update($reservation['id'], [
+                'claimed'    => true,
+                'claimed_at' => date('Y-m-d H:i:s'),
+            ]);
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'E-Ticket validated! Reservation claimed.',
+                'updated' => true,
+            ]);
         }
 
-        if ($this->reservationModel->where('e_ticket_code', $code)->where('claimed', true)->first()) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'This ticket has already been claimed.']);
+        if ($reservationModel->where('e_ticket_code', $code)->where('claimed', true)->first()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Ticket already claimed.']);
         }
 
-        if ($this->reservationModel->where('e_ticket_code', $code)->first()) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Reservation is not yet approved.']);
+        if ($reservationModel->where('e_ticket_code', $code)->first()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Reservation not yet approved.']);
         }
 
         return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid E-Ticket code.']);
     }
 
-    public function profile()
+    public function updateProfile()
     {
-        $userId = session()->get('user_id');
-        if (!$userId) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        $user          = (new UserModel())->find($userId);
-        $createdCount  = $this->reservationModel->where('user_id', $userId)->countAllResults();
-        $approvedCount = $this->reservationModel->where('approved_by', $userId)->countAllResults();
-
-        return view('admin/profile', [
-            'page'          => 'profile',
-            'user'          => $user,
-            'createdCount'  => $createdCount,
-            'approvedCount' => $approvedCount,
-        ]);
-    }
-
-    public function profileUpdate()
-    {
-        $userId = session()->get('user_id');
-        if (!$userId) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-
-        if (!$this->validate(['name' => 'required|min_length[3]', 'email' => 'required|valid_email'])) {
-            return redirect()->back()->withInput()->with('error', 'Please provide valid name and email');
-        }
-
         $userModel = new UserModel();
-        $userModel->update($userId, [
-            'name'       => $this->request->getPost('name'),
-            'email'      => $this->request->getPost('email'),
-            'phone'      => $this->request->getPost('phone'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        $userId    = session()->get('user_id');
+        $user      = $userModel->find($userId);
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found');
+        }
+
+        $updateData = [
+            'name'  => $this->request->getPost('name'),
+            'email' => $this->request->getPost('email'),
+            'phone' => $this->request->getPost('phone'),
+        ];
 
         $password = $this->request->getPost('password');
         if (!empty($password)) {
-            $accountModel = new AccountModel();
-            $account      = $accountModel->where('user_id', $userId)->first();
-            if ($account) {
-                $accountModel->update($account['id'], [
-                    'password'   => password_hash($password, PASSWORD_DEFAULT),
-                    'updated_at' => date('Y-m-d H:i:s'),
-                ]);
-            }
+            $updateData['password'] = password_hash($password, PASSWORD_DEFAULT);
         }
 
-        session()->set('name', $this->request->getPost('name'));
-        session()->set('email', $this->request->getPost('email'));
-        $this->logActivity('profile_update', null, "Updated profile for " . $this->request->getPost('name'));
-
-        return redirect()->to('/admin/profile')->with('success', 'Profile updated successfully.');
+        $userModel->update($userId, $updateData);
+        return redirect()->back()->with('success', 'Profile updated successfully');
     }
 
-    public function checkNewReservations()
+    public function downloadCsv()
     {
-        if (!session()->has('user_id')) {
-            return $this->response->setJSON(['error' => 'Unauthorized']);
+        $model        = new ReservationModel();
+        $reservations = $model->findAll();
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename=sk_reservations.csv');
+
+        $output = fopen('php://output', 'w');
+        fputcsv($output, ['ID', 'User ID', 'Resource ID', 'Date', 'Start Time', 'End Time', 'Purpose', 'Status', 'Claimed', 'Claimed At']);
+
+        foreach ($reservations as $r) {
+            fputcsv($output, [
+                $r['id'],               $r['user_id'],
+                $r['resource_id'],      $r['reservation_date'],
+                $r['start_time'],       $r['end_time'],
+                $r['purpose'],          $r['status'],
+                $r['claimed'] ? 'Yes' : 'No',
+                $r['claimed_at'] ?? '',
+            ]);
         }
 
-        if ($this->request->isAJAX()) {
-            $lastCheck = $this->request->getPost('last_check') ?? date('Y-m-d H:i:s', strtotime('-1 hour'));
+        fclose($output);
+        exit;
+    }
 
-            $newReservations = $this->reservationModel
-                ->select('reservations.*, resources.name as resource_name, users.name as visitor_name')
-                ->join('resources', 'resources.id = reservations.resource_id', 'left')
-                ->join('users', 'users.id = reservations.user_id', 'left')
-                ->where('reservations.status', 'pending')
-                ->where('reservations.created_at >', $lastCheck)
-                ->orderBy('reservations.created_at', 'DESC')
-                ->findAll();
+    public function myReservations()
+    {
+        $model  = new ReservationModel();
+        $userId = session()->get('user_id');
+        $status = $this->request->getGet('status');
+        $date   = $this->request->getGet('date');
 
-            return $this->response->setJSON(['new_reservations' => $newReservations]);
-        }
+        if ($status) $model->where('status', $status);
+        if ($date)   $model->where('reservation_date', $date);
+
+        $reservations = $model
+            ->where('user_id', $userId)
+            ->orderBy('reservation_date', 'DESC')
+            ->findAll();
+
+        return view('sk/my-reservations', [
+            'page'         => 'my-reservations',
+            'reservations' => $reservations,
+        ]);
+    }
+
+    public function activityLogs()
+    {
+        $logs = (new ActivityLog())
+            ->where('user_id', session()->get('user_id'))
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        return view('sk/activity-logs', ['page' => 'activity-logs', 'logs' => $logs]);
+    }
+
+    public function userRequests()
+    {
+        $reservationModel = new ReservationModel();
+        $userReservations = $this->getUserReservationsForApproval();
+
+        $pendingUserCount = $reservationModel
+            ->where('status', 'pending')
+            ->where('user_id !=', session()->get('user_id'))
+            ->countAllResults();
+
+        return view('sk/user_requests', [
+            'page'             => 'user-requests',
+            'userReservations' => $userReservations,
+            'pendingUserCount' => $pendingUserCount,
+        ]);
+    }
+
+    private function getUserReservationsForApproval()
+    {
+        $db       = db_connect();
+        $skUserId = session()->get('user_id');
+
+        return $db->table('reservations r')
+            ->select('r.*, resources.name as resource_name, users.name as visitor_name, users.email as user_email, users.phone as visitor_phone')
+            ->join('resources', 'resources.id = r.resource_id', 'left')
+            ->join('users',     'users.id = r.user_id',         'left')
+            ->where('r.user_id IS NOT NULL')
+            ->where('r.user_id !=', $skUserId)
+            ->orderBy('r.created_at', 'DESC')
+            ->get()->getResultArray();
+    }
+
+    public function checkNewUserRequests()
+    {
+        if (!$this->request->isAJAX()) return;
+
+        $lastCheck = $this->request->getPost('last_check') ?: date('Y-m-d H:i:s', strtotime('-1 hour'));
+        $skUserId  = session()->get('user_id');
+        $db        = db_connect();
+
+        $newRequests = $db->table('reservations r')
+            ->select('r.*, resources.name as resource_name, users.name as visitor_name')
+            ->join('resources', 'resources.id = r.resource_id', 'left')
+            ->join('users',     'users.id = r.user_id',         'left')
+            ->where('r.status', 'pending')
+            ->where('r.user_id !=', $skUserId)
+            ->where('r.created_at >', $lastCheck)
+            ->orderBy('r.created_at', 'DESC')
+            ->get()->getResultArray();
+
+        return $this->response->setJSON(['new_requests' => $newRequests]);
     }
 
     public function getPendingCount()
     {
-        if (!session()->has('user_id')) {
-            return $this->response->setJSON(['error' => 'Unauthorized']);
-        }
+        if (!$this->request->isAJAX()) return;
 
-        if ($this->request->isAJAX()) {
-            return $this->response->setJSON([
-                'pending_count' => $this->reservationModel->where('status', 'pending')->countAllResults(),
-            ]);
-        }
+        $skUserId     = session()->get('user_id');
+        $pendingCount = db_connect()->table('reservations')
+            ->where('status', 'pending')
+            ->where('user_id !=', $skUserId)
+            ->countAllResults();
+
+        return $this->response->setJSON(['pending_count' => $pendingCount]);
     }
 
-    public function createInitialAdmin()
+    public function claimedReservations()
     {
-        $userCount = $this->db->table('users')->countAllResults();
+        $reservationModel    = new ReservationModel();
+        $claimedReservations = $reservationModel
+            ->select('reservations.*, resources.name as resource_name, users.name as visitor_name, users.email as user_email')
+            ->join('resources', 'resources.id = reservations.resource_id', 'left')
+            ->join('users',     'users.id = reservations.user_id',         'left')
+            ->where('reservations.claimed', true)
+            ->orderBy('reservations.claimed_at', 'DESC')
+            ->findAll();
 
-        if ($userCount > 0) {
-            return redirect()->to('/login')->with('info', 'Users already exist. Please login.');
-        }
+        $totalClaimed = count($claimedReservations);
+        $todayCount   = count(array_filter($claimedReservations, function ($r) {
+            return $r['claimed_at'] && date('Y-m-d', strtotime($r['claimed_at'])) === date('Y-m-d');
+        }));
 
-        $name     = $this->request->getPost('name')     ?? 'Administrator';
-        $email    = $this->request->getPost('email')    ?? 'admin@example.com';
-        $password = $this->request->getPost('password') ?? 'admin123';
-
-        try {
-            $this->db->table('users')->insert([
-                'name'        => $name,
-                'email'       => $email,
-                'role'        => 'chairman',
-                'status'      => 'active',
-                'is_approved' => 1,
-                'is_verified' => 1,
-                'created_at'  => date('Y-m-d H:i:s'),
-                'updated_at'  => date('Y-m-d H:i:s'),
-            ]);
-            $newId = $this->db->insertID();
-
-            $this->db->table('accounts')->insert([
-                'user_id'    => $newId,
-                'password'   => password_hash($password, PASSWORD_DEFAULT),
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
-            ]);
-
-            session()->set([
-                'isLoggedIn' => true,
-                'user_id'    => $newId,
-                'name'       => $name,
-                'email'      => $email,
-                'role'       => 'chairman',
-            ]);
-
-            return redirect()->to('/admin/manage-pcs')
-                ->with('success', 'Admin user created successfully! You are now logged in.');
-        } catch (\Exception $e) {
-            log_message('error', 'Failed to create admin: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to create admin user: ' . $e->getMessage());
-        }
-    }
-
-    public function emergencyFix()
-    {
-        $userCount = $this->db->table('users')->countAllResults();
-
-        if ($userCount == 0) {
-            $this->db->table('users')->insert([
-                'name'        => 'Admin',
-                'email'       => 'admin@demo.com',
-                'role'        => 'chairman',
-                'status'      => 'active',
-                'is_approved' => 1,
-                'is_verified' => 1,
-                'created_at'  => date('Y-m-d H:i:s'),
-                'updated_at'  => date('Y-m-d H:i:s'),
-            ]);
-            $newId = $this->db->insertID();
-
-            $this->db->table('accounts')->insert([
-                'user_id'    => $newId,
-                'password'   => password_hash('admin123', PASSWORD_DEFAULT),
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
-            ]);
-
-            session()->set([
-                'isLoggedIn' => true,
-                'user_id'    => $newId,
-                'name'       => 'Admin',
-                'email'      => 'admin@demo.com',
-                'role'       => 'chairman',
-            ]);
-
-            return redirect()->to('/admin/manage-pcs')
-                ->with('success', 'Admin created! Email: admin@demo.com, Password: admin123');
-        }
-
-        $firstUser = $this->db->table('users')->orderBy('id', 'ASC')->get()->getRowArray();
-        if ($firstUser) {
-            session()->set([
-                'isLoggedIn' => true,
-                'user_id'    => $firstUser['id'],
-                'name'       => $firstUser['name'],
-                'email'      => $firstUser['email'],
-                'role'       => $firstUser['role'] ?? 'chairman',
-            ]);
-            return redirect()->to('/admin/manage-pcs')->with('success', 'Logged in as existing user!');
-        }
-
-        return redirect()->back()->with('error', 'Could not create or find any user');
-    }
-
-    public function debugUserSession()
-    {
-        $userId   = session()->get('user_id');
-        $userData = null;
-
-        if ($userId) {
-            $userData = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
-        }
-
-        return $this->response->setJSON([
-            'session_user_id'   => $userId,
-            'user_exists_in_db' => !empty($userData),
-            'user_data'         => $userData,
-            'all_users'         => $this->db->table('users')
-                ->select('id, name, email, role, status')->get()->getResultArray(),
+        return view('sk/claimed_reservations', [
+            'page'                => 'claimed-reservations',
+            'claimedReservations' => $claimedReservations,
+            'totalClaimed'        => $totalClaimed,
+            'todayCount'          => $todayCount,
         ]);
     }
 
-    public function fixSession()
+    public function exportClaimedToExcel()
     {
-        $userEmail = session()->get('email');
-        if (!$userEmail) {
-            return $this->response->setJSON(['error' => 'No email in session']);
-        }
+        $reservationModel    = new ReservationModel();
+        $claimedReservations = $reservationModel
+            ->select('reservations.*, resources.name as resource_name, users.name as visitor_name, users.email as user_email')
+            ->join('resources', 'resources.id = reservations.resource_id', 'left')
+            ->join('users',     'users.id = reservations.user_id',         'left')
+            ->where('reservations.claimed', true)
+            ->orderBy('reservations.claimed_at', 'DESC')
+            ->findAll();
 
-        $user = $this->db->table('users')
-            ->where('email', $userEmail)
-            ->whereIn('status', ['active', 'pending'])
-            ->get()->getRowArray();
+        $filename = 'claimed_reservations_' . date('Y-m-d_His') . '.csv';
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $filename);
+        header('Pragma: no-cache');
+        header('Expires: 0');
 
-        if ($user) {
-            session()->set([
-                'user_id'    => $user['id'],
-                'name'       => $user['name'],
-                'email'      => $user['email'],
-                'role'       => $user['role'],
-                'isLoggedIn' => true,
-            ]);
-            return $this->response->setJSON(['success' => true, 'message' => 'Session fixed', 'user' => $user]);
-        }
-
-        return $this->response->setJSON(['error' => 'No active user found with that email']);
-    }
-
-    public function setupUsers()
-    {
-        return view('admin/setup-users', [
-            'page'      => 'setup',
-            'userCount' => $this->db->table('users')->countAllResults(),
+        $output = fopen('php://output', 'w');
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        fputcsv($output, [
+            'ID', 'Reservation Code', 'Visitor Name', 'Email', 'Resource',
+            'Workstation', 'Reservation Date', 'Start Time', 'End Time',
+            'Purpose', 'Status', 'Claimed At', 'Claimed Date', 'Claimed Time',
         ]);
-    }
 
-    public function debugUserIssue()
-    {
-        $allUsers    = $this->db->table('users')->select('id, name, email, role, status')->get()->getResultArray();
-        $validUserId = $this->getValidUserId();
+        foreach ($claimedReservations as $res) {
+            $pcNumbers = '';
+            if (!empty($res['pc_numbers'])) {
+                $arr       = json_decode($res['pc_numbers'], true);
+                $pcNumbers = is_array($arr) ? implode(', ', $arr) : $res['pc_numbers'];
+            } elseif (!empty($res['pc_number'])) {
+                $pcNumbers = $res['pc_number'];
+            }
 
-        echo "<h1>Database Users</h1><pre>" . print_r($allUsers, true) . "</pre>";
-        echo "<h1>getValidUserId() returns: " . ($validUserId ?? 'NULL') . "</h1>";
-        echo "<h1>Session Data</h1><pre>" . print_r($_SESSION, true) . "</pre>";
+            $claimedDate = $claimedTime = '';
+            if (!empty($res['claimed_at'])) {
+                $claimedDate = date('Y-m-d', strtotime($res['claimed_at']));
+                $claimedTime = date('H:i:s', strtotime($res['claimed_at']));
+            }
+
+            fputcsv($output, [
+                $res['id'],
+                $res['e_ticket_code']    ?? '—',
+                $res['visitor_name']     ?? $res['full_name'] ?? 'Guest',
+                $res['visitor_email']    ?? $res['user_email'] ?? '—',
+                $res['resource_name']    ?? ('Resource #' . $res['resource_id']),
+                $pcNumbers               ?: '—',
+                $res['reservation_date'] ?? '—',
+                $res['start_time']       ?? '—',
+                $res['end_time']         ?? '—',
+                $res['purpose']          ?? '—',
+                ucfirst($res['status']   ?? 'pending'),
+                $res['claimed_at']       ?? '—',
+                $claimedDate,
+                $claimedTime,
+            ]);
+        }
+
+        fclose($output);
         exit;
+    }
+
+    public function checkNewReservations()
+    {
+        if (!$this->request->isAJAX()) return;
+
+        $lastCheck = $this->request->getPost('last_check') ?: date('Y-m-d H:i:s', strtotime('-1 hour'));
+        $skUserId  = session()->get('user_id');
+        $db        = db_connect();
+
+        $newReservations = $db->table('reservations r')
+            ->select('r.*, resources.name as resource_name, users.name as visitor_name')
+            ->join('resources', 'resources.id = r.resource_id', 'left')
+            ->join('users',     'users.id = r.user_id',         'left')
+            ->where('r.status', 'pending')
+            ->where('r.user_id !=', $skUserId)
+            ->where('r.created_at >', $lastCheck)
+            ->orderBy('r.created_at', 'DESC')
+            ->get()->getResultArray();
+
+        return $this->response->setJSON(['new_reservations' => $newReservations]);
     }
 
     public function extractPdfWithAI()
@@ -1078,7 +796,7 @@ class AdminController extends Controller
         try {
             return $this->_doExtractPdfWithAI();
         } catch (\Throwable $e) {
-            log_message('error', 'Admin extractPdfWithAI crashed: ' . $e->getMessage()
+            log_message('error', 'extractPdfWithAI crashed: ' . $e->getMessage()
                 . ' in ' . $e->getFile() . ':' . $e->getLine());
             return $this->response->setJSON([
                 'ok'    => false,
@@ -1131,7 +849,7 @@ class AdminController extends Controller
         }
 
         $tmpDir  = sys_get_temp_dir() . DIRECTORY_SEPARATOR;
-        $tmpPath = $tmpDir . 'admin_pdf_' . uniqid('', true) . '.pdf';
+        $tmpPath = $tmpDir . 'sk_pdf_' . uniqid('', true) . '.pdf';
 
         if (@file_put_contents($tmpPath, $pdfBinary) === false) {
             return $this->response->setJSON(['ok' => false, 'error' => 'Could not write temp file to: ' . $tmpDir]);
@@ -1152,33 +870,15 @@ class AdminController extends Controller
             ]);
         }
 
-        $wordChars  = preg_match_all('/[a-zA-Z0-9 ]/', $pdfText);
-        $totalChars = max(1, strlen($pdfText));
-        if (($wordChars / $totalChars) < 0.40) {
-            return $this->response->setJSON([
-                'ok'    => false,
-                'error' => 'This PDF appears to contain only images or encoded fonts with no readable text '
-                         . '(method: ' . $method . '). Please use a text-based PDF.',
-            ]);
-        }
-
         $pdfText = mb_substr(trim($pdfText), 0, 8000);
 
-        $prompt = <<<'PROMPT'
-You are a book cataloging assistant. Your ONLY job is to return a single JSON object.
+        $prompt = 'You are a book cataloging assistant. Extract bibliographic information from this PDF text.
 
-CRITICAL RULES — you must follow these without exception:
-1. Output ONLY the raw JSON object. No prose, no markdown, no backticks, no explanation before or after.
-2. Never write sentences as field values (except "preface"). Never say "unknown" or "not found".
-3. For "title" and "author" you MUST provide your best guess — even if uncertain.
-
-Return exactly this structure:
+Return ONLY a raw JSON object — no markdown, no backticks, no explanation before or after. Exactly these keys:
 {"title":"","author":"","genre":"","published_year":"","isbn":"","preface":""}
 
 PDF TEXT:
-PROMPT;
-
-        $prompt .= $pdfText;
+' . $pdfText;
 
         $payload = json_encode([
             'model'       => 'llama-3.3-70b-versatile',
@@ -1203,7 +903,6 @@ PROMPT;
         $response   = curl_exec($ch);
         $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError  = curl_error($ch);
-        $curlErrNo  = curl_errno($ch);
         curl_close($ch);
 
         if ($curlError) {
@@ -1217,7 +916,7 @@ PROMPT;
         $groqData = json_decode($response, true);
 
         if ($httpStatus !== 200) {
-            $msg = $groqData['error']['message'] ?? ('Groq HTTP ' . $httpStatus . ': ' . substr($response, 0, 200));
+            $msg = $groqData['error']['message'] ?? ('Groq HTTP ' . $httpStatus);
             return $this->response->setJSON(['ok' => false, 'error' => 'Groq error: ' . $msg]);
         }
 
@@ -1237,19 +936,6 @@ PROMPT;
         $extracted = json_decode($clean, true);
 
         if (!is_array($extracted)) {
-            $lowerRaw = strtolower($rawText);
-            if (str_contains($lowerRaw, 'collection of images')
-                || str_contains($lowerRaw, 'does not contain')
-                || str_contains($lowerRaw, 'no readable text')
-                || str_contains($lowerRaw, 'impossible to')
-                || str_contains($lowerRaw, 'cannot determine')
-            ) {
-                return $this->response->setJSON([
-                    'ok'    => false,
-                    'error' => 'This PDF does not contain enough readable text for AI extraction. Please fill in the book details manually.',
-                ]);
-            }
-
             return $this->response->setJSON([
                 'ok'    => false,
                 'error' => 'AI response was not valid JSON. Got: ' . mb_substr($rawText, 0, 150),
@@ -1258,21 +944,6 @@ PROMPT;
 
         foreach (['title', 'author', 'genre', 'published_year', 'isbn', 'preface'] as $key) {
             if (!isset($extracted[$key])) $extracted[$key] = '';
-        }
-
-        $missingFields = [];
-        if (empty(trim($extracted['title'])))  $missingFields[] = 'title';
-        if (empty(trim($extracted['author']))) $missingFields[] = 'author';
-
-        if (!empty($missingFields)) {
-            $fieldList = implode(' and ', $missingFields);
-            return $this->response->setJSON([
-                'ok'      => true,
-                'warning' => true,
-                'message' => ucfirst($fieldList) . ' wasn\'t detected — please fill ' .
-                             (count($missingFields) === 1 ? 'that in' : 'those in') . ', then hit Save.',
-                'data'    => $extracted,
-            ]);
         }
 
         return $this->response->setJSON(['ok' => true, 'data' => $extracted]);
