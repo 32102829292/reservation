@@ -202,7 +202,7 @@ class AdminController extends Controller
         $totalResources = $db->table('resources')->countAllResults();
 
         $pendingSKCount = $db->table('users')
-            ->where('role', 'SK')
+            ->where('role', 'sk')
             ->where('is_approved', 0)
             ->where('is_verified', 1)
             ->countAllResults();
@@ -389,7 +389,7 @@ class AdminController extends Controller
         $allSK = $userModel
             ->select('users.*, accounts.is_verified AS email_verified')
             ->join('accounts', 'accounts.user_id = users.id', 'left')
-            ->where('users.role', 'SK')
+            ->where('users.role', 'sk')
             ->orderBy('users.created_at', 'DESC')
             ->findAll();
 
