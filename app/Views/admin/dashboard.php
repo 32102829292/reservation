@@ -262,7 +262,7 @@
     <div id="tl-toast-container"></div>
 
     <!-- Sidebar -->
-    <aside class="hidden lg:block w-80 flex-shrink-0 p-6">
+    <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
         <div class="sidebar-card">
             <div class="sidebar-header">
                 <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Control Room</span>

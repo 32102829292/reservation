@@ -389,7 +389,7 @@
     ?>
 
     <!-- ── Sidebar ── -->
-    <aside class="hidden lg:flex flex-col w-72 flex-shrink-0 p-6">
+    <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
         <div class="sidebar-card">
             <div class="sidebar-header">
                 <p class="text-[10px] font-black tracking-[0.22em] text-green-600 uppercase mb-0.5">Resident Portal</p>
