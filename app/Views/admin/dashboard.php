@@ -1,3 +1,4 @@
+<?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
