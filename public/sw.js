@@ -3,13 +3,14 @@
  * Merged: smart caching strategies + localStorage sync + message passing
  */
 
-const CACHE_NAME  = 'reservation-ci-v1';
+const CACHE_NAME  = 'reservation-ci-v2';
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [
   '/offline.html',
   '/manifest.json',
-  '/favicon.ico',
+  '/assets/img/icon-192.png',
+  '/assets/img/icon-512.png',
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
@@ -90,7 +91,6 @@ async function handleFormSubmission(request) {
         const data = {};
         formData.forEach((value, key) => { data[key] = value; });
 
-        // SW can't access localStorage — message the client to save it
         const allClients = await self.clients.matchAll({ type: 'window' });
         allClients.forEach(client => {
           client.postMessage({
@@ -180,7 +180,6 @@ self.addEventListener('message', event => {
       self.skipWaiting();
       break;
     case 'RESERVATIONS_SYNCED':
-      // Client confirmed sync — nothing needed SW side
       break;
   }
 });
