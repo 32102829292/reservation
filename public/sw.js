@@ -11,7 +11,6 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
   '/assets/img/icon-192.png',
   '/assets/img/icon-512.png',
-  'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js',
