@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>E-Tickets</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#16a34a">
 </head>
 <body>
 <div class="container mt-5">

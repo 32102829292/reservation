@@ -2,7 +2,7 @@
   "name": "SK Reservation System",
   "short_name": "SK Reserve",
   "description": "E-Learning Resource Reservation System",
-  "start_url": "/dashboard",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

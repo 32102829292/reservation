@@ -10,6 +10,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Library Management | SK</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#16a34a">
 <meta name="csrf-token" content="<?= csrf_hash() ?>">
 <meta name="csrf-name"  content="<?= csrf_token() ?>">
 <script src="https://cdn.tailwindcss.com"></script>
