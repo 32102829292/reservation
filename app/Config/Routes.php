@@ -23,10 +23,12 @@ $routes->setAutoRoute(false);
 // Auth routes
 $routes->get('login', 'AuthController::login');
 $routes->get('auth/login', 'AuthController::login');
+$routes->get('login-action', 'AuthController::login');        // prevent 404 on Render wakeup
 $routes->post('login-action', 'AuthController::loginAction');
 $routes->post('auth/login-action', 'AuthController::loginAction');
 $routes->get('register', 'AuthController::register');
 $routes->get('auth/register', 'AuthController::register');
+$routes->get('register-action', 'AuthController::register');  // prevent 404 on Render wakeup
 $routes->post('register-action', 'AuthController::registerAction');
 $routes->post('auth/register-action', 'AuthController::registerAction');
 $routes->get('logout', 'AuthController::logout');
@@ -71,7 +73,6 @@ $routes->group('sk', ['filter' => 'role:sk'], function($routes) {
     $routes->post('decline',             'SkController::decline');
     $routes->post('reservations/approve','SkController::approve');
     $routes->post('reservations/decline','SkController::decline');
-    // Both casings accepted so scanner JS works regardless of how base_url() renders it
     $routes->post('validateETicket',     'SkController::validateETicket');
     $routes->post('validate-eticket',    'SkController::validateETicket');
     $routes->get('reservations/download','SkController::downloadCsv');
@@ -121,13 +122,11 @@ $routes->group('admin', ['filter' => 'role:chairman'], function($routes) {
     $routes->post('approve-sk',           'AdminController::approveSK');
     $routes->post('reject-sk',            'AdminController::rejectSK');
     $routes->get('scanner',               'AdminController::scanner');
-    // FIX: scanner JS calls base_url('admin/validateETicket') — camelCase must be registered.
-    // Keeping the kebab alias too so any existing links/bookmarks still work.
     $routes->post('validateETicket',      'AdminController::validateETicket');
     $routes->post('validate-eticket',     'AdminController::validateETicket');
     $routes->get('login-logs',            'AdminController::loginLogs');
     $routes->get('activity-logs',         'AdminController::activityLogs');
-    $routes->get('profile',              'AdminController::profile');
+    $routes->get('profile',               'AdminController::profile');
     $routes->post('profile/update',       'AdminController::profileUpdate');
     $routes->get('manage-pcs',            'AdminController::managePCs');
     $routes->post('add-pc',               'AdminController::addPC');
