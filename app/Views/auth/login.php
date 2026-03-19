@@ -587,5 +587,19 @@
       setTimeout(()=>{t.style.transition='opacity 0.4s';t.style.opacity='0';setTimeout(()=>t.remove(),400);},type==='success'?4500:3500);
     }
   </script>
+<!-- ═══════════ SERVICE WORKER REGISTRATION ═══════════ -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(function(reg) {
+            console.log('SW registered ✓', reg.scope);
+          })
+          .catch(function(err) {
+            console.error('SW registration failed:', err);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
