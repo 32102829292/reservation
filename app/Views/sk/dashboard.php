@@ -172,6 +172,38 @@
         @keyframes countUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
         .stat-num { animation: countUp 0.5s ease both; }
 
+        /* ── Time Limit Monitor ── */
+        .tl-panel { background: white; border-radius: 24px; border: 1px solid #e2e8f0; padding: 1.25rem; margin-bottom: 1.5rem; }
+        .tl-session-card { background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; padding: 0.875rem 1rem; border-left-width: 4px; transition: all 0.2s; position: relative; overflow: hidden; }
+        .tl-session-card:hover { box-shadow: 0 4px 12px -2px rgba(0,0,0,0.08); }
+        .tl-session-card.tl-ok       { border-left-color: #10b981; }
+        .tl-session-card.tl-warning  { border-left-color: #f59e0b; }
+        .tl-session-card.tl-critical { border-left-color: #ef4444; }
+        .tl-session-card.tl-ended    { border-left-color: #94a3b8; opacity: 0.65; }
+        .tl-countdown { display: inline-flex; align-items: center; gap: 5px; padding: 0.25rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; white-space: nowrap; }
+        .tl-ok       .tl-countdown { background: #dcfce7; color: #166634; }
+        .tl-warning  .tl-countdown { background: #fef3c7; color: #92400e; }
+        .tl-critical .tl-countdown { background: #fee2e2; color: #991b1b; }
+        .tl-ended    .tl-countdown { background: #f1f5f9; color: #64748b; }
+        .tl-prog-track { height: 4px; border-radius: 999px; background: #e2e8f0; overflow: hidden; margin-top: 0.5rem; }
+        .tl-prog-fill  { height: 100%; border-radius: 999px; transition: width 1s linear; }
+        .tl-ok       .tl-prog-fill { background: #10b981; }
+        .tl-warning  .tl-prog-fill { background: #f59e0b; }
+        .tl-critical .tl-prog-fill { background: #ef4444; }
+        .tl-ended    .tl-prog-fill { background: #94a3b8; }
+
+        /* ── Session Toasts ── */
+        #tl-toast-container { position: fixed; bottom: 88px; right: 20px; z-index: 9000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .tl-toast { background: #1e293b; color: white; border-radius: 16px; padding: 0.875rem 1.1rem; min-width: 280px; max-width: 360px; box-shadow: 0 12px 28px -4px rgba(0,0,0,0.35); display: flex; align-items: flex-start; gap: 10px; pointer-events: auto; cursor: pointer; animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .tl-toast.dismissing { animation: toastOut 0.2s ease forwards; }
+        @keyframes toastIn  { from { opacity:0; transform: translateX(20px) scale(0.95); } to { opacity:1; transform: none; } }
+        @keyframes toastOut { to   { opacity:0; transform: translateX(24px) scale(0.95); } }
+        .tl-toast-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem; }
+        .tl-toast-warning .tl-toast-icon { background: #f59e0b22; color: #f59e0b; }
+        .tl-toast-expired .tl-toast-icon { background: #ef444422; color: #ef4444; }
+        .tl-toast-title { font-size: 0.78rem; font-weight: 800; color: white; line-height: 1.3; }
+        .tl-toast-sub   { font-size: 0.7rem; color: #94a3b8; margin-top: 2px; line-height: 1.4; }
+
         /* ── Main layout ── */
         .page-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
         .sidebar-col { width: 280px; flex-shrink: 0; padding: 24px; display: none; height: 100vh; overflow: hidden; }
@@ -320,6 +352,8 @@
         <button class="toast-close" onclick="dismissToast()"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
+    <div id="tl-toast-container"></div>
+
     <!-- ══ MAIN CONTENT ══ -->
     <div class="main-col">
         <main class="w-full max-w-screen-xl mx-auto px-4 lg:px-8 pt-6 pb-32">
@@ -415,6 +449,31 @@
                     pending reservation<?= ($pending ?? 0) != 1 ? 's' : '' ?> awaiting approval.
                 </div>
             <?php endif; ?>
+
+            <!-- ── Active Sessions Monitor ── -->
+            <div class="tl-panel" id="tl-panel">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center">
+                            <i class="fa-solid fa-timer text-green-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-slate-800 text-sm leading-tight">Active Sessions</h3>
+                            <p class="text-[10px] text-slate-400 font-medium">Live time tracking</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Active</span>
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Warning</span>
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-red-400"></span>Critical</span>
+                    </div>
+                </div>
+                <div id="tl-sessions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+                <p id="tl-no-sessions" class="hidden text-center text-sm text-slate-400 py-6 font-medium">
+                    <i class="fa-regular fa-circle-pause text-2xl text-slate-200 block mb-2"></i>
+                    No active sessions right now
+                </p>
+            </div>
 
             <!-- ── Stat Cards ── -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -787,6 +846,7 @@
             loadNotifications();
             initCountdownBanner();
             showLoginToast();
+            tlRender(); setInterval(tlRender, 1000);
 
             // Trend Chart
             const tCtx = document.getElementById('trendChart')?.getContext('2d');
@@ -868,6 +928,65 @@
                 (d.books||[]).slice(0,4).forEach(b=>{ const avail=(b.available_copies||0)>0; const chip=document.createElement('a'); chip.href='/books'; chip.className='inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold border transition '+(avail?'bg-white border-green-200 text-green-700 hover:bg-green-50':'bg-slate-50 border-slate-200 text-slate-400'); chip.innerHTML=`<i class="fa-solid fa-book text-[9px]"></i>${b.title}${avail?'':' <span class="text-[9px]">(out)</span>'}`; booksRow.appendChild(chip); });
                 res.classList.add('show');
             } catch(e) { skel.style.display='none'; btn.disabled=false; err.textContent='Network error. Try again.'; err.style.display='block'; }
+        }
+
+        // ── Active Session Monitor ──
+        const TL_WARN_BEFORE = 5 * 60;
+        const TL_CRIT_BEFORE = 2 * 60;
+        const TL_LOGGED_KEY  = 'tl_sk_session_seen';
+        let tlSessions = {};
+
+        function tlGetSeen()  { try { return JSON.parse(localStorage.getItem(TL_LOGGED_KEY)||'[]'); } catch(e){ return []; } }
+        function tlMarkSeen(id) { const ids=tlGetSeen(); if(!ids.includes(id)){ ids.push(id); localStorage.setItem(TL_LOGGED_KEY,JSON.stringify(ids.slice(-500))); } }
+        function tlIsSeen(id) { return tlGetSeen().includes(id); }
+
+        function tlGetActiveSessions() {
+            const today=new Date().toISOString().split('T')[0], nowMs=Date.now();
+            return reservations.filter(r => {
+                if(!r.start_time||!r.end_time||!r.reservation_date) return false;
+                if(r.reservation_date!==today) return false;
+                const status=(r.status||'').toLowerCase();
+                if(!['approved','claimed'].includes(status)) return false;
+                const startMs=new Date(r.reservation_date+'T'+r.start_time).getTime();
+                const endMs=new Date(r.reservation_date+'T'+r.end_time).getTime();
+                return startMs<=nowMs+60000 && endMs>=nowMs-30*60*1000;
+            });
+        }
+        function tlFmtCountdown(ms) { if(ms<=0) return 'Ended'; const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60); if(h>0) return `${h}h ${m%60}m`; if(m>0) return `${m}m ${s%60}s`; return `${s}s`; }
+        function tlGetState(remainMs) { if(remainMs<=0) return 'tl-ended'; if(remainMs<=TL_CRIT_BEFORE*1000) return 'tl-critical'; if(remainMs<=TL_WARN_BEFORE*1000) return 'tl-warning'; return 'tl-ok'; }
+
+        function tlToast(type, title, sub) {
+            const c=document.getElementById('tl-toast-container'), t=document.createElement('div');
+            t.className=`tl-toast tl-toast-${type}`;
+            const icon=type==='warning'?'fa-triangle-exclamation':'fa-clock-rotate-left';
+            t.innerHTML=`<div class="tl-toast-icon"><i class="fa-solid ${icon}"></i></div><div class="flex-1 min-w-0"><p class="tl-toast-title">${title}</p><p class="tl-toast-sub">${sub}</p></div><button onclick="this.closest('.tl-toast').remove()" style="background:none;border:none;color:#64748b;cursor:pointer;padding:0;font-size:0.8rem;"><i class="fa-solid fa-xmark"></i></button>`;
+            c.appendChild(t);
+            setTimeout(()=>{ t.classList.add('dismissing'); setTimeout(()=>t.remove(),220); }, 7000);
+        }
+
+        function tlRender() {
+            const sessions=tlGetActiveSessions(), grid=document.getElementById('tl-sessions-grid'), noSess=document.getElementById('tl-no-sessions'), nowMs=Date.now();
+            if(!sessions.length){ grid.innerHTML=''; noSess.classList.remove('hidden'); return; }
+            noSess.classList.add('hidden');
+            sessions.forEach(r => {
+                const endMs=new Date(r.reservation_date+'T'+r.end_time).getTime();
+                const startMs=new Date(r.reservation_date+'T'+r.start_time).getTime();
+                const totalMs=endMs-startMs, remainMs=endMs-nowMs, elapsedMs=nowMs-startMs;
+                const progress=Math.min(100,Math.max(0,(elapsedMs/totalMs)*100)), state=tlGetState(remainMs);
+                const name=r.visitor_name||r.full_name||'Guest', resource=r.resource_name||'Resource';
+                if(!tlSessions[r.id]) tlSessions[r.id]={warned:false,expired:false};
+                const s=tlSessions[r.id];
+                if(!s.warned&&remainMs>0&&remainMs<=TL_WARN_BEFORE*1000){ s.warned=true; tlToast('warning',`${name} — 5 min left`,`${resource} session ending soon`); }
+                if(!s.expired&&remainMs<=0){ s.expired=true; tlToast('expired',`Session ended`,`${resource} · ${name}`); tlMarkSeen(r.id); }
+                let card=document.getElementById(`tl-card-${r.id}`);
+                if(!card){ card=document.createElement('div'); card.id=`tl-card-${r.id}`; grid.appendChild(card); }
+                const sf=r.start_time?r.start_time.substring(0,5):'–', ef=r.end_time?r.end_time.substring(0,5):'–';
+                const usedMin=Math.max(0,Math.floor(elapsedMs/60000));
+                card.className=`tl-session-card ${state}`;
+                card.innerHTML=`<div class="flex items-start justify-between gap-2 mb-2"><div class="min-w-0 flex-1"><p class="font-extrabold text-slate-800 text-xs truncate">${name}</p><p class="text-[10px] text-slate-400 truncate mt-0.5">${resource}</p></div><span class="tl-countdown flex-shrink-0"><i class="fa-regular fa-clock" style="font-size:0.6rem"></i>${tlFmtCountdown(remainMs)}</span></div><div class="tl-prog-track"><div class="tl-prog-fill" style="width:${progress}%"></div></div><div class="flex items-center justify-between mt-2"><span class="text-[10px] text-slate-400 font-medium">${sf} – ${ef}</span><span class="text-[10px] font-bold text-slate-500">${usedMin} min used</span></div>`;
+            });
+            const activeIds=sessions.map(r=>`tl-card-${r.id}`);
+            Array.from(grid.children).forEach(c=>{ if(!activeIds.includes(c.id)) c.remove(); });
         }
     </script>
 
