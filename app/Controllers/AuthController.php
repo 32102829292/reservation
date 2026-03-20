@@ -41,7 +41,6 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        // PostgreSQL returns booleans as "t"/"f" strings
         $isVerified = in_array($user['is_verified'], [true, 1, 't', 'true', '1'], true);
 
         if (!$isVerified) {
@@ -67,6 +66,9 @@ class AuthController extends BaseController
             'isLoggedIn' => true,
         ]);
 
+        // ── Close any stale open sessions for this user before creating a new one ──
+        $this->closeStaleSessions($user['id']);
+
         $loginLog = new LoginLog();
         $loginLog->insert([
             'user_id'    => $user['id'],
@@ -79,6 +81,23 @@ class AuthController extends BaseController
             case 'sk':       return redirect()->to('/sk/dashboard');
             default:         return redirect()->to('/dashboard');
         }
+    }
+
+    /**
+     * Mark open login_log rows as closed if they are older than 4 hours.
+     * This handles sessions that were never explicitly logged out
+     * (e.g. browser closed, server cold-start on Render free tier).
+     */
+    private function closeStaleSessions(int $userId): void
+    {
+        $db      = db_connect();
+        $cutoff  = Time::now('Asia/Manila')->subHours(4)->toDateTimeString();
+
+        $db->table('login_logs')
+            ->where('user_id', $userId)
+            ->where('logout_time IS NULL')
+            ->where('login_time <', $cutoff)
+            ->update(['logout_time' => $cutoff]);
     }
 
     public function register()
@@ -290,10 +309,10 @@ class AuthController extends BaseController
         ]);
 
         $payload = json_encode([
-            'sender'     => ['name' => env('EMAIL_FROM_NAME', 'E-Learning System'), 'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph')],
-            'to'         => [['email' => $to, 'name' => $name]],
-            'subject'    => 'Verify Your Email Address — E-Learning System',
-            'htmlContent'=> $body,
+            'sender'      => ['name' => env('EMAIL_FROM_NAME', 'E-Learning System'), 'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph')],
+            'to'          => [['email' => $to, 'name' => $name]],
+            'subject'     => 'Verify Your Email Address — E-Learning System',
+            'htmlContent' => $body,
         ]);
 
         $ch = curl_init('https://api.brevo.com/v3/smtp/email');
