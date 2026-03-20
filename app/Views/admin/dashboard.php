@@ -1,4 +1,3 @@
-<?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        html { height: 100%; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
 
         /* ── Sidebar ── */
         .sidebar-card { background: white; border-radius: 32px; border: 1px solid #e2e8f0; height: calc(100vh - 48px); position: sticky; top: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; width: 100%; }
@@ -59,10 +59,10 @@
         /* ── Badges ── */
         .badge { display: inline-flex; align-items: center; gap: 4px; padding: 0.25rem 0.65rem; border-radius: 8px; font-size: 0.67rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
         .badge-pending   { background: #fef3c7; color: #92400e; }
-        .badge-approved  { background: #dcfce7; color: #166534; }
+        .badge-approved  { background: #dcfce7; color: #166634; }
         .badge-declined, .badge-canceled { background: #fee2e2; color: #991b1b; }
         .badge-claimed   { background: #f3e8ff; color: #6b21a8; }
-        .badge-available { background: #dcfce7; color: #166534; }
+        .badge-available { background: #dcfce7; color: #166634; }
         .badge-borrowed  { background: #fef3c7; color: #92400e; }
         .badge-returned  { background: #f1f5f9; color: #64748b; }
 
@@ -93,18 +93,18 @@
         @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
         .fade-up { animation: fadeUp 0.35s ease both; }
 
-        /* ── Section divider (SK-style) ── */
+        /* ── Section divider ── */
         .section-divider { display: flex; align-items: center; gap: 12px; margin: 2rem 0 1.25rem; }
         .section-divider-line { flex: 1; height: 1px; background: #e2e8f0; }
 
-        /* ── Library (SK-style with blue palette) ── */
+        /* ── Library ── */
         .library-banner { background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 55%, #2563eb 100%); border-radius: 20px; padding: 1.25rem 1.5rem; position: relative; overflow: hidden; border: 1px solid #3b82f6; }
         .library-banner::before { content: '📚'; position: absolute; right: -10px; top: -10px; font-size: 6.5rem; opacity: 0.07; transform: rotate(14deg); pointer-events: none; line-height: 1; }
         .book-row { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; border-radius: 14px; transition: all 0.18s; text-decoration: none; color: inherit; border: 1px solid transparent; }
         .book-row:hover { background: #eff6ff; border-color: #bfdbfe; }
         .book-spine { width: 3px; border-radius: 4px; align-self: stretch; flex-shrink: 0; min-height: 30px; }
         .avail-pill { font-size: 0.63rem; font-weight: 800; padding: 0.16rem 0.5rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
-        .avail-on  { background: #dcfce7; color: #166534; }
+        .avail-on  { background: #dcfce7; color: #166634; }
         .avail-off { background: #fee2e2; color: #991b1b; }
         .avail-low { background: #fef3c7; color: #92400e; }
         .borrow-req { display: flex; align-items: center; gap: 10px; padding: 0.65rem 0.75rem; border-radius: 14px; background: #eff6ff; border: 1px solid #bfdbfe; transition: all 0.18s; }
@@ -123,7 +123,7 @@
         .tl-session-card.tl-critical { border-left-color: #ef4444; }
         .tl-session-card.tl-ended    { border-left-color: #94a3b8; opacity: 0.65; }
         .tl-countdown { display: inline-flex; align-items: center; gap: 5px; padding: 0.25rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; white-space: nowrap; }
-        .tl-ok       .tl-countdown { background: #dcfce7; color: #166534; }
+        .tl-ok       .tl-countdown { background: #dcfce7; color: #166634; }
         .tl-warning  .tl-countdown { background: #fef3c7; color: #92400e; }
         .tl-critical .tl-countdown { background: #fee2e2; color: #991b1b; }
         .tl-ended    .tl-countdown { background: #f1f5f9; color: #64748b; }
@@ -164,13 +164,13 @@
         .tl-skip-btn { width: 100%; padding: 0.75rem; border-radius: 16px; border: none; background: transparent; color: #94a3b8; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: color 0.15s; margin-top: 0.5rem; }
         .tl-skip-btn:hover { color: #64748b; }
 
-        /* ── Pending item (SK-style) ── */
+        /* ── Pending item ── */
         .pending-item { padding: 0.75rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; transition: all 0.2s; cursor: pointer; }
         .pending-item:hover { background: #fef3c7; border-color: #fbbf24; }
     </style>
 </head>
 
-<body class="flex min-h-screen">
+<body>
 
     <?php
     $page  = $page ?? 'dashboard';
@@ -262,7 +262,7 @@
     <div id="tl-toast-container"></div>
 
     <!-- Sidebar -->
-    <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
+    <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6" style="height:100vh;overflow:hidden;">
         <div class="sidebar-card">
             <div class="sidebar-header">
                 <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Control Room</span>
@@ -311,7 +311,7 @@
     </nav>
 
     <!-- Main -->
-    <main class="flex-1 min-w-0 p-4 lg:p-8 pb-32">
+    <main class="flex-1 min-w-0 p-4 lg:p-8 pb-32" style="height:100vh;overflow-y:auto;">
 
         <!-- Header -->
         <header class="flex items-start justify-between mb-7 gap-4 fade-up">
@@ -371,7 +371,7 @@
             </p>
         </div>
 
-        <!-- ── Analytics Row (SK-style layout) ── -->
+        <!-- ── Analytics Row ── -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="stat-card">
                 <div class="flex items-start justify-between mb-3">
@@ -472,7 +472,6 @@
             </div>
 
             <div class="flex flex-col gap-4">
-                <!-- Quick Stats gradient card -->
                 <div class="rounded-2xl p-4 text-white" style="background: linear-gradient(135deg, #1e3a5f, #2563eb);">
                     <div class="flex items-center gap-2 mb-3">
                         <i class="fa-solid fa-bolt text-blue-300 text-sm"></i>
@@ -485,7 +484,6 @@
                     </div>
                 </div>
 
-                <!-- Needs Approval (SK-style pending items) -->
                 <div class="dash-card p-4 flex-1">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-extrabold text-slate-800 text-sm">Needs Approval</h3>
@@ -512,7 +510,6 @@
                     </div>
                 </div>
 
-                <!-- Top Resources -->
                 <div class="dash-card p-4">
                     <h3 class="font-extrabold text-slate-800 text-sm mb-3">Top Resources</h3>
                     <div class="space-y-2">
@@ -532,9 +529,7 @@
             </div>
         </div>
 
-        <!-- ══════════════════════════════════════
-             LIBRARY SECTION
-        ══════════════════════════════════════ -->
+        <!-- ══ LIBRARY SECTION ══ -->
         <div class="section-divider">
             <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-blue-600 text-sm"></i></div>
             <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Library Overview</span>
@@ -544,7 +539,6 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div class="flex flex-col gap-4">
-                <!-- Library banner (SK-style with blue) -->
                 <div class="library-banner">
                     <div class="relative z-10">
                         <p class="text-[10px] font-black tracking-[0.18em] text-blue-300 uppercase mb-1">Book Collection</p>
@@ -557,7 +551,6 @@
                     </div>
                 </div>
 
-                <!-- Borrow Requests (SK-style) -->
                 <div class="dash-card p-4 flex-1">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-extrabold text-slate-800 text-sm">Borrow Requests</h3>
@@ -586,7 +579,6 @@
                 </div>
             </div>
 
-            <!-- Books Catalog (SK-style with spine colors) -->
             <div class="lg:col-span-2 dash-card p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div><h3 class="font-extrabold text-slate-800 text-sm">Books Catalog</h3><p class="text-[10px] text-slate-400 font-medium">Availability at a glance</p></div>
@@ -631,7 +623,6 @@
     <script>
         const allRes = <?= json_encode($reservations ?? []) ?>;
 
-        /* ── Date Modal ── */
         function openDateModal(dateStr, list) {
             const fmt = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
             document.getElementById('modalDateTitle').textContent = fmt;
@@ -655,7 +646,6 @@
         function closeDateModal() { document.getElementById('dateModal').classList.remove('open'); document.body.style.overflow = ''; }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
 
-        /* ── Notifications ── */
         let readIds = JSON.parse(localStorage.getItem('admin_read_notifs')||'[]');
         let notifs = [];
         function initNotifs() {
@@ -676,7 +666,6 @@
         document.addEventListener('click', e => { const drop=document.getElementById('notifDropdown'); const bell=document.getElementById('bellBtn'); if (!bell.contains(e.target) && !drop.contains(e.target)) drop.classList.remove('open'); });
         const timeAgo = t => { const s=Math.floor((Date.now()-new Date(t))/1000); if (s<60) return 'Just now'; if (s<3600) return `${Math.floor(s/60)}m ago`; if (s<86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago`; };
 
-        /* ── Time Limit Monitor ── */
         const TL_WARN_BEFORE = 5 * 60;
         const TL_CRIT_BEFORE = 2 * 60;
         const TL_LOGGED_KEY  = 'tl_admin_print_logged';
@@ -770,7 +759,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             tlRender(); setInterval(tlRender, 1000);
 
-            /* Charts */
             const tCtx=document.getElementById('trendChart')?.getContext('2d');
             if (tCtx) new Chart(tCtx,{type:'line',data:{labels:<?= json_encode($chartLabels ?? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']) ?>,datasets:[{data:<?= json_encode($chartData ?? [0,0,0,0,0,0,0]) ?>,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.08)',borderWidth:2.5,tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}},scales:{x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8',stepSize:1},beginAtZero:true}}}});
 
@@ -782,7 +770,6 @@
                 if (legend) legend.innerHTML=resLabels.map((l,i)=>`<div class="flex items-center gap-2.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${palette[i]||'#94a3b8'}"></span><span class="text-sm text-slate-600 truncate flex-1 min-w-0 font-medium">${l}</span><span class="text-sm font-black text-slate-800 flex-shrink-0">${resData[i]}</span></div>`).join('');
             }
 
-            /* Calendar */
             const calEl=document.getElementById('calendar');
             if (calEl) {
                 const byDate={};
@@ -797,5 +784,7 @@
             initNotifs();
         });
     </script>
+
+<?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 </body>
 </html>
