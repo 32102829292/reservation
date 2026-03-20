@@ -21,7 +21,7 @@
 body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--slate-bg); color:#1e293b; margin:0; }
 
 /* ── Sidebar ── */
-.sidebar-card { background:white; border-radius:32px; border:1px solid #e2e8f0; height:calc(100vh - 48px); position:sticky; top:24px; box-shadow:0 4px 6px -1px rgba(0,0,0,.05); display:flex; flex-direction:column; overflow:hidden; }
+.sidebar-card { background:white; border-radius:32px; border:1px solid #e2e8f0; height:calc(100vh - 48px); position:sticky; top:24px; box-shadow:0 4px 6px -1px rgba(0,0,0,.05); display:flex; flex-direction:column; overflow:hidden; width:100%; }
 .sidebar-header { flex-shrink:0; padding:20px 16px 16px; border-bottom:1px solid #e2e8f0; }
 .sidebar-nav { flex:1; overflow-y:auto; padding:8px; }
 .sidebar-nav::-webkit-scrollbar { width:4px; }
@@ -147,7 +147,7 @@ $booksJson = json_encode(array_map(fn($b) => [
 ?>
 
 <!-- ── Sidebar ── -->
-<aside class="sidebar-wrap hidden lg:flex flex-col w-72 flex-shrink-0 p-6">
+<aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
     <div class="sidebar-card">
         <div class="sidebar-header">
             <p class="text-[10px] font-black tracking-[0.22em] text-green-600 uppercase mb-0.5">Resident Portal</p>
