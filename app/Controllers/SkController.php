@@ -49,8 +49,7 @@ class SkController extends BaseController
         $pending  = count(array_filter($myReservations, fn($r) => $r['status'] === 'pending'));
         $approved = count(array_filter($myReservations, fn($r) => $r['status'] === 'approved'));
         $declined = count(array_filter($myReservations, fn($r) => in_array($r['status'], ['declined', 'canceled'])));
-
-        $claimed = $model->where('claimed', true)->countAllResults();
+        $claimed  = $model->where('claimed', true)->countAllResults();
 
         $today         = date('Y-m-d');
         $todayTotal    = $model->where('reservation_date', $today)->countAllResults();
@@ -82,13 +81,11 @@ class SkController extends BaseController
         $resourceLabels = [];
         $resourceData   = [];
         $topResources   = [];
-
         foreach ($resourceQuery as $res) {
             $resourceLabels[] = $res['name'];
             $resourceData[]   = (int) $res['count'];
             $topResources[]   = ['name' => $res['name'], 'count' => $res['count']];
         }
-
         if (empty($resourceLabels)) {
             $resourceLabels = ['No Data'];
             $resourceData   = [1];
@@ -103,14 +100,24 @@ class SkController extends BaseController
         $approvalRate    = $total > 0    ? round(($approved / $total) * 100)   : 0;
         $utilizationRate = $approved > 0 ? round(($claimed / $approved) * 100) : 0;
 
+        // ── Books ──
         $allBooks = $db->table('books')
             ->where('status', 'active')
             ->orderBy('title', 'ASC')
             ->get()->getResultArray();
 
-        $bookTotalCount = count($allBooks);
-        $bookAvailCount = count(array_filter($allBooks, fn($b) => (int)($b['available_copies'] ?? 0) > 0));
+        $totalBooks     = count($allBooks);
+        $availableCount = count(array_filter($allBooks, fn($b) => (int)($b['available_copies'] ?? 0) > 0));
 
+        // ── My Borrowings (needed for "My Borrows" counter in library banner) ──
+        $myBorrowings = $db->table('book_borrowings bb')
+            ->select('bb.*, b.title, b.author, b.genre, bb.due_date')
+            ->join('books b', 'b.id = bb.book_id', 'left')
+            ->where('bb.user_id', $skUserId)
+            ->orderBy('bb.created_at', 'DESC')
+            ->get()->getResultArray();
+
+        // ── All borrow requests (for sidebar badge) ──
         $dashBorrowReqs = $db->table('book_borrowings bb')
             ->select('bb.id, bb.status, bb.created_at, b.title as book_title, u.name as resident_name')
             ->join('books b', 'b.id = bb.book_id', 'left')
@@ -120,35 +127,51 @@ class SkController extends BaseController
 
         $pendingBorrowings = count(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending'));
 
+        // ── Fairness quota ──
+        $startOfMonth  = date('Y-m-01');
+        $endOfMonth    = date('Y-m-t');
+        $maxSlots      = 3;
+        $usedThisMonth = $model
+            ->where('user_id', $skUserId)
+            ->where('status', 'approved')
+            ->where('reservation_date >=', $startOfMonth)
+            ->where('reservation_date <=', $endOfMonth)
+            ->countAllResults();
+        $remainingReservations = max(0, $maxSlots - $usedThisMonth);
+
         return view('sk/dashboard', [
-            'page'                => 'dashboard',
-            'sk_name'             => session()->get('name') ?? session()->get('username'),
-            'reservations'        => $myReservations,
-            'allReservations'     => $allReservations,
-            'pendingReservations' => $pendingReservations,
-            'total'               => $total,
-            'pending'             => $pending,
-            'approved'            => $approved,
-            'declined'            => $declined,
-            'claimed'             => $claimed,
-            'monthlyTotal'        => $monthlyTotal,
-            'todayTotal'          => $todayTotal,
-            'todayApproved'       => $todayApproved,
-            'todayPending'        => $todayPending,
-            'todayClaimed'        => $todayClaimed,
-            'chartLabels'         => $chartLabels,
-            'chartData'           => $chartData,
-            'resourceLabels'      => $resourceLabels,
-            'resourceData'        => $resourceData,
-            'topResources'        => $topResources,
-            'pendingUserCount'    => $pendingUserCount,
-            'approvalRate'        => $approvalRate,
-            'utilizationRate'     => $utilizationRate,
-            'dashBooks'           => $allBooks,
-            'dashBorrowReqs'      => $dashBorrowReqs,
-            'bookTotalCount'      => $bookTotalCount,
-            'bookAvailCount'      => $bookAvailCount,
-            'pendingBorrowings'   => $pendingBorrowings,
+            'page'                  => 'dashboard',
+            'user_name'             => session()->get('name') ?? session()->get('username'),
+            'sk_name'               => session()->get('name') ?? session()->get('username'),
+            'reservations'          => $myReservations,
+            'allReservations'       => $allReservations,
+            'pendingReservations'   => $pendingReservations,
+            'total'                 => $total,
+            'pending'               => $pending,
+            'approved'              => $approved,
+            'declined'              => $declined,
+            'claimed'               => $claimed,
+            'monthlyTotal'          => $monthlyTotal,
+            'todayTotal'            => $todayTotal,
+            'todayApproved'         => $todayApproved,
+            'todayPending'          => $todayPending,
+            'todayClaimed'          => $todayClaimed,
+            'chartLabels'           => $chartLabels,
+            'chartData'             => $chartData,
+            'resourceLabels'        => $resourceLabels,
+            'resourceData'          => $resourceData,
+            'topResources'          => $topResources,
+            'pendingUserCount'      => $pendingUserCount,
+            'approvalRate'          => $approvalRate,
+            'utilizationRate'       => $utilizationRate,
+            // ── Correct variable names for SK view ──
+            'featuredBooks'         => $allBooks,
+            'availableCount'        => $availableCount,
+            'totalBooks'            => $totalBooks,
+            'myBorrowings'          => $myBorrowings,
+            'dashBorrowReqs'        => $dashBorrowReqs,
+            'pendingBorrowings'     => $pendingBorrowings,
+            'remainingReservations' => $remainingReservations,
         ]);
     }
 
