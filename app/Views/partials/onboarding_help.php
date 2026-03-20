@@ -41,6 +41,8 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
 .ob-skip:hover{color:#71717a}
 .ob-btn{flex:1;padding:.7rem 1.1rem;border:none;border-radius:11px;font-size:.82rem;font-weight:800;color:#09090b;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--a);transition:transform .2s,box-shadow .2s}
 .ob-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px -6px color-mix(in srgb,var(--a) 55%,transparent)}
+.ob-prev{width:38px;height:38px;border-radius:11px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;transition:all .18s}
+.ob-prev:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:white}
 /* ── Help FAB ── */
 .help-fab{position:fixed;bottom:88px;right:18px;z-index:8000;width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:white;box-shadow:0 6px 20px -4px rgba(0,0,0,.3);transition:transform .25s ease,box-shadow .25s;background:var(--a)}
 .help-fab:hover{transform:scale(1.1) translateY(-2px);box-shadow:0 12px 32px -6px rgba(0,0,0,.3)}
@@ -116,13 +118,16 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
 
       <?php else: ?>
         <div class="ob-panel on"><div class="ob-ico"><i class="fa-solid fa-hand-wave"></i></div><h2 class="ob-title">Hi, <em><?= htmlspecialchars($userName) ?></em>!</h2><p class="ob-desc">Welcome to the <strong>SK Reservation System</strong>. Reserve computers, borrow books, track your schedule.</p><div class="ob-chips"><div class="ob-chip"><div class="ob-cico"><i class="fa-solid fa-desktop"></i></div><span class="ob-ctxt">Book computers and e-learning resources</span></div><div class="ob-chip"><div class="ob-cico"><i class="fa-solid fa-book-open"></i></div><span class="ob-ctxt">Browse and borrow from the community library</span></div></div></div>
-        <div class="ob-panel"><div class="ob-ico"><i class="fa-solid fa-calendar-check"></i></div><h2 class="ob-title">Make a <em>Reservation</em></h2><p class="ob-desc">Click <strong>New Reservation</strong>. Choose your date, time, and purpose — then submit for approval.</p><div class="ob-chips"><div class="ob-chip"><div class="ob-cico"><i class="fa-solid fa-clock"></i></div><span class="ob-ctxt">Monthly quota of 3 reservations</span></div></div></div>
+        <div class="ob-panel"><div class="ob-ico"><i class="fa-solid fa-calendar-check"></i></div><h2 class="ob-title">Make a <em>Reservation</em></h2><p class="ob-desc">Click <strong>New Reservation</strong>. Choose your date, time, and purpose — then submit for approval.</p><div class="ob-chips"><div class="ob-chip"><div class="ob-cico"><i class="fa-solid fa-clock"></i></div><span class="ob-ctxt">Max 3 reservations per 2-week period</span></div></div></div>
         <div class="ob-panel"><div class="ob-ico"><i class="fa-solid fa-ticket"></i></div><h2 class="ob-title">Get Your <em>E-Ticket</em></h2><p class="ob-desc">When approved, you'll receive a <strong>QR Code E-Ticket</strong>. Show it to the SK Officer at the facility.</p><div class="ob-chips"><div class="ob-chip"><div class="ob-cico"><i class="fa-solid fa-qrcode"></i></div><span class="ob-ctxt">Download to your phone — works offline</span></div></div></div>
         <div class="ob-panel"><div class="ob-ico"><i class="fa-solid fa-graduation-cap"></i></div><h2 class="ob-title">You're <em>all set!</em></h2><p class="ob-desc">The <strong>Help button</strong> (bottom right) is always there. Happy learning!</p><div class="ob-chips"><div class="ob-chip"><div class="ob-cico"><i class="fa-solid fa-wand-magic-sparkles"></i></div><span class="ob-ctxt">AI Book Finder suggests reads for you</span></div></div></div>
       <?php endif; ?>
     </div>
     <div class="ob-foot">
       <button class="ob-skip" onclick="obClose()">✕ Skip</button>
+      <button class="ob-prev" id="ob-prev-btn" onclick="obPrev()" style="display:none">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
       <button class="ob-btn" onclick="obNext()">
         <span id="ob-btn-lbl">Show Me Around</span>
         <i id="ob-btn-ico" class="fa-solid fa-arrow-right"></i>
@@ -213,7 +218,7 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
 
       <!-- User tabs -->
       <?php else: ?>
-      <div id="ht-rsv" class="help-pane"><div class="h-sec"><p class="h-sec-title">Making a Reservation</p><div class="h-step"><div class="h-num">1</div><p class="h-stxt">Click <strong>New Reservation</strong> in the sidebar.</p></div><div class="h-step"><div class="h-num">2</div><p class="h-stxt">Select resource, choose date and time, enter purpose.</p></div><div class="h-step"><div class="h-num">3</div><p class="h-stxt">Submit — wait for SK Officer approval.</p></div><div class="h-tip h-tip-w"><i class="fa-solid fa-triangle-exclamation h-tip-ico"></i><p class="h-tip-txt">You have a <strong>monthly quota of 3 reservations</strong>. Resets each month.</p></div></div><div class="h-sec"><p class="h-sec-title">Using Your E-Ticket</p><div class="h-step"><div class="h-num">1</div><p class="h-stxt">Go to <strong>My Reservations</strong> and click your approved reservation.</p></div><div class="h-step"><div class="h-num">2</div><p class="h-stxt">Tap <strong>Download</strong> to save the QR code to your phone.</p></div><div class="h-step"><div class="h-num">3</div><p class="h-stxt">Show the QR code to the SK Officer at the facility.</p></div></div></div>
+      <div id="ht-rsv" class="help-pane"><div class="h-sec"><p class="h-sec-title">Making a Reservation</p><div class="h-step"><div class="h-num">1</div><p class="h-stxt">Click <strong>New Reservation</strong> in the sidebar.</p></div><div class="h-step"><div class="h-num">2</div><p class="h-stxt">Select resource, choose date and time, enter purpose.</p></div><div class="h-step"><div class="h-num">3</div><p class="h-stxt">Submit — wait for SK Officer approval.</p></div><div class="h-tip h-tip-w"><i class="fa-solid fa-triangle-exclamation h-tip-ico"></i><p class="h-tip-txt">You have a <strong>quota of 3 reservations per 2-week period</strong>. Resets every 2 weeks.</p></div></div><div class="h-sec"><p class="h-sec-title">Using Your E-Ticket</p><div class="h-step"><div class="h-num">1</div><p class="h-stxt">Go to <strong>My Reservations</strong> and click your approved reservation.</p></div><div class="h-step"><div class="h-num">2</div><p class="h-stxt">Tap <strong>Download</strong> to save the QR code to your phone.</p></div><div class="h-step"><div class="h-num">3</div><p class="h-stxt">Show the QR code to the SK Officer at the facility.</p></div></div></div>
       <div id="ht-lib" class="help-pane"><div class="h-sec"><p class="h-sec-title">Borrowing a Book</p><div class="h-step"><div class="h-num">1</div><p class="h-stxt">Go to <strong>Library</strong> from the sidebar.</p></div><div class="h-step"><div class="h-num">2</div><p class="h-stxt">A <strong>green dot</strong> means copies are available to borrow.</p></div><div class="h-step"><div class="h-num">3</div><p class="h-stxt">Click <strong>Borrow</strong> and wait for SK Officer approval.</p></div><div class="h-tip h-tip-s"><i class="fa-solid fa-wand-magic-sparkles h-tip-ico"></i><p class="h-tip-txt">Use the <strong>AI Book Finder</strong> on your dashboard for personalized picks!</p></div></div></div>
       <?php endif; ?>
 
@@ -255,11 +260,13 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
     const last=n===TOTAL-1;
     document.getElementById('ob-btn-lbl').textContent=last?'Start Exploring':(n===0?'Show Me Around':'Next');
     document.getElementById('ob-btn-ico').className='fa-solid '+(last?'fa-rocket':'fa-arrow-right');
+    document.getElementById('ob-prev-btn').style.display=n>0?'flex':'none';
   }
 
   window.obClose=()=>{localStorage.setItem(KEY,'1');document.getElementById('ob').classList.remove('open');document.body.style.overflow='';};
   window.obRestart=()=>{step=0;localStorage.removeItem(KEY);upd(0);setTimeout(()=>{document.getElementById('ob').classList.add('open');document.body.style.overflow='hidden';},100);};
   window.obNext=()=>{step<TOTAL-1?upd(++step):obClose();};
+  window.obPrev=()=>{if(step>0)upd(--step);};
   upd(0);
   if(!localStorage.getItem(KEY))setTimeout(()=>{document.getElementById('ob').classList.add('open');document.body.style.overflow='hidden';},900);
 
