@@ -14,7 +14,26 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { height: 100%; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ── */
+        .sidebar-card {
+            background: white; border-radius: 32px; border: 1px solid #e2e8f0;
+            height: calc(100vh - 48px); position: sticky; top: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .sidebar-header { flex-shrink: 0; padding: 16px; border-bottom: 1px solid #e2e8f0; }
+        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px; }
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #e2e8f0; }
+        .sidebar-item { transition: all 0.2s; display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.875rem; text-decoration: none; color: #64748b; }
+        .sidebar-item:hover { background: #f8fafc; color: #16a34a; }
+        .sidebar-item.active { background: #16a34a; color: white; box-shadow: 0 10px 15px -3px rgba(22,163,74,0.3); }
+        .sidebar-item .icon { width: 20px; text-align: center; font-size: 1.1rem; flex-shrink: 0; }
 
         /* ── Mobile Nav ── */
         .mobile-nav-pill {
@@ -146,35 +165,20 @@
 
         /* ── Genre pills ── */
         .genre-pill { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
-        .genre-pill-fiction { background: #dbeafe; color: #1e40af; }
-        .genre-pill-fantasy { background: #ede9fe; color: #5b21b6; }
-        .genre-pill-poetry  { background: #fce7f3; color: #9d174d; }
-        .genre-pill-humor   { background: #fef3c7; color: #92400e; }
-        .genre-pill-default { background: #f0fdf4; color: #166534; }
         .borrow-tag-pending  { background: #fef3c7; color: #92400e; }
         .borrow-tag-approved { background: #dcfce7; color: #166534; }
         .borrow-tag-returned { background: #dbeafe; color: #1e40af; }
         .borrow-tag-rejected { background: #fee2e2; color: #991b1b; }
 
-        /* ── Book spine card ── */
-        .book-spine-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 1rem 1.1rem; display: flex; align-items: center; gap: 12px; transition: all 0.22s; text-decoration: none; color: inherit; position: relative; overflow: hidden; }
-        .book-spine-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 4px 0 0 4px; transition: width 0.2s; }
-        .book-spine-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -6px rgba(0,0,0,0.12); }
-        .book-spine-card:hover::before { width: 6px; }
-        .genre-fiction::before  { background: #3b82f6; }
-        .genre-fantasy::before  { background: #8b5cf6; }
-        .genre-poetry::before   { background: #ec4899; }
-        .genre-humor::before    { background: #f59e0b; }
-        .genre-history::before  { background: #78716c; }
-        .genre-science::before  { background: #06b6d4; }
-        .genre-default::before  { background: #16a34a; }
-        .avail-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .avail-dot.on  { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.18); }
-        .avail-dot.off { background: #f87171; box-shadow: 0 0 0 3px rgba(248,113,113,0.18); }
-
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         @keyframes countUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
         .stat-num { animation: countUp 0.5s ease both; }
+
+        /* ── Main layout ── */
+        .page-wrapper { display: flex; min-height: 100vh; width: 100%; }
+        .sidebar-col { width: 280px; flex-shrink: 0; padding: 24px; display: none; }
+        @media (min-width: 1024px) { .sidebar-col { display: block; } }
+        .main-col { flex: 1; min-width: 0; }
     </style>
 </head>
 <body>
@@ -216,11 +220,52 @@
     $claimRate       = ($approved ?? 0) > 0 ? round((($claimed ?? 0) / ($approved ?? 0)) * 100) : 0;
     ?>
 
-    <!-- ── Mobile Nav ── -->
-    <nav class="mobile-nav-pill">
+    <div class="page-wrapper">
+
+    <!-- ══ SIDEBAR (desktop) ══ -->
+    <aside class="sidebar-col">
+        <div class="sidebar-card">
+            <div class="sidebar-header">
+                <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Youth Portal</span>
+                <h1 class="text-2xl font-extrabold text-slate-800">SK<span class="text-green-600">.</span></h1>
+            </div>
+
+            <nav class="sidebar-nav" style="padding-top: 8px;">
+                <?php foreach ($navItems as $item):
+                    $isActive = ($page ?? 'dashboard') == $item['key'];
+                    $cls = $isActive ? 'active' : '';
+                ?>
+                    <a href="<?= $item['url'] ?>" class="sidebar-item <?= $cls ?>">
+                        <i class="fa-solid <?= $item['icon'] ?> icon"></i>
+                        <?= $item['label'] ?>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+
+            <div class="sidebar-footer">
+                <!-- User info snippet -->
+                <div class="flex items-center gap-3 mb-3 px-2">
+                    <div class="w-9 h-9 bg-gradient-to-tr from-green-600 to-green-400 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                        <i class="fa-solid fa-user text-sm"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="font-bold text-sm text-slate-800 truncate"><?= esc($user_name ?? session()->get('name') ?? 'SK Officer') ?></p>
+                        <p class="text-[10px] text-green-600 font-bold uppercase tracking-wider">SK Officer</p>
+                    </div>
+                </div>
+                <a href="/logout" class="sidebar-item" style="color: #ef4444;">
+                    <i class="fa-solid fa-arrow-right-from-bracket icon"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ══ MOBILE NAV (bottom pill) ══ -->
+    <nav class="lg:hidden mobile-nav-pill">
         <div class="mobile-scroll-container text-white px-2">
             <?php foreach ($navItems as $item):
-                $isActive = ($page == $item['key']);
+                $isActive = ($page ?? 'dashboard') == $item['key'];
                 $cls = $isActive ? 'bg-green-700 font-semibold' : 'hover:bg-green-500/30';
             ?>
                 <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
@@ -279,407 +324,409 @@
         <button class="toast-close" onclick="dismissToast()"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <!-- ── Main ── -->
-    <main class="w-full max-w-screen-2xl mx-auto px-4 lg:px-8 pt-6 pb-32">
+    <!-- ══ MAIN CONTENT ══ -->
+    <div class="main-col">
+        <main class="w-full max-w-screen-xl mx-auto px-4 lg:px-8 pt-6 pb-32">
 
-        <!-- Header -->
-        <header class="flex items-start justify-between mb-7 gap-4 fade-up">
-            <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                    <?php $hour = (int)date('H'); echo $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening'); ?>
-                </p>
-                <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight"><?= esc($user_name ?? session()->get('name') ?? 'SK Officer') ?></h2>
-                <p class="text-slate-400 font-medium text-sm mt-0.5"><?= date('l, F j, Y') ?></p>
-            </div>
-            <div class="flex items-center gap-3 flex-shrink-0 flex-wrap justify-end">
-                <div class="hidden sm:flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-3 py-2">
-                    <i class="fa-regular fa-calendar text-green-600 text-xs"></i>
-                    <span class="text-xs font-bold text-slate-600"><?= date('M j, Y') ?></span>
-                </div>
-                <?php if (($pending ?? 0) > 0): ?>
-                    <a href="/sk/reservations" class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-2xl font-bold text-xs hover:bg-amber-100 transition">
-                        <i class="fa-solid fa-clock text-xs"></i> <?= $pending ?> pending
-                    </a>
-                <?php endif; ?>
-                <a href="<?= base_url('/reservation') ?>" class="hidden sm:flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm shadow-green-200">
-                    <i class="fa-solid fa-plus text-xs"></i> Reserve
-                </a>
-                <div class="relative">
-                    <button id="bellBtn" onclick="toggleNotif()" class="w-10 h-10 bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm hover:border-green-300 transition text-slate-500">
-                        <i class="fa-regular fa-bell"></i>
-                    </button>
-                    <span id="notifBadge" style="display:none" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white leading-none">0</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Flash -->
-        <?php if (session()->getFlashdata('success')): ?>
-            <div class="mb-6 px-5 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3 text-sm">
-                <i class="fa-solid fa-circle-check text-green-500"></i>
-                <?= session()->getFlashdata('success') ?>
-            </div>
-        <?php endif; ?>
-
-        <!-- Timer Banner -->
-        <div id="timerBanner" class="timer-banner">
-            <div class="flex items-center gap-3 flex-wrap">
-                <div id="timerIcon" class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm" style="background:rgba(0,0,0,0.08)">
-                    <i class="fa-solid fa-hourglass-half"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-black text-sm leading-tight" id="timerTitle">Your reservation ends soon</p>
-                    <p class="text-[11px] font-medium opacity-75 mt-0.5" id="timerSub"></p>
-                </div>
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <div class="timer-digit"><span id="tdHv">00</span><span>hrs</span></div>
-                    <span class="font-black text-base opacity-50 timer-pulse">:</span>
-                    <div class="timer-digit"><span id="tdMv">00</span><span>min</span></div>
-                    <span class="font-black text-base opacity-50 timer-pulse">:</span>
-                    <div class="timer-digit"><span id="tdSv">00</span><span>sec</span></div>
-                </div>
-            </div>
-            <div class="timer-progress-wrap" id="timerProgressWrap" style="display:none">
-                <div class="timer-progress-fill" id="timerProgressFill" style="width:0%"></div>
-            </div>
-        </div>
-
-        <!-- Upcoming Banner -->
-        <?php if ($upcoming): ?>
-            <div class="upcoming-pill mb-6 fade-up">
-                <div class="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center flex-shrink-0">
-                    <i class="fa-solid fa-ticket text-white text-sm"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-[10px] font-black text-green-700 uppercase tracking-widest">Upcoming Reservation</p>
-                    <p class="font-bold text-green-900 text-sm truncate">
-                        <?= esc($upcoming['resource_name'] ?? 'Resource') ?>
-                        <?php if (!empty($upcoming['pc_number'])): ?>· <span class="font-normal"><?= esc($upcoming['pc_number']) ?></span><?php endif; ?>
+            <!-- Header -->
+            <header class="flex items-start justify-between mb-7 gap-4 fade-up">
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                        <?php $hour = (int)date('H'); echo $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening'); ?>
                     </p>
-                    <p class="text-xs text-green-700 font-medium">
-                        <?= date('M j, Y', strtotime($upcoming['reservation_date'])) ?> &nbsp;·&nbsp;
-                        <?= date('g:i A', strtotime($upcoming['start_time'])) ?> – <?= date('g:i A', strtotime($upcoming['end_time'])) ?>
-                    </p>
+                    <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight"><?= esc($user_name ?? session()->get('name') ?? 'SK Officer') ?></h2>
+                    <p class="text-slate-400 font-medium text-sm mt-0.5"><?= date('l, F j, Y') ?></p>
                 </div>
-                <a href="<?= base_url('/reservation-list') ?>" class="text-xs font-black text-green-700 bg-white px-3 py-1.5 rounded-xl border border-green-200 hover:bg-green-50 transition flex-shrink-0">View →</a>
-            </div>
-        <?php endif; ?>
-
-        <!-- Pending alert -->
-        <?php if (($pending ?? 0) > 0): ?>
-            <div class="mb-6 px-5 py-3.5 bg-amber-50 border border-amber-200 text-amber-800 font-semibold rounded-2xl flex items-center gap-3 text-sm">
-                <i class="fa-solid fa-clock text-amber-500"></i>
-                You have <strong class="bg-amber-200 px-1.5 py-0.5 rounded-lg mx-0.5"><?= $pending ?></strong>
-                pending reservation<?= ($pending ?? 0) != 1 ? 's' : '' ?> awaiting approval.
-            </div>
-        <?php endif; ?>
-
-        <!-- ── Stat Cards ── -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="stat-card">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-layer-group text-blue-500 text-sm"></i></div>
-                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-wider">+<?= $monthlyTotal ?? 0 ?> mo</span>
-                </div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total</p>
-                <p class="text-3xl font-black text-slate-800 stat-num"><?= $total ?? 0 ?></p>
-                <p class="text-xs text-slate-400 mt-0.5 font-medium">All time</p>
-            </div>
-            <div class="stat-card">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i></div>
-                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-wider"><?= $approvalRate ?>%</span>
-                </div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Approved</p>
-                <p class="text-3xl font-black text-emerald-600 stat-num"><?= $approved ?? 0 ?></p>
-                <div class="prog-bar mt-2"><div class="prog-fill bg-emerald-500" style="width:<?= $approvalRate ?>%"></div></div>
-                <p class="text-xs text-slate-400 mt-1.5 font-medium">Approval rate</p>
-            </div>
-            <div class="stat-card">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center"><i class="fa-regular fa-clock text-amber-500 text-sm"></i></div>
-                    <span class="text-[10px] font-black text-amber-600 uppercase tracking-wider"><?= $todayTotal ?? 0 ?> today</span>
-                </div>
-                <div class="grid grid-cols-3 gap-1 text-center mt-1">
-                    <div><p class="text-xl font-black text-amber-600"><?= $todayPending ?? 0 ?></p><p class="text-[9px] text-slate-400 font-bold">Pending</p></div>
-                    <div><p class="text-xl font-black text-emerald-600"><?= $todayApproved ?? 0 ?></p><p class="text-[9px] text-slate-400 font-bold">Approved</p></div>
-                    <div><p class="text-xl font-black text-purple-600"><?= $todayClaimed ?? 0 ?></p><p class="text-[9px] text-slate-400 font-bold">Claimed</p></div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-check-double text-purple-500 text-sm"></i></div>
-                    <span class="text-[10px] font-black text-purple-600 uppercase tracking-wider"><?= $claimRate ?>%</span>
-                </div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Claimed</p>
-                <p class="text-3xl font-black text-purple-600 stat-num"><?= $claimed ?? 0 ?></p>
-                <div class="prog-bar mt-2"><div class="prog-fill bg-purple-500" style="width:<?= $claimRate ?>%"></div></div>
-                <p class="text-xs text-slate-400 mt-1.5 font-medium">Utilization rate</p>
-            </div>
-        </div>
-
-        <!-- ── Charts ── -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-            <div class="dash-card p-5">
-                <div class="flex items-center justify-between mb-1">
-                    <div><h3 class="font-extrabold text-slate-800 text-sm">Reservations Trend</h3><p class="text-[11px] text-slate-400 font-medium">Last 7 days activity</p></div>
-                    <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full"><span class="w-2 h-2 rounded-full bg-green-500"></span>Reservations</span>
-                </div>
-                <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
-            </div>
-            <div class="dash-card p-5">
-                <div class="flex items-center justify-between mb-1">
-                    <div><h3 class="font-extrabold text-slate-800 text-sm">Popular Resources</h3><p class="text-[11px] text-slate-400 font-medium">Most reserved</p></div>
-                    <span class="text-[10px] font-black bg-green-50 text-green-600 px-2.5 py-1 rounded-full">Top 5</span>
-                </div>
-                <div class="flex items-center gap-6 mt-4">
-                    <div style="position:relative;width:160px;height:160px;flex-shrink:0;"><canvas id="resourceChart" width="160" height="160"></canvas></div>
-                    <div id="resourceLegend" class="flex-1 min-w-0 space-y-3"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ── KPI row ── -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <?php foreach ([
-                ['Total',    $total ?? 0,    'border-blue-500',    'text-slate-700',   'fa-layer-group',  'text-blue-500'],
-                ['Pending',  $pending ?? 0,  'border-amber-500',   'text-amber-600',   'fa-clock',        'text-amber-500'],
-                ['Approved', $approved ?? 0, 'border-emerald-500', 'text-emerald-600', 'fa-circle-check', 'text-emerald-500'],
-                ['Declined', $declined ?? 0, 'border-rose-500',    'text-rose-600',    'fa-xmark-circle', 'text-rose-500'],
-            ] as [$lbl, $val, $border, $color, $ico, $icoc]): ?>
-                <div class="kpi-card <?= $border ?>">
-                    <div class="flex items-center justify-between mb-2">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><?= $lbl ?></p>
-                        <i class="fa-solid <?= $ico ?> text-sm <?= $icoc ?>"></i>
+                <div class="flex items-center gap-3 flex-shrink-0 flex-wrap justify-end">
+                    <div class="hidden sm:flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-3 py-2">
+                        <i class="fa-regular fa-calendar text-green-600 text-xs"></i>
+                        <span class="text-xs font-bold text-slate-600"><?= date('M j, Y') ?></span>
                     </div>
-                    <p class="text-2xl font-black <?= $color ?>"><?= $val ?></p>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- ── Calendar + Right panel ── -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-            <!-- Calendar -->
-            <div class="lg:col-span-2 dash-card p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 bg-green-50 text-green-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-calendar-days text-sm"></i></div>
-                        <div>
-                            <h3 class="font-extrabold text-slate-800 text-sm leading-tight">Community Schedule</h3>
-                            <p class="text-[10px] text-slate-400 font-medium">Click any date to see reservations</p>
-                        </div>
-                    </div>
-                    <div class="hidden sm:flex items-center gap-3 flex-wrap justify-end">
-                        <?php foreach ([['#fbbf24','Pending'],['#10b981','Approved'],['#f87171','Declined'],['#a855f7','Claimed']] as [$c,$l]): ?>
-                            <span class="flex items-center gap-1 text-[10px] font-bold text-slate-500"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:<?= $c ?>"></span><?= $l ?></span>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <div id="calendar"></div>
-            </div>
-
-            <!-- Right panel -->
-            <div class="flex flex-col gap-4">
-                <!-- Quick Stats -->
-                <div class="rounded-2xl p-4 text-white" style="background: linear-gradient(135deg, #1e3a2f, #16a34a);">
-                    <div class="flex items-center gap-2 mb-3">
-                        <i class="fa-solid fa-bolt text-green-300 text-sm"></i>
-                        <h3 class="font-black text-sm">Quick Stats</h3>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-white/10 rounded-xl p-3"><div class="flex items-center gap-1.5 mb-1"><i class="fa-solid fa-chart-line text-green-300 text-[10px]"></i><p class="text-[9px] text-green-200 font-black uppercase tracking-wider">Approval</p></div><p class="text-xl font-black"><?= $approvalRate ?>%</p></div>
-                        <div class="bg-white/10 rounded-xl p-3"><div class="flex items-center gap-1.5 mb-1"><i class="fa-solid fa-chart-pie text-green-300 text-[10px]"></i><p class="text-[9px] text-green-200 font-black uppercase tracking-wider">Claimed</p></div><p class="text-xl font-black"><?= $claimRate ?>%</p></div>
-                        <div class="bg-white/10 rounded-xl p-3"><div class="flex items-center gap-1.5 mb-1"><i class="fa-solid fa-calendar-check text-green-300 text-[10px]"></i><p class="text-[9px] text-green-200 font-black uppercase tracking-wider">Monthly</p></div><p class="text-xl font-black"><?= $monthlyTotal ?? 0 ?></p></div>
-                        <div class="bg-white/10 rounded-xl p-3">
-                            <div class="flex items-center gap-1.5 mb-1"><i class="fa-solid fa-layer-group text-green-300 text-[10px]"></i><p class="text-[9px] text-green-200 font-black uppercase tracking-wider">Quota</p></div>
-                            <p class="text-xl font-black"><?= $usedSlots ?>/<?= $maxSlots ?></p>
-                        </div>
-                    </div>
-                    <?php if (isset($remainingReservations)): ?>
-                        <div class="mt-3 pt-3 border-t border-white/10">
-                            <div class="fairness-bar bg-white/20 overflow-hidden">
-                                <div class="fairness-fill bg-white" style="width:<?= ($usedSlots/$maxSlots)*100 ?>%;opacity:0.8;"></div>
-                            </div>
-                            <p class="text-[10px] text-green-300 mt-1.5 font-medium"><?= $remaining ?> slot<?= $remaining != 1 ? 's' : '' ?> remaining this month</p>
-                        </div>
+                    <?php if (($pending ?? 0) > 0): ?>
+                        <a href="/sk/reservations" class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-2xl font-bold text-xs hover:bg-amber-100 transition">
+                            <i class="fa-solid fa-clock text-xs"></i> <?= $pending ?> pending
+                        </a>
                     <?php endif; ?>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="dash-card p-4">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Quick Actions</h3>
-                    <div class="space-y-2">
-                        <a href="<?= base_url('/reservation') ?>" class="quick-action"><div class="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-plus text-green-600 text-xs"></i></div><span>New Reservation</span><i class="fa-solid fa-chevron-right text-xs text-slate-300 ml-auto"></i></a>
-                        <a href="<?= base_url('/reservation-list') ?>" class="quick-action"><div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-regular fa-calendar text-blue-500 text-xs"></i></div><span>My Reservations</span><i class="fa-solid fa-chevron-right text-xs text-slate-300 ml-auto"></i></a>
-                        <a href="<?= base_url('/books') ?>" class="quick-action"><div class="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-amber-500 text-xs"></i></div><span>Browse Library</span><i class="fa-solid fa-chevron-right text-xs text-slate-300 ml-auto"></i></a>
-                        <a href="<?= base_url('/profile') ?>" class="quick-action"><div class="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-regular fa-user text-purple-500 text-xs"></i></div><span>View Profile</span><i class="fa-solid fa-chevron-right text-xs text-slate-300 ml-auto"></i></a>
+                    <a href="<?= base_url('/reservation') ?>" class="hidden sm:flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm shadow-green-200">
+                        <i class="fa-solid fa-plus text-xs"></i> Reserve
+                    </a>
+                    <div class="relative">
+                        <button id="bellBtn" onclick="toggleNotif()" class="w-10 h-10 bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm hover:border-green-300 transition text-slate-500">
+                            <i class="fa-regular fa-bell"></i>
+                        </button>
+                        <span id="notifBadge" style="display:none" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white leading-none">0</span>
                     </div>
                 </div>
+            </header>
 
-                <!-- Recent Bookings -->
-                <div class="dash-card p-4 flex-1">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">Recent Bookings</h3>
-                        <a href="<?= base_url('/reservation-list') ?>" class="text-[10px] font-black text-green-600 hover:text-green-700 uppercase tracking-wider">View all →</a>
+            <!-- Flash -->
+            <?php if (session()->getFlashdata('success')): ?>
+                <div class="mb-6 px-5 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3 text-sm">
+                    <i class="fa-solid fa-circle-check text-green-500"></i>
+                    <?= session()->getFlashdata('success') ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Timer Banner -->
+            <div id="timerBanner" class="timer-banner">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div id="timerIcon" class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm" style="background:rgba(0,0,0,0.08)">
+                        <i class="fa-solid fa-hourglass-half"></i>
                     </div>
-                    <?php if (!empty($reservations)): ?>
-                        <div class="space-y-1">
-                            <?php $recent = array_slice($reservations, 0, 4);
-                            foreach ($recent as $res):
-                                $s = strtolower($res['status'] ?? 'pending');
-                                if (!empty($res['claimed'])) $s = 'claimed';
-                                if ($s === 'approved') { $edt = strtotime($res['reservation_date'] . ' ' . ($res['end_time'] ?? '23:59')); if ($edt < time()) $s = 'expired'; }
-                                $dt = new DateTime($res['reservation_date']);
-                            ?>
-                                <a href="<?= base_url('/reservation-list') ?>" class="booking-item">
-                                    <div class="w-10 h-10 bg-slate-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
-                                        <span class="text-[9px] font-black text-slate-400 uppercase leading-none"><?= $dt->format('M') ?></span>
-                                        <span class="text-sm font-black text-slate-700 leading-tight"><?= $dt->format('j') ?></span>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="font-bold text-sm text-slate-800 truncate leading-tight"><?= esc($res['resource_name'] ?? 'Resource #'.$res['resource_id']) ?></p>
-                                        <p class="text-[11px] text-slate-400 font-medium mt-0.5"><?= date('g:i A', strtotime($res['start_time'])) ?> – <?= date('g:i A', strtotime($res['end_time'])) ?></p>
-                                    </div>
-                                    <span class="tag tag-<?= $s ?> flex-shrink-0"><?= ucfirst($s) ?></span>
-                                </a>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-black text-sm leading-tight" id="timerTitle">Your reservation ends soon</p>
+                        <p class="text-[11px] font-medium opacity-75 mt-0.5" id="timerSub"></p>
+                    </div>
+                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="timer-digit"><span id="tdHv">00</span><span>hrs</span></div>
+                        <span class="font-black text-base opacity-50 timer-pulse">:</span>
+                        <div class="timer-digit"><span id="tdMv">00</span><span>min</span></div>
+                        <span class="font-black text-base opacity-50 timer-pulse">:</span>
+                        <div class="timer-digit"><span id="tdSv">00</span><span>sec</span></div>
+                    </div>
+                </div>
+                <div class="timer-progress-wrap" id="timerProgressWrap" style="display:none">
+                    <div class="timer-progress-fill" id="timerProgressFill" style="width:0%"></div>
+                </div>
+            </div>
+
+            <!-- Upcoming Banner -->
+            <?php if ($upcoming): ?>
+                <div class="upcoming-pill mb-6 fade-up">
+                    <div class="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-ticket text-white text-sm"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] font-black text-green-700 uppercase tracking-widest">Upcoming Reservation</p>
+                        <p class="font-bold text-green-900 text-sm truncate">
+                            <?= esc($upcoming['resource_name'] ?? 'Resource') ?>
+                            <?php if (!empty($upcoming['pc_number'])): ?>· <span class="font-normal"><?= esc($upcoming['pc_number']) ?></span><?php endif; ?>
+                        </p>
+                        <p class="text-xs text-green-700 font-medium">
+                            <?= date('M j, Y', strtotime($upcoming['reservation_date'])) ?> &nbsp;·&nbsp;
+                            <?= date('g:i A', strtotime($upcoming['start_time'])) ?> – <?= date('g:i A', strtotime($upcoming['end_time'])) ?>
+                        </p>
+                    </div>
+                    <a href="<?= base_url('/reservation-list') ?>" class="text-xs font-black text-green-700 bg-white px-3 py-1.5 rounded-xl border border-green-200 hover:bg-green-50 transition flex-shrink-0">View →</a>
+                </div>
+            <?php endif; ?>
+
+            <!-- Pending alert -->
+            <?php if (($pending ?? 0) > 0): ?>
+                <div class="mb-6 px-5 py-3.5 bg-amber-50 border border-amber-200 text-amber-800 font-semibold rounded-2xl flex items-center gap-3 text-sm">
+                    <i class="fa-solid fa-clock text-amber-500"></i>
+                    You have <strong class="bg-amber-200 px-1.5 py-0.5 rounded-lg mx-0.5"><?= $pending ?></strong>
+                    pending reservation<?= ($pending ?? 0) != 1 ? 's' : '' ?> awaiting approval.
+                </div>
+            <?php endif; ?>
+
+            <!-- ── Stat Cards ── -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-layer-group text-blue-500 text-sm"></i></div>
+                        <span class="text-[10px] font-black text-blue-600 uppercase tracking-wider">+<?= $monthlyTotal ?? 0 ?> mo</span>
+                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total</p>
+                    <p class="text-3xl font-black text-slate-800 stat-num"><?= $total ?? 0 ?></p>
+                    <p class="text-xs text-slate-400 mt-0.5 font-medium">All time</p>
+                </div>
+                <div class="stat-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i></div>
+                        <span class="text-[10px] font-black text-emerald-600 uppercase tracking-wider"><?= $approvalRate ?>%</span>
+                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Approved</p>
+                    <p class="text-3xl font-black text-emerald-600 stat-num"><?= $approved ?? 0 ?></p>
+                    <div class="prog-bar mt-2"><div class="prog-fill bg-emerald-500" style="width:<?= $approvalRate ?>%"></div></div>
+                    <p class="text-xs text-slate-400 mt-1.5 font-medium">Approval rate</p>
+                </div>
+                <div class="stat-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center"><i class="fa-regular fa-clock text-amber-500 text-sm"></i></div>
+                        <span class="text-[10px] font-black text-amber-600 uppercase tracking-wider"><?= $todayTotal ?? 0 ?> today</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 text-center mt-1">
+                        <div><p class="text-xl font-black text-amber-600"><?= $todayPending ?? 0 ?></p><p class="text-[9px] text-slate-400 font-bold">Pending</p></div>
+                        <div><p class="text-xl font-black text-emerald-600"><?= $todayApproved ?? 0 ?></p><p class="text-[9px] text-slate-400 font-bold">Approved</p></div>
+                        <div><p class="text-xl font-black text-purple-600"><?= $todayClaimed ?? 0 ?></p><p class="text-[9px] text-slate-400 font-bold">Claimed</p></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-check-double text-purple-500 text-sm"></i></div>
+                        <span class="text-[10px] font-black text-purple-600 uppercase tracking-wider"><?= $claimRate ?>%</span>
+                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Claimed</p>
+                    <p class="text-3xl font-black text-purple-600 stat-num"><?= $claimed ?? 0 ?></p>
+                    <div class="prog-bar mt-2"><div class="prog-fill bg-purple-500" style="width:<?= $claimRate ?>%"></div></div>
+                    <p class="text-xs text-slate-400 mt-1.5 font-medium">Utilization rate</p>
+                </div>
+            </div>
+
+            <!-- ── Charts ── -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+                <div class="dash-card p-5">
+                    <div class="flex items-center justify-between mb-1">
+                        <div><h3 class="font-extrabold text-slate-800 text-sm">Reservations Trend</h3><p class="text-[11px] text-slate-400 font-medium">Last 7 days activity</p></div>
+                        <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full"><span class="w-2 h-2 rounded-full bg-green-500"></span>Reservations</span>
+                    </div>
+                    <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+                </div>
+                <div class="dash-card p-5">
+                    <div class="flex items-center justify-between mb-1">
+                        <div><h3 class="font-extrabold text-slate-800 text-sm">Popular Resources</h3><p class="text-[11px] text-slate-400 font-medium">Most reserved</p></div>
+                        <span class="text-[10px] font-black bg-green-50 text-green-600 px-2.5 py-1 rounded-full">Top 5</span>
+                    </div>
+                    <div class="flex items-center gap-6 mt-4">
+                        <div style="position:relative;width:160px;height:160px;flex-shrink:0;"><canvas id="resourceChart" width="160" height="160"></canvas></div>
+                        <div id="resourceLegend" class="flex-1 min-w-0 space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── KPI row ── -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <?php foreach ([
+                    ['Total',    $total ?? 0,    'border-blue-500',    'text-slate-700',   'fa-layer-group',  'text-blue-500'],
+                    ['Pending',  $pending ?? 0,  'border-amber-500',   'text-amber-600',   'fa-clock',        'text-amber-500'],
+                    ['Approved', $approved ?? 0, 'border-emerald-500', 'text-emerald-600', 'fa-circle-check', 'text-emerald-500'],
+                    ['Declined', $declined ?? 0, 'border-rose-500',    'text-rose-600',    'fa-xmark-circle', 'text-rose-500'],
+                ] as [$lbl, $val, $border, $color, $ico, $icoc]): ?>
+                    <div class="kpi-card <?= $border ?>">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><?= $lbl ?></p>
+                            <i class="fa-solid <?= $ico ?> text-sm <?= $icoc ?>"></i>
+                        </div>
+                        <p class="text-2xl font-black <?= $color ?>"><?= $val ?></p>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- ── Calendar + Right panel ── -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+                <!-- Calendar -->
+                <div class="lg:col-span-2 dash-card p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 bg-green-50 text-green-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-calendar-days text-sm"></i></div>
+                            <div>
+                                <h3 class="font-extrabold text-slate-800 text-sm leading-tight">Community Schedule</h3>
+                                <p class="text-[10px] text-slate-400 font-medium">Click any date to see reservations</p>
+                            </div>
+                        </div>
+                        <div class="hidden sm:flex items-center gap-3 flex-wrap justify-end">
+                            <?php foreach ([['#fbbf24','Pending'],['#10b981','Approved'],['#f87171','Declined'],['#a855f7','Claimed']] as [$c,$l]): ?>
+                                <span class="flex items-center gap-1 text-[10px] font-bold text-slate-500"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:<?= $c ?>"></span><?= $l ?></span>
                             <?php endforeach; ?>
                         </div>
-                    <?php else: ?>
-                        <div class="text-center py-6">
-                            <i class="fa-regular fa-calendar-xmark text-3xl text-slate-200 mb-2 block"></i>
-                            <p class="text-sm text-slate-400 font-medium">No bookings yet</p>
-                            <a href="<?= base_url('/reservation') ?>" class="inline-flex items-center gap-1 mt-3 text-xs font-bold text-green-600 hover:text-green-700"><i class="fa-solid fa-plus text-[10px]"></i> Make your first reservation</a>
-                        </div>
-                    <?php endif; ?>
+                    </div>
+                    <div id="calendar"></div>
                 </div>
-            </div>
-        </div>
 
-        <!-- ══ LIBRARY SECTION ══ -->
-        <div class="section-divider">
-            <div class="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-green-600 text-sm"></i></div>
-            <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Library Overview</span>
-            <div class="section-divider-line"></div>
-            <a href="/sk/books" class="text-xs font-black text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-xl hover:bg-green-100 transition whitespace-nowrap flex-shrink-0">Browse Library →</a>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <!-- Left: Banner + AI Finder -->
-            <div class="flex flex-col gap-4">
-                <div class="library-banner">
-                    <div class="relative z-10">
-                        <p class="text-[10px] font-black tracking-[0.18em] text-green-300 uppercase mb-1">Community Library</p>
-                        <p class="text-2xl font-black text-white leading-tight"><?= $availableCount ?> <span class="text-sm font-semibold text-green-300">available</span></p>
-                        <p class="text-green-400 text-xs font-medium mb-4"><?= $totalBooks ?> total titles</p>
+                <!-- Right panel -->
+                <div class="flex flex-col gap-4">
+                    <!-- Quick Stats -->
+                    <div class="rounded-2xl p-4 text-white" style="background: linear-gradient(135deg, #1e3a2f, #16a34a);">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="fa-solid fa-bolt text-green-300 text-sm"></i>
+                            <h3 class="font-black text-sm">Quick Stats</h3>
+                        </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <div class="bg-white/10 rounded-xl px-3 py-2.5 text-center"><p class="text-xl font-black text-white"><?= count($myBorrowings) ?></p><p class="text-[9px] font-black text-green-300 uppercase tracking-wider mt-0.5">My Borrows</p></div>
-                            <div class="bg-white/10 rounded-xl px-3 py-2.5 text-center"><?php $bookPct = $totalBooks > 0 ? round($availableCount / $totalBooks * 100) : 0; ?><p class="text-xl font-black text-white"><?= $bookPct ?>%</p><p class="text-[9px] font-black text-green-300 uppercase tracking-wider mt-0.5">In Stock</p></div>
+                            <div class="bg-white/10 rounded-xl p-3"><div class="flex items-center gap-1.5 mb-1"><i class="fa-solid fa-chart-line text-green-300 text-[10px]"></i><p class="text-[9px] text-green-200 font-black uppercase tracking-wider">Approval</p></div><p class="text-xl font-black"><?= $approvalRate ?>%</p></div>
+                            <div class="bg-white/10 rounded-xl p-3"><div class="flex items-center gap-1.5 mb-1"><i class="fa-solid fa-chart-pie text-green-300 text-[10px]"></i><p class="text-[9px] text-green-200 font-black uppercase tracking-wider">Claimed</p></div><p class="text-xl font-black"><?= $claimRate ?>%</p></div>
+                            <div class="bg-white/10 rounded-xl p-3"><div class="flex items-center gap-1.5 mb-1"><i class="fa-solid fa-calendar-check text-green-300 text-[10px]"></i><p class="text-[9px] text-green-200 font-black uppercase tracking-wider">Monthly</p></div><p class="text-xl font-black"><?= $monthlyTotal ?? 0 ?></p></div>
+                            <div class="bg-white/10 rounded-xl p-3">
+                                <div class="flex items-center gap-1.5 mb-1"><i class="fa-solid fa-layer-group text-green-300 text-[10px]"></i><p class="text-[9px] text-green-200 font-black uppercase tracking-wider">Quota</p></div>
+                                <p class="text-xl font-black"><?= $usedSlots ?>/<?= $maxSlots ?></p>
+                            </div>
+                        </div>
+                        <?php if (isset($remainingReservations)): ?>
+                            <div class="mt-3 pt-3 border-t border-white/10">
+                                <div class="fairness-bar bg-white/20 overflow-hidden">
+                                    <div class="fairness-fill bg-white" style="width:<?= ($usedSlots/$maxSlots)*100 ?>%;opacity:0.8;"></div>
+                                </div>
+                                <p class="text-[10px] text-green-300 mt-1.5 font-medium"><?= $remaining ?> slot<?= $remaining != 1 ? 's' : '' ?> remaining this month</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dash-card p-4">
+                        <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Quick Actions</h3>
+                        <div class="space-y-2">
+                            <a href="<?= base_url('/reservation') ?>" class="quick-action"><div class="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-plus text-green-600 text-xs"></i></div><span>New Reservation</span><i class="fa-solid fa-chevron-right text-xs text-slate-300 ml-auto"></i></a>
+                            <a href="<?= base_url('/reservation-list') ?>" class="quick-action"><div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-regular fa-calendar text-blue-500 text-xs"></i></div><span>My Reservations</span><i class="fa-solid fa-chevron-right text-xs text-slate-300 ml-auto"></i></a>
+                            <a href="<?= base_url('/books') ?>" class="quick-action"><div class="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-amber-500 text-xs"></i></div><span>Browse Library</span><i class="fa-solid fa-chevron-right text-xs text-slate-300 ml-auto"></i></a>
+                            <a href="<?= base_url('/profile') ?>" class="quick-action"><div class="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-regular fa-user text-purple-500 text-xs"></i></div><span>View Profile</span><i class="fa-solid fa-chevron-right text-xs text-slate-300 ml-auto"></i></a>
                         </div>
                     </div>
-                </div>
 
-                <!-- AI Book Finder -->
-                <div class="dash-card p-5">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-8 h-8 bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-wand-magic-sparkles text-green-600 text-xs"></i></div>
-                        <div><h3 class="font-extrabold text-slate-800 text-sm leading-tight">AI Book Finder</h3><p class="text-[10px] text-slate-400 font-medium">Describe what you want to read</p></div>
-                    </div>
-                    <div class="rag-search-wrap">
-                        <i class="fa-solid fa-magnifying-glass rag-search-icon"></i>
-                        <input type="text" id="dashRagInput" class="rag-search-input" placeholder="e.g. Filipino history, funny stories, adventure for kids…" onkeydown="if(event.key==='Enter') dashRagSearch()">
-                    </div>
-                    <div id="dashRagSkel" style="display:none; margin-top:.75rem">
-                        <div class="shimmer" style="width:90%"></div>
-                        <div class="shimmer" style="width:72%"></div>
-                        <div class="shimmer" style="width:55%"></div>
-                    </div>
-                    <div class="ai-suggestion-box" id="dashRagResult">
-                        <div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-robot text-green-600 text-xs mt-0.5 flex-shrink-0"></i><p class="text-[10px] font-black text-green-700 uppercase tracking-wider">Librarian Suggestion</p></div>
-                        <p class="text-sm text-green-900 font-medium leading-relaxed" id="dashRagText"></p>
-                        <div id="dashRagBooks" class="mt-2 flex flex-wrap gap-1.5"></div>
-                    </div>
-                    <div id="dashRagErr" class="mt-2 text-xs text-red-500 font-medium" style="display:none"></div>
-                    <div class="flex items-center justify-between mt-3">
-                        <button onclick="dashRagSearch()" id="dashRagBtn" class="flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs transition"><i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> Find Books</button>
-                        <a href="<?= base_url('/books') ?>" class="text-xs font-bold text-green-600 hover:text-green-700">See full library →</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right col-span-2: Books Catalog + My Borrows -->
-            <div class="lg:col-span-2 dash-card p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <div><h3 class="font-extrabold text-slate-800 text-sm">Books Catalog</h3><p class="text-[10px] text-slate-400 font-medium">Availability at a glance</p></div>
-                    <a href="<?= base_url('/books') ?>" class="text-[10px] font-black text-green-600 bg-green-50 px-2.5 py-1.5 rounded-xl border border-green-200 hover:bg-green-100 transition flex items-center gap-1"><i class="fa-solid fa-arrow-right text-[9px]"></i> View All</a>
-                </div>
-                <?php
-                $genreColors = ['fiction'=>'#3b82f6','fantasy'=>'#8b5cf6','poetry'=>'#ec4899','humor'=>'#f59e0b','history'=>'#78716c','science'=>'#06b6d4','romance'=>'#f43f5e'];
-                if (!empty($featuredBooks)):
-                ?>
-                    <div class="grid grid-cols-12 gap-2 px-3 pb-2 border-b border-slate-100 mb-1">
-                        <div class="col-span-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Title</div>
-                        <div class="col-span-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">Author</div>
-                        <div class="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">Genre</div>
-                        <div class="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Stock</div>
-                    </div>
-                    <div class="space-y-0.5">
-                        <?php foreach (array_slice($featuredBooks, 0, 9) as $book):
-                            $genre = $book['genre'] ?? ''; $spineClr = $genreColors[strtolower($genre)] ?? '#16a34a';
-                            $avail = (int)($book['available_copies'] ?? 0); $totalC = (int)($book['total_copies'] ?? 1);
-                            $aCls = $avail === 0 ? 'avail-off' : ($avail <= 1 ? 'avail-low' : 'avail-on');
-                            $aTxt = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
-                        ?>
-                        <a href="<?= base_url('/books') ?>" class="book-row grid grid-cols-12 gap-2 items-center">
-                            <div class="col-span-5 flex items-center gap-2 min-w-0"><div class="book-spine" style="background:<?= $spineClr ?>"></div><div class="min-w-0"><p class="font-bold text-xs text-slate-800 truncate leading-tight"><?= esc($book['title']) ?></p><p class="text-[10px] text-slate-400 truncate sm:hidden"><?= esc($book['author'] ?? '—') ?></p></div></div>
-                            <div class="col-span-3 hidden sm:block"><p class="text-xs text-slate-500 truncate"><?= esc($book['author'] ?? '—') ?></p></div>
-                            <div class="col-span-2 hidden sm:block"><?php if (!empty($book['genre'])): ?><span class="text-[10px] font-bold text-slate-500 truncate block"><?= esc($book['genre']) ?></span><?php else: ?><span class="text-[10px] text-slate-300">—</span><?php endif; ?></div>
-                            <div class="col-span-2 flex items-center justify-end gap-1.5"><span class="text-[10px] text-slate-400 font-medium hidden sm:inline"><?= $avail ?>/<?= $totalC ?></span><span class="avail-pill <?= $aCls ?>"><?= $aTxt ?></span></div>
-                        </a>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php if (count($featuredBooks) > 9): ?>
-                        <div class="mt-3 pt-3 border-t border-slate-100 text-center"><a href="<?= base_url('/books') ?>" class="text-xs font-bold text-green-600 hover:text-green-700">+<?= count($featuredBooks) - 9 ?> more books →</a></div>
-                    <?php endif; ?>
-
-                    <!-- My Active Borrows inside same card -->
-                    <?php
-                    $activeBorrows = array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved','pending']));
-                    $activeBorrows = array_slice(array_values($activeBorrows), 0, 4);
-                    if (!empty($activeBorrows)):
-                    ?>
-                        <div class="mt-5 pt-4 border-t border-slate-100">
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="text-xs font-black uppercase tracking-widest text-slate-400">My Active Borrows</h4>
-                                <a href="<?= base_url('/books') ?>#mine" class="text-[10px] font-black text-green-600 hover:text-green-700">All →</a>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <?php foreach ($activeBorrows as $borrow):
-                                    $bs = strtolower($borrow['status'] ?? 'pending');
+                    <!-- Recent Bookings -->
+                    <div class="dash-card p-4 flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">Recent Bookings</h3>
+                            <a href="<?= base_url('/reservation-list') ?>" class="text-[10px] font-black text-green-600 hover:text-green-700 uppercase tracking-wider">View all →</a>
+                        </div>
+                        <?php if (!empty($reservations)): ?>
+                            <div class="space-y-1">
+                                <?php $recent = array_slice($reservations, 0, 4);
+                                foreach ($recent as $res):
+                                    $s = strtolower($res['status'] ?? 'pending');
+                                    if (!empty($res['claimed'])) $s = 'claimed';
+                                    if ($s === 'approved') { $edt = strtotime($res['reservation_date'] . ' ' . ($res['end_time'] ?? '23:59')); if ($edt < time()) $s = 'expired'; }
+                                    $dt = new DateTime($res['reservation_date']);
                                 ?>
-                                <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 border border-slate-100">
-                                    <div class="w-8 h-8 bg-white rounded-xl flex items-center justify-center flex-shrink-0 border border-slate-200 font-black text-sm text-green-700"><?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?></div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="font-bold text-xs text-slate-800 truncate"><?= esc($borrow['title'] ?? 'Unknown Book') ?></p>
-                                        <?php if (!empty($borrow['due_date']) && $bs === 'approved'): ?><p class="text-[10px] text-slate-400 font-medium">Due <?= date('M j', strtotime($borrow['due_date'])) ?></p><?php endif; ?>
-                                    </div>
-                                    <span class="tag borrow-tag-<?= $bs ?> text-[9px] flex-shrink-0"><?= ucfirst($bs) ?></span>
-                                </div>
+                                    <a href="<?= base_url('/reservation-list') ?>" class="booking-item">
+                                        <div class="w-10 h-10 bg-slate-100 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
+                                            <span class="text-[9px] font-black text-slate-400 uppercase leading-none"><?= $dt->format('M') ?></span>
+                                            <span class="text-sm font-black text-slate-700 leading-tight"><?= $dt->format('j') ?></span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-bold text-sm text-slate-800 truncate leading-tight"><?= esc($res['resource_name'] ?? 'Resource #'.$res['resource_id']) ?></p>
+                                            <p class="text-[11px] text-slate-400 font-medium mt-0.5"><?= date('g:i A', strtotime($res['start_time'])) ?> – <?= date('g:i A', strtotime($res['end_time'])) ?></p>
+                                        </div>
+                                        <span class="tag tag-<?= $s ?> flex-shrink-0"><?= ucfirst($s) ?></span>
+                                    </a>
                                 <?php endforeach; ?>
                             </div>
+                        <?php else: ?>
+                            <div class="text-center py-6">
+                                <i class="fa-regular fa-calendar-xmark text-3xl text-slate-200 mb-2 block"></i>
+                                <p class="text-sm text-slate-400 font-medium">No bookings yet</p>
+                                <a href="<?= base_url('/reservation') ?>" class="inline-flex items-center gap-1 mt-3 text-xs font-bold text-green-600 hover:text-green-700"><i class="fa-solid fa-plus text-[10px]"></i> Make your first reservation</a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ LIBRARY SECTION ══ -->
+            <div class="section-divider">
+                <div class="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-green-600 text-sm"></i></div>
+                <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Library Overview</span>
+                <div class="section-divider-line"></div>
+                <a href="/sk/books" class="text-xs font-black text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-xl hover:bg-green-100 transition whitespace-nowrap flex-shrink-0">Browse Library →</a>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <!-- Left: Banner + AI Finder -->
+                <div class="flex flex-col gap-4">
+                    <div class="library-banner">
+                        <div class="relative z-10">
+                            <p class="text-[10px] font-black tracking-[0.18em] text-green-300 uppercase mb-1">Community Library</p>
+                            <p class="text-2xl font-black text-white leading-tight"><?= $availableCount ?> <span class="text-sm font-semibold text-green-300">available</span></p>
+                            <p class="text-green-400 text-xs font-medium mb-4"><?= $totalBooks ?> total titles</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-white/10 rounded-xl px-3 py-2.5 text-center"><p class="text-xl font-black text-white"><?= count($myBorrowings) ?></p><p class="text-[9px] font-black text-green-300 uppercase tracking-wider mt-0.5">My Borrows</p></div>
+                                <div class="bg-white/10 rounded-xl px-3 py-2.5 text-center"><?php $bookPct = $totalBooks > 0 ? round($availableCount / $totalBooks * 100) : 0; ?><p class="text-xl font-black text-white"><?= $bookPct ?>%</p><p class="text-[9px] font-black text-green-300 uppercase tracking-wider mt-0.5">In Stock</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Book Finder -->
+                    <div class="dash-card p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl flex items-center justify-center"><i class="fa-solid fa-wand-magic-sparkles text-green-600 text-xs"></i></div>
+                            <div><h3 class="font-extrabold text-slate-800 text-sm leading-tight">AI Book Finder</h3><p class="text-[10px] text-slate-400 font-medium">Describe what you want to read</p></div>
+                        </div>
+                        <div class="rag-search-wrap">
+                            <i class="fa-solid fa-magnifying-glass rag-search-icon"></i>
+                            <input type="text" id="dashRagInput" class="rag-search-input" placeholder="e.g. Filipino history, funny stories, adventure for kids…" onkeydown="if(event.key==='Enter') dashRagSearch()">
+                        </div>
+                        <div id="dashRagSkel" style="display:none; margin-top:.75rem">
+                            <div class="shimmer" style="width:90%"></div>
+                            <div class="shimmer" style="width:72%"></div>
+                            <div class="shimmer" style="width:55%"></div>
+                        </div>
+                        <div class="ai-suggestion-box" id="dashRagResult">
+                            <div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-robot text-green-600 text-xs mt-0.5 flex-shrink-0"></i><p class="text-[10px] font-black text-green-700 uppercase tracking-wider">Librarian Suggestion</p></div>
+                            <p class="text-sm text-green-900 font-medium leading-relaxed" id="dashRagText"></p>
+                            <div id="dashRagBooks" class="mt-2 flex flex-wrap gap-1.5"></div>
+                        </div>
+                        <div id="dashRagErr" class="mt-2 text-xs text-red-500 font-medium" style="display:none"></div>
+                        <div class="flex items-center justify-between mt-3">
+                            <button onclick="dashRagSearch()" id="dashRagBtn" class="flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs transition"><i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> Find Books</button>
+                            <a href="<?= base_url('/books') ?>" class="text-xs font-bold text-green-600 hover:text-green-700">See full library →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right col-span-2: Books Catalog + My Borrows -->
+                <div class="lg:col-span-2 dash-card p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div><h3 class="font-extrabold text-slate-800 text-sm">Books Catalog</h3><p class="text-[10px] text-slate-400 font-medium">Availability at a glance</p></div>
+                        <a href="<?= base_url('/books') ?>" class="text-[10px] font-black text-green-600 bg-green-50 px-2.5 py-1.5 rounded-xl border border-green-200 hover:bg-green-100 transition flex items-center gap-1"><i class="fa-solid fa-arrow-right text-[9px]"></i> View All</a>
+                    </div>
+                    <?php
+                    $genreColors = ['fiction'=>'#3b82f6','fantasy'=>'#8b5cf6','poetry'=>'#ec4899','humor'=>'#f59e0b','history'=>'#78716c','science'=>'#06b6d4','romance'=>'#f43f5e'];
+                    if (!empty($featuredBooks)):
+                    ?>
+                        <div class="grid grid-cols-12 gap-2 px-3 pb-2 border-b border-slate-100 mb-1">
+                            <div class="col-span-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Title</div>
+                            <div class="col-span-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">Author</div>
+                            <div class="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">Genre</div>
+                            <div class="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Stock</div>
+                        </div>
+                        <div class="space-y-0.5">
+                            <?php foreach (array_slice($featuredBooks, 0, 9) as $book):
+                                $genre = $book['genre'] ?? ''; $spineClr = $genreColors[strtolower($genre)] ?? '#16a34a';
+                                $avail = (int)($book['available_copies'] ?? 0); $totalC = (int)($book['total_copies'] ?? 1);
+                                $aCls = $avail === 0 ? 'avail-off' : ($avail <= 1 ? 'avail-low' : 'avail-on');
+                                $aTxt = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
+                            ?>
+                            <a href="<?= base_url('/books') ?>" class="book-row grid grid-cols-12 gap-2 items-center">
+                                <div class="col-span-5 flex items-center gap-2 min-w-0"><div class="book-spine" style="background:<?= $spineClr ?>"></div><div class="min-w-0"><p class="font-bold text-xs text-slate-800 truncate leading-tight"><?= esc($book['title']) ?></p><p class="text-[10px] text-slate-400 truncate sm:hidden"><?= esc($book['author'] ?? '—') ?></p></div></div>
+                                <div class="col-span-3 hidden sm:block"><p class="text-xs text-slate-500 truncate"><?= esc($book['author'] ?? '—') ?></p></div>
+                                <div class="col-span-2 hidden sm:block"><?php if (!empty($book['genre'])): ?><span class="text-[10px] font-bold text-slate-500 truncate block"><?= esc($book['genre']) ?></span><?php else: ?><span class="text-[10px] text-slate-300">—</span><?php endif; ?></div>
+                                <div class="col-span-2 flex items-center justify-end gap-1.5"><span class="text-[10px] text-slate-400 font-medium hidden sm:inline"><?= $avail ?>/<?= $totalC ?></span><span class="avail-pill <?= $aCls ?>"><?= $aTxt ?></span></div>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php if (count($featuredBooks) > 9): ?>
+                            <div class="mt-3 pt-3 border-t border-slate-100 text-center"><a href="<?= base_url('/books') ?>" class="text-xs font-bold text-green-600 hover:text-green-700">+<?= count($featuredBooks) - 9 ?> more books →</a></div>
+                        <?php endif; ?>
+
+                        <?php
+                        $activeBorrows = array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved','pending']));
+                        $activeBorrows = array_slice(array_values($activeBorrows), 0, 4);
+                        if (!empty($activeBorrows)):
+                        ?>
+                            <div class="mt-5 pt-4 border-t border-slate-100">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-xs font-black uppercase tracking-widest text-slate-400">My Active Borrows</h4>
+                                    <a href="<?= base_url('/books') ?>#mine" class="text-[10px] font-black text-green-600 hover:text-green-700">All →</a>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <?php foreach ($activeBorrows as $borrow):
+                                        $bs = strtolower($borrow['status'] ?? 'pending');
+                                    ?>
+                                    <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 border border-slate-100">
+                                        <div class="w-8 h-8 bg-white rounded-xl flex items-center justify-center flex-shrink-0 border border-slate-200 font-black text-sm text-green-700"><?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?></div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-bold text-xs text-slate-800 truncate"><?= esc($borrow['title'] ?? 'Unknown Book') ?></p>
+                                            <?php if (!empty($borrow['due_date']) && $bs === 'approved'): ?><p class="text-[10px] text-slate-400 font-medium">Due <?= date('M j', strtotime($borrow['due_date'])) ?></p><?php endif; ?>
+                                        </div>
+                                        <span class="tag borrow-tag-<?= $bs ?> text-[9px] flex-shrink-0"><?= ucfirst($bs) ?></span>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                    <?php else: ?>
+                        <div class="text-center py-12">
+                            <i class="fa-solid fa-book-open text-4xl text-slate-200 mb-3 block"></i>
+                            <p class="text-sm text-slate-400 font-medium">No books in the catalog yet</p>
+                            <a href="<?= base_url('/books') ?>" class="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-green-600 text-white rounded-xl text-xs font-bold hover:bg-green-700 transition"><i class="fa-solid fa-arrow-right text-[10px]"></i> Browse Library</a>
                         </div>
                     <?php endif; ?>
-
-                <?php else: ?>
-                    <div class="text-center py-12">
-                        <i class="fa-solid fa-book-open text-4xl text-slate-200 mb-3 block"></i>
-                        <p class="text-sm text-slate-400 font-medium">No books in the catalog yet</p>
-                        <a href="<?= base_url('/books') ?>" class="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-green-600 text-white rounded-xl text-xs font-bold hover:bg-green-700 transition"><i class="fa-solid fa-arrow-right text-[10px]"></i> Browse Library</a>
-                    </div>
-                <?php endif; ?>
+                </div>
             </div>
-        </div>
 
-    </main>
+        </main>
+    </div><!-- /.main-col -->
+    </div><!-- /.page-wrapper -->
 
     <script>
         const STORAGE_KEY         = 'notified_ids_<?= session()->get('user_id') ?>';
