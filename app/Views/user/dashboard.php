@@ -224,9 +224,9 @@
             </div>
             <nav class="sidebar-nav space-y-1">
                 <?php foreach ($navItems as $item):
-                    $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
+                    $active = ($page == $item['key']) ? 'bg-green-600 text-white shadow-lg shadow-green-200/50' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
                 ?>
-                    <a href="<?= base_url($item['url']) ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
+                    <a href="<?= base_url($item['url']) ?>" class="flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all <?= $active ?>">
                         <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
                         <?= $item['label'] ?>
                     </a>
