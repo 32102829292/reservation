@@ -1,10 +1,9 @@
-<?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Dashboard | <?= esc($user_name) ?></title>
+    <title>Dashboard | <?= esc($user_name ?? session()->get('name') ?? 'SK Officer') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#16a34a">
@@ -20,7 +19,7 @@
         }
         * { box-sizing: border-box; }
         html { height: 100%; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--slate-bg); color: #1e293b; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--slate-bg); color: #1e293b; margin: 0; display: flex !important; height: 100vh !important; overflow: hidden !important; }
 
         /* ── Sidebar ── */
         .sidebar-card {
@@ -218,8 +217,8 @@
     <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6" style="height:100vh;overflow:hidden;">
         <div class="sidebar-card">
             <div class="sidebar-header">
-                <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Resident Portal</span>
-                <h1 class="text-2xl font-extrabold text-slate-800">my<span class="text-green-600">Space.</span></h1>
+                <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Youth Portal</span>
+                <h1 class="text-2xl font-extrabold text-slate-800">SK<span class="text-green-600">.</span></h1>
             </div>
             <nav class="sidebar-nav space-y-1">
                 <?php foreach ($navItems as $item):
@@ -312,7 +311,7 @@
                 <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
                     <?php $hour = (int)date('H'); echo $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening'); ?>
                 </p>
-                <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight"><?= esc($user_name) ?></h2>
+                <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight"><?= esc($user_name ?? session()->get('name') ?? 'SK Officer') ?></h2>
                 <p class="text-slate-400 font-medium text-sm mt-1"><?= date('l, F j, Y') ?></p>
             </div>
             <div class="flex items-center gap-3 flex-shrink-0">
@@ -732,5 +731,6 @@
             } catch(e) { skel.style.display='none'; btn.disabled=false; err.textContent='Network error. Try again.'; err.style.display='block'; }
         }
     </script>
+<?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 </body>
 </html>

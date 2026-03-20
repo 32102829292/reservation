@@ -1,4 +1,3 @@
-<?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,8 +18,8 @@
             --slate-bg: #f8fafc;
         }
         * { box-sizing: border-box; }
-        html, body { height: 100%; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--slate-bg); color: #1e293b; margin: 0; display: flex; align-items: flex-start; }
+        html { height: 100%; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--slate-bg); color: #1e293b; margin: 0; display: flex !important; height: 100vh !important; overflow: hidden !important; }
 
         /* ── Sidebar ── */
         .sidebar-card {
@@ -215,7 +214,7 @@
     ?>
 
     <!-- ── Sidebar ── -->
-    <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6" style="position:sticky;top:0;height:100vh;align-self:flex-start;">
+    <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6" style="height:100vh;overflow:hidden;">
         <div class="sidebar-card">
             <div class="sidebar-header">
                 <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Resident Portal</span>
@@ -304,7 +303,7 @@
     </div>
 
     <!-- ── Main ── -->
-    <main class="flex-1 min-w-0 p-4 lg:p-10 pb-32" style="overflow-y:auto;">
+    <main class="flex-1 min-w-0 p-4 lg:p-10 pb-32" style="height:100vh;overflow-y:auto;">
 
         <!-- Top bar -->
         <header class="flex items-start justify-between mb-8 gap-4">
@@ -732,5 +731,6 @@
             } catch(e) { skel.style.display='none'; btn.disabled=false; err.textContent='Network error. Try again.'; err.style.display='block'; }
         }
     </script>
+<?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 </body>
 </html>
