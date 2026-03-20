@@ -243,16 +243,6 @@
             </nav>
 
             <div class="sidebar-footer">
-                <!-- User info snippet -->
-                <div class="flex items-center gap-3 mb-3 px-2">
-                    <div class="w-9 h-9 bg-gradient-to-tr from-green-600 to-green-400 rounded-xl flex items-center justify-center text-white flex-shrink-0">
-                        <i class="fa-solid fa-user text-sm"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="font-bold text-sm text-slate-800 truncate"><?= esc($user_name ?? session()->get('name') ?? 'SK Officer') ?></p>
-                        <p class="text-[10px] text-green-600 font-bold uppercase tracking-wider">SK Officer</p>
-                    </div>
-                </div>
                 <a href="/logout" class="sidebar-item" style="color: #ef4444;">
                     <i class="fa-solid fa-arrow-right-from-bracket icon"></i>
                     Logout
