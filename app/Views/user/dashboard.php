@@ -664,7 +664,7 @@
                     const col=colorMap[s]||'bg-slate-100 text-slate-600';
                     const t1=r.start_time?r.start_time.substring(0,5):'All day', t2=r.end_time?` – ${r.end_time.substring(0,5)}`:'';
                     const row=document.createElement('div'); row.className='date-row';
-                    row.innerHTML=`<div class="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-regular fa-calendar text-slate-400 text-xs"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800">${r.resource_name||'Unknown Resource'}</p><p class="text-xs text-slate-400 mt-0.5">${r.visitor_name||r.full_name||'Guest'} · ${t1}${t2}</p></div><span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${col}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
+                    row.innerHTML=`<div class="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-regular fa-calendar text-slate-400 text-xs"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800">${r.resource_name||'Reserved'}</p><p class="text-xs text-slate-400 mt-0.5">${t1}${t2}</p></div><span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${col}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
                     list.appendChild(row);
                 });
             } else { empty.classList.remove('hidden'); }

@@ -30,9 +30,13 @@
         }
         .sidebar-header { flex-shrink: 0; padding: 16px; border-bottom: 1px solid #e2e8f0; }
         .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px; }
-        .sidebar-nav::-webkit-scrollbar { width: 4px; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #e2e8f0; }
+        .sidebar-item { transition: all 0.2s; }
+        .sidebar-item.active { background: #16a34a; color: white; box-shadow: 0 10px 15px -3px rgba(22,163,74,0.3); }
 
         /* ── Mobile Nav ── */
         .mobile-nav-pill {
@@ -185,11 +189,15 @@
 
     <?php
     $navItems = [
-        ['url' => '/dashboard',        'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
-        ['url' => '/reservation',      'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'reservation'],
-        ['url' => '/reservation-list', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'reservation-list'],
-        ['url' => '/books',            'icon' => 'fa-book-open',       'label' => 'Library',         'key' => 'books'],
-        ['url' => '/profile',          'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+        ['url' => '/sk/dashboard',            'icon' => 'fa-house',           'label' => 'Dashboard',        'key' => 'dashboard'],
+        ['url' => '/sk/reservations',         'icon' => 'fa-calendar-alt',    'label' => 'All Reservations', 'key' => 'reservations'],
+        ['url' => '/sk/new-reservation',      'icon' => 'fa-plus',            'label' => 'New Reservation',  'key' => 'new-reservation'],
+        ['url' => '/sk/user-requests',        'icon' => 'fa-users',           'label' => 'User Requests',    'key' => 'user-requests'],
+        ['url' => '/sk/my-reservations',      'icon' => 'fa-calendar',        'label' => 'My Reservations',  'key' => 'my-reservations'],
+        ['url' => '/sk/claimed-reservations', 'icon' => 'fa-check-double',    'label' => 'Claimed',          'key' => 'claimed-reservations'],
+        ['url' => '/sk/books',                'icon' => 'fa-book-open',       'label' => 'Library',          'key' => 'books'],
+        ['url' => '/sk/scanner',              'icon' => 'fa-qrcode',          'label' => 'Scanner',          'key' => 'scanner'],
+        ['url' => '/sk/profile',              'icon' => 'fa-regular fa-user', 'label' => 'Profile',          'key' => 'profile'],
     ];
 
     $upcoming = null;
@@ -222,9 +230,9 @@
             </div>
             <nav class="sidebar-nav space-y-1">
                 <?php foreach ($navItems as $item):
-                    $active = ($page == $item['key']) ? 'bg-green-600 text-white shadow-lg shadow-green-200/50' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
+                    $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
                 ?>
-                    <a href="<?= base_url($item['url']) ?>" class="flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all <?= $active ?>">
+                    <a href="<?= $item['url'] ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
                         <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
                         <?= $item['label'] ?>
                     </a>
@@ -245,7 +253,7 @@
             <?php endif; ?>
 
             <div class="sidebar-footer">
-                <a href="<?= base_url('/logout') ?>" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
+                <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
                     <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
                 </a>
             </div>
@@ -259,12 +267,12 @@
                 $isActive = ($page == $item['key']);
                 $cls = $isActive ? 'bg-green-700 font-semibold' : 'hover:bg-green-500/30';
             ?>
-                <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
+                <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
                     <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
                     <span class="text-[9px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
                 </a>
             <?php endforeach; ?>
-            <a href="<?= base_url('/logout') ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
+            <a href="/logout" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
                 <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
                 <span class="text-[9px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
             </a>
@@ -731,6 +739,7 @@
             } catch(e) { skel.style.display='none'; btn.disabled=false; err.textContent='Network error. Try again.'; err.style.display='block'; }
         }
     </script>
+<?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 <?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 </body>
 </html>
