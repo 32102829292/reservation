@@ -14,25 +14,23 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { height: 100%; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; display: flex; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
 
         /* ── Sidebar ── */
         .sidebar-card {
             background: white; border-radius: 32px; border: 1px solid #e2e8f0;
             height: calc(100vh - 48px); position: sticky; top: 24px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; overflow: hidden;
+            display: flex; flex-direction: column; overflow: hidden; width: 100%;
         }
-        .sidebar-header { flex-shrink: 0; padding: 16px; border-bottom: 1px solid #e2e8f0; }
-        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px; }
-        .sidebar-nav::-webkit-scrollbar { width: 6px; }
-        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #e2e8f0; }
-        .sidebar-item { transition: all 0.2s; display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.875rem; text-decoration: none; color: #64748b; }
+        .sidebar-header { flex-shrink: 0; padding: 20px 20px 16px; border-bottom: 1px solid #f1f5f9; }
+        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; }
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+        .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #f1f5f9; }
+        .sidebar-item { transition: all 0.18s; display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.875rem; text-decoration: none; color: #64748b; }
         .sidebar-item:hover { background: #f8fafc; color: #16a34a; }
-        .sidebar-item.active { background: #16a34a; color: white; box-shadow: 0 10px 15px -3px rgba(22,163,74,0.3); }
+        .sidebar-item.active { background: #16a34a; color: white; box-shadow: 0 8px 20px -4px rgba(22,163,74,0.35); }
         .sidebar-item .icon { width: 20px; text-align: center; font-size: 1.1rem; flex-shrink: 0; }
 
         /* ── Mobile Nav ── */
@@ -175,10 +173,10 @@
         .stat-num { animation: countUp 0.5s ease both; }
 
         /* ── Main layout ── */
-        .page-wrapper { display: flex; min-height: 100vh; width: 100%; }
-        .sidebar-col { width: 280px; flex-shrink: 0; padding: 24px; display: none; }
+        .page-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
+        .sidebar-col { width: 280px; flex-shrink: 0; padding: 24px; display: none; height: 100vh; overflow: hidden; }
         @media (min-width: 1024px) { .sidebar-col { display: block; } }
-        .main-col { flex: 1; min-width: 0; }
+        .main-col { flex: 1; min-width: 0; height: 100vh; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -230,22 +228,30 @@
                 <h1 class="text-2xl font-extrabold text-slate-800">SK<span class="text-green-600">.</span></h1>
             </div>
 
-            <nav class="sidebar-nav" style="padding-top: 8px;">
+            <nav class="sidebar-nav space-y-1">
                 <?php foreach ($navItems as $item):
                     $isActive = ($page ?? 'dashboard') == $item['key'];
-                    $cls = $isActive ? 'active' : '';
+                    $cls = $isActive ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
                 ?>
                     <a href="<?= $item['url'] ?>" class="sidebar-item <?= $cls ?>">
-                        <i class="fa-solid <?= $item['icon'] ?> icon"></i>
+                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
                         <?= $item['label'] ?>
+                        <?php if ($item['key'] === 'reservations' && ($pending ?? 0) > 0): ?>
+                            <span class="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $pending ?></span>
+                        <?php endif; ?>
+                        <?php if ($item['key'] === 'books' && ($pendingBorrowings ?? 0) > 0): ?>
+                            <span class="ml-auto bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $pendingBorrowings ?></span>
+                        <?php endif; ?>
+                        <?php if ($item['key'] === 'user-requests' && ($pendingRequests ?? 0) > 0): ?>
+                            <span class="ml-auto bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $pendingRequests ?></span>
+                        <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
             </nav>
 
             <div class="sidebar-footer">
-                <a href="/logout" class="sidebar-item" style="color: #ef4444;">
-                    <i class="fa-solid fa-arrow-right-from-bracket icon"></i>
-                    Logout
+                <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
+                    <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
                 </a>
             </div>
         </div>
