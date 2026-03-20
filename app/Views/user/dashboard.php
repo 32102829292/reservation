@@ -19,7 +19,8 @@
             --slate-bg: #f8fafc;
         }
         * { box-sizing: border-box; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--slate-bg); color: #1e293b; margin: 0; }
+        html, body { height: 100%; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--slate-bg); color: #1e293b; margin: 0; display: flex; align-items: flex-start; }
 
         /* ── Sidebar ── */
         .sidebar-card {
@@ -30,11 +31,9 @@
         }
         .sidebar-header { flex-shrink: 0; padding: 16px; border-bottom: 1px solid #e2e8f0; }
         .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px; }
-        .sidebar-nav::-webkit-scrollbar { width: 6px; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
         .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #e2e8f0; }
-        .sidebar-item { transition: all 0.2s; }
-        .sidebar-item.active { background: #16a34a; color: white; box-shadow: 0 10px 15px -3px rgba(22,163,74,0.3); }
 
         /* ── Mobile Nav ── */
         .mobile-nav-pill {
@@ -183,7 +182,7 @@
         .toast-close:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
-<body class="flex">
+<body>
 
     <?php
     $navItems = [
@@ -216,7 +215,7 @@
     ?>
 
     <!-- ── Sidebar ── -->
-    <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
+    <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6" style="position:sticky;top:0;height:100vh;align-self:flex-start;">
         <div class="sidebar-card">
             <div class="sidebar-header">
                 <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Resident Portal</span>
@@ -305,7 +304,7 @@
     </div>
 
     <!-- ── Main ── -->
-    <main class="flex-1 min-w-0 p-4 lg:p-10 pb-32">
+    <main class="flex-1 min-w-0 p-4 lg:p-10 pb-32" style="overflow-y:auto;">
 
         <!-- Top bar -->
         <header class="flex items-start justify-between mb-8 gap-4">
