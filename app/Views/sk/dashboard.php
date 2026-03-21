@@ -212,11 +212,15 @@
 ═══════════════════════════════════════════════════ */
 $page     = $page ?? 'dashboard';
 $navItems = [
-    ['url'=>'/sk/dashboard',        'icon'=>'fa-house',      'label'=>'Dashboard',      'key'=>'dashboard'],
-    ['url'=>'/sk/new-reservation',  'icon'=>'fa-plus',       'label'=>'New Reservation','key'=>'new-reservation'],
-    ['url'=>'/sk/reservations',     'icon'=>'fa-calendar',   'label'=>'My Reservations','key'=>'reservations'],
-    ['url'=>'/sk/books',            'icon'=>'fa-book-open',  'label'=>'Library',        'key'=>'books'],
-    ['url'=>'/sk/profile',          'icon'=>'fa-regular fa-user','label'=>'Profile',    'key'=>'profile'],
+    ['url'=>'/sk/dashboard',              'icon'=>'fa-house',           'label'=>'Dashboard',          'key'=>'dashboard'],
+    ['url'=>'/sk/reservations',           'icon'=>'fa-calendar-alt',    'label'=>'All Reservations',   'key'=>'reservations'],
+    ['url'=>'/sk/new-reservation',        'icon'=>'fa-plus',            'label'=>'New Reservation',    'key'=>'new-reservation'],
+    ['url'=>'/sk/user-requests',          'icon'=>'fa-users',           'label'=>'User Requests',      'key'=>'user-requests'],
+    ['url'=>'/sk/my-reservations',        'icon'=>'fa-calendar',        'label'=>'My Reservations',    'key'=>'my-reservations'],
+    ['url'=>'/sk/claimed-reservations',   'icon'=>'fa-check-double',    'label'=>'Claimed',            'key'=>'claimed-reservations'],
+    ['url'=>'/sk/books',                  'icon'=>'fa-book-open',       'label'=>'Library',            'key'=>'books'],
+    ['url'=>'/sk/scanner',                'icon'=>'fa-qrcode',          'label'=>'Scanner',            'key'=>'scanner'],
+    ['url'=>'/sk/profile',                'icon'=>'fa-regular fa-user', 'label'=>'Profile',            'key'=>'profile'],
 ];
 
 $approvalRate    = ($total ?? 0)    > 0 ? round((($approved ?? 0) / $total)    * 100) : 0;
@@ -303,7 +307,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
                 <a href="<?= $item['url'] ?>" class="sidebar-item <?= $a ?>">
                     <i class="fa-solid <?= $item['icon'] ?>"></i>
                     <?= $item['label'] ?>
-                    <?php if ($item['key']==='reservations' && ($pendingUserCount??0)>0): ?>
+                    <?php if ($item['key']==='user-requests' && ($pendingUserCount??0)>0): ?>
                         <span class="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $pendingUserCount ?></span>
                     <?php endif; ?>
                 </a>
