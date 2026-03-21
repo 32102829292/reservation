@@ -446,13 +446,14 @@ $pendingBorrows = count(array_filter($borrowings ?? [], fn($b) => $b['status'] =
     <div class="hidden md:block bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
       <div class="overflow-x-auto">
         <table id="booksTable">
-          <thead><tr><th>#</th><th>Title / Author</th><th>Call #</th><th>Genre</th><th>Year</th><th>Copies</th><th>RAG</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>#</th><th>Title / Author</th><th>Call #</th><th>ISBN</th><th>Genre</th><th>Year</th><th>Copies</th><th>RAG</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
           <?php foreach($books as $i=>$b):?>
           <tr data-search="<?=strtolower(htmlspecialchars(($b['title']??'').' '.($b['author']??'').' '.($b['genre']??'').' '.($b['call_number']??''),ENT_QUOTES,'UTF-8'))?>">
             <td class="text-slate-400 font-bold text-xs"><?=$i+1?></td>
             <td><p class="font-bold text-sm text-slate-800"><?=htmlspecialchars($b['title']??'',ENT_QUOTES,'UTF-8')?></p><p class="text-xs text-slate-400 mt-0.5"><?=htmlspecialchars($b['author']??'',ENT_QUOTES,'UTF-8')?></p></td>
             <td><?php if(!empty($b['call_number'])):?><span class="call-number-badge"><?=htmlspecialchars($b['call_number'],ENT_QUOTES,'UTF-8')?></span><?php else:?><span class="text-slate-300 text-xs font-semibold">—</span><?php endif;?></td>
+            <td class="text-xs text-slate-500 font-mono"><?=htmlspecialchars(!empty($b['isbn']) ? $b['isbn'] : '—',ENT_QUOTES,'UTF-8')?></td>
             <td class="text-sm text-slate-600 font-medium"><?=htmlspecialchars($b['genre']??'—',ENT_QUOTES,'UTF-8')?></td>
             <td class="text-sm text-slate-600 font-medium"><?=htmlspecialchars($b['published_year']??'—',ENT_QUOTES,'UTF-8')?></td>
             <td>
