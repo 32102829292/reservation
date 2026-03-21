@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563eb">
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -153,6 +154,10 @@
 
         .pending-item { padding: 0.75rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; transition: all 0.2s; cursor: pointer; }
         .pending-item:hover { background: #fef3c7; border-color: #fbbf24; }
+
+        /* ── Insights Section ── */
+        .ins-heatmap-cell { height: 32px; border-radius: 6px; cursor: default; transition: transform 0.15s; }
+        .ins-heatmap-cell:hover { transform: scaleY(1.1); }
     </style>
 </head>
 
@@ -172,6 +177,7 @@
         ['url' => '/admin/activity-logs',       'icon' => 'fa-list',            'label' => 'Activity Logs',   'key' => 'activity-logs'],
         ['url' => '/admin/profile',             'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
     ];
+
     $approvalRate    = ($total ?? 0) > 0 ? round((($approved ?? 0) / $total) * 100) : 0;
     $utilizationRate = ($approved ?? 0) > 0 ? round((($claimed ?? 0) / $approved) * 100) : 0;
     $dashBooks         = $dashBooks         ?? [];
@@ -179,6 +185,73 @@
     $bookTotalCount    = $bookTotalCount    ?? 0;
     $bookAvailCount    = $bookAvailCount    ?? 0;
     $pendingBorrowings = $pendingBorrowings ?? 0;
+
+    // ── Insights data computation ──────────────────────────────────────────
+    $hourCounts  = array_fill(0, 24, 0);
+    $dowCounts   = array_fill(0, 7, 0);
+    $monthCounts = array_fill(0, 12, 0);
+    $resourceDemand  = [];
+    $statusBreakdown = ['pending'=>0,'approved'=>0,'declined'=>0,'claimed'=>0,'canceled'=>0];
+    $dateVolume = [];
+
+    foreach ($reservations ?? [] as $r) {
+        if (!empty($r['start_time'])) {
+            $h = (int)date('G', strtotime($r['start_time']));
+            $hourCounts[$h]++;
+        }
+        if (!empty($r['reservation_date'])) {
+            $dow = (int)date('w', strtotime($r['reservation_date']));
+            $dowCounts[$dow]++;
+            $mo = (int)date('n', strtotime($r['reservation_date'])) - 1;
+            $monthCounts[$mo]++;
+            $d = $r['reservation_date'];
+            $dateVolume[$d] = ($dateVolume[$d] ?? 0) + 1;
+        }
+        $rn = $r['resource_name'] ?? 'Unknown';
+        $resourceDemand[$rn] = ($resourceDemand[$rn] ?? 0) + 1;
+        $st = strtolower($r['status'] ?? 'pending');
+        if (isset($statusBreakdown[$st])) $statusBreakdown[$st]++;
+    }
+
+    $peakHourIdx  = array_search(max($hourCounts),  $hourCounts);
+    $peakDowIdx   = array_search(max($dowCounts),   $dowCounts);
+    $peakMonthIdx = array_search(max($monthCounts), $monthCounts);
+
+    $dowNames   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    $monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    $fmt12 = function($h) {
+        $ampm = $h < 12 ? 'AM' : 'PM';
+        $h12  = $h % 12 ?: 12;
+        return "$h12 $ampm";
+    };
+    $peakHourLabel  = $fmt12($peakHourIdx) . '–' . $fmt12($peakHourIdx + 1);
+    $peakDayLabel   = $dowNames[$peakDowIdx]   ?? '—';
+    $peakMonthLabel = $monthNames[$peakMonthIdx] ?? '—';
+
+    arsort($resourceDemand);
+    $topDemandedResource = (string)(array_key_first($resourceDemand) ?? 'N/A');
+    $topDemandedCount    = (int)(reset($resourceDemand) ?: 0);
+
+    $declineRate = ($total ?? 0) > 0 ? round(($statusBreakdown['declined'] / $total) * 100) : 0;
+    $noShowRate  = ($approved ?? 0) > 0 ? round((($approved - ($claimed ?? 0)) / $approved) * 100) : 0;
+
+    arsort($dateVolume);
+    $busiestDate      = array_key_first($dateVolume) ?? null;
+    $busiestDateCount = (int)(reset($dateVolume) ?: 0);
+    $busiestDateLabel = $busiestDate ? date('M j, Y', strtotime($busiestDate)) : 'N/A';
+
+    $last7 = 0; $prior7 = 0;
+    foreach ($reservations ?? [] as $r) {
+        if (empty($r['reservation_date'])) continue;
+        $diff = (int)floor((time() - strtotime($r['reservation_date'])) / 86400);
+        if ($diff >= 0 && $diff < 7)  $last7++;
+        if ($diff >= 7 && $diff < 14) $prior7++;
+    }
+    $trendPct = $prior7 > 0 ? round((($last7 - $prior7) / $prior7) * 100) : ($last7 > 0 ? 100 : 0);
+    $trendDir = $trendPct >= 0 ? 'up' : 'down';
+    $trendColor = $trendDir === 'up' ? '#10b981' : '#ef4444';
+    // ──────────────────────────────────────────────────────────────────────
     ?>
 
     <!-- Date Modal -->
@@ -514,7 +587,9 @@
             </div>
         </div>
 
-        <!-- LIBRARY SECTION -->
+        <!-- ══════════════════════════════════════════════════
+             LIBRARY SECTION
+        ══════════════════════════════════════════════════ -->
         <div class="section-divider">
             <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-blue-600 text-sm"></i></div>
             <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Library Overview</span>
@@ -602,12 +677,225 @@
             </div>
         </div>
 
-    </main>
+        <!-- ══════════════════════════════════════════════════
+             INSIGHTS & FORECASTING SECTION
+        ══════════════════════════════════════════════════ -->
+        <div class="section-divider" style="margin-top:2.5rem;">
+            <div class="w-8 h-8 bg-violet-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-chart-mixed text-violet-600 text-sm"></i>
+            </div>
+            <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Insights &amp; Forecasting</span>
+            <div class="section-divider-line"></div>
+            <span class="text-xs font-black text-violet-600 bg-violet-50 border border-violet-200 px-3 py-1.5 rounded-xl whitespace-nowrap flex-shrink-0">
+                <i class="fa-solid fa-sparkles text-[10px] mr-1"></i>Auto-generated
+            </span>
+        </div>
+
+        <!-- Row 1 — 4 insight summary cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+
+            <!-- Peak Hour -->
+            <div class="dash-card p-4 relative overflow-hidden">
+                <div class="absolute -right-3 -top-3 text-7xl opacity-[0.04] pointer-events-none select-none">⏰</div>
+                <div class="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-sun text-amber-500 text-sm"></i>
+                </div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Peak Hour</p>
+                <p class="text-base font-black text-slate-800 leading-tight" id="ins-peak-hour"><?= htmlspecialchars($peakHourLabel) ?></p>
+                <p class="text-[10px] text-slate-400 font-medium mt-1">Busiest reservation window</p>
+                <div class="mt-3 h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="ins-peak-hour-bar" class="h-full bg-amber-400 rounded-full" style="width:0%"></div>
+                </div>
+            </div>
+
+            <!-- Peak Day -->
+            <div class="dash-card p-4 relative overflow-hidden">
+                <div class="absolute -right-3 -top-3 text-7xl opacity-[0.04] pointer-events-none select-none">📅</div>
+                <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-calendar-week text-blue-500 text-sm"></i>
+                </div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Busiest Day</p>
+                <p class="text-base font-black text-slate-800 leading-tight" id="ins-peak-day"><?= htmlspecialchars($peakDayLabel) ?></p>
+                <p class="text-[10px] text-slate-400 font-medium mt-1">Highest reservation day</p>
+                <div id="ins-dow-mini" class="flex gap-0.5 mt-3 items-end h-6"></div>
+            </div>
+
+            <!-- Most Wanted Resource -->
+            <div class="dash-card p-4 relative overflow-hidden">
+                <div class="absolute -right-3 -top-3 text-7xl opacity-[0.04] pointer-events-none select-none">🖥️</div>
+                <div class="w-8 h-8 bg-emerald-50 rounded-xl flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-fire text-emerald-500 text-sm"></i>
+                </div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Most Wanted</p>
+                <p class="text-base font-black text-slate-800 leading-tight truncate"><?= htmlspecialchars($topDemandedResource) ?></p>
+                <p class="text-[10px] text-slate-400 font-medium mt-1"><?= $topDemandedCount ?> reservations total</p>
+                <div class="mt-3 flex items-center gap-1">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                        <i class="fa-solid fa-arrow-trend-up text-[8px]"></i> High demand
+                    </span>
+                </div>
+            </div>
+
+            <!-- WoW Trend -->
+            <div class="dash-card p-4 relative overflow-hidden">
+                <div class="absolute -right-3 -top-3 text-7xl opacity-[0.04] pointer-events-none select-none">📈</div>
+                <div class="w-8 h-8 bg-violet-50 rounded-xl flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-chart-line text-violet-500 text-sm"></i>
+                </div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">WoW Trend</p>
+                <p class="text-base font-black leading-tight" style="color:<?= $trendColor ?>"><?= ($trendDir === 'up' ? '+' : '') . $trendPct ?>%</p>
+                <p class="text-[10px] text-slate-400 font-medium mt-1">vs previous 7 days</p>
+                <div class="mt-3 h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full" style="width:<?= min(abs($trendPct),100) ?>%;background:<?= $trendColor ?>"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2 — Heatmap + KPI scorecard -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+
+            <!-- Hourly heatmap + DoW bars -->
+            <div class="lg:col-span-2 dash-card p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-sm">Hourly Activity Heatmap</h3>
+                        <p class="text-[11px] text-slate-400 font-medium">Reservation density by hour · all time</p>
+                    </div>
+                    <span class="text-[10px] font-black bg-amber-50 text-amber-600 px-2.5 py-1 rounded-full border border-amber-200">Demand Map</span>
+                </div>
+                <div id="ins-heatmap" class="grid gap-1.5" style="grid-template-columns:repeat(12,1fr)"></div>
+                <div class="flex justify-between mt-1.5 px-0.5">
+                    <span class="text-[9px] text-slate-400 font-bold">12 AM</span>
+                    <span class="text-[9px] text-slate-400 font-bold">12 PM</span>
+                    <span class="text-[9px] text-slate-400 font-bold">11 PM</span>
+                </div>
+
+                <!-- Day-of-week bars -->
+                <div class="mt-5 pt-4 border-t border-slate-100">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Day-of-Week Volume</p>
+                    <div id="ins-dow-bars" class="flex gap-2 items-end h-16"></div>
+                    <div id="ins-dow-labels" class="flex gap-2 mt-1.5"></div>
+                </div>
+            </div>
+
+            <!-- KPI scorecard -->
+            <div class="flex flex-col gap-3">
+
+                <!-- Health indicators -->
+                <div class="dash-card p-4">
+                    <h3 class="font-extrabold text-slate-800 text-sm mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-400 text-xs"></i> Health Indicators
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="font-semibold text-slate-600">No-show rate</span>
+                                <span class="font-black text-rose-600"><?= $noShowRate ?>%</span>
+                            </div>
+                            <div class="prog-bar"><div class="prog-fill bg-rose-400" style="width:<?= $noShowRate ?>%"></div></div>
+                            <p class="text-[9px] text-slate-400 mt-0.5 font-medium">Approved but never claimed</p>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="font-semibold text-slate-600">Decline rate</span>
+                                <span class="font-black text-amber-600"><?= $declineRate ?>%</span>
+                            </div>
+                            <div class="prog-bar"><div class="prog-fill bg-amber-400" style="width:<?= $declineRate ?>%"></div></div>
+                            <p class="text-[9px] text-slate-400 mt-0.5 font-medium">Of all reservations rejected</p>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="font-semibold text-slate-600">Claim rate</span>
+                                <span class="font-black text-emerald-600"><?= $utilizationRate ?>%</span>
+                            </div>
+                            <div class="prog-bar"><div class="prog-fill bg-emerald-500" style="width:<?= $utilizationRate ?>%"></div></div>
+                            <p class="text-[9px] text-slate-400 mt-0.5 font-medium">Approved slots actually used</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Record day -->
+                <div class="dash-card p-4">
+                    <h3 class="font-extrabold text-slate-800 text-sm mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-crown text-amber-400 text-xs"></i> Record Day
+                    </h3>
+                    <p class="text-2xl font-black text-slate-800"><?= $busiestDateCount ?></p>
+                    <p class="text-xs text-slate-500 font-semibold"><?= htmlspecialchars($busiestDateLabel) ?></p>
+                    <p class="text-[10px] text-slate-400 font-medium mt-1">Most reservations in a single day</p>
+                </div>
+
+                <!-- Smart suggestion -->
+                <div class="rounded-2xl p-4 border border-violet-200 bg-violet-50">
+                    <div class="flex items-start gap-2.5">
+                        <div class="w-8 h-8 bg-violet-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-lightbulb text-violet-600 text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-violet-800 mb-1">Smart Suggestion</p>
+                            <p class="text-[11px] text-violet-700 font-medium leading-relaxed" id="ins-suggestion">Analyzing patterns…</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3 — Monthly seasonality + Resource demand ranking -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+
+            <!-- Monthly seasonality chart -->
+            <div class="dash-card p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-sm">Monthly Seasonality</h3>
+                        <p class="text-[11px] text-slate-400 font-medium">Reservation volume by calendar month</p>
+                    </div>
+                    <span class="text-[10px] font-black bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full border border-blue-200">
+                        Peak: <?= htmlspecialchars($peakMonthLabel) ?>
+                    </span>
+                </div>
+                <div class="chart-wrap" style="height:180px;"><canvas id="ins-month-chart"></canvas></div>
+            </div>
+
+            <!-- Resource demand ranking -->
+            <div class="dash-card p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-sm">Resource Demand Ranking</h3>
+                        <p class="text-[11px] text-slate-400 font-medium">All-time reservation count per resource</p>
+                    </div>
+                    <span class="text-[10px] font-black bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-200">All Time</span>
+                </div>
+                <div id="ins-resource-ranking" class="space-y-2.5"></div>
+            </div>
+        </div>
+
+    </main><!-- end main -->
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script>
         const allRes = <?= json_encode($reservations ?? []) ?>;
 
+        /* ── Insights PHP data passed to JS ── */
+        const INS = {
+            hourArr:  <?= json_encode(array_values($hourCounts)) ?>,
+            dowArr:   <?= json_encode(array_values($dowCounts)) ?>,
+            monthArr: <?= json_encode(array_values($monthCounts)) ?>,
+            peakHourIdx:  <?= (int)$peakHourIdx ?>,
+            peakDowIdx:   <?= (int)$peakDowIdx ?>,
+            peakMonthIdx: <?= (int)$peakMonthIdx ?>,
+            noShowRate:   <?= (int)$noShowRate ?>,
+            declineRate:  <?= (int)$declineRate ?>,
+            trendPct:     <?= (int)$trendPct ?>,
+            trendDir:     '<?= $trendDir ?>',
+            topResource:  <?= json_encode($topDemandedResource) ?>,
+            peakDayLabel: <?= json_encode($peakDayLabel) ?>,
+            resourceDemand: <?= json_encode($resourceDemand) ?>,
+            totalCount: <?= (int)($total ?? 0) ?>
+        };
+
+        /* ══════════════════════════════════════════════════════
+           Date Modal
+        ══════════════════════════════════════════════════════ */
         function openDateModal(dateStr, list) {
             const fmt = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
             document.getElementById('modalDateTitle').textContent = fmt;
@@ -631,6 +919,9 @@
         function closeDateModal() { document.getElementById('dateModal').classList.remove('open'); document.body.style.overflow = ''; }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
 
+        /* ══════════════════════════════════════════════════════
+           Notifications
+        ══════════════════════════════════════════════════════ */
         let readIds = JSON.parse(localStorage.getItem('admin_read_notifs')||'[]');
         let notifs = [];
         function initNotifs() {
@@ -651,6 +942,9 @@
         document.addEventListener('click', e => { const drop=document.getElementById('notifDropdown'); const bell=document.getElementById('bellBtn'); if (!bell.contains(e.target) && !drop.contains(e.target)) drop.classList.remove('open'); });
         const timeAgo = t => { const s=Math.floor((Date.now()-new Date(t))/1000); if (s<60) return 'Just now'; if (s<3600) return `${Math.floor(s/60)}m ago`; if (s<86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago`; };
 
+        /* ══════════════════════════════════════════════════════
+           Time Limit Monitor
+        ══════════════════════════════════════════════════════ */
         const TL_WARN_BEFORE = 5 * 60;
         const TL_CRIT_BEFORE = 2 * 60;
         const TL_LOGGED_KEY  = 'tl_admin_print_logged';
@@ -663,7 +957,6 @@
         const CSRF_TOKEN     = document.querySelector('meta[name="csrf-token"]')?.content || '';
         const PRINT_ENDPOINT = '/admin/log-print';
 
-        // ★ FIXED: Only approved + not yet claimed + session must have actually started
         function tlGetActiveSessions() {
             const today = new Date().toISOString().split('T')[0];
             const nowMs = Date.now();
@@ -671,13 +964,10 @@
                 if (!r.start_time || !r.end_time || !r.reservation_date) return false;
                 if (r.reservation_date !== today) return false;
                 const status = (r.status || '').toLowerCase();
-                // Must be approved only — not claimed
                 if (status !== 'approved') return false;
-                // Exclude reservations that have already been claimed
                 if (r.claimed == 1 || r.claimed === true || r.claimed === 'true') return false;
                 const startMs = new Date(r.reservation_date + 'T' + r.start_time).getTime();
                 const endMs   = new Date(r.reservation_date + 'T' + r.end_time).getTime();
-                // Session must have actually started (no early lookahead) and not ended >30min ago
                 return startMs <= nowMs && endMs >= nowMs - 30 * 60 * 1000;
             });
         }
@@ -748,12 +1038,19 @@
             Array.from(grid.children).forEach(c=>{ if (!activeIds.includes(c.id)) c.remove(); });
         }
 
+        /* ══════════════════════════════════════════════════════
+           DOMContentLoaded — charts, calendar, insights
+        ══════════════════════════════════════════════════════ */
         document.addEventListener('DOMContentLoaded', () => {
+
+            /* TL monitor */
             tlRender(); setInterval(tlRender, 1000);
 
+            /* Trend line chart */
             const tCtx=document.getElementById('trendChart')?.getContext('2d');
             if (tCtx) new Chart(tCtx,{type:'line',data:{labels:<?= json_encode($chartLabels ?? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']) ?>,datasets:[{data:<?= json_encode($chartData ?? [0,0,0,0,0,0,0]) ?>,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.08)',borderWidth:2.5,tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}},scales:{x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8',stepSize:1},beginAtZero:true}}}});
 
+            /* Doughnut chart */
             const rCtx=document.getElementById('resourceChart')?.getContext('2d');
             const resLabels=<?= json_encode($resourceLabels ?? ['No Data']) ?>, resData=<?= json_encode($resourceData ?? [1]) ?>, palette=['#2563eb','#f59e0b','#8b5cf6','#10b981','#ec4899'];
             if (rCtx) {
@@ -762,6 +1059,7 @@
                 if (legend) legend.innerHTML=resLabels.map((l,i)=>`<div class="flex items-center gap-2.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${palette[i]||'#94a3b8'}"></span><span class="text-sm text-slate-600 truncate flex-1 min-w-0 font-medium">${l}</span><span class="text-sm font-black text-slate-800 flex-shrink-0">${resData[i]}</span></div>`).join('');
             }
 
+            /* FullCalendar */
             const calEl=document.getElementById('calendar');
             if (calEl) {
                 const byDate={};
@@ -773,8 +1071,164 @@
                     dayCellDidMount:info=>{ const d=info.date.toISOString().split('T')[0]; const cnt=(byDate[d]||[]).length; if (cnt){ const badge=document.createElement('div'); badge.style.cssText='font-size:8px;font-weight:800;color:white;background:#2563eb;border-radius:999px;width:15px;height:15px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:4px;margin-bottom:2px;'; badge.textContent=cnt; info.el.querySelector('.fc-daygrid-day-top')?.appendChild(badge); } }
                 }).render();
             }
+
             initNotifs();
-        });
+
+            /* ════════════════════════════════════════════════
+               INSIGHTS rendering (pure JS, uses INS object)
+            ════════════════════════════════════════════════ */
+            (function() {
+                const DOW   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                const MONTH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+                const pct   = (v, max) => max > 0 ? clamp(Math.round(v / max * 100), 0, 100) : 0;
+
+                const { hourArr, dowArr, monthArr, peakHourIdx, peakDowIdx, noShowRate, declineRate, trendPct, trendDir, resourceDemand, totalCount } = INS;
+                const maxHour  = Math.max(...hourArr, 1);
+                const maxDow   = Math.max(...dowArr, 1);
+                const maxMonth = Math.max(...monthArr, 1);
+
+                /* Peak hour progress bar */
+                const phBar = document.getElementById('ins-peak-hour-bar');
+                if (phBar) phBar.style.width = pct(hourArr[peakHourIdx], maxHour) + '%';
+
+                /* Smart suggestion */
+                const suggEl = document.getElementById('ins-suggestion');
+                if (suggEl) {
+                    let tip = '';
+                    if (noShowRate > 30)
+                        tip = `High no-show rate (${noShowRate}%). Consider sending reminder notifications before sessions start.`;
+                    else if (declineRate > 25)
+                        tip = `Decline rate is elevated (${declineRate}%). Review approval criteria or consider adding more resources.`;
+                    else if (trendDir === 'up' && trendPct > 20)
+                        tip = `Reservations up ${trendPct}% this week — ensure "${INS.topResource}" stays fully available.`;
+                    else if (trendDir === 'down' && Math.abs(trendPct) > 20)
+                        tip = `Bookings dropped ${Math.abs(trendPct)}% vs last week. Consider running an outreach campaign.`;
+                    else
+                        tip = `${INS.peakDayLabel}s are your busiest day — staff accordingly and keep "${INS.topResource}" prioritized.`;
+                    suggEl.textContent = tip;
+                }
+
+                /* Hourly heatmap — 24 cells in 2 rows of 12 */
+                const heatGrid = document.getElementById('ins-heatmap');
+                if (heatGrid) {
+                    heatGrid.innerHTML = '';
+                    const fmt12 = h => { const ap = h < 12 ? 'AM' : 'PM'; const h12 = h % 12 || 12; return `${h12}${ap}`; };
+                    for (let h = 0; h < 24; h++) {
+                        const cell = document.createElement('div');
+                        const intensity = pct(hourArr[h], maxHour);
+                        const alpha = 0.07 + (intensity / 100) * 0.88;
+                        const isPeak = h === peakHourIdx;
+                        cell.className = 'ins-heatmap-cell';
+                        cell.style.cssText = `background:rgba(37,99,235,${alpha.toFixed(2)});${isPeak ? 'box-shadow:0 0 0 2px #2563eb;' : ''}position:relative;`;
+                        cell.title = `${fmt12(h)}: ${hourArr[h]} reservations`;
+                        if (isPeak) {
+                            const pip = document.createElement('div');
+                            pip.style.cssText = 'position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#fbbf24;';
+                            cell.appendChild(pip);
+                        }
+                        heatGrid.appendChild(cell);
+                    }
+                }
+
+                /* Day-of-week bars (main panel) */
+                const dowBarsEl   = document.getElementById('ins-dow-bars');
+                const dowLabelsEl = document.getElementById('ins-dow-labels');
+                if (dowBarsEl && dowLabelsEl) {
+                    dowBarsEl.innerHTML = ''; dowLabelsEl.innerHTML = '';
+                    dowArr.forEach((cnt, i) => {
+                        const barH = pct(cnt, maxDow);
+                        const isPeak = i === peakDowIdx;
+                        const bar = document.createElement('div');
+                        bar.style.cssText = `flex:1;border-radius:6px 6px 0 0;background:${isPeak ? '#2563eb' : '#bfdbfe'};height:${Math.max(barH, 4)}%;min-height:4px;transition:all 0.3s;`;
+                        bar.title = `${DOW[i]}: ${cnt}`;
+                        dowBarsEl.appendChild(bar);
+                        const lbl = document.createElement('div');
+                        lbl.style.cssText = `flex:1;text-align:center;font-size:9px;font-weight:${isPeak?'800':'600'};color:${isPeak?'#2563eb':'#94a3b8'};`;
+                        lbl.textContent = DOW[i];
+                        dowLabelsEl.appendChild(lbl);
+                    });
+                }
+
+                /* Mini DoW sparkline in peak-day card */
+                const dowMini = document.getElementById('ins-dow-mini');
+                if (dowMini) {
+                    dowMini.innerHTML = '';
+                    dowArr.forEach((cnt, i) => {
+                        const bar = document.createElement('div');
+                        bar.style.cssText = `flex:1;border-radius:3px;background:${i===peakDowIdx?'#2563eb':'#dbeafe'};height:${Math.max(pct(cnt,maxDow),10)}%;min-height:3px;`;
+                        dowMini.appendChild(bar);
+                    });
+                }
+
+                /* Monthly seasonality bar chart */
+                const mCtx = document.getElementById('ins-month-chart')?.getContext('2d');
+                if (mCtx) {
+                    new Chart(mCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: MONTH,
+                            datasets: [{
+                                data: monthArr,
+                                backgroundColor: monthArr.map((v, i) => i === INS.peakMonthIdx ? '#2563eb' : 'rgba(37,99,235,0.15)'),
+                                borderRadius: 8,
+                                borderSkipped: false,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: '#1e293b',
+                                    titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
+                                    bodyFont: { family: 'Plus Jakarta Sans' },
+                                    padding: 10, cornerRadius: 10,
+                                    callbacks: { label: ctx => ` ${ctx.raw} reservations` }
+                                }
+                            },
+                            scales: {
+                                x: { grid: { display: false }, ticks: { font: { family: 'Plus Jakarta Sans', size: 10 }, color: '#94a3b8' } },
+                                y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { font: { family: 'Plus Jakarta Sans', size: 10 }, color: '#94a3b8', stepSize: 1 } }
+                            }
+                        }
+                    });
+                }
+
+                /* Resource demand ranking */
+                const rankEl = document.getElementById('ins-resource-ranking');
+                if (rankEl) {
+                    const resEntries = Object.entries(resourceDemand).sort((a,b) => b[1]-a[1]);
+                    const topMax = resEntries[0]?.[1] || 1;
+                    const colors = ['#2563eb','#f59e0b','#8b5cf6','#10b981','#ec4899','#06b6d4','#f87171'];
+                    if (!resEntries.length) {
+                        rankEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 font-medium">No resource data yet</p>';
+                    } else {
+                        rankEl.innerHTML = resEntries.slice(0, 7).map(([name, cnt], i) => {
+                            const w = pct(cnt, topMax);
+                            const c = colors[i] || '#94a3b8';
+                            const share = totalCount > 0 ? Math.round(cnt / totalCount * 100) : 0;
+                            return `<div>
+                                <div class="flex items-center justify-between mb-1 gap-2">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <span class="w-5 h-5 rounded-lg flex items-center justify-center text-[9px] font-black text-white flex-shrink-0" style="background:${c}">${i+1}</span>
+                                        <span class="text-xs font-semibold text-slate-700 truncate">${name}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-[10px] text-slate-400 font-medium">${share}%</span>
+                                        <span class="text-xs font-black text-slate-800">${cnt}</span>
+                                    </div>
+                                </div>
+                                <div class="prog-bar"><div class="prog-fill" style="width:${w}%;background:${c}"></div></div>
+                            </div>`;
+                        }).join('');
+                    }
+                }
+
+            })(); /* end insights IIFE */
+
+        }); /* end DOMContentLoaded */
     </script>
 
 <?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
