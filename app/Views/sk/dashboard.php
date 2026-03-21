@@ -873,16 +873,21 @@ $claimRate    = ($approved ?? 0) > 0 ? round((($claimed  ?? 0) / ($approved ?? 0
     function tlGetSeen()  { try { return JSON.parse(localStorage.getItem(TL_LOGGED_KEY)||'[]'); } catch(e){ return []; } }
     function tlMarkSeen(id) { const ids=tlGetSeen(); if(!ids.includes(id)){ ids.push(id); localStorage.setItem(TL_LOGGED_KEY,JSON.stringify(ids.slice(-500))); } }
 
-    function tlGetActiveSessions() {
-        const today=new Date().toISOString().split('T')[0], nowMs=Date.now();
+     function tlGetActiveSessions() {
+        const today = new Date().toISOString().split('T')[0];
+        const nowMs = Date.now();
         return reservations.filter(r => {
-            if(!r.start_time||!r.end_time||!r.reservation_date) return false;
-            if(r.reservation_date!==today) return false;
-            const status=(r.status||'').toLowerCase();
-            if(!['approved','claimed'].includes(status)) return false;
-            const startMs=new Date(r.reservation_date+'T'+r.start_time).getTime();
-            const endMs=new Date(r.reservation_date+'T'+r.end_time).getTime();
-            return startMs<=nowMs+60000 && endMs>=nowMs-30*60*1000;
+            if (!r.start_time || !r.end_time || !r.reservation_date) return false;
+            if (r.reservation_date !== today) return false;
+            const status = (r.status || '').toLowerCase();
+            // Must be approved only — not claimed
+            if (status !== 'approved') return false;
+            // Exclude reservations that have already been claimed (e-ticket scanned)
+            if (r.claimed == 1 || r.claimed === true || r.claimed === 'true') return false;
+            const startMs = new Date(r.reservation_date + 'T' + r.start_time).getTime();
+            const endMs   = new Date(r.reservation_date + 'T' + r.end_time).getTime();
+            // Session must have actually started — no early lookahead
+            return startMs <= nowMs && endMs >= nowMs - 30 * 60 * 1000;
         });
     }
     function tlFmtCountdown(ms) { if(ms<=0) return 'Ended'; const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60); if(h>0) return `${h}h ${m%60}m`; if(m>0) return `${m}m ${s%60}s`; return `${s}s`; }

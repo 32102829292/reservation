@@ -15,7 +15,6 @@
         html { height: 100%; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
 
-        /* ── Sidebar ── */
         .sidebar-card { background: white; border-radius: 32px; border: 1px solid #e2e8f0; height: calc(100vh - 48px); position: sticky; top: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; width: 100%; }
         .sidebar-header { flex-shrink: 0; padding: 20px 20px 16px; border-bottom: 1px solid #f1f5f9; }
         .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; }
@@ -25,26 +24,21 @@
         .sidebar-item { transition: all 0.18s; }
         .sidebar-item.active { background: #2563eb; color: white !important; box-shadow: 0 8px 20px -4px rgba(37,99,235,0.35); }
 
-        /* ── Mobile Nav ── */
-        .mobile-nav-pill { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
+        .mobile-nav-pill { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
         .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
-        /* ── Cards ── */
         .dash-card { background: white; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
         .stat-card { background: white; border-radius: 20px; padding: 1.25rem; border: 1px solid #e2e8f0; transition: all 0.2s; position: relative; overflow: hidden; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.1); }
         .kpi-card { background: white; border-radius: 20px; padding: 1.1rem 1.25rem; border: 1px solid #e2e8f0; border-left-width: 4px; transition: all 0.2s; }
         .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); }
 
-        /* ── Progress bar ── */
         .prog-bar { height: 5px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
         .prog-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
 
-        /* ── Charts ── */
         .chart-wrap { position: relative; height: 220px; width: 100%; }
 
-        /* ── Calendar ── */
         #calendar { font-size: 0.78rem; }
         .fc .fc-toolbar { flex-wrap: wrap; gap: 0.5rem; }
         .fc-toolbar-title { font-size: 0.9rem !important; font-weight: 800 !important; color: #1e293b !important; }
@@ -56,7 +50,6 @@
         .fc-day-today .fc-daygrid-day-number { color: #2563eb !important; font-weight: 800 !important; }
         .fc-daygrid-day-number { font-size: 0.72rem; font-weight: 600; }
 
-        /* ── Badges ── */
         .badge { display: inline-flex; align-items: center; gap: 4px; padding: 0.25rem 0.65rem; border-radius: 8px; font-size: 0.67rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
         .badge-pending   { background: #fef3c7; color: #92400e; }
         .badge-approved  { background: #dcfce7; color: #166634; }
@@ -66,7 +59,6 @@
         .badge-borrowed  { background: #fef3c7; color: #92400e; }
         .badge-returned  { background: #f1f5f9; color: #64748b; }
 
-        /* ── Date Modal ── */
         #dateModal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; }
         #dateModal.open { display: flex; }
         .modal-backdrop-layer { position: absolute; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(6px); }
@@ -78,7 +70,6 @@
         .date-row:hover { background: #f8fafc; }
         .date-row:last-child { border-bottom: none; }
 
-        /* ── Notification Dropdown ── */
         .notif-dropdown { position: fixed; top: 76px; right: 24px; width: 340px; background: white; border-radius: 24px; box-shadow: 0 20px 40px -8px rgba(0,0,0,0.2); border: 1px solid #e2e8f0; z-index: 300; display: none; }
         .notif-dropdown.open { display: block; animation: slideDown 0.2s ease; }
         @keyframes slideDown { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: none; } }
@@ -93,11 +84,9 @@
         @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
         .fade-up { animation: fadeUp 0.35s ease both; }
 
-        /* ── Section divider ── */
         .section-divider { display: flex; align-items: center; gap: 12px; margin: 2rem 0 1.25rem; }
         .section-divider-line { flex: 1; height: 1px; background: #e2e8f0; }
 
-        /* ── Library ── */
         .library-banner { background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 55%, #2563eb 100%); border-radius: 20px; padding: 1.25rem 1.5rem; position: relative; overflow: hidden; border: 1px solid #3b82f6; }
         .library-banner::before { content: '📚'; position: absolute; right: -10px; top: -10px; font-size: 6.5rem; opacity: 0.07; transform: rotate(14deg); pointer-events: none; line-height: 1; }
         .book-row { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; border-radius: 14px; transition: all 0.18s; text-decoration: none; color: inherit; border: 1px solid transparent; }
@@ -134,7 +123,6 @@
         .tl-critical .tl-prog-fill { background: #ef4444; }
         .tl-ended    .tl-prog-fill { background: #94a3b8; }
 
-        /* ── Toasts ── */
         #tl-toast-container { position: fixed; bottom: 88px; right: 20px; z-index: 9000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
         .tl-toast { background: #1e293b; color: white; border-radius: 16px; padding: 0.875rem 1.1rem; min-width: 280px; max-width: 360px; box-shadow: 0 12px 28px -4px rgba(0,0,0,0.35); display: flex; align-items: flex-start; gap: 10px; pointer-events: auto; cursor: pointer; animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
         .tl-toast.dismissing { animation: toastOut 0.2s ease forwards; }
@@ -146,7 +134,6 @@
         .tl-toast-title { font-size: 0.78rem; font-weight: 800; color: white; line-height: 1.3; }
         .tl-toast-sub   { font-size: 0.7rem; color: #94a3b8; margin-top: 2px; line-height: 1.4; }
 
-        /* ── Print Modal ── */
         #tl-print-modal { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15,23,42,0.65); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1.5rem; }
         #tl-print-modal.show { display: flex; animation: fadeIn 0.15s ease; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -164,7 +151,6 @@
         .tl-skip-btn { width: 100%; padding: 0.75rem; border-radius: 16px; border: none; background: transparent; color: #94a3b8; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: color 0.15s; margin-top: 0.5rem; }
         .tl-skip-btn:hover { color: #64748b; }
 
-        /* ── Pending item ── */
         .pending-item { padding: 0.75rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; transition: all 0.2s; cursor: pointer; }
         .pending-item:hover { background: #fef3c7; border-color: #fbbf24; }
     </style>
@@ -313,7 +299,6 @@
     <!-- Main -->
     <main class="flex-1 min-w-0 p-4 lg:p-8 pb-32" style="height:100vh;overflow-y:auto;">
 
-        <!-- Header -->
         <header class="flex items-start justify-between mb-7 gap-4 fade-up">
             <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
@@ -346,7 +331,7 @@
             </div>
         </header>
 
-        <!-- ── Active Session Monitor ── -->
+        <!-- Active Session Monitor -->
         <div class="tl-panel" id="tl-panel">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
@@ -371,7 +356,7 @@
             </p>
         </div>
 
-        <!-- ── Analytics Row ── -->
+        <!-- Analytics Row -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="stat-card">
                 <div class="flex items-start justify-between mb-3">
@@ -415,7 +400,7 @@
             </div>
         </div>
 
-        <!-- ── Charts ── -->
+        <!-- Charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
             <div class="dash-card p-5">
                 <div class="flex items-center justify-between mb-1">
@@ -436,7 +421,7 @@
             </div>
         </div>
 
-        <!-- ── KPI badge row ── -->
+        <!-- KPI row -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <?php foreach ([
                 ['Total',    $total ?? 0,    'border-blue-500',    'text-slate-700',   'fa-layer-group',  'text-blue-500'],
@@ -454,7 +439,7 @@
             <?php endforeach; ?>
         </div>
 
-        <!-- ── Calendar + Right panel ── -->
+        <!-- Calendar + Right panel -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div class="lg:col-span-2 dash-card p-5">
                 <div class="flex items-center justify-between mb-4">
@@ -529,7 +514,7 @@
             </div>
         </div>
 
-        <!-- ══ LIBRARY SECTION ══ -->
+        <!-- LIBRARY SECTION -->
         <div class="section-divider">
             <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-blue-600 text-sm"></i></div>
             <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Library Overview</span>
@@ -678,18 +663,25 @@
         const CSRF_TOKEN     = document.querySelector('meta[name="csrf-token"]')?.content || '';
         const PRINT_ENDPOINT = '/admin/log-print';
 
+        // ★ FIXED: Only approved + not yet claimed + session must have actually started
         function tlGetActiveSessions() {
-            const today=new Date().toISOString().split('T')[0], nowMs=Date.now();
+            const today = new Date().toISOString().split('T')[0];
+            const nowMs = Date.now();
             return allRes.filter(r => {
-                if (!r.start_time||!r.end_time||!r.reservation_date) return false;
-                if (r.reservation_date!==today) return false;
-                const status=(r.status||'').toLowerCase();
-                if (!['approved','claimed'].includes(status)) return false;
-                const startMs=new Date(r.reservation_date+'T'+r.start_time).getTime();
-                const endMs=new Date(r.reservation_date+'T'+r.end_time).getTime();
-                return startMs<=nowMs+60000 && endMs>=nowMs-30*60*1000;
+                if (!r.start_time || !r.end_time || !r.reservation_date) return false;
+                if (r.reservation_date !== today) return false;
+                const status = (r.status || '').toLowerCase();
+                // Must be approved only — not claimed
+                if (status !== 'approved') return false;
+                // Exclude reservations that have already been claimed
+                if (r.claimed == 1 || r.claimed === true || r.claimed === 'true') return false;
+                const startMs = new Date(r.reservation_date + 'T' + r.start_time).getTime();
+                const endMs   = new Date(r.reservation_date + 'T' + r.end_time).getTime();
+                // Session must have actually started (no early lookahead) and not ended >30min ago
+                return startMs <= nowMs && endMs >= nowMs - 30 * 60 * 1000;
             });
         }
+
         function tlFmtCountdown(ms) { if (ms<=0) return 'Ended'; const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60); if (h>0) return `${h}h ${m%60}m`; if (m>0) return `${m}m ${s%60}s`; return `${s}s`; }
         function tlGetState(remainMs) { if (remainMs<=0) return 'tl-ended'; if (remainMs<=TL_CRIT_BEFORE*1000) return 'tl-critical'; if (remainMs<=TL_WARN_BEFORE*1000) return 'tl-warning'; return 'tl-ok'; }
         function tlToast(type,title,sub) {

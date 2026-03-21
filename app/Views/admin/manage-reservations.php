@@ -23,11 +23,11 @@
         .sidebar-item   { transition: all 0.18s; }
         .sidebar-item.active { background: #2563eb; color: white !important; box-shadow: 0 8px 20px -4px rgba(37,99,235,0.35); }
 
-        .mobile-nav-pill { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
+        /* ★ iOS safe-area */
+        .mobile-nav-pill { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
         .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
-        /* Desktop table */
         .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .table-wrap::-webkit-scrollbar { height: 4px; }
         .table-wrap::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
@@ -41,7 +41,6 @@
         tbody tr { transition: background 0.12s; cursor: pointer; }
         tbody tr:hover td { background: #eff6ff; }
 
-        /* Badges */
         .badge { display: inline-flex; align-items: center; gap: 5px; padding: 0.28rem 0.65rem; border-radius: 10px; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
         .badge-pending  { background: #fef3c7; color: #92400e; }
         .badge-approved { background: #dcfce7; color: #166534; }
@@ -49,12 +48,13 @@
         .badge-claimed  { background: #f3e8ff; color: #6b21a8; }
         .badge-expired  { background: #f1f5f9; color: #64748b; }
 
-        /* Stat cards */
+        /* ★ "Not yet claimed" pill */
+        .badge-unclaimed { background: #fff7ed; color: #c2410c; border: 1px dashed #fdba74; }
+
         .stat-card { background: white; border-radius: 20px; padding: 1rem 1.15rem; border: 1px solid #e2e8f0; border-left-width: 4px; transition: all 0.2s; cursor: pointer; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); }
         .stat-card.ring { box-shadow: 0 0 0 2px #2563eb; }
 
-        /* Quick-tabs */
         .qtab { display: inline-flex; align-items: center; gap: 6px; padding: 0.4rem 0.9rem; border-radius: 12px; font-size: 0.78rem; font-weight: 700; transition: all 0.18s; cursor: pointer; border: 1px solid #e2e8f0; white-space: nowrap; color: #64748b; background: white; }
         .qtab:hover  { border-color: #2563eb; color: #2563eb; }
         .qtab.active { background: #2563eb; color: white; border-color: #2563eb; box-shadow: 0 4px 12px -2px rgba(37,99,235,0.3); }
@@ -62,22 +62,12 @@
         .field { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.7rem 1rem 0.7rem 2.5rem; font-size: 0.875rem; font-family: inherit; color: #1e293b; transition: all 0.2s; width: 100%; }
         .field:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
-        /* Modals */
         .overlay { display: none; position: fixed; inset: 0; z-index: 200; align-items: flex-end; justify-content: center; padding: 0; }
         @media (min-width: 640px) { .overlay { align-items: center; padding: 12px; } }
         .overlay.open { display: flex; }
         .overlay-bg { position: absolute; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(6px); }
-        .modal-box {
-            position: relative; background: white; width: 100%; max-width: 520px;
-            border-radius: 28px 28px 0 0; /* bottom sheet on mobile */
-            max-height: 92dvh; overflow-y: auto;
-            box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
-            animation: slideUp 0.28s cubic-bezier(0.34,1.3,0.64,1) both;
-        }
-        @media (min-width: 640px) {
-            .modal-box { border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); animation-name: popIn; }
-            .modal-box.sm { max-width: 380px; }
-        }
+        .modal-box { position: relative; background: white; width: 100%; max-width: 520px; border-radius: 28px 28px 0 0; max-height: 92dvh; overflow-y: auto; box-shadow: 0 -8px 40px rgba(0,0,0,0.2); animation: slideUp 0.28s cubic-bezier(0.34,1.3,0.64,1) both; }
+        @media (min-width: 640px) { .modal-box { border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); animation-name: popIn; } .modal-box.sm { max-width: 380px; } }
         @keyframes slideUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:none; } }
         @keyframes popIn  { from { opacity:0; transform:scale(0.92) translateY(16px); } to { opacity:1; transform:none; } }
         .modal-box::-webkit-scrollbar { width: 4px; }
@@ -114,10 +104,13 @@
         .btn-save-print:disabled { opacity: 0.6; cursor: not-allowed; }
         #printSaveMsg { font-size: 0.75rem; font-weight: 700; margin-top: 6px; min-height: 18px; }
 
-        /* Mobile card */
         .res-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 1rem 1.1rem; transition: box-shadow 0.15s; cursor: pointer; }
         .res-card:hover { box-shadow: 0 6px 20px -4px rgba(0,0,0,0.08); border-color: #bfdbfe; }
         .res-card:active { background: #f0f7ff; }
+
+        /* ★ "Not yet claimed" banner inside detail modal */
+        .unclaimed-banner { background: #fff7ed; border: 1.5px dashed #fdba74; border-radius: 18px; padding: 0.875rem 1rem; display: flex; align-items: center; gap: 10px; margin: 0 1.25rem 1rem; }
+        .unclaimed-banner .ub-icon { width: 36px; height: 36px; background: #fed7aa; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #c2410c; font-size: 0.9rem; flex-shrink: 0; }
     </style>
 </head>
 <body class="flex min-h-screen">
@@ -144,22 +137,26 @@
             $edt = strtotime(($res['reservation_date'] ?? '') . ' ' . ($res['end_time'] ?? '23:59'));
             if ($edt && $edt < time()) $s = 'expired';
         }
-        $claimedVal = $res['claimed'] ?? false; if (in_array($claimedVal, [true, 1, 't', 'true', '1'], true)) $s = 'claimed';
+        $claimedVal = $res['claimed'] ?? false;
+        if (in_array($claimedVal, [true, 1, 't', 'true', '1'], true)) $s = 'claimed';
         $res['_status'] = $s;
+        // ★ Flag approved-but-not-yet-claimed
+        $res['_unclaimed'] = ($s === 'approved' && !in_array($claimedVal, [true, 1, 't', 'true', '1'], true));
         $processed[] = $res;
     }
     $counts = [
-        'all'      => count($processed),
-        'pending'  => count(array_filter($processed, fn($r) => $r['_status'] === 'pending')),
-        'approved' => count(array_filter($processed, fn($r) => $r['_status'] === 'approved')),
-        'claimed'  => count(array_filter($processed, fn($r) => $r['_status'] === 'claimed')),
-        'declined' => count(array_filter($processed, fn($r) => in_array($r['_status'], ['declined','canceled']))),
-        'expired'  => count(array_filter($processed, fn($r) => $r['_status'] === 'expired')),
+        'all'       => count($processed),
+        'pending'   => count(array_filter($processed, fn($r) => $r['_status'] === 'pending')),
+        'approved'  => count(array_filter($processed, fn($r) => $r['_status'] === 'approved')),
+        'claimed'   => count(array_filter($processed, fn($r) => $r['_status'] === 'claimed')),
+        'declined'  => count(array_filter($processed, fn($r) => in_array($r['_status'], ['declined','canceled']))),
+        'expired'   => count(array_filter($processed, fn($r) => $r['_status'] === 'expired')),
+        // ★ count unclaimed approved
+        'unclaimed' => count(array_filter($processed, fn($r) => $r['_unclaimed'])),
     ];
     $printLogMap = $printLogMap ?? [];
     $statusIcons = ['pending'=>'fa-clock','approved'=>'fa-circle-check','claimed'=>'fa-check-double','declined'=>'fa-xmark','canceled'=>'fa-ban','expired'=>'fa-hourglass-end'];
 
-    // Shared helper to build the mdata array (avoids repeating it twice)
     $mkMdata = function(array $res, string $s) use ($printLogMap): string {
         $name     = htmlspecialchars($res['visitor_name']  ?? $res['full_name']     ?? 'Guest');
         $email    = htmlspecialchars($res['user_email']    ?? $res['visitor_email'] ?? '');
@@ -181,10 +178,12 @@
         $plPrinted = $pl !== null ? (bool)$pl['printed'] : null;
         $plPages   = $pl ? (int)($pl['pages'] ?? 0) : 0;
         $plAt      = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
+        $claimedVal = $res['claimed'] ?? false;
+        $isClaimed  = in_array($claimedVal, [true, 1, 't', 'true', '1'], true);
         return json_encode([
             'id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pc,
             'date'=>$date,'rawDate'=>$rawDate,'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,
-            'created'=>$created,'code'=>$code,'claimed'=>(int)($res['claimed']??0)===1,
+            'created'=>$created,'code'=>$code,'claimed'=>$isClaimed,'unclaimed'=>($s==='approved'&&!$isClaimed),
             'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,
             'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt,
         ]);
@@ -196,17 +195,26 @@
     <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <meta name="csrf-name"  content="<?= csrf_token() ?>">
 
-    <!-- ══ DETAIL MODAL ══ -->
+    <!-- DETAIL MODAL -->
     <div id="detailModal" class="overlay" role="dialog" aria-modal="true">
         <div class="overlay-bg" onclick="closeModal('detail')"></div>
         <div class="modal-box">
-            <!-- Drag handle on mobile -->
             <div class="flex justify-center pt-3 pb-1 sm:hidden"><div class="w-10 h-1 bg-slate-200 rounded-full"></div></div>
             <div class="flex items-start justify-between px-5 pt-3 sm:pt-6 pb-3">
                 <div><p id="dId" class="text-xs font-black text-slate-400 font-mono mb-1"></p><h3 class="text-lg sm:text-xl font-black text-slate-900">Reservation Details</h3></div>
                 <button onclick="closeModal('detail')" class="w-9 h-9 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition flex-shrink-0 mt-0.5"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="dStatusBar" class="mx-5 mb-4 px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold"></div>
+            <div id="dStatusBar" class="mx-5 mb-3 px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold"></div>
+
+            <!-- ★ Not yet claimed banner — shown when approved but ticket not scanned yet -->
+            <div id="dUnclaimedBanner" class="unclaimed-banner" style="display:none">
+                <div class="ub-icon"><i class="fa-solid fa-ticket"></i></div>
+                <div>
+                    <p class="font-black text-sm text-orange-700">Not Yet Claimed</p>
+                    <p class="text-xs text-orange-500 font-medium mt-0.5">This reservation is approved but the e-ticket has not been scanned yet.</p>
+                </div>
+            </div>
+
             <div class="px-5 pb-2">
                 <div class="drow"><div class="dicon"><i class="fa-solid fa-user"></i></div><div><p class="dlabel">Requestor</p><p id="dName" class="dvalue"></p><p id="dEmail" class="text-xs text-slate-400 font-semibold mt-0.5 break-all"></p></div></div>
                 <div class="drow"><div class="dicon"><i class="fa-solid fa-desktop"></i></div><div><p class="dlabel">Resource</p><p id="dResource" class="dvalue"></p><p id="dPc" class="text-xs text-slate-400 font-semibold mt-0.5"></p></div></div>
@@ -333,21 +341,27 @@
             <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Admin Portal</p>
                 <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Manage Reservations</h2>
-                <p class="text-slate-400 font-medium text-sm mt-0.5"><?= $counts['all'] ?> total record<?= $counts['all'] != 1 ? 's' : '' ?></p>
+                <p class="text-slate-400 font-medium text-sm mt-0.5"><?= $counts['all'] ?> total record<?= $counts['all'] != 1 ? 's' : '' ?>
+                <?php if ($counts['unclaimed'] > 0): ?>
+                    · <span class="text-orange-500 font-bold"><?= $counts['unclaimed'] ?> not yet claimed</span>
+                <?php endif; ?>
+                </p>
             </div>
             <button onclick="exportCSV()" class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-sm transition shadow-sm flex-shrink-0">
                 <i class="fa-solid fa-file-csv"></i> Export CSV
             </button>
         </header>
 
-        <!-- Stat cards: 2 cols → 3 (sm) → 5 (lg) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+        <!-- Stat cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
             <?php foreach ([
-                ['Total',    $counts['all'],      'border-blue-400',    'text-slate-700',   'all'],
-                ['Pending',  $counts['pending'],  'border-amber-400',   'text-amber-600',   'pending'],
-                ['Approved', $counts['approved'], 'border-emerald-400', 'text-emerald-600', 'approved'],
-                ['Claimed',  $counts['claimed'],  'border-purple-400',  'text-purple-600',  'claimed'],
-                ['Declined', $counts['declined'], 'border-rose-400',    'text-rose-600',    'declined'],
+                ['Total',    $counts['all'],       'border-blue-400',    'text-slate-700',   'all'],
+                ['Pending',  $counts['pending'],   'border-amber-400',   'text-amber-600',   'pending'],
+                ['Approved', $counts['approved'],  'border-emerald-400', 'text-emerald-600', 'approved'],
+                ['Claimed',  $counts['claimed'],   'border-purple-400',  'text-purple-600',  'claimed'],
+                ['Declined', $counts['declined'],  'border-rose-400',    'text-rose-600',    'declined'],
+                // ★ New unclaimed stat card
+                ['Unclaimed',$counts['unclaimed'], 'border-orange-400',  'text-orange-600',  'unclaimed'],
             ] as [$lbl, $val, $border, $color, $key]): ?>
                 <div class="stat-card <?= $border ?>" onclick="filterByStatus('<?= $key ?>')" data-filter="<?= $key ?>">
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1"><?= $lbl ?></p>
@@ -383,18 +397,20 @@
                 </button>
             </div>
             <div class="flex gap-2 mt-3 overflow-x-auto pb-1 -mx-1 px-1" style="-webkit-overflow-scrolling:touch;">
-                <button class="qtab active" data-tab="all"     onclick="setTab(this,'all')"><i class="fa-solid fa-layer-group text-xs"></i> All <span class="text-[9px] font-black opacity-70"><?= $counts['all'] ?></span></button>
-                <button class="qtab" data-tab="pending"  onclick="setTab(this,'pending')"><i class="fa-solid fa-clock text-xs"></i> Pending<?php if ($counts['pending'] > 0): ?><span class="bg-amber-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none"><?= $counts['pending'] ?></span><?php endif; ?></button>
-                <button class="qtab" data-tab="approved" onclick="setTab(this,'approved')"><i class="fa-solid fa-circle-check text-xs"></i> Approved</button>
-                <button class="qtab" data-tab="claimed"  onclick="setTab(this,'claimed')"><i class="fa-solid fa-check-double text-xs"></i> Claimed</button>
-                <button class="qtab" data-tab="declined" onclick="setTab(this,'declined')"><i class="fa-solid fa-xmark text-xs"></i> Declined</button>
-                <button class="qtab" data-tab="expired"  onclick="setTab(this,'expired')"><i class="fa-solid fa-hourglass-end text-xs"></i> Expired</button>
+                <button class="qtab active" data-tab="all"       onclick="setTab(this,'all')"><i class="fa-solid fa-layer-group text-xs"></i> All <span class="text-[9px] font-black opacity-70"><?= $counts['all'] ?></span></button>
+                <button class="qtab" data-tab="pending"   onclick="setTab(this,'pending')"><i class="fa-solid fa-clock text-xs"></i> Pending<?php if ($counts['pending'] > 0): ?><span class="bg-amber-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none"><?= $counts['pending'] ?></span><?php endif; ?></button>
+                <button class="qtab" data-tab="approved"  onclick="setTab(this,'approved')"><i class="fa-solid fa-circle-check text-xs"></i> Approved</button>
+                <!-- ★ New "Unclaimed" quick tab -->
+                <button class="qtab" data-tab="unclaimed" onclick="setTab(this,'unclaimed')"><i class="fa-solid fa-ticket text-xs"></i> Unclaimed<?php if ($counts['unclaimed'] > 0): ?><span class="bg-orange-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none"><?= $counts['unclaimed'] ?></span><?php endif; ?></button>
+                <button class="qtab" data-tab="claimed"   onclick="setTab(this,'claimed')"><i class="fa-solid fa-check-double text-xs"></i> Claimed</button>
+                <button class="qtab" data-tab="declined"  onclick="setTab(this,'declined')"><i class="fa-solid fa-xmark text-xs"></i> Declined</button>
+                <button class="qtab" data-tab="expired"   onclick="setTab(this,'expired')"><i class="fa-solid fa-hourglass-end text-xs"></i> Expired</button>
             </div>
         </div>
 
         <div class="px-1 mb-3"><p id="resultCount" class="text-xs font-bold text-slate-400"></p></div>
 
-        <!-- ══ DESKTOP TABLE (md+) ══ -->
+        <!-- DESKTOP TABLE -->
         <div class="hidden md:block bg-white border border-slate-200 rounded-[28px] shadow-sm overflow-hidden">
             <div class="table-wrap">
                 <table id="resTable">
@@ -413,36 +429,34 @@
                     </thead>
                     <tbody id="tableBody">
                         <?php if (empty($processed)): ?>
-                            <tr><td colspan="9"><div class="empty-state">
-                                <i class="fa-solid fa-calendar-xmark text-5xl text-slate-200 mb-4 block"></i>
-                                <p class="font-black text-slate-400 text-lg">No reservations yet</p>
-                                <p class="text-slate-300 text-sm mt-1">Reservations will appear here once submitted.</p>
-                            </div></td></tr>
+                            <tr><td colspan="9"><div class="empty-state"><i class="fa-solid fa-calendar-xmark text-5xl text-slate-200 mb-4 block"></i><p class="font-black text-slate-400 text-lg">No reservations yet</p></div></td></tr>
                         <?php else: ?>
                             <?php foreach ($processed as $res):
-                                $s        = $res['_status'];
-                                $name     = htmlspecialchars($res['visitor_name']  ?? $res['full_name']     ?? 'Guest');
-                                $email    = htmlspecialchars($res['user_email']    ?? $res['visitor_email'] ?? '');
-                                $resource = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
-                                $pc       = htmlspecialchars($res['pc_number']     ?? '');
-                                $rawDate  = $res['reservation_date'] ?? '';
-                                $date     = $rawDate ? date('M j, Y', strtotime($rawDate)) : '—';
-                                $start    = !empty($res['start_time']) ? date('g:i A', strtotime($res['start_time'])) : '—';
-                                $end      = !empty($res['end_time'])   ? date('g:i A', strtotime($res['end_time']))   : '—';
-                                $purpose  = htmlspecialchars($res['purpose']      ?? '—');
-                                $icon     = $statusIcons[$s] ?? 'fa-circle';
-                                $approverName = htmlspecialchars($res['approver_name'] ?? '');
-                                $approvedAt   = !empty($res['updated_at']) && in_array($s, ['approved','claimed','declined','expired'])
-                                                ? date('M j, Y · g:i A', strtotime($res['updated_at'])) : '';
-                                $pl        = $printLogMap[(int)$res['id']] ?? null;
-                                $plPrinted = $pl !== null ? (bool)$pl['printed'] : null;
-                                $plPages   = $pl ? (int)($pl['pages'] ?? 0) : 0;
-                                $plAt      = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
-                                $mdata     = $mkMdata($res, $s);
-                                $searchStr = strtolower("$name $resource $purpose $email $approverName");
+                                $s          = $res['_status'];
+                                $isUnclaimed = $res['_unclaimed'];
+                                $name       = htmlspecialchars($res['visitor_name']  ?? $res['full_name']     ?? 'Guest');
+                                $email      = htmlspecialchars($res['user_email']    ?? $res['visitor_email'] ?? '');
+                                $resource   = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
+                                $pc         = htmlspecialchars($res['pc_number']     ?? '');
+                                $rawDate    = $res['reservation_date'] ?? '';
+                                $date       = $rawDate ? date('M j, Y', strtotime($rawDate)) : '—';
+                                $start      = !empty($res['start_time']) ? date('g:i A', strtotime($res['start_time'])) : '—';
+                                $end        = !empty($res['end_time'])   ? date('g:i A', strtotime($res['end_time']))   : '—';
+                                $purpose    = htmlspecialchars($res['purpose']      ?? '—');
+                                $icon       = $statusIcons[$s] ?? 'fa-circle';
+                                $approverName  = htmlspecialchars($res['approver_name'] ?? '');
+                                $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved','claimed','declined','expired'])
+                                                 ? date('M j, Y · g:i A', strtotime($res['updated_at'])) : '';
+                                $pl         = $printLogMap[(int)$res['id']] ?? null;
+                                $plPrinted  = $pl !== null ? (bool)$pl['printed'] : null;
+                                $plPages    = $pl ? (int)($pl['pages'] ?? 0) : 0;
+                                $plAt       = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
+                                $mdata      = $mkMdata($res, $s);
+                                $searchStr  = strtolower("$name $resource $purpose $email $approverName");
                             ?>
                             <tr class="res-row"
                                 data-status="<?= $s ?>"
+                                data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
                                 data-search="<?= htmlspecialchars($searchStr, ENT_QUOTES) ?>"
                                 data-date="<?= $rawDate ?>"
                                 data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
@@ -463,7 +477,15 @@
                                     <p class="text-[11px] text-blue-500 font-semibold mt-0.5 whitespace-nowrap"><?= $start ?> – <?= $end ?></p>
                                 </td>
                                 <td><span class="text-sm text-slate-500 font-medium" style="display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:120px"><?= $purpose ?></span></td>
-                                <td><span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span></td>
+                                <td>
+                                    <div class="flex flex-col gap-1">
+                                        <span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
+                                        <?php if ($isUnclaimed): ?>
+                                        <!-- ★ "Not yet claimed" secondary badge in table -->
+                                        <span class="badge badge-unclaimed"><i class="fa-solid fa-ticket text-[9px]"></i>Not claimed</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
                                 <td onclick="event.stopPropagation()">
                                     <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired'])): ?>
                                         <div class="flex items-center gap-1.5">
@@ -482,7 +504,12 @@
                                         <?php if ($s==='pending'): ?>
                                             <button onclick="triggerApprove(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="h-8 px-3 rounded-xl bg-green-100 hover:bg-green-600 hover:text-white text-green-700 font-bold text-xs transition flex items-center gap-1.5"><i class="fa-solid fa-check text-[11px]"></i> Approve</button>
                                             <button onclick="triggerDecline(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="h-8 px-2 rounded-xl bg-red-100 hover:bg-red-500 hover:text-white text-red-600 font-bold text-xs transition flex items-center"><i class="fa-solid fa-xmark text-[11px]"></i></button>
-                                        <?php elseif ($s==='approved'): ?><span class="text-[11px] text-emerald-500 font-black flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Approved</span>
+                                        <?php elseif ($s==='approved'): ?>
+                                            <?php if ($isUnclaimed): ?>
+                                            <span class="text-[11px] text-orange-500 font-black flex items-center gap-1"><i class="fa-solid fa-ticket"></i> Unclaimed</span>
+                                            <?php else: ?>
+                                            <span class="text-[11px] text-emerald-500 font-black flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Approved</span>
+                                            <?php endif; ?>
                                         <?php elseif ($s==='claimed'): ?><span class="text-[11px] text-purple-500 font-black flex items-center gap-1"><i class="fa-solid fa-check-double"></i> Claimed</span>
                                         <?php else: ?><span class="text-xs text-slate-300 font-semibold italic">—</span><?php endif; ?>
                                     </div>
@@ -499,61 +526,61 @@
             </div>
         </div>
 
-        <!-- ══ MOBILE CARDS (< md) ══ -->
+        <!-- MOBILE CARDS -->
         <div class="md:hidden space-y-3" id="mobileCardList">
             <?php if (empty($processed)): ?>
-                <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm">
-                    <div class="empty-state"><i class="fa-solid fa-calendar-xmark text-5xl text-slate-200 mb-4 block"></i><p class="font-black text-slate-400 text-lg">No reservations yet</p></div>
-                </div>
+                <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm"><div class="empty-state"><i class="fa-solid fa-calendar-xmark text-5xl text-slate-200 mb-4 block"></i><p class="font-black text-slate-400 text-lg">No reservations yet</p></div></div>
             <?php else: ?>
                 <?php foreach ($processed as $res):
-                    $s        = $res['_status'];
-                    $name     = htmlspecialchars($res['visitor_name']  ?? $res['full_name']     ?? 'Guest');
-                    $email    = htmlspecialchars($res['user_email']    ?? $res['visitor_email'] ?? '');
-                    $resource = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
-                    $pc       = htmlspecialchars($res['pc_number']     ?? '');
-                    $rawDate  = $res['reservation_date'] ?? '';
-                    $date     = $rawDate ? date('M j, Y', strtotime($rawDate)) : '—';
-                    $start    = !empty($res['start_time']) ? date('g:i A', strtotime($res['start_time'])) : '—';
-                    $end      = !empty($res['end_time'])   ? date('g:i A', strtotime($res['end_time']))   : '—';
-                    $purpose  = htmlspecialchars($res['purpose']       ?? '—');
-                    $icon     = $statusIcons[$s] ?? 'fa-circle';
-                    $approverName = htmlspecialchars($res['approver_name'] ?? '');
-                    $pl        = $printLogMap[(int)$res['id']] ?? null;
-                    $plPrinted = $pl !== null ? (bool)$pl['printed'] : null;
-                    $plPages   = $pl ? (int)($pl['pages'] ?? 0) : 0;
-                    $mdata     = $mkMdata($res, $s);
-                    $searchStr = strtolower("$name $resource $purpose $email $approverName");
+                    $s           = $res['_status'];
+                    $isUnclaimed = $res['_unclaimed'];
+                    $name        = htmlspecialchars($res['visitor_name']  ?? $res['full_name']     ?? 'Guest');
+                    $email       = htmlspecialchars($res['user_email']    ?? $res['visitor_email'] ?? '');
+                    $resource    = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
+                    $pc          = htmlspecialchars($res['pc_number']     ?? '');
+                    $rawDate     = $res['reservation_date'] ?? '';
+                    $date        = $rawDate ? date('M j, Y', strtotime($rawDate)) : '—';
+                    $start       = !empty($res['start_time']) ? date('g:i A', strtotime($res['start_time'])) : '—';
+                    $end         = !empty($res['end_time'])   ? date('g:i A', strtotime($res['end_time']))   : '—';
+                    $purpose     = htmlspecialchars($res['purpose']       ?? '—');
+                    $icon        = $statusIcons[$s] ?? 'fa-circle';
+                    $approverName  = htmlspecialchars($res['approver_name'] ?? '');
+                    $pl          = $printLogMap[(int)$res['id']] ?? null;
+                    $plPrinted   = $pl !== null ? (bool)$pl['printed'] : null;
+                    $plPages     = $pl ? (int)($pl['pages'] ?? 0) : 0;
+                    $mdata       = $mkMdata($res, $s);
+                    $searchStr   = strtolower("$name $resource $purpose $email $approverName");
                 ?>
                     <div class="res-card mobile-res-card"
                          data-status="<?= $s ?>"
+                         data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
                          data-search="<?= htmlspecialchars($searchStr, ENT_QUOTES) ?>"
                          data-date="<?= $rawDate ?>"
                          onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
 
-                        <!-- Name + badge -->
                         <div class="flex items-start justify-between gap-2 mb-2">
                             <div class="min-w-0">
                                 <p class="font-bold text-sm text-slate-800 leading-tight truncate"><?= $name ?></p>
                                 <?php if ($email): ?><p class="text-[11px] text-slate-400 truncate"><?= $email ?></p><?php endif; ?>
                             </div>
-                            <span class="badge badge-<?= $s ?> flex-shrink-0 mt-0.5"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
+                            <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                                <span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
+                                <?php if ($isUnclaimed): ?>
+                                <!-- ★ Mobile unclaimed badge -->
+                                <span class="badge badge-unclaimed"><i class="fa-solid fa-ticket text-[9px]"></i>Not claimed</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
-
-                        <!-- Resource -->
                         <div class="flex items-center gap-1.5 text-xs text-slate-500 font-semibold mb-1">
                             <i class="fa-solid fa-desktop text-[10px] text-slate-400 flex-shrink-0"></i>
                             <span class="truncate"><?= $resource ?><?= $pc ? " · $pc" : '' ?></span>
                         </div>
-                        <!-- Date/time -->
                         <div class="flex items-center gap-1.5 text-xs text-blue-500 font-semibold mb-2">
                             <i class="fa-solid fa-calendar-day text-[10px] flex-shrink-0"></i>
                             <span><?= $date ?> · <?= $start ?> – <?= $end ?></span>
                         </div>
-                        <!-- Purpose -->
                         <p class="text-xs text-slate-500 mb-3 line-clamp-1"><?= $purpose ?></p>
 
-                        <!-- Approve/Decline for pending -->
                         <?php if ($s === 'pending'): ?>
                             <div class="flex gap-2 pt-2.5 border-t border-slate-100" onclick="event.stopPropagation()">
                                 <button onclick="triggerApprove(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="flex-1 h-9 rounded-xl bg-green-100 hover:bg-green-600 hover:text-white text-green-700 font-bold text-xs transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-check text-[11px]"></i> Approve</button>
@@ -561,7 +588,6 @@
                             </div>
                         <?php endif; ?>
 
-                        <!-- Footer: ID + print pill -->
                         <div class="flex items-center justify-between mt-2<?= $s==='pending' ? '' : ' pt-2 border-t border-slate-50' ?>">
                             <span class="text-[10px] font-black text-slate-300 font-mono">#<?= $res['id'] ?></span>
                             <?php if ($plPrinted===true): ?><span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> <?= $plPages ?>pg</span>
@@ -595,7 +621,6 @@
 
     let _currentReservationId = null;
 
-    // ── Print ──────────────────────────────────────────────────────────────────
     async function savePrintLog() {
         const rid = _currentReservationId, pages = parseInt(document.getElementById('printPagesInput').value,10)||0;
         const btn = document.getElementById('savePrintBtn'), msg = document.getElementById('printSaveMsg');
@@ -619,8 +644,8 @@
     }
     function refreshPrintLogStrip(rid) {
         const plog=printLogMap[rid],logEl=document.getElementById('dPrintLog'),logText=document.getElementById('dPrintText'),logBadge=document.getElementById('dPrintBadge');
-        if (!plog){logEl.style.display='none';return;} logEl.style.display='flex';
-        if (plog.printed){logText.textContent=`Printed ${plog.pages} page${plog.pages!==1?'s':''}${plog.at?` · ${plog.at}`:''}`;logBadge.textContent=`${plog.pages}pg`;logBadge.className='text-[10px] font-black px-2.5 py-1 rounded-full bg-blue-100 text-blue-700';}
+        if(!plog){logEl.style.display='none';return;} logEl.style.display='flex';
+        if(plog.printed){logText.textContent=`Printed ${plog.pages} page${plog.pages!==1?'s':''}${plog.at?` · ${plog.at}`:''}`;logBadge.textContent=`${plog.pages}pg`;logBadge.className='text-[10px] font-black px-2.5 py-1 rounded-full bg-blue-100 text-blue-700';}
         else{logText.textContent='No printing during this session';logBadge.textContent='No print';logBadge.className='text-[10px] font-black px-2.5 py-1 rounded-full bg-slate-200 text-slate-500';}
     }
     function refreshTablePrintCell(rid,pages) {
@@ -632,32 +657,36 @@
         });
     }
 
-    // ── CSV ────────────────────────────────────────────────────────────────────
     function exportCSV() {
         const visibleRows=allTableRows.filter(r=>r.style.display!=='none');
-        const headers=['ID','User Name','Email','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Print Logged At','Submitted At'];
+        const headers=['ID','User Name','Email','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Unclaimed','Approved By','Approved At','Printed','Pages Printed','Print Logged At','Submitted At'];
         const escape=v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
         const lines=[headers.map(escape).join(',')];
         visibleRows.forEach(row=>{const id=row.querySelector('td:first-child span')?.textContent?.replace('#','').trim()??'';
         try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));
-        lines.push([id,d.name??'',d.email??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',row.dataset.plAt??'',d.created??''].map(escape).join(','));}catch(e){}});
+        lines.push([id,d.name??'',d.email??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.unclaimed?'Yes':'No',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',row.dataset.plAt??'',d.created??''].map(escape).join(','));}catch(e){}});
         const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
         const url=URL.createObjectURL(blob);const a=document.createElement('a');
         a.href=url;a.download=`reservations-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
     }
 
-    // ── Filters ────────────────────────────────────────────────────────────────
     function setTab(btn,tab){document.querySelectorAll('.qtab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');curTab=tab;syncCards(tab);applyFilters();}
     function filterByStatus(tab){curTab=tab;document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));syncCards(tab);applyFilters();}
     function syncCards(tab){document.querySelectorAll('[data-filter]').forEach(c=>c.classList.toggle('ring',c.dataset.filter===tab));}
+
     function applyFilters() {
         const q=document.getElementById('searchInput').value.toLowerCase().trim();
         const date=document.getElementById('dateInput').value;
+        // ★ "unclaimed" tab filters to approved + not yet claimed
         const match=el=>{
-            const mt=curTab==='all'||(curTab==='declined'&&['declined','canceled'].includes(el.dataset.status))||el.dataset.status===curTab;
+            let matchTab;
+            if (curTab==='all') matchTab=true;
+            else if (curTab==='unclaimed') matchTab=el.dataset.unclaimed==='1';
+            else if (curTab==='declined') matchTab=['declined','canceled'].includes(el.dataset.status);
+            else matchTab=el.dataset.status===curTab;
             const ms=!q||el.dataset.search.includes(q);
             const md=!date||el.dataset.date===date;
-            return mt&&ms&&md;
+            return matchTab&&ms&&md;
         };
         let n=0;
         allTableRows.forEach(r=>{const s=match(r);r.style.display=s?'':'none';if(s)n++;});
@@ -670,7 +699,6 @@
     }
     function clearFilters(){document.getElementById('searchInput').value='';document.getElementById('dateInput').value='';curTab='all';document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='all'));syncCards('all');applyFilters();}
 
-    // ── Sort ───────────────────────────────────────────────────────────────────
     let sortDir={};
     function sortTable(col){
         sortDir[col]=!sortDir[col];
@@ -679,7 +707,6 @@
         document.querySelectorAll('thead th').forEach((th,i)=>{th.classList.toggle('sorted',i===col);const ic=th.querySelector('.sort-icon');if(ic)ic.className=`fa-solid ${i===col?(sortDir[col]?'fa-sort-up':'fa-sort-down'):'fa-sort'} sort-icon`;});
     }
 
-    // ── Detail modal ───────────────────────────────────────────────────────────
     const STATUS_META={
         pending: {icon:'fa-clock',        bg:'#fef3c7',color:'#92400e',label:'Pending — Awaiting approval'},
         approved:{icon:'fa-circle-check', bg:'#dcfce7',color:'#166534',label:'Approved'},
@@ -688,6 +715,7 @@
         canceled:{icon:'fa-ban',          bg:'#fee2e2',color:'#991b1b',label:'Cancelled'},
         expired: {icon:'fa-hourglass-end',bg:'#f1f5f9',color:'#475569',label:'Expired — Date has passed'},
     };
+
     function openDetail(d) {
         _currentReservationId=d.id;
         const plog=printLogMap[d.id];
@@ -715,7 +743,14 @@
             document.getElementById('dApprovedByEmail').textContent=d.approverEmail||'';
             document.getElementById('dApprovedAt').textContent=d.approvedAt?`on ${d.approvedAt}`:'';
         } else approverRow.style.display='none';
-        const bar=document.getElementById('dStatusBar');bar.style.background=m.bg;bar.style.color=m.color;bar.innerHTML=`<i class="fa-solid ${m.icon}"></i> <span>${m.label}</span>`;
+
+        const bar=document.getElementById('dStatusBar');
+        bar.style.background=m.bg;bar.style.color=m.color;
+        bar.innerHTML=`<i class="fa-solid ${m.icon}"></i> <span>${m.label}</span>`;
+
+        // ★ Show/hide "Not yet claimed" banner
+        document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
+
         const qrSec=document.getElementById('dQr'),clSec=document.getElementById('dClaimed');
         const isClaimed=d.claimed||d.status==='claimed';
         if(isClaimed){qrSec.style.display='none';clSec.style.display='block';}
