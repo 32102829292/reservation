@@ -14,11 +14,27 @@ class SkController extends BaseController
         $model = new ReservationModel();
         $db    = db_connect();
 
-        $skUserId       = session()->get('user_id');
-        $myReservations = $model
-            ->where('user_id', $skUserId)
-            ->orderBy('reservation_date', 'DESC')
-            ->findAll();
+        $skUserId = session()->get('user_id');
+
+        // ─────────────────────────────────────────────────────────────────
+        // BUG FIX #1: Added JOIN on resources and users so resource_name,
+        //             visitor_name, user_email are available in the view.
+        //             Without this, resource_name was always null → "Unknown"
+        //             appeared in Insights, Recent Bookings, and Timer Banner.
+        // ─────────────────────────────────────────────────────────────────
+        $myReservations = $model->db->table('reservations r')
+            ->select([
+                'r.*',
+                'COALESCE(u.name, r.visitor_name) AS visitor_name',
+                'u.email                           AS user_email',
+                'res.name                          AS resource_name',
+            ])
+            ->join('users u',       'u.id = r.user_id',       'left')
+            ->join('resources res', 'res.id = r.resource_id', 'left')
+            ->where('r.user_id', $skUserId)
+            ->orderBy('r.reservation_date', 'DESC')
+            ->get()
+            ->getResultArray();
 
         $allReservations = $model->db->table('reservations r')
             ->select([
@@ -46,10 +62,19 @@ class SkController extends BaseController
             ->getResultArray();
 
         $total    = count($myReservations);
-        $pending  = count(array_filter($myReservations, fn($r) => $r['status'] === 'pending'));
-        $approved = count(array_filter($myReservations, fn($r) => $r['status'] === 'approved'));
-        $declined = count(array_filter($myReservations, fn($r) => in_array($r['status'], ['declined', 'canceled'])));
-        $claimed  = $model->where('claimed', true)->countAllResults();
+        $pending  = count(array_filter($myReservations, fn($r) => ($r['status'] ?? '') === 'pending'));
+        $approved = count(array_filter($myReservations, fn($r) => ($r['status'] ?? '') === 'approved'));
+        $declined = count(array_filter($myReservations, fn($r) => in_array($r['status'] ?? '', ['declined', 'canceled'])));
+
+        // ─────────────────────────────────────────────────────────────────
+        // BUG FIX #2: $claimed was counting ALL users' claimed reservations,
+        //             causing a 300% utilization / claim rate.
+        //             Now filtered to the current SK user only.
+        // ─────────────────────────────────────────────────────────────────
+        $claimed = $model
+            ->where('user_id', $skUserId)
+            ->where('claimed', true)
+            ->countAllResults();
 
         $today         = date('Y-m-d');
         $todayTotal    = $model->where('reservation_date', $today)->countAllResults();
@@ -58,19 +83,26 @@ class SkController extends BaseController
         $todayClaimed  = $model->where('reservation_date', $today)->where('claimed', true)->countAllResults();
 
         $thirtyDaysAgo = date('Y-m-d', strtotime('-30 days'));
-        $monthlyTotal  = $model->where('reservation_date >=', $thirtyDaysAgo)->countAllResults();
+        $monthlyTotal  = $model
+            ->where('user_id', $skUserId)
+            ->where('reservation_date >=', $thirtyDaysAgo)
+            ->countAllResults();
 
         $chartLabels = [];
         $chartData   = [];
         for ($i = 6; $i >= 0; $i--) {
             $date          = date('Y-m-d', strtotime("-$i days"));
             $chartLabels[] = date('D', strtotime($date));
-            $chartData[]   = $model->where('reservation_date', $date)->countAllResults();
+            $chartData[]   = $model
+                ->where('user_id', $skUserId)
+                ->where('reservation_date', $date)
+                ->countAllResults();
         }
 
         $resourceQuery = $db->table('reservations r')
             ->select('resources.name, COUNT(*) as count')
             ->join('resources', 'resources.id = r.resource_id')
+            ->where('r.user_id', $skUserId)
             ->where('r.status', 'approved')
             ->groupBy('r.resource_id, resources.name')
             ->orderBy('count', 'DESC')
@@ -98,7 +130,7 @@ class SkController extends BaseController
             ->countAllResults();
 
         $approvalRate    = $total > 0    ? round(($approved / $total) * 100)   : 0;
-        $utilizationRate = $approved > 0 ? round(($claimed / $approved) * 100) : 0;
+        $utilizationRate = $approved > 0 ? round(($claimed  / $approved) * 100) : 0;
 
         // ── Books ──
         $allBooks = $db->table('books')
@@ -109,15 +141,15 @@ class SkController extends BaseController
         $totalBooks     = count($allBooks);
         $availableCount = count(array_filter($allBooks, fn($b) => (int)($b['available_copies'] ?? 0) > 0));
 
-        // ── My Borrowings (needed for "My Borrows" counter in library banner) ──
+        // ── My Borrowings ──
         $myBorrowings = $db->table('book_borrowings bb')
-            ->select('bb.*, b.title, b.author, b.genre, bb.due_date')
+            ->select('bb.*, b.title as book_title, b.author, b.genre, bb.due_date')
             ->join('books b', 'b.id = bb.book_id', 'left')
             ->where('bb.user_id', $skUserId)
             ->orderBy('bb.created_at', 'DESC')
             ->get()->getResultArray();
 
-        // ── All borrow requests (for sidebar badge) ──
+        // ── All borrow requests ──
         $dashBorrowReqs = $db->table('book_borrowings bb')
             ->select('bb.id, bb.status, bb.created_at, b.title as book_title, u.name as resident_name')
             ->join('books b', 'b.id = bb.book_id', 'left')
@@ -128,16 +160,16 @@ class SkController extends BaseController
         $pendingBorrowings = count(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending'));
 
         // ── Fairness quota ──
-        $startOfMonth  = date('Y-m-01');
-        $endOfMonth    = date('Y-m-t');
-        $maxSlots      = 3;
-        $usedThisMonth = $model
+        $startOfMonth     = date('Y-m-01');
+        $endOfMonth       = date('Y-m-t');
+        $maxMonthlySlots  = 3;
+        $usedThisMonth    = $model
             ->where('user_id', $skUserId)
             ->where('status', 'approved')
             ->where('reservation_date >=', $startOfMonth)
             ->where('reservation_date <=', $endOfMonth)
             ->countAllResults();
-        $remainingReservations = max(0, $maxSlots - $usedThisMonth);
+        $remainingReservations = max(0, $maxMonthlySlots - $usedThisMonth);
 
         return view('sk/dashboard', [
             'page'                  => 'dashboard',
@@ -164,7 +196,9 @@ class SkController extends BaseController
             'pendingUserCount'      => $pendingUserCount,
             'approvalRate'          => $approvalRate,
             'utilizationRate'       => $utilizationRate,
-            // ── Correct variable names for SK view ──
+            // ── BUG FIX #3: dashBooks was missing — view uses $dashBooks
+            //    but controller only passed 'featuredBooks'. Added both.
+            'dashBooks'             => $allBooks,
             'featuredBooks'         => $allBooks,
             'availableCount'        => $availableCount,
             'totalBooks'            => $totalBooks,
@@ -172,6 +206,11 @@ class SkController extends BaseController
             'dashBorrowReqs'        => $dashBorrowReqs,
             'pendingBorrowings'     => $pendingBorrowings,
             'remainingReservations' => $remainingReservations,
+            // ── BUG FIX #4: Pass monthly quota data so view calculates
+            //    the sidebar quota bar correctly instead of using
+            //    all-time $approved which caused "-1/1 slots used".
+            'usedThisMonth'         => $usedThisMonth,
+            'maxMonthlySlots'       => $maxMonthlySlots,
         ]);
     }
 

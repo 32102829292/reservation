@@ -229,9 +229,23 @@ $availableCount       = $availableCount       ?? 0;
 $totalBooks           = $totalBooks           ?? 0;
 $remainingReservations= $remainingReservations?? 0;
 $pendingUserCount     = $pendingUserCount     ?? 0;
-$usedSlots  = ($approved ?? 0) - ($remainingReservations);
-$maxSlots   = max(1, ($approved ?? 0));
-$quotaPct   = min(100, round($usedSlots / $maxSlots * 100));
+
+// ─────────────────────────────────────────────────────────────────────────
+// BUG FIX #5 & #6: Old code was:
+//   $usedSlots = ($approved ?? 0) - ($remainingReservations);
+//   $maxSlots  = max(1, ($approved ?? 0));
+//
+// This was wrong because $approved is the all-time approved count (e.g. 1)
+// and $remainingReservations comes from a monthly window (e.g. 2 left of 3),
+// so 1 - 2 = -1, producing "-1/1 slots used" in the sidebar.
+//
+// Fix: use $usedThisMonth (monthly used) and $maxMonthlySlots (= 3)
+// that are now properly passed from the controller.
+// ─────────────────────────────────────────────────────────────────────────
+$usedSlots = (int)($usedThisMonth   ?? 0);
+$maxSlots  = (int)($maxMonthlySlots ?? 3);
+$maxSlots  = max(1, $maxSlots); // prevent division by zero
+$quotaPct  = min(100, round($usedSlots / $maxSlots * 100));
 
 /* ── Insights ── */
 $insHourArr = array_fill(0,24,0);
@@ -296,14 +310,14 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
             <?php endforeach; ?>
         </nav>
         <div class="sidebar-footer">
-            <!-- Quota bar -->
+            <!-- Quota bar — BUG FIX #5 & #6 applied above in PHP block -->
             <div class="px-3 py-3 bg-slate-50 rounded-2xl mb-3">
                 <div class="flex justify-between items-center mb-1.5">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">My Quota</span>
                     <span class="text-[10px] font-black text-green-600"><?= $remainingReservations ?> left</span>
                 </div>
                 <div class="prog-bar"><div class="prog-fill" style="width:<?= $quotaPct ?>%;background:var(--green)"></div></div>
-                <p class="text-[10px] text-slate-400 mt-1 font-medium"><?= $usedSlots ?>/<?= $maxSlots ?> slots used</p>
+                <p class="text-[10px] text-slate-400 mt-1 font-medium"><?= $usedSlots ?>/<?= $maxSlots ?> slots used this month</p>
             </div>
             <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all text-sm">
                 <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
@@ -360,7 +374,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
 
 <div id="tl-toast-container"></div>
 
-<!-- Login toast (shown once per day) -->
+<!-- Login toast (shown once per session) -->
 <div id="loginToast" style="display:none">
     <div class="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hand-wave text-white"></i></div>
     <div><p class="font-black text-sm">Welcome back, <?= htmlspecialchars($user_name ?? 'Officer') ?>!</p><p class="text-[11px] text-slate-400 mt-0.5"><?= date('l, F j') ?></p></div>
@@ -441,7 +455,6 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
 
     <!-- ═══════════════════════════════════════
          SECTION 2 — RESERVATION OVERVIEW
-         Stat cards + KPI strip + Charts
     ═══════════════════════════════════════════ -->
     <p class="section-label">Reservation Overview</p>
 
@@ -480,10 +493,10 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
     <!-- 2b · KPI strip -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <?php foreach ([
-            ['Total',   $total??0,    'border-green-500',   'text-slate-700',   'fa-layer-group',  'text-green-500'],
-            ['Pending', $pendingUserCount??0,'border-amber-500','text-amber-600','fa-clock',        'text-amber-500'],
-            ['Approved',$approved??0, 'border-emerald-500', 'text-emerald-600', 'fa-circle-check', 'text-emerald-500'],
-            ['Remaining',$remainingReservations,'border-purple-500','text-purple-600','fa-hourglass-half','text-purple-500'],
+            ['Total',    $total??0,                'border-green-500',   'text-slate-700',   'fa-layer-group',    'text-green-500'],
+            ['Pending',  $pending??0,              'border-amber-500',   'text-amber-600',   'fa-clock',          'text-amber-500'],
+            ['Approved', $approved??0,             'border-emerald-500', 'text-emerald-600', 'fa-circle-check',   'text-emerald-500'],
+            ['Remaining',$remainingReservations,   'border-purple-500',  'text-purple-600',  'fa-hourglass-half', 'text-purple-500'],
         ] as [$l,$v,$b,$c,$i,$ic]): ?>
             <div class="kpi-card <?= $b ?>">
                 <div class="flex items-center justify-between mb-2"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><?= $l ?></p><i class="fa-solid <?= $i ?> text-sm <?= $ic ?>"></i></div>
@@ -515,7 +528,6 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
 
     <!-- ═══════════════════════════════════════
          SECTION 3 — SCHEDULE & ACTIVITY
-         Calendar + Quick Stats + Quick Actions + Recent Bookings
     ═══════════════════════════════════════════ -->
     <p class="section-label">Schedule &amp; Activity</p>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
@@ -569,7 +581,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
                     <?php
                     $recent = array_slice(array_reverse($myRes), 0, 4);
                     foreach ($recent as $r):
-                        $st = $r['claimed']?'claimed':($r['status']??'pending');
+                        $st = ($r['claimed'] == 1 || $r['claimed'] === true || $r['claimed'] === 'true') ? 'claimed' : ($r['status']??'pending');
                         $clr=['approved'=>'text-emerald-600','pending'=>'text-amber-600','declined'=>'text-rose-600','claimed'=>'text-purple-600'];
                         $ico=['approved'=>'fa-circle-check','pending'=>'fa-clock','declined'=>'fa-xmark-circle','claimed'=>'fa-check-double'];
                         $isExpired = !empty($r['reservation_date']) && strtotime($r['reservation_date']) < strtotime('today') && $st !== 'claimed';
@@ -846,7 +858,7 @@ function openDateModal(dateStr,list){
     document.getElementById('modalDateTitle').textContent=fmt;
     const c=document.getElementById('modalList');
     if(!list?.length){c.innerHTML=`<div class="py-8 text-center text-slate-400"><i class="fa-solid fa-calendar-xmark text-3xl mb-2 block text-slate-200"></i><p class="text-sm font-bold">No reservations on this date</p></div>`;}
-    else{c.innerHTML=[...list].sort((a,b)=>(a.start_time||'').localeCompare(b.start_time||'')).map(r=>{const st=r.claimed?'claimed':(r.status||'pending');const clr={approved:'bg-emerald-100 text-emerald-700',pending:'bg-amber-100 text-amber-700',declined:'bg-rose-100 text-rose-700',claimed:'bg-purple-100 text-purple-700'};const t=r.start_time?r.start_time.slice(0,5):'—',et=r.end_time?r.end_time.slice(0,5):'';return `<div class="date-row" onclick="location='/sk/reservations?id=${r.id}'"><div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-desktop text-green-600 text-xs"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800 leading-tight truncate">${r.resource_name||'Resource'}</p><p class="text-xs text-slate-400 mt-0.5">${r.visitor_name||r.full_name||'Me'}</p></div><div class="text-right flex-shrink-0"><p class="text-xs font-black text-green-600">${t}${et?'–'+et:''}</p><span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${clr[st]||'bg-slate-100 text-slate-600'}">${st}</span></div></div>`;}).join('');}
+    else{c.innerHTML=[...list].sort((a,b)=>(a.start_time||'').localeCompare(b.start_time||'')).map(r=>{const st=(r.claimed==1||r.claimed===true||r.claimed==='true')?'claimed':(r.status||'pending');const clr={approved:'bg-emerald-100 text-emerald-700',pending:'bg-amber-100 text-amber-700',declined:'bg-rose-100 text-rose-700',claimed:'bg-purple-100 text-purple-700'};const t=r.start_time?r.start_time.slice(0,5):'—',et=r.end_time?r.end_time.slice(0,5):'';return `<div class="date-row" onclick="location='/sk/reservations?id=${r.id}'"><div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-desktop text-green-600 text-xs"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800 leading-tight truncate">${r.resource_name||'Resource'}</p><p class="text-xs text-slate-400 mt-0.5">${r.visitor_name||r.full_name||'Me'}</p></div><div class="text-right flex-shrink-0"><p class="text-xs font-black text-green-600">${t}${et?'–'+et:''}</p><span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${clr[st]||'bg-slate-100 text-slate-600'}">${st}</span></div></div>`;}).join('');}
     document.getElementById('dateModal').classList.add('open');document.body.style.overflow='hidden';
 }
 function closeDateModal(){document.getElementById('dateModal').classList.remove('open');document.body.style.overflow='';}
@@ -911,11 +923,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     const rL=<?= json_encode($resourceLabels??['No Data']) ?>,rD=<?= json_encode($resourceData??[1]) ?>,pal=['#16a34a','#f59e0b','#8b5cf6','#10b981','#ec4899'];
     if(rCtx){new Chart(rCtx,{type:'doughnut',data:{labels:rL,datasets:[{data:rD,backgroundColor:pal,borderWidth:0,hoverOffset:4}]},options:{responsive:false,animation:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}}}});const leg=document.getElementById('resourceLegend');if(leg)leg.innerHTML=rL.map((l,i)=>`<div class="flex items-center gap-2.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${pal[i]||'#94a3b8'}"></span><span class="text-sm text-slate-600 truncate flex-1 min-w-0 font-medium">${l}</span><span class="text-sm font-black text-slate-800 flex-shrink-0">${rD[i]}</span></div>`).join('');}
 
-    /* Calendar — use allResAll for full calendar, allRes for my view */
+    /* Calendar */
     const byDate={};
     (allResAll.length?allResAll:allRes).forEach(r=>{if(!r.reservation_date)return;(byDate[r.reservation_date]=byDate[r.reservation_date]||[]).push(r);});
     const myByDate={};allRes.forEach(r=>{if(!r.reservation_date)return;(myByDate[r.reservation_date]=myByDate[r.reservation_date]||[]).push(r);});
-    const events=allRes.filter(r=>r.reservation_date).map(r=>{const st=r.claimed?'claimed':(r.status||'pending');const clr={approved:'#10b981',pending:'#fbbf24',declined:'#f87171',claimed:'#a855f7'};return{title:r.resource_name||'Reservation',start:r.reservation_date+(r.start_time?'T'+r.start_time:''),end:r.reservation_date+(r.end_time?'T'+r.end_time:''),backgroundColor:clr[st]||'#94a3b8',borderColor:'transparent',textColor:'#fff'};});
+    const events=allRes.filter(r=>r.reservation_date).map(r=>{const st=(r.claimed==1||r.claimed===true||r.claimed==='true')?'claimed':(r.status||'pending');const clr={approved:'#10b981',pending:'#fbbf24',declined:'#f87171',claimed:'#a855f7'};return{title:r.resource_name||'Reservation',start:r.reservation_date+(r.start_time?'T'+r.start_time:''),end:r.reservation_date+(r.end_time?'T'+r.end_time:''),backgroundColor:clr[st]||'#94a3b8',borderColor:'transparent',textColor:'#fff'};});
     new FullCalendar.Calendar(document.getElementById('calendar'),{initialView:'dayGridMonth',headerToolbar:{left:'prev,next',center:'title',right:'today'},events,height:370,eventDisplay:'block',eventMaxStack:2,dateClick:info=>openDateModal(info.dateStr,myByDate[info.dateStr]||[]),eventClick:info=>openDateModal(info.event.startStr.split('T')[0],myByDate[info.event.startStr.split('T')[0]]||[]),dayCellDidMount:info=>{const d=info.date.toISOString().split('T')[0];const cnt=(myByDate[d]||[]).length;if(cnt){const b=document.createElement('div');b.style.cssText='font-size:8px;font-weight:800;color:white;background:#16a34a;border-radius:999px;width:15px;height:15px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:4px;margin-bottom:2px;';b.textContent=cnt;info.el.querySelector('.fc-daygrid-day-top')?.appendChild(b);}}}).render();
 
     /* ── Insights ── */
@@ -930,7 +942,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
         /* Heatmap */
         const hm=document.getElementById('ins-heatmap');
-        if(hm){hm.innerHTML='';const f12=h=>{const ap=h<12?'AM':'PM';const h12=h%12||12;return `${h12}${ap}`;};for(let h=0;h<24;h++){const cell=document.createElement('div');const alpha=0.07+(pct(hourArr[h],maxH)/100)*0.88;const isPk=h===peakHourIdx;cell.className='ins-heatmap-cell';cell.style.cssText=`background:rgba(22,163,74,${alpha.toFixed(2)});${isPk?'box-shadow:0 0 0 2px #16a34a;':''}`;cell.title=`${f12(h)}: ${hourArr[h]} reservations`;if(isPk){const p=document.createElement('div');p.style.cssText='position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#fbbf24;';cell.appendChild(p);}hm.appendChild(cell);}}
+        if(hm){hm.innerHTML='';const f12=h=>{const ap=h<12?'AM':'PM';const h12=h%12||12;return `${h12}${ap}`;};for(let h=0;h<24;h++){const cell=document.createElement('div');const alpha=0.07+(pct(hourArr[h],maxH)/100)*0.88;const isPk=h===peakHourIdx;cell.className='ins-heatmap-cell';cell.style.cssText=`background:rgba(22,163,74,${alpha.toFixed(2)});border-radius:6px;height:32px;position:relative;${isPk?'box-shadow:0 0 0 2px #16a34a;':''}`;cell.title=`${f12(h)}: ${hourArr[h]} reservations`;if(isPk){const p=document.createElement('div');p.style.cssText='position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#fbbf24;';cell.appendChild(p);}hm.appendChild(cell);}}
 
         /* DoW bars */
         const be=document.getElementById('ins-dow-bars'),le=document.getElementById('ins-dow-labels');
