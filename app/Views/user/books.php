@@ -3,6 +3,8 @@
 /**
  * Views/user/books.php
  * Resident — Browse & Borrow Books + RAG Smart Suggestion
+ * Enhanced: call_number + ISBN in detail modal · mobile card layout ·
+ *           mobile borrowings cards · iOS safe-area nav · UI polish
  */
 ?>
 <!DOCTYPE html>
@@ -10,7 +12,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>Library — Books</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="/manifest.json">
@@ -21,13 +23,13 @@
         :root {
             --green: #16a34a;
             --green-light: #f0fdf4;
-            --slate-bg: #f8fafc;
+            --slate-bg: #f8fafc
         }
 
         *,
         *::before,
         *::after {
-            box-sizing: border-box;
+            box-sizing: border-box
         }
 
         body {
@@ -35,6 +37,7 @@
             background: var(--slate-bg);
             color: #1e293b;
             margin: 0;
+            overflow-x: hidden
         }
 
         /* ── Sidebar ── */
@@ -49,51 +52,52 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            width: 100%;
+            width: 100%
         }
 
         .sidebar-header {
             flex-shrink: 0;
             padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0
         }
 
         .sidebar-nav {
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 8px;
+            padding: 8px
         }
 
         .sidebar-nav::-webkit-scrollbar {
-            width: 6px;
+            width: 4px
         }
 
         .sidebar-nav::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
+            background: #e2e8f0;
+            border-radius: 4px
         }
 
         .sidebar-footer {
             flex-shrink: 0;
             padding: 16px;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid #e2e8f0
         }
 
         .sidebar-item {
             transition: all .2s;
+            border-radius: 20px
         }
 
         .sidebar-item.active {
             background: #16a34a;
             color: white;
-            box-shadow: 0 10px 15px -3px rgba(22, 163, 74, .3);
+            box-shadow: 0 10px 15px -3px rgba(22, 163, 74, .3)
         }
 
         /* ── Mobile Nav ── */
         .mobile-nav-pill {
             position: fixed;
-            bottom: 20px;
+            bottom: calc(20px + env(safe-area-inset-bottom, 0px));
             left: 50%;
             transform: translateX(-50%);
             width: 92%;
@@ -103,28 +107,28 @@
             border-radius: 24px;
             padding: 6px;
             z-index: 100;
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, .4);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, .4)
         }
 
         .mobile-scroll-container {
             display: flex;
             gap: 4px;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            -webkit-overflow-scrolling: touch
         }
 
         .mobile-scroll-container::-webkit-scrollbar {
-            display: none;
+            display: none
         }
 
         .dash-card {
             background: white;
             border-radius: 28px;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .03);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .03)
         }
 
-        /* ── Book card ── */
+        /* ── Book card (grid) ── */
         .book-card {
             background: white;
             border-radius: 20px;
@@ -134,32 +138,33 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 2px 8px -2px rgba(0, 0, 0, .06);
-            cursor: pointer;
+            cursor: pointer
         }
 
         .book-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 40px -8px rgba(0, 0, 0, .15);
-            border-color: #bbf7d0;
+            border-color: #bbf7d0
         }
 
         .book-card:hover .cover-overlay {
-            opacity: 1;
+            opacity: 1
         }
 
         .book-card.rag-hl {
             border-color: var(--green);
-            box-shadow: 0 0 0 3px rgba(22, 163, 74, .15);
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, .15)
         }
 
         .book-cover {
-            height: 160px;
+            height: 150px;
             background: linear-gradient(145deg, #f0fdf4, #dcfce7);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
+            flex-shrink: 0
         }
 
         .book-cover img {
@@ -167,15 +172,15 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover
         }
 
         .cover-ph {
             font-size: 3rem;
             font-weight: 900;
-            color: rgba(22, 163, 74, .25);
+            color: rgba(22, 163, 74, .2);
             position: relative;
-            z-index: 1;
+            z-index: 1
         }
 
         .cover-overlay {
@@ -188,7 +193,7 @@
             justify-content: center;
             opacity: 0;
             transition: opacity .2s;
-            z-index: 3;
+            z-index: 3
         }
 
         .cover-overlay-btn {
@@ -202,7 +207,7 @@
             padding: .45rem 1rem;
             border-radius: 999px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
-            white-space: nowrap;
+            white-space: nowrap
         }
 
         .cover-genre-badge {
@@ -213,7 +218,7 @@
             max-width: calc(100% - 72px);
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: nowrap
         }
 
         .cover-avail-badge {
@@ -221,9 +226,10 @@
             top: 8px;
             right: 8px;
             z-index: 2;
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
+        /* ── Tags ── */
         .tag {
             display: inline-flex;
             align-items: center;
@@ -234,39 +240,40 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: .04em;
+            white-space: nowrap
         }
 
         .tag-pending {
             background: #fef3c7;
-            color: #92400e;
+            color: #92400e
         }
 
         .tag-approved {
             background: #dcfce7;
-            color: #166534;
+            color: #166534
         }
 
         .tag-returned {
             background: #e0e7ff;
-            color: #3730a3;
+            color: #3730a3
         }
 
         .tag-rejected {
             background: #fee2e2;
-            color: #991b1b;
+            color: #991b1b
         }
 
         .tag-available {
             background: #dcfce7;
-            color: #166534;
+            color: #166534
         }
 
         .tag-out {
             background: #fee2e2;
-            color: #991b1b;
+            color: #991b1b
         }
 
-        /* ── Modal backdrop ── */
+        /* ── Modals ── */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -277,12 +284,12 @@
             padding: 1.25rem;
             overflow-y: auto;
             align-items: flex-start;
-            justify-content: center;
+            justify-content: center
         }
 
         .modal-backdrop.show {
             display: flex;
-            animation: fadeIn .15s ease;
+            animation: fadeIn .15s ease
         }
 
         @keyframes fadeIn {
@@ -304,7 +311,7 @@
             margin: auto;
             animation: slideUp .22s cubic-bezier(.34, 1.56, .64, 1) both;
             max-height: 92vh;
-            overflow-y: auto;
+            overflow-y: auto
         }
 
         .detail-card {
@@ -317,7 +324,7 @@
             animation: slideUp .22s cubic-bezier(.34, 1.56, .64, 1) both;
             box-shadow: 0 32px 64px -16px rgba(0, 0, 0, .3);
             max-height: 92vh;
-            overflow-y: auto;
+            overflow-y: auto
         }
 
         @keyframes slideUp {
@@ -339,13 +346,17 @@
             background: #e2e8f0;
             border-radius: 9999px;
             margin: 10px auto 0;
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
         @media(max-width:639px) {
+            .mobile-nav-pill {
+                bottom: calc(20px + env(safe-area-inset-bottom, 0px))
+            }
+
             .modal-backdrop {
                 padding: 0;
-                align-items: flex-end !important;
+                align-items: flex-end !important
             }
 
             .modal-backdrop .modal-card,
@@ -355,26 +366,32 @@
                 margin: 0;
                 border-radius: 28px 28px 0 0;
                 max-height: 92vh;
-                animation: sheetUp .28s cubic-bezier(.32, .72, 0, 1) both;
+                animation: sheetUp .28s cubic-bezier(.32, .72, 0, 1) both
             }
 
             .sheet-handle {
-                display: block;
+                display: block
+            }
+
+            @keyframes sheetUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(100%)
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0)
+                }
+            }
+
+            .books-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: .75rem !important
             }
         }
 
-        @keyframes sheetUp {
-            from {
-                opacity: 0;
-                transform: translateY(100%)
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0)
-            }
-        }
-
+        /* ── Detail modal pieces ── */
         .detail-cover {
             height: 200px;
             background: linear-gradient(145deg, #f0fdf4, #bbf7d0);
@@ -383,7 +400,7 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
         .detail-cover img {
@@ -391,67 +408,111 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover
         }
 
         .detail-cover-ph {
             font-size: 5rem;
             font-weight: 900;
-            color: rgba(22, 163, 74, .2);
+            color: rgba(22, 163, 74, .2)
         }
 
         .detail-body {
-            padding: 1.75rem 1.75rem 2rem;
+            padding: 1.5rem 1.5rem 2rem
         }
 
         .info-row {
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            padding: .6rem 0;
-            border-bottom: 1px solid #f1f5f9;
+            padding: .55rem 0;
+            border-bottom: 1px solid #f1f5f9
         }
 
         .info-row:last-of-type {
-            border-bottom: none;
+            border-bottom: none
         }
 
         .info-icon {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 10px;
             background: #f0fdf4;
             color: var(--green);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: .75rem;
+            font-size: .72rem;
             flex-shrink: 0;
-            margin-top: 1px;
+            margin-top: 1px
         }
 
         .info-label {
-            font-size: .65rem;
+            font-size: .62rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: .08em;
             color: #94a3b8;
-            margin-bottom: 2px;
+            margin-bottom: 2px
         }
 
         .info-value {
-            font-size: .88rem;
+            font-size: .85rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #1e293b
         }
 
+        .call-number-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #f3f0ff;
+            color: #5b21b6;
+            font-size: .72rem;
+            font-weight: 700;
+            font-family: monospace;
+            padding: .25rem .65rem;
+            border-radius: 8px;
+            letter-spacing: .02em
+        }
+
+        /* ── Borrowings — mobile cards ── */
+        .my-borrow-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: .9rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            overflow: hidden
+        }
+
+        .my-borrow-top {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            padding-bottom: .6rem;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: .6rem
+        }
+
+        .my-borrow-dates {
+            display: flex;
+            gap: .75rem;
+            font-size: .68rem;
+            font-weight: 600;
+            color: #94a3b8
+        }
+
+        /* ── RAG skeleton ── */
         .rag-skeleton .sk-line {
             height: 12px;
             background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
             background-size: 200% 100%;
             border-radius: 6px;
             animation: shimmer 1.3s infinite;
-            margin-bottom: .5rem;
+            margin-bottom: .5rem
         }
 
         @keyframes shimmer {
@@ -464,64 +525,58 @@
             }
         }
 
+        /* ── Desktop borrowings table ── */
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: .875rem;
+            font-size: .875rem
         }
 
         thead {
             background: #f8fafc;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid #e2e8f0
         }
 
         thead th {
-            padding: .75rem 1rem;
+            padding: .65rem 1rem;
             text-align: left;
             font-weight: 700;
             letter-spacing: .04em;
-            font-size: .72rem;
+            font-size: .7rem;
             text-transform: uppercase;
-            color: #94a3b8;
+            color: #94a3b8
         }
 
         tbody tr {
             border-bottom: 1px solid #f1f5f9;
-            transition: background .15s;
+            transition: background .15s
         }
 
         tbody tr:last-child {
-            border-bottom: none;
+            border-bottom: none
         }
 
         tbody tr:hover {
-            background: #f8fafc;
+            background: #f8fafc
         }
 
         td {
-            padding: .8rem 1rem;
-            vertical-align: middle;
+            padding: .7rem 1rem;
+            vertical-align: middle
         }
 
         .fade-in-up {
-            animation: slideUp .4s ease both;
-        }
-
-        @media(max-width:639px) {
-            .books-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: .75rem !important;
-            }
+            animation: slideUp .4s ease both
         }
 
         .rag-input-row {
             display: flex;
-            gap: .75rem;
+            gap: .75rem
         }
 
         @media(max-width:400px) {
             .rag-input-row {
-                flex-direction: column;
+                flex-direction: column
             }
         }
     </style>
@@ -547,6 +602,8 @@
         'preface'          =>       $b['preface']          ?? '',
         'published_year'   =>       $b['published_year']   ?? '',
         'cover_image'      =>       $b['cover_image']      ?? '',
+        'isbn'             =>       $b['isbn']             ?? '',
+        'call_number'      =>       $b['call_number']      ?? '',
         'available_copies' => (int)($b['available_copies'] ?? 0),
         'total_copies'     => (int)($b['total_copies']     ?? 1),
     ], $books ?? []));
@@ -560,12 +617,9 @@
                 <h1 class="text-2xl font-extrabold text-slate-800">my<span class="text-green-600">Space.</span></h1>
             </div>
             <nav class="sidebar-nav space-y-1">
-                <?php foreach ($navItems as $item):
-                    $active = ($page === $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
-                ?>
+                <?php foreach ($navItems as $item): $active = ($page === $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600'; ?>
                     <a href="<?= base_url($item['url']) ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
-                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
-                        <?= $item['label'] ?>
+                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i><?= $item['label'] ?>
                     </a>
                 <?php endforeach; ?>
             </nav>
@@ -580,17 +634,15 @@
     <!-- ── Mobile Nav ── -->
     <nav class="lg:hidden mobile-nav-pill">
         <div class="mobile-scroll-container text-white px-2">
-            <?php foreach ($navItems as $item):
-                $cls = ($page === $item['key']) ? 'bg-green-700 font-semibold' : 'hover:bg-green-500/30';
-            ?>
-                <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
-                    <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
-                    <span class="text-[9px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+            <?php foreach ($navItems as $item): $cls = ($page === $item['key']) ? 'bg-green-700 font-semibold' : 'hover:bg-green-500/30'; ?>
+                <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[68px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
+                    <i class="fa-solid <?= $item['icon'] ?> text-base"></i>
+                    <span class="text-[9px] mt-0.5 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
                 </a>
             <?php endforeach; ?>
-            <a href="<?= base_url('/logout') ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
-                <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
-                <span class="text-[9px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
+            <a href="<?= base_url('/logout') ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[68px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
+                <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
+                <span class="text-[9px] mt-0.5 text-center leading-tight whitespace-nowrap">Logout</span>
             </a>
         </div>
     </nav>
@@ -603,6 +655,7 @@
                 <span class="detail-cover-ph" id="detailCoverPh"></span>
             </div>
             <div class="detail-body">
+                <!-- Title / author / availability -->
                 <div class="flex items-start justify-between gap-3 mb-4">
                     <div class="flex-1 min-w-0">
                         <p id="detailGenrePill" class="text-[10px] font-black uppercase tracking-widest text-green-600 mb-1"></p>
@@ -614,10 +667,14 @@
                         <span id="detailAvailTag" class="tag"></span>
                     </div>
                 </div>
+
+                <!-- Preface -->
                 <div id="detailPrefaceBox" class="hidden mb-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">About this book</p>
                     <p id="detailPreface" class="text-sm text-slate-600 leading-relaxed italic font-medium"></p>
                 </div>
+
+                <!-- Info rows -->
                 <div class="info-row">
                     <div class="info-icon"><i class="fa-solid fa-copy"></i></div>
                     <div>
@@ -639,6 +696,24 @@
                         <p id="detailGenreVal" class="info-value"></p>
                     </div>
                 </div>
+                <!-- ★ Call Number -->
+                <div class="info-row" id="detailCallRow">
+                    <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
+                    <div>
+                        <p class="info-label">Call Number <span class="normal-case font-medium text-slate-300">(shelf location)</span></p>
+                        <p id="detailCallVal" class="info-value"></p>
+                    </div>
+                </div>
+                <!-- ★ ISBN -->
+                <div class="info-row" id="detailIsbnRow">
+                    <div class="info-icon"><i class="fa-solid fa-barcode"></i></div>
+                    <div>
+                        <p class="info-label">ISBN</p>
+                        <p id="detailIsbnVal" class="info-value font-mono"></p>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
                 <div id="detailActions" class="flex gap-3 mt-5"></div>
             </div>
         </div>
@@ -694,7 +769,7 @@
             </div>
         <?php endif; ?>
 
-        <!-- RAG Panel -->
+        <!-- ★ RAG Panel -->
         <div class="dash-card p-5 mb-6">
             <div class="flex items-center gap-2 mb-3">
                 <div class="w-7 h-7 bg-green-50 text-green-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-bolt text-xs"></i></div>
@@ -726,7 +801,7 @@
             </div>
         </div>
 
-        <!-- Controls -->
+        <!-- Controls: search + genre + tabs -->
         <div class="flex gap-3 items-center flex-wrap mb-6">
             <div class="relative flex-1 min-w-[160px]">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
@@ -735,9 +810,7 @@
             </div>
             <select id="genreFilter" class="flex-shrink-0 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-slate-700 outline-none focus:border-green-400 cursor-pointer w-full sm:w-auto">
                 <option value="">All Genres</option>
-                <?php foreach ($genres as $g): ?>
-                    <option value="<?= esc($g) ?>"><?= esc($g) ?></option>
-                <?php endforeach; ?>
+                <?php foreach ($genres as $g): ?><option value="<?= esc($g) ?>"><?= esc($g) ?></option><?php endforeach; ?>
             </select>
             <div class="flex rounded-2xl border border-slate-200 overflow-hidden bg-white w-full sm:w-auto">
                 <button id="tabBrowse" onclick="switchTab('browse')" class="flex-1 sm:flex-none px-4 py-2.5 text-sm font-bold transition"><i class="fa-solid fa-grid-2 text-xs mr-1.5"></i>Browse</button>
@@ -745,7 +818,7 @@
             </div>
         </div>
 
-        <!-- Browse Tab -->
+        <!-- ══ BROWSE TAB ══ -->
         <div id="paneBrowse">
             <?php if (empty($books)): ?>
                 <div class="dash-card p-16 text-center">
@@ -754,7 +827,7 @@
                     <p class="text-sm text-slate-400 font-medium">The library is being stocked — check back soon!</p>
                 </div>
             <?php else: ?>
-                <div class="books-grid grid gap-4" id="booksGrid" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr))">
+                <div class="books-grid grid gap-4" id="booksGrid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
                     <?php foreach ($books as $book):
                         $available = (int)($book['available_copies'] ?? 0) > 0;
                     ?>
@@ -776,19 +849,22 @@
                                 <?php endif; ?>
                                 <span class="cover-avail-badge tag <?= $available ? 'tag-available' : 'tag-out' ?>"><?= $available ? 'Available' : 'Out' ?></span>
                             </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-1">
+                            <div class="p-3 flex flex-col flex-1">
                                 <p class="font-extrabold text-sm text-slate-900 leading-snug mb-0.5" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"><?= esc($book['title']) ?></p>
                                 <p class="text-xs text-slate-400 font-medium mb-2 truncate">by <?= esc($book['author'] ?? 'Unknown') ?></p>
                                 <?php if (!empty($book['preface'])): ?>
-                                    <p class="text-xs text-slate-400 italic leading-relaxed mb-3 hidden sm:block" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"><?= esc($book['preface']) ?></p>
+                                    <p class="text-xs text-slate-400 italic leading-relaxed mb-2 hidden sm:block" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"><?= esc($book['preface']) ?></p>
                                 <?php endif; ?>
-                                <div class="flex gap-1.5 flex-wrap mt-auto mb-2">
-                                    <span class="px-2 py-0.5 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-500"><?= (int)($book['available_copies'] ?? 0) ?>/<?= (int)($book['total_copies'] ?? 1) ?></span>
+                                <div class="flex gap-1.5 flex-wrap mt-auto mb-1.5">
+                                    <span class="px-2 py-0.5 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-500"><?= (int)($book['available_copies'] ?? 0) ?>/<?= (int)($book['total_copies'] ?? 1) ?> copies</span>
                                     <?php if (!empty($book['published_year'])): ?>
                                         <span class="px-2 py-0.5 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-500 hidden sm:inline-flex"><?= esc($book['published_year']) ?></span>
                                     <?php endif; ?>
+                                    <?php if (!empty($book['call_number'])): ?>
+                                        <span class="px-2 py-0.5 bg-violet-50 rounded-lg text-[10px] font-bold text-violet-600 font-mono hidden sm:inline-flex"><?= esc($book['call_number']) ?></span>
+                                    <?php endif; ?>
                                 </div>
-                                <p class="text-[10px] text-slate-300 font-semibold text-center">Tap to view</p>
+                                <p class="text-[10px] text-slate-300 font-semibold text-center">Tap to view &amp; borrow</p>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -796,7 +872,7 @@
             <?php endif; ?>
         </div>
 
-        <!-- My Borrowings Tab -->
+        <!-- ══ MY BORROWINGS TAB ══ -->
         <div id="paneMine" style="display:none">
             <?php if (empty($myBorrowings)): ?>
                 <div class="dash-card p-16 text-center">
@@ -805,7 +881,9 @@
                     <p class="text-sm text-slate-400 font-medium">Books you borrow will appear here.</p>
                 </div>
             <?php else: ?>
-                <div class="dash-card overflow-hidden">
+
+                <!-- Desktop table (md+) -->
+                <div class="hidden md:block dash-card overflow-hidden">
                     <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
                         <div class="w-8 h-8 bg-green-50 text-green-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left text-xs"></i></div>
                         <h3 class="font-extrabold text-slate-800 text-sm">My Borrowing History</h3>
@@ -822,9 +900,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($myBorrowings as $i => $b):
-                                    $s = strtolower($b['status'] ?? 'pending');
-                                ?>
+                                <?php foreach ($myBorrowings as $i => $b): $s = strtolower($b['status'] ?? 'pending'); ?>
                                     <tr>
                                         <td class="text-slate-400 font-bold text-xs"><?= $i + 1 ?></td>
                                         <td>
@@ -839,6 +915,42 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <!-- ★ Mobile borrowings cards (below md) -->
+                <div class="md:hidden space-y-3">
+                    <div class="flex items-center gap-2.5 mb-1">
+                        <div class="w-7 h-7 bg-green-50 text-green-600 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-clock-rotate-left text-xs"></i></div>
+                        <p class="text-xs font-black uppercase tracking-widest text-slate-400">Borrowing History</p>
+                    </div>
+                    <?php foreach ($myBorrowings as $i => $b): $s = strtolower($b['status'] ?? 'pending'); ?>
+                        <div class="my-borrow-card">
+                            <!-- Top: book title + status -->
+                            <div class="my-borrow-top">
+                                <div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-book-open text-green-500 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <p class="font-black text-sm text-slate-900 leading-tight"><?= esc($b['title']) ?></p>
+                                        <span class="tag tag-<?= $s ?> flex-shrink-0 mt-0.5"><?= ucfirst($s) ?></span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 font-medium mt-0.5 truncate"><?= esc($b['author'] ?? '') ?></p>
+                                </div>
+                            </div>
+                            <!-- Dates -->
+                            <div class="my-borrow-dates">
+                                <span class="flex items-center gap-1">
+                                    <i class="fa-regular fa-calendar text-[10px] text-slate-300"></i>
+                                    Borrowed: <?= esc($b['borrowed_at'] ?? '—') ?>
+                                </span>
+                                <span class="flex items-center gap-1 <?= $s === 'approved' ? 'text-rose-500 font-bold' : '' ?>">
+                                    <i class="fa-regular fa-calendar-xmark text-[10px]"></i>
+                                    Due: <?= esc($b['due_date'] ?? '—') ?>
+                                </span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -865,6 +977,8 @@
             const b = bookMap[id];
             if (!b) return;
             const avail = b.available_copies > 0;
+
+            // Cover
             const coverEl = document.getElementById('detailCover'),
                 phEl = document.getElementById('detailCoverPh');
             const oldImg = coverEl.querySelector('img');
@@ -879,36 +993,60 @@
                 phEl.style.display = '';
                 phEl.textContent = b.title.charAt(0).toUpperCase();
             }
+
             document.getElementById('detailGenrePill').textContent = b.genre || '';
             document.getElementById('detailTitle').textContent = b.title;
             document.getElementById('detailAuthor').textContent = 'by ' + b.author;
             document.getElementById('detailCopies').textContent = b.available_copies + ' available of ' + b.total_copies + ' total';
+
             const tag = document.getElementById('detailAvailTag');
             tag.textContent = avail ? 'Available' : 'Not Available';
             tag.className = 'tag ' + (avail ? 'tag-available' : 'tag-out');
+
+            // Preface
             const prefBox = document.getElementById('detailPrefaceBox');
             if (b.preface) {
                 document.getElementById('detailPreface').textContent = b.preface;
                 prefBox.classList.remove('hidden');
-            } else {
-                prefBox.classList.add('hidden');
-            }
+            } else prefBox.classList.add('hidden');
+
+            // Year
             const yr = document.getElementById('detailYearRow');
             if (b.published_year) {
                 document.getElementById('detailYear').textContent = b.published_year;
                 yr.style.display = '';
             } else yr.style.display = 'none';
+
+            // Genre
             const gr = document.getElementById('detailGenreRow');
             if (b.genre) {
                 document.getElementById('detailGenreVal').textContent = b.genre;
                 gr.style.display = '';
             } else gr.style.display = 'none';
+
+            // ★ Call number
+            const cr = document.getElementById('detailCallRow');
+            if (b.call_number) {
+                const cv = document.getElementById('detailCallVal');
+                cv.innerHTML = '<span class="call-number-badge">' + b.call_number + '</span>';
+                cr.style.display = '';
+            } else cr.style.display = 'none';
+
+            // ★ ISBN
+            const ir = document.getElementById('detailIsbnRow');
+            if (b.isbn) {
+                document.getElementById('detailIsbnVal').textContent = b.isbn;
+                ir.style.display = '';
+            } else ir.style.display = 'none';
+
+            // Actions
             const acts = document.getElementById('detailActions');
             if (avail) {
-                acts.innerHTML = `<button onclick="closeDetailModal(); openBorrowModal(${b.id}, ${JSON.stringify(b.title)})" class="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm shadow-green-200 flex items-center justify-center gap-2"><i class="fa-solid fa-book-open text-xs"></i> Borrow This Book</button><button onclick="closeDetailModal()" class="py-3 px-5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-sm transition">Close</button>`;
+                acts.innerHTML = `<button onclick="closeDetailModal();openBorrowModal(${b.id},${JSON.stringify(b.title)})" class="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm shadow-green-200 flex items-center justify-center gap-2"><i class="fa-solid fa-book-open text-xs"></i> Borrow This Book</button><button onclick="closeDetailModal()" class="py-3 px-5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-sm transition">Close</button>`;
             } else {
                 acts.innerHTML = `<button disabled class="flex-1 py-3 bg-slate-100 text-slate-400 rounded-2xl font-bold text-sm cursor-not-allowed flex items-center justify-center gap-2"><i class="fa-solid fa-xmark text-xs"></i> Currently Unavailable</button><button onclick="closeDetailModal()" class="py-3 px-5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-sm transition">Close</button>`;
             }
+
             document.getElementById('bookDetailModal').classList.add('show');
             document.body.style.overflow = 'hidden';
         }
@@ -948,8 +1086,8 @@
         document.getElementById('genreFilter').addEventListener('change', filterBooks);
 
         function filterBooks() {
-            const q = document.getElementById('searchInput').value.toLowerCase(),
-                g = document.getElementById('genreFilter').value;
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const g = document.getElementById('genreFilter').value;
             document.querySelectorAll('.book-card').forEach(c => {
                 const mQ = c.dataset.title.includes(q) || c.dataset.author.includes(q);
                 const mG = !g || c.dataset.genre === g;
