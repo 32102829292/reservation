@@ -9,9 +9,7 @@ use CodeIgniter\Controller;
  *
  * Tables:
  *   books           — id, title, author, genre, preface, isbn, published_year,
- *                     cover_image, total_copies, available_copies, status, created_at, updated_at
- *   users           — id, name, full_name, email, role, status, is_approved, is_verified
- *   accounts        — id, user_id, password, is_verified
+ *                     call_number, cover_image, total_copies, available_copies, status
  *   book_borrowings — id, book_id, user_id, status, borrowed_at, due_date,
  *                     returned_at, notes, created_at, updated_at
  */
@@ -34,7 +32,7 @@ class BookController extends Controller
 
         $books = $this->db->table('books')
             ->select('id, title, author, genre, preface, isbn, published_year,
-                      cover_image, total_copies, available_copies, status')
+                      call_number, cover_image, total_copies, available_copies, status')
             ->where('status', 'active')
             ->orderBy('title', 'ASC')
             ->get()->getResultArray();
@@ -109,7 +107,7 @@ class BookController extends Controller
     {
         $books = $this->db->table('books')
             ->select('id, title, author, genre, preface, isbn, published_year,
-                      cover_image, total_copies, available_copies, status, created_at')
+                      call_number, cover_image, total_copies, available_copies, status, created_at')
             ->orderBy('title', 'ASC')
             ->get()->getResultArray();
 
@@ -166,6 +164,7 @@ class BookController extends Controller
             'preface'          => $this->request->getPost('preface'),
             'isbn'             => $this->request->getPost('isbn'),
             'published_year'   => $this->request->getPost('published_year') ?: null,
+            'call_number'      => $this->request->getPost('call_number') ?: null,   // ★
             'total_copies'     => $totalCopies,
             'available_copies' => $totalCopies,
             'status'           => 'active',
@@ -204,6 +203,7 @@ class BookController extends Controller
             'preface'        => $this->request->getPost('preface')        ?? $book['preface'],
             'isbn'           => $this->request->getPost('isbn')           ?? $book['isbn'],
             'published_year' => $this->request->getPost('published_year') ?? $book['published_year'],
+            'call_number'    => $this->request->getPost('call_number')    ?? $book['call_number'] ?? null,  // ★
             'status'         => $this->request->getPost('status')         ?? $book['status'],
             'updated_at'     => date('Y-m-d H:i:s'),
         ];
@@ -227,6 +227,36 @@ class BookController extends Controller
 
         $prefix = $this->isAdmin() ? '/admin' : '/sk';
         return redirect()->to($prefix . '/books')->with('success', 'Book deleted successfully.');
+    }
+
+    // ★ Inline copies editor — AJAX endpoint
+    public function updateCopies($bookId): \CodeIgniter\HTTP\ResponseInterface
+    {
+        if (!session()->has('user_id')) {
+            return $this->response->setStatusCode(401)
+                ->setJSON(['ok' => false, 'error' => 'Unauthorized']);
+        }
+
+        $data = $this->request->getJSON(true) ?? [];
+        $val  = max(0, (int)($data['available_copies'] ?? 0));
+
+        $book = $this->db->table('books')->where('id', $bookId)->get()->getRowArray();
+        if (!$book) {
+            return $this->response->setStatusCode(404)
+                ->setJSON(['ok' => false, 'error' => 'Book not found']);
+        }
+
+        // Clamp to total_copies so available never exceeds total
+        $val = min($val, (int)($book['total_copies'] ?? $val));
+
+        $this->db->table('books')->where('id', $bookId)->update([
+            'available_copies' => $val,
+            'updated_at'       => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->response
+            ->setHeader('X-CSRF-TOKEN', csrf_hash())   // ★ CSRF refresh
+            ->setJSON(['ok' => true, 'available_copies' => $val]);
     }
 
     // ══════════════════════════════════════════════════
@@ -307,7 +337,6 @@ class BookController extends Controller
 
     private function isAdmin(): bool
     {
-        $role = session()->get('role') ?? '';
-        return $role === 'chairman';
+        return (session()->get('role') ?? '') === 'chairman';
     }
 }

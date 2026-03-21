@@ -93,20 +93,21 @@ $routes->group('sk', ['filter' => 'role:sk'], function($routes) {
     $routes->get('export-claimed-excel', 'SkController::exportClaimedToExcel');
 
     // Books — SK manage
-    $routes->get('books',                    'BookController::manage');
-    $routes->get('books/create',             'BookController::create');
-    $routes->post('books/store',             'BookController::store');
-    $routes->post('books/extract-pdf',       'SkController::extractPdfWithAI');
-    $routes->get('books/edit/(:num)',        'BookController::edit/$1');
-    $routes->post('books/update/(:num)',     'BookController::update/$1');
-    $routes->post('books/delete/(:num)',     'BookController::delete/$1');
+    $routes->get('books',                        'BookController::manage');
+    $routes->get('books/create',                 'BookController::create');
+    $routes->post('books/store',                 'BookController::store');
+    $routes->post('books/extract-pdf',           'SkController::extractPdfWithAI');
+    $routes->get('books/edit/(:num)',            'BookController::edit/$1');
+    $routes->post('books/update/(:num)',         'BookController::update/$1');
+    $routes->post('books/delete/(:num)',         'BookController::delete/$1');
+    $routes->post('books/update-copies/(:num)', 'BookController::updateCopies/$1');  // ★ inline copies
 
     // Borrowings — SK manage
     $routes->get('borrowings',                'BookController::borrowings');
     $routes->post('borrowings/approve/(:num)','BookController::approveBorrowing/$1');
     $routes->post('borrowings/return/(:num)', 'BookController::returnBook/$1');
     $routes->post('borrowings/reject/(:num)', 'BookController::rejectBorrowing/$1');
-    $routes->get('books/debug-pdf',          'SkController::debugPdf');
+    $routes->get('books/debug-pdf',           'SkController::debugPdf');
 });
 
 // Admin routes
@@ -141,12 +142,13 @@ $routes->group('admin', ['filter' => 'role:chairman'], function($routes) {
     $routes->post('books/extract-pdf',    'AdminController::extractPdfWithAI');
 
     // Books — Admin manage
-    $routes->get('books',                    'BookController::manage');
-    $routes->get('books/create',             'BookController::create');
-    $routes->post('books/store',             'BookController::store');
-    $routes->get('books/edit/(:num)',        'BookController::edit/$1');
-    $routes->post('books/update/(:num)',     'BookController::update/$1');
-    $routes->post('books/delete/(:num)',     'BookController::delete/$1');
+    $routes->get('books',                        'BookController::manage');
+    $routes->get('books/create',                 'BookController::create');
+    $routes->post('books/store',                 'BookController::store');
+    $routes->get('books/edit/(:num)',            'BookController::edit/$1');
+    $routes->post('books/update/(:num)',         'BookController::update/$1');
+    $routes->post('books/delete/(:num)',         'BookController::delete/$1');
+    $routes->post('books/update-copies/(:num)', 'BookController::updateCopies/$1');  // ★ inline copies
 
     // Borrowings — Admin manage
     $routes->get('borrowings',                'BookController::borrowings');
