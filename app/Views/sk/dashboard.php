@@ -314,15 +314,6 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
             <?php endforeach; ?>
         </nav>
         <div class="sidebar-footer">
-            <!-- Quota bar — BUG FIX #5 & #6 applied above in PHP block -->
-            <div class="px-3 py-3 bg-slate-50 rounded-2xl mb-3">
-                <div class="flex justify-between items-center mb-1.5">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">My Quota</span>
-                    <span class="text-[10px] font-black text-green-600"><?= $remainingReservations ?> left</span>
-                </div>
-                <div class="prog-bar"><div class="prog-fill" style="width:<?= $quotaPct ?>%;background:var(--green)"></div></div>
-                <p class="text-[10px] text-slate-400 mt-1 font-medium"><?= $usedSlots ?>/<?= $maxSlots ?> slots used this month</p>
-            </div>
             <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all text-sm">
                 <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
             </a>
