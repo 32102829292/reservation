@@ -44,7 +44,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8fafc;color:#1e293b
 @keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .skeleton-card{background:white;border-radius:24px;padding:1.25rem;border:1px solid #e2e8f0}
 /* Badges */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:.25rem .65rem;border-radius:8px;font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:.2rem .5rem;border-radius:7px;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
 .badge-active{background:#dcfce7;color:#166534}
 .badge-inactive{background:#fee2e2;color:#991b1b}
 .badge-pending{background:#fef3c7;color:#92400e}
@@ -54,35 +54,54 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8fafc;color:#1e293b
 .badge-rag-yes{background:#dcfce7;color:#166534;cursor:pointer}
 .badge-rag-no{background:#f1f5f9;color:#64748b}
 /* Table */
-table{width:100%;border-collapse:collapse;font-size:.875rem;min-width:640px}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:0}
+/* Column width hints */
+#booksTable th:nth-child(1){width:32px}     /* # */
+#booksTable th:nth-child(2){min-width:140px} /* Title */
+#booksTable th:nth-child(3){width:80px}      /* Call# */
+#booksTable th:nth-child(4){width:90px}      /* ISBN */
+#booksTable th:nth-child(5){width:70px}      /* Genre */
+#booksTable th:nth-child(6){width:46px}      /* Year */
+#booksTable th:nth-child(7){width:80px}      /* Copies */
+#booksTable th:nth-child(8){width:56px}      /* RAG */
+#booksTable th:nth-child(9){width:52px}      /* Status */
+#booksTable th:nth-child(10){width:90px}     /* Actions */
+/* Truncate long text cells */
+#booksTable td:nth-child(2) p:first-child{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#booksTable td:nth-child(4){font-size:.68rem;font-family:monospace;color:#64748b;max-width:95px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 thead{background:#f8fafc;border-bottom:2px solid #e2e8f0}
-thead th{padding:.75rem 1rem;text-align:left;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8}
+thead th{padding:.55rem .75rem;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;white-space:nowrap}
 tbody tr{border-bottom:1px solid #f1f5f9;transition:background 0.15s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:#f8fafc}
-td{padding:.8rem 1rem;vertical-align:middle}
-.actions-cell{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+td{padding:.6rem .75rem;vertical-align:middle}
+.actions-cell{display:flex;flex-direction:column;gap:4px;align-items:stretch}
 /* ★ Inline copies editor */
 .copies-control{display:inline-flex;align-items:center;gap:4px}
-.copies-btn{width:22px;height:22px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;line-height:1;padding:0}
+.copies-btn{width:20px;height:20px;border-radius:5px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;line-height:1;padding:0}
 .copies-btn:hover{background:#e2e8f0}
 .copies-btn:active{transform:scale(0.9)}
-.copies-val{font-size:.875rem;font-weight:800;color:#1e293b;min-width:20px;text-align:center}
-.copies-total{font-size:.75rem;color:#94a3b8}
+.copies-val{font-size:.8rem;font-weight:800;color:#1e293b;min-width:18px;text-align:center}
+.copies-total{font-size:.7rem;color:#94a3b8;white-space:nowrap}
 /* Mobile card */
-.book-card{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:1rem 1.1rem;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;gap:.5rem}
+.book-card{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:1rem 1.1rem;transition:all .18s;display:flex;flex-direction:column;gap:0;overflow:hidden}
 .book-card:active{transform:scale(.985);background:#f8fafc}
-.book-card-row{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
-.book-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#dbeafe,#eff6ff);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem}
-.book-card-actions{display:flex;gap:8px;margin-top:.25rem}
-.book-card-actions form,.book-card-actions button{flex:1}
+.book-card-top{display:flex;align-items:flex-start;gap:.75rem;padding-bottom:.65rem;border-bottom:1px solid #f1f5f9;margin-bottom:.65rem}
+.book-avatar{width:42px;height:52px;border-radius:10px;background:linear-gradient(160deg,#dbeafe 0%,#eff6ff 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,.12)}
+.book-meta-row{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.3rem}
+.book-meta-chip{display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:.1rem .45rem;white-space:nowrap}
+.book-copies-row{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0}
+.book-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:.5rem;border-top:1px solid #f1f5f9}
 .book-card-actions button{width:100%}
 .card-copies-control{display:inline-flex;align-items:center;gap:5px}
 .card-copies-btn{width:26px;height:26px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
 .card-copies-btn:hover{background:#dbeafe;border-color:#93c5fd;color:#2563eb}
 /* Borrow card */
-.borrow-card{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:1rem 1.1rem;transition:all .18s;display:flex;flex-direction:column;gap:.5rem}
-.borrow-card-actions{display:flex;gap:8px;margin-top:.25rem}
+.borrow-card{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:1rem 1.1rem;transition:all .18s;display:flex;flex-direction:column;gap:0;overflow:hidden}
+.borrow-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;padding-bottom:.65rem;border-bottom:1px solid #f1f5f9;margin-bottom:.65rem}
+.borrow-card-book{display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem}
+.borrow-card-dates{display:flex;gap:.75rem;font-size:.68rem;font-weight:600;color:#94a3b8;margin-bottom:.65rem}
+.borrow-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:.5rem;border-top:1px solid #f1f5f9}
 .borrow-card-actions form,.borrow-card-actions button{flex:1}
 .borrow-card-actions button{width:100%}
 /* Modals */
@@ -551,13 +570,13 @@ $pendingBorrows = count(array_filter($borrowings ?? [], fn($b) => $b['status'] =
                 <span class="copies-total">/ <?=(int)($b['total_copies']??1)?></span>
               </div>
             </td>
-            <td><?php if(!empty($b['preface'])):?><button onclick="previewRag(<?=htmlspecialchars(json_encode($b),ENT_QUOTES,'UTF-8')?> )" class="badge badge-rag-yes hover:opacity-80 transition"><i class="fa-solid fa-eye text-[9px]"></i>Preview</button><?php else:?><span class="badge badge-rag-no">No preface</span><?php endif;?></td>
+            <td><?php if(!empty($b['preface'])):?><button onclick="previewRag(<?=htmlspecialchars(json_encode($b),ENT_QUOTES,'UTF-8')?> )" class="badge badge-rag-yes hover:opacity-80 transition text-[10px]"><i class="fa-solid fa-eye text-[8px]"></i>View</button><?php else:?><span class="badge badge-rag-no text-[10px]">—</span><?php endif;?></td>
             <td><span class="badge badge-<?=$b['status']==='active'?'active':'inactive'?>"><?=ucfirst($b['status']??'inactive')?></span></td>
             <td>
               <div class="actions-cell">
-                <button onclick="openEditModal(<?=htmlspecialchars(json_encode($b),ENT_QUOTES,'UTF-8')?> )" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition">Edit</button>
+                <button onclick="openEditModal(<?=htmlspecialchars(json_encode($b),ENT_QUOTES,'UTF-8')?> )" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-[11px] transition w-full text-center"><i class="fa-solid fa-pen text-[9px] mr-1"></i>Edit</button>
                 <!-- ★ Styled delete (no confirm()) -->
-                <button onclick="confirmDelete(<?=$b['id']?>,<?=htmlspecialchars(json_encode($b['title']),ENT_QUOTES,'UTF-8')?>)" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs transition">Delete</button>
+                <button onclick="confirmDelete(<?=$b['id']?>,<?=htmlspecialchars(json_encode($b['title']),ENT_QUOTES,'UTF-8')?>)" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-bold text-[11px] transition w-full text-center"><i class="fa-solid fa-trash text-[9px] mr-1"></i>Delete</button>
               </div>
             </td>
           </tr>
@@ -569,36 +588,80 @@ $pendingBorrows = count(array_filter($borrowings ?? [], fn($b) => $b['status'] =
 
     <!-- Mobile card list -->
     <div class="md:hidden space-y-3" id="bookCardList">
-      <?php foreach($books as $i=>$b):?>
+      <?php foreach($books as $i=>$b):
+        $avail = (int)($b['available_copies'] ?? 0);
+        $total = (int)($b['total_copies'] ?? 1);
+        $isActive = ($b['status'] ?? '') === 'active';
+        $hasRag = !empty($b['preface']);
+        $availColor = $avail > 0 ? 'text-emerald-600' : 'text-rose-500';
+      ?>
       <div class="book-card"
-           data-search="<?=strtolower(htmlspecialchars(($b['title']??'').' '.($b['author']??'').' '.($b['genre']??'').' '.($b['call_number']??''),ENT_QUOTES,'UTF-8'))?>"
-           onclick="openEditModal(<?=htmlspecialchars(json_encode($b),ENT_QUOTES,'UTF-8')?>)">
-        <div class="book-card-row">
-          <div class="flex items-center gap-3 flex-1 min-w-0">
-            <div class="book-avatar"><i class="fa-solid fa-book text-blue-500"></i></div>
-            <div class="min-w-0"><p class="font-bold text-sm text-slate-800 truncate"><?=htmlspecialchars($b['title']??'',ENT_QUOTES,'UTF-8')?></p><p class="text-xs text-slate-400 mt-0.5 truncate"><?=htmlspecialchars($b['author']??'',ENT_QUOTES,'UTF-8')?></p></div>
+           data-search="<?=strtolower(htmlspecialchars(($b['title']??'').' '.($b['author']??'').' '.($b['genre']??'').' '.($b['call_number']??''),ENT_QUOTES,'UTF-8'))?>">
+
+        <!-- Top: book icon + title/author + status -->
+        <div class="book-card-top">
+          <div class="book-avatar">
+            <i class="fa-solid fa-book-open text-blue-400 text-lg"></i>
           </div>
-          <span class="badge badge-<?=$b['status']==='active'?'active':'inactive'?> flex-shrink-0"><?=ucfirst($b['status']??'inactive')?></span>
-        </div>
-        <div class="flex items-center gap-3 flex-wrap text-xs text-slate-400 font-medium px-0.5">
-          <?php if(!empty($b['call_number'])):?><span class="call-number-badge"><?=htmlspecialchars($b['call_number'],ENT_QUOTES,'UTF-8')?></span><?php endif;?>
-          <?php if(!empty($b['genre'])):?><span><i class="fa-solid fa-tag text-[10px] mr-1 text-slate-300"></i><?=htmlspecialchars($b['genre'],ENT_QUOTES,'UTF-8')?></span><?php endif;?>
-          <?php if(!empty($b['published_year'])):?><span><i class="fa-solid fa-calendar text-[10px] mr-1 text-slate-300"></i><?=htmlspecialchars($b['published_year'],ENT_QUOTES,'UTF-8')?></span><?php endif;?>
-          <?php if(!empty($b['preface'])):?><span class="badge badge-rag-yes !py-0.5" onclick="event.stopPropagation();previewRag(<?=htmlspecialchars(json_encode($b),ENT_QUOTES,'UTF-8')?>)"><i class="fa-solid fa-eye text-[9px]"></i>RAG</span><?php else:?><span class="badge badge-rag-no !py-0.5">No preface</span><?php endif;?>
-        </div>
-        <!-- ★ Inline copies (mobile) -->
-        <div class="flex items-center gap-2 px-0.5" onclick="event.stopPropagation()">
-          <span class="text-xs text-slate-400 font-medium">Copies:</span>
-          <div class="card-copies-control">
-            <button class="card-copies-btn" onclick="adjustCopies(<?=$b['id']?>,-1,this)">−</button>
-            <span class="text-sm font-black text-slate-800 min-w-[20px] text-center" id="copiesVal-<?=$b['id']?>-m"><?=(int)($b['available_copies']??0)?></span>
-            <button class="card-copies-btn" onclick="adjustCopies(<?=$b['id']?>,1,this)">+</button>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-2">
+              <p class="font-black text-sm text-slate-900 leading-tight line-clamp-2"><?=htmlspecialchars($b['title']??'',ENT_QUOTES,'UTF-8')?></p>
+              <span class="badge badge-<?=$isActive?'active':'inactive'?> flex-shrink-0 mt-0.5"><?=$isActive?'Active':'Inactive'?></span>
+            </div>
+            <p class="text-xs text-slate-400 font-semibold mt-0.5 truncate"><?=htmlspecialchars($b['author']??'',ENT_QUOTES,'UTF-8')?></p>
+            <!-- Meta chips row -->
+            <div class="book-meta-row mt-1.5">
+              <?php if(!empty($b['call_number'])):?>
+              <span class="call-number-badge"><?=htmlspecialchars($b['call_number'],ENT_QUOTES,'UTF-8')?></span>
+              <?php endif;?>
+              <?php if(!empty($b['genre'])):?>
+              <span class="book-meta-chip"><i class="fa-solid fa-tag text-[8px]"></i><?=htmlspecialchars($b['genre'],ENT_QUOTES,'UTF-8')?></span>
+              <?php endif;?>
+              <?php if(!empty($b['published_year'])):?>
+              <span class="book-meta-chip"><i class="fa-regular fa-calendar text-[8px]"></i><?=htmlspecialchars($b['published_year'],ENT_QUOTES,'UTF-8')?></span>
+              <?php endif;?>
+              <?php if(!empty($b['isbn'])):?>
+              <span class="book-meta-chip font-mono"><i class="fa-solid fa-barcode text-[8px]"></i><?=htmlspecialchars($b['isbn'],ENT_QUOTES,'UTF-8')?></span>
+              <?php endif;?>
+            </div>
           </div>
-          <span class="text-xs text-slate-400">/ <?=(int)($b['total_copies']??1)?></span>
         </div>
+
+        <!-- Middle: copies editor + RAG pill -->
+        <div class="book-copies-row" onclick="event.stopPropagation()">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[11px] text-slate-400 font-semibold">Available:</span>
+            <div class="card-copies-control">
+              <button class="card-copies-btn" onclick="adjustCopies(<?=$b['id']?>,-1,this)">−</button>
+              <span class="text-sm font-black <?=$availColor?> min-w-[22px] text-center" id="copiesVal-<?=$b['id']?>-m"><?=$avail?></span>
+              <button class="card-copies-btn" onclick="adjustCopies(<?=$b['id']?>,1,this)">+</button>
+            </div>
+            <span class="text-[11px] text-slate-400 font-medium">of <?=$total?></span>
+          </div>
+          <div>
+            <?php if($hasRag):?>
+            <button onclick="event.stopPropagation();previewRag(<?=htmlspecialchars(json_encode($b),ENT_QUOTES,'UTF-8')?>)"
+              class="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg hover:bg-emerald-100 transition">
+              <i class="fa-solid fa-eye text-[9px]"></i> Preview AI
+            </button>
+            <?php else:?>
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
+              <i class="fa-solid fa-circle-info text-[9px]"></i> No preface
+            </span>
+            <?php endif;?>
+          </div>
+        </div>
+
+        <!-- Actions -->
         <div class="book-card-actions" onclick="event.stopPropagation()">
-          <button onclick="openEditModal(<?=htmlspecialchars(json_encode($b),ENT_QUOTES,'UTF-8')?>)" class="py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition text-center"><i class="fa-solid fa-pen text-[10px] mr-1"></i> Edit</button>
-          <button onclick="confirmDelete(<?=$b['id']?>,<?=htmlspecialchars(json_encode($b['title']),ENT_QUOTES,'UTF-8')?>)" class="py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs transition text-center"><i class="fa-solid fa-trash text-[10px] mr-1"></i> Delete</button>
+          <button onclick="openEditModal(<?=htmlspecialchars(json_encode($b),ENT_QUOTES,'UTF-8')?>)"
+            class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-pen text-[10px]"></i> Edit
+          </button>
+          <button onclick="confirmDelete(<?=$b['id']?>,<?=htmlspecialchars(json_encode($b['title']),ENT_QUOTES,'UTF-8')?>)"
+            class="py-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-trash text-[10px]"></i> Delete
+          </button>
         </div>
       </div>
       <?php endforeach;?>
@@ -678,25 +741,66 @@ $pendingBorrows = count(array_filter($borrowings ?? [], fn($b) => $b['status'] =
     <div class="md:hidden space-y-3" id="borrowCardList">
       <?php foreach($borrowings as $i=>$bw): $s=strtolower($bw['status']??'pending');?>
       <div class="borrow-card" data-status="<?=$s?>" data-search="<?=strtolower(htmlspecialchars(($bw['resident_name']??'').' '.($bw['book_title']??''),ENT_QUOTES,'UTF-8'))?>">
-        <div class="flex items-start justify-between gap-3">
-          <div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800 truncate"><?=htmlspecialchars($bw['resident_name']??'Unknown',ENT_QUOTES,'UTF-8')?></p><p class="text-xs text-slate-400 mt-0.5 truncate"><?=htmlspecialchars($bw['email']??'',ENT_QUOTES,'UTF-8')?></p></div>
+
+        <!-- Header: resident name + status badge -->
+        <div class="borrow-card-header">
+          <div class="flex items-center gap-2.5 flex-1 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-user text-slate-400 text-sm"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-black text-sm text-slate-900 truncate"><?=htmlspecialchars($bw['resident_name']??'Unknown',ENT_QUOTES,'UTF-8')?></p>
+              <p class="text-[11px] text-slate-400 font-medium truncate"><?=htmlspecialchars($bw['email']??'',ENT_QUOTES,'UTF-8')?></p>
+            </div>
+          </div>
           <span class="badge badge-<?=$s?> flex-shrink-0"><?=ucfirst($s)?></span>
         </div>
-        <div class="flex items-center gap-2 px-0.5">
-          <div class="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book text-blue-400 text-[10px]"></i></div>
-          <div class="min-w-0"><p class="text-xs font-bold text-slate-700 truncate"><?=htmlspecialchars($bw['book_title']??'',ENT_QUOTES,'UTF-8')?></p><p class="text-[11px] text-slate-400 truncate"><?=htmlspecialchars($bw['book_author']??'',ENT_QUOTES,'UTF-8')?></p></div>
+
+        <!-- Book info -->
+        <div class="borrow-card-book">
+          <div class="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-book text-blue-400 text-[10px]"></i>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold text-slate-800 truncate"><?=htmlspecialchars($bw['book_title']??'',ENT_QUOTES,'UTF-8')?></p>
+            <p class="text-[11px] text-slate-400 truncate"><?=htmlspecialchars($bw['book_author']??'',ENT_QUOTES,'UTF-8')?></p>
+          </div>
         </div>
-        <div class="flex gap-4 text-[11px] text-slate-400 font-medium px-0.5">
-          <span><i class="fa-solid fa-calendar-check text-[10px] mr-1 text-slate-300"></i><?=htmlspecialchars($bw['borrowed_at']??'—',ENT_QUOTES,'UTF-8')?></span>
-          <span><i class="fa-solid fa-calendar-xmark text-[10px] mr-1 text-slate-300"></i>Due: <?=htmlspecialchars($bw['due_date']??'—',ENT_QUOTES,'UTF-8')?></span>
+
+        <!-- Dates row -->
+        <div class="borrow-card-dates">
+          <span class="flex items-center gap-1">
+            <i class="fa-regular fa-calendar text-[10px] text-slate-300"></i>
+            <?=htmlspecialchars($bw['borrowed_at']??'—',ENT_QUOTES,'UTF-8')?>
+          </span>
+          <span class="flex items-center gap-1 <?=$s==='approved'?'text-rose-500 font-bold':''?>">
+            <i class="fa-regular fa-calendar-xmark text-[10px]"></i>
+            Due: <?=htmlspecialchars($bw['due_date']??'—',ENT_QUOTES,'UTF-8')?>
+          </span>
         </div>
+
+        <!-- Action buttons -->
         <?php if($s==='pending'):?>
         <div class="borrow-card-actions">
-          <form method="post" action="/<?=$prefix?>/borrowings/approve/<?=$bw['id']?>"><?=csrf_field()?><button class="py-2.5 w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl font-bold text-xs transition"><i class="fa-solid fa-check mr-1"></i> Approve</button></form>
-          <form method="post" action="/<?=$prefix?>/borrowings/reject/<?=$bw['id']?>"><?=csrf_field()?><button class="py-2.5 w-full bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs transition"><i class="fa-solid fa-xmark mr-1"></i> Reject</button></form>
+          <form method="post" action="/<?=$prefix?>/borrowings/approve/<?=$bw['id']?>"><?=csrf_field()?>
+            <button class="py-2.5 w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-check text-[10px]"></i> Approve
+            </button>
+          </form>
+          <form method="post" action="/<?=$prefix?>/borrowings/reject/<?=$bw['id']?>"><?=csrf_field()?>
+            <button class="py-2.5 w-full bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-xmark text-[10px]"></i> Reject
+            </button>
+          </form>
         </div>
         <?php elseif($s==='approved'):?>
-        <div class="borrow-card-actions"><form method="post" action="/<?=$prefix?>/borrowings/return/<?=$bw['id']?>"><?=csrf_field()?><button class="py-2.5 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition"><i class="fa-solid fa-rotate-left text-[10px] mr-1"></i> Mark Returned</button></form></div>
+        <div class="borrow-card-actions">
+          <form method="post" action="/<?=$prefix?>/borrowings/return/<?=$bw['id']?>" style="grid-column:span 2"><?=csrf_field()?>
+            <button class="py-2.5 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-rotate-left text-[10px]"></i> Mark as Returned
+            </button>
+          </form>
+        </div>
         <?php endif;?>
       </div>
       <?php endforeach;?>
