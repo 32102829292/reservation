@@ -892,7 +892,16 @@ const TL_WARN=5*60,TL_CRIT=2*60;
 let tlSessions={};
 function tlGetActiveSessions(){
     const today=new Date().toISOString().split('T')[0],nowMs=Date.now();
-    return allRes.filter(r=>{if(!r.start_time||!r.end_time||!r.reservation_date||r.reservation_date!==today)return false;if((r.status||'').toLowerCase()!=='approved')return false;if(r.claimed==1||r.claimed===true||r.claimed==='true')return false;const s=new Date(r.reservation_date+'T'+r.start_time).getTime(),e=new Date(r.reservation_date+'T'+r.end_time).getTime();return s<=nowMs&&e>=nowMs-30*60*1000;});
+    return allRes.filter(r=>{
+        if(!r.start_time||!r.end_time||!r.reservation_date||r.reservation_date!==today)return false;
+        if((r.status||'').toLowerCase()!=='approved')return false;
+        // BUG FIX: Only show sessions where user HAS claimed (checked in).
+        // Old code excluded claimed→showed unclaimed, meaning sessions appeared
+        // before anyone physically arrived. Now we require claimed=true.
+        if(![true,1,'t','true','1'].includes(r.claimed))return false;
+        const s=new Date(r.reservation_date+'T'+r.start_time).getTime(),e=new Date(r.reservation_date+'T'+r.end_time).getTime();
+        return s<=nowMs&&e>=nowMs;
+    });
 }
 const tlFmt=ms=>{if(ms<=0)return 'Ended';const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);if(h>0)return `${h}h ${m%60}m`;if(m>0)return `${m}m ${s%60}s`;return `${s}s`;};
 const tlState=ms=>ms<=0?'tl-ended':ms<=TL_CRIT*1000?'tl-critical':ms<=TL_WARN*1000?'tl-warning':'tl-ok';

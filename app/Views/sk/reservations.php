@@ -27,8 +27,7 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
         .sidebar-item   { transition: all 0.18s; }
         .sidebar-item.active { background: #16a34a; color: white !important; box-shadow: 0 8px 20px -4px rgba(22,163,74,0.35); }
 
-        /* ★ iOS safe-area */
-        .mobile-nav-pill { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(20,83,45,0.98); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
+        .mobile-nav-pill { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
         .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
@@ -46,20 +45,22 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
         .res-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 1rem 1.1rem; cursor: pointer; transition: all 0.18s; position: relative; overflow: hidden; }
         .res-card:hover, .res-card:active { border-color: #bbf7d0; box-shadow: 0 6px 20px -4px rgba(22,163,74,0.15); transform: translateY(-1px); }
         .res-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 0 4px 4px 0; }
-        .res-card[data-status="pending"]::before  { background: #fbbf24; }
-        .res-card[data-status="approved"]::before { background: #22c55e; }
-        .res-card[data-status="claimed"]::before  { background: #a855f7; }
+        .res-card[data-status="pending"]::before   { background: #fbbf24; }
+        .res-card[data-status="approved"]::before  { background: #22c55e; }
+        .res-card[data-status="claimed"]::before   { background: #a855f7; }
         .res-card[data-status="declined"]::before,
-        .res-card[data-status="canceled"]::before { background: #ef4444; }
-        .res-card[data-status="expired"]::before  { background: #94a3b8; }
+        .res-card[data-status="canceled"]::before  { background: #ef4444; }
+        /* ★ FIX: unclaimed = orange, expired = grey */
+        .res-card[data-status="unclaimed"]::before { background: #fb923c; }
+        .res-card[data-status="expired"]::before   { background: #94a3b8; }
 
         .badge { display: inline-flex; align-items: center; gap: 5px; padding: 0.3rem 0.75rem; border-radius: 10px; font-size: 0.67rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
-        .badge-pending  { background: #fef3c7; color: #92400e; }
-        .badge-approved { background: #dcfce7; color: #166534; }
+        .badge-pending   { background: #fef3c7; color: #92400e; }
+        .badge-approved  { background: #dcfce7; color: #166534; }
         .badge-declined, .badge-canceled { background: #fee2e2; color: #991b1b; }
-        .badge-claimed  { background: #f3e8ff; color: #6b21a8; }
-        .badge-expired  { background: #f1f5f9; color: #64748b; }
-        /* ★ Not yet claimed badge */
+        .badge-claimed   { background: #f3e8ff; color: #6b21a8; }
+        .badge-expired   { background: #f1f5f9; color: #64748b; }
+        /* ★ FIX: unclaimed gets its own distinct badge */
         .badge-unclaimed { background: #fff7ed; color: #c2410c; border: 1px dashed #fdba74; }
 
         .stat-card { background: white; border-radius: 20px; padding: 1.1rem 1.25rem; border: 1px solid #e2e8f0; border-left-width: 4px; transition: all 0.2s; cursor: pointer; }
@@ -117,8 +118,6 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
         .btn-save-print:disabled { opacity: 0.6; cursor: not-allowed; }
         #printSaveMsg { font-size: 0.75rem; font-weight: 700; margin-top: 6px; min-height: 18px; }
         .card-empty { padding: 3rem 1.5rem; text-align: center; background: white; border-radius: 20px; border: 1px dashed #e2e8f0; }
-
-        /* ★ "Not yet claimed" banner inside detail modal */
         .unclaimed-banner { background: #fff7ed; border: 1.5px dashed #fdba74; border-radius: 16px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 10px; margin: 0 1.75rem 1rem; }
         .unclaimed-banner .ub-icon { width: 34px; height: 34px; background: #fed7aa; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #c2410c; font-size: 0.85rem; flex-shrink: 0; }
     </style>
@@ -138,19 +137,35 @@ $navItems = [
     ['url' => '/sk/profile',              'icon' => 'fa-regular fa-user', 'label' => 'Profile',          'key' => 'profile'],
 ];
 
+// ═══════════════════════════════════════════════════════════════════
+// STATUS RESOLUTION — ORDER MATTERS
+// claimed   = ticket was scanned
+// approved  = approved, time not yet passed
+// unclaimed = approved + time passed + NEVER claimed (no-show)
+// expired   = pending + date passed (was never even approved)
+// ═══════════════════════════════════════════════════════════════════
 $processed = [];
 foreach (($reservations ?? []) as $res) {
-    $s = strtolower($res['status'] ?? 'pending');
+    $s          = strtolower($res['status'] ?? 'pending');
     $claimedVal = $res['claimed'] ?? false;
     $isClaimed  = in_array($claimedVal, [true, 1, 't', 'true', '1'], true);
-    if ($isClaimed) $s = 'claimed';
-    if ($s === 'approved') {
+
+    if ($isClaimed) {
+        // 1. Ticket scanned → claimed (highest priority)
+        $s = 'claimed';
+    } elseif ($s === 'approved') {
+        // 2. Approved but end time already passed and never claimed → UNCLAIMED (no-show)
         $edt = strtotime(($res['reservation_date'] ?? '') . ' ' . ($res['end_time'] ?? '23:59'));
-        if ($edt && $edt < time()) $s = 'expired';
+        if ($edt && $edt < time()) $s = 'unclaimed';
+    } elseif ($s === 'pending') {
+        // 3. Pending and reservation date already passed → EXPIRED (was never approved)
+        $rdt = strtotime($res['reservation_date'] ?? '');
+        if ($rdt && $rdt < strtotime('today')) $s = 'expired';
     }
+    // declined/canceled stay as-is
+
     $res['_status']    = $s;
-    // ★ approved but e-ticket not yet scanned
-    $res['_unclaimed'] = ($s === 'approved' && !$isClaimed);
+    $res['_unclaimed'] = ($s === 'unclaimed');
     $processed[] = $res;
 }
 
@@ -161,18 +176,18 @@ $counts = [
     'claimed'   => count(array_filter($processed, fn($r) => $r['_status'] === 'claimed')),
     'declined'  => count(array_filter($processed, fn($r) => in_array($r['_status'], ['declined','canceled']))),
     'expired'   => count(array_filter($processed, fn($r) => $r['_status'] === 'expired')),
-    // ★ approved & not yet claimed
-    'unclaimed' => count(array_filter($processed, fn($r) => $r['_unclaimed'])),
+    'unclaimed' => count(array_filter($processed, fn($r) => $r['_status'] === 'unclaimed')),
 ];
 
 $printLogMap = $printLogMap ?? [];
 $statusIcons = [
-    'pending'  => 'fa-clock',
-    'approved' => 'fa-circle-check',
-    'claimed'  => 'fa-check-double',
-    'declined' => 'fa-xmark',
-    'canceled' => 'fa-ban',
-    'expired'  => 'fa-hourglass-end',
+    'pending'   => 'fa-clock',
+    'approved'  => 'fa-circle-check',
+    'claimed'   => 'fa-check-double',
+    'declined'  => 'fa-xmark',
+    'canceled'  => 'fa-ban',
+    'expired'   => 'fa-hourglass-end',
+    'unclaimed' => 'fa-ticket',  // ★ NEW
 ];
 ?>
 
@@ -199,12 +214,11 @@ $statusIcons = [
         </div>
         <div id="dStatusBar" class="mx-7 mb-3 px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold"></div>
 
-        <!-- ★ Not yet claimed banner -->
         <div id="dUnclaimedBanner" class="unclaimed-banner" style="display:none">
             <div class="ub-icon"><i class="fa-solid fa-ticket"></i></div>
             <div>
                 <p class="font-black text-sm text-orange-700">Not Yet Claimed</p>
-                <p class="text-xs text-orange-500 font-medium mt-0.5">Approved but the e-ticket hasn't been scanned yet.</p>
+                <p class="text-xs text-orange-500 font-medium mt-0.5">Approved but the e-ticket was never scanned.</p>
             </div>
         </div>
 
@@ -318,8 +332,8 @@ $statusIcons = [
 <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
     <div class="sidebar-card">
         <div class="sidebar-header">
-            <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Youth Portal</span>
-            <h1 class="text-2xl font-extrabold text-slate-800">SK<span class="text-green-600">.</span></h1>
+            <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">SK Officer</span>
+            <h1 class="text-2xl font-extrabold text-slate-800">Portal<span class="text-green-600">.</span></h1>
         </div>
         <nav class="sidebar-nav space-y-1">
             <?php foreach ($navItems as $item):
@@ -328,7 +342,7 @@ $statusIcons = [
                 <a href="<?= $item['url'] ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
                     <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
                     <?= $item['label'] ?>
-                    <?php if ($item['key'] === 'reservations' && $counts['pending'] > 0): ?>
+                    <?php if ($item['key'] === 'user-requests' && ($counts['pending'] ?? 0) > 0): ?>
                         <span class="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $counts['pending'] ?></span>
                     <?php endif; ?>
                 </a>
@@ -368,9 +382,9 @@ $statusIcons = [
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">SK Portal</p>
             <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">All Reservations</h2>
             <p class="text-slate-400 font-medium text-sm mt-0.5">
-                <?= $counts['all'] ?> total record<?= $counts['all'] != 1 ? 's' : '' ?> in the system
+                <?= $counts['all'] ?> total record<?= $counts['all'] != 1 ? 's' : '' ?>
                 <?php if ($counts['unclaimed'] > 0): ?>
-                    · <span class="text-orange-500 font-bold"><?= $counts['unclaimed'] ?> not yet claimed</span>
+                    · <span class="text-orange-500 font-bold"><?= $counts['unclaimed'] ?> unclaimed</span>
                 <?php endif; ?>
             </p>
         </div>
@@ -379,7 +393,7 @@ $statusIcons = [
         </button>
     </header>
 
-    <!-- Stat cards — ★ added Unclaimed card -->
+    <!-- Stat cards -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         <?php foreach ([
             ['Total',     $counts['all'],       'border-green-400',   'text-slate-700',   'all'],
@@ -407,7 +421,7 @@ $statusIcons = [
         </div>
     <?php endif; ?>
 
-    <!-- Filter bar — ★ added Unclaimed tab -->
+    <!-- Filter bar -->
     <div class="bg-white border border-slate-200 rounded-[28px] p-4 lg:p-5 mb-4 shadow-sm">
         <div class="flex flex-col sm:flex-row gap-3">
             <div class="relative flex-1">
@@ -416,7 +430,7 @@ $statusIcons = [
             </div>
             <div class="relative sm:w-44">
                 <i class="fa-regular fa-calendar absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
-                <input id="dateInput" type="date" value="<?= htmlspecialchars($currentDate ?? '') ?>" class="field" onchange="applyFilters()">
+                <input id="dateInput" type="date" class="field" onchange="applyFilters()">
             </div>
             <button onclick="clearFilters()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-sm transition flex items-center gap-2 flex-shrink-0">
                 <i class="fa-solid fa-rotate-left text-xs"></i> Reset
@@ -426,7 +440,6 @@ $statusIcons = [
             <button class="qtab active" data-tab="all"       onclick="setTab(this,'all')"><i class="fa-solid fa-layer-group text-xs"></i> All <span class="text-[9px] font-black opacity-70"><?= $counts['all'] ?></span></button>
             <button class="qtab" data-tab="pending"          onclick="setTab(this,'pending')"><i class="fa-solid fa-clock text-xs"></i> Pending <?php if ($counts['pending'] > 0): ?><span class="bg-amber-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none"><?= $counts['pending'] ?></span><?php endif; ?></button>
             <button class="qtab" data-tab="approved"         onclick="setTab(this,'approved')"><i class="fa-solid fa-circle-check text-xs"></i> Approved</button>
-            <!-- ★ Unclaimed tab -->
             <button class="qtab" data-tab="unclaimed"        onclick="setTab(this,'unclaimed')"><i class="fa-solid fa-ticket text-xs"></i> Unclaimed<?php if ($counts['unclaimed'] > 0): ?><span class="bg-orange-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none"><?= $counts['unclaimed'] ?></span><?php endif; ?></button>
             <button class="qtab" data-tab="claimed"          onclick="setTab(this,'claimed')"><i class="fa-solid fa-check-double text-xs"></i> Claimed</button>
             <button class="qtab" data-tab="declined"         onclick="setTab(this,'declined')"><i class="fa-solid fa-xmark text-xs"></i> Declined</button>
@@ -478,18 +491,19 @@ $statusIcons = [
                             $icon        = $statusIcons[$s] ?? 'fa-circle';
                             $approverName  = htmlspecialchars($res['approver_name']  ?? $res['approved_by_name']  ?? '');
                             $approverEmail = htmlspecialchars($res['approver_email'] ?? $res['approved_by_email'] ?? '');
-                            $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved','claimed','declined','expired'])
+                            $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved','claimed','declined','expired','unclaimed'])
                                              ? date('M j, Y · g:i A', strtotime($res['updated_at'])) : '';
                             $pl          = $printLogMap[(int)$res['id']] ?? null;
                             $plPrinted   = $pl !== null ? (bool)$pl['printed'] : null;
                             $plPages     = $pl ? (int)($pl['pages'] ?? 0) : 0;
                             $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
+                            $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
                             $mdata       = json_encode([
                                 'id'=>$res['id'], 'status'=>$s, 'name'=>$name, 'email'=>$email,
                                 'resource'=>$resource, 'pc'=>$pc, 'date'=>$date, 'rawDate'=>$rawDate,
                                 'start'=>$start, 'end'=>$end, 'purpose'=>$purpose, 'type'=>$type,
                                 'created'=>$created, 'code'=>$code,
-                                'claimed'=>in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true),
+                                'claimed'=>$isClaimed,
                                 'unclaimed'=>$isUnclaimed,
                                 'approverName'=>$approverName, 'approverEmail'=>$approverEmail, 'approvedAt'=>$approvedAt,
                                 'plPrinted'=>$plPrinted, 'plPages'=>$plPages, 'plAt'=>$plAt,
@@ -521,16 +535,10 @@ $statusIcons = [
                             </td>
                             <td><span class="text-sm text-slate-500 font-medium" style="display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:130px"><?= $purpose ?></span></td>
                             <td>
-                                <!-- ★ Status + optional unclaimed badge stacked -->
-                                <div class="flex flex-col gap-1">
-                                    <span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
-                                    <?php if ($isUnclaimed): ?>
-                                    <span class="badge badge-unclaimed" style="font-size:0.6rem"><i class="fa-solid fa-ticket text-[9px]"></i>Not claimed</span>
-                                    <?php endif; ?>
-                                </div>
+                                <span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
                             </td>
                             <td onclick="event.stopPropagation()">
-                                <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired'])): ?>
+                                <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired','unclaimed'])): ?>
                                     <div class="flex items-center gap-1.5">
                                         <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[9px] font-black flex-shrink-0 <?= $s === 'declined' ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-700' ?>"><?= mb_strtoupper(mb_substr($approverName, 0, 1)) ?></div>
                                         <div class="min-w-0">
@@ -550,13 +558,10 @@ $statusIcons = [
                                     <?php if ($s === 'pending'): ?>
                                         <button onclick="triggerApprove(<?= $res['id'] ?>, '<?= addslashes($name) ?>')" class="h-8 px-3 rounded-xl bg-green-100 hover:bg-green-600 hover:text-white text-green-700 font-bold text-xs transition flex items-center gap-1.5"><i class="fa-solid fa-check text-[11px]"></i> Approve</button>
                                         <button onclick="triggerDecline(<?= $res['id'] ?>, '<?= addslashes($name) ?>')" class="h-8 px-2 rounded-xl bg-red-100 hover:bg-red-500 hover:text-white text-red-600 font-bold text-xs transition flex items-center"><i class="fa-solid fa-xmark text-[11px]"></i></button>
-                                    <?php elseif ($s === 'approved'): ?>
-                                        <!-- ★ Show orange "Unclaimed" or green "Approved" -->
-                                        <?php if ($isUnclaimed): ?>
+                                    <?php elseif ($s === 'unclaimed'): ?>
                                         <span class="text-[11px] text-orange-500 font-black flex items-center gap-1"><i class="fa-solid fa-ticket"></i> Unclaimed</span>
-                                        <?php else: ?>
+                                    <?php elseif ($s === 'approved'): ?>
                                         <span class="text-[11px] text-emerald-500 font-black flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Approved</span>
-                                        <?php endif; ?>
                                     <?php elseif ($s === 'claimed'): ?>
                                         <span class="text-[11px] text-purple-500 font-black flex items-center gap-1"><i class="fa-solid fa-check-double"></i> Claimed</span>
                                     <?php else: ?>
@@ -602,29 +607,31 @@ $statusIcons = [
                 $icon        = $statusIcons[$s] ?? 'fa-circle';
                 $approverName  = htmlspecialchars($res['approver_name']  ?? $res['approved_by_name']  ?? '');
                 $approverEmail = htmlspecialchars($res['approver_email'] ?? $res['approved_by_email'] ?? '');
-                $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved','claimed','declined','expired'])
+                $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved','claimed','declined','expired','unclaimed'])
                                  ? date('M j, Y · g:i A', strtotime($res['updated_at'])) : '';
                 $pl          = $printLogMap[(int)$res['id']] ?? null;
                 $plPrinted   = $pl !== null ? (bool)$pl['printed'] : null;
                 $plPages     = $pl ? (int)($pl['pages'] ?? 0) : 0;
                 $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
+                $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
                 $mdata       = json_encode([
                     'id'=>$res['id'], 'status'=>$s, 'name'=>$name, 'email'=>$email,
                     'resource'=>$resource, 'pc'=>$pc, 'date'=>$date, 'rawDate'=>$rawDate,
                     'start'=>$start, 'end'=>$end, 'purpose'=>$purpose, 'type'=>$type,
                     'created'=>$created, 'code'=>$code,
-                    'claimed'=>in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true),
+                    'claimed'=>$isClaimed,
                     'unclaimed'=>$isUnclaimed,
                     'approverName'=>$approverName, 'approverEmail'=>$approverEmail, 'approvedAt'=>$approvedAt,
                     'plPrinted'=>$plPrinted, 'plPages'=>$plPages, 'plAt'=>$plAt,
                 ]);
                 $avatarBg = [
-                    'pending'  => 'bg-amber-100 text-amber-700',
-                    'approved' => 'bg-emerald-100 text-emerald-700',
-                    'claimed'  => 'bg-purple-100 text-purple-700',
-                    'declined' => 'bg-red-100 text-red-600',
-                    'canceled' => 'bg-red-100 text-red-600',
-                    'expired'  => 'bg-slate-100 text-slate-500',
+                    'pending'   => 'bg-amber-100 text-amber-700',
+                    'approved'  => 'bg-emerald-100 text-emerald-700',
+                    'claimed'   => 'bg-purple-100 text-purple-700',
+                    'declined'  => 'bg-red-100 text-red-600',
+                    'canceled'  => 'bg-red-100 text-red-600',
+                    'expired'   => 'bg-slate-100 text-slate-500',
+                    'unclaimed' => 'bg-orange-100 text-orange-700',
                 ][$s] ?? 'bg-slate-100 text-slate-500';
             ?>
                 <div class="res-card"
@@ -638,7 +645,6 @@ $statusIcons = [
                      data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
                      onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
 
-                    <!-- Top row: avatar + name + status badges -->
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-10 h-10 rounded-2xl <?= $avatarBg ?> flex items-center justify-center font-black text-sm flex-shrink-0">
                             <?= mb_strtoupper(mb_substr(strip_tags($name), 0, 1)) ?>
@@ -647,13 +653,7 @@ $statusIcons = [
                             <p class="font-bold text-sm text-slate-800 truncate leading-tight"><?= $name ?></p>
                             <?php if ($email): ?><p class="text-[11px] text-slate-400 truncate"><?= $email ?></p><?php endif; ?>
                         </div>
-                        <!-- ★ Status + optional unclaimed badge -->
-                        <div class="flex flex-col items-end gap-1 flex-shrink-0">
-                            <span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
-                            <?php if ($isUnclaimed): ?>
-                            <span class="badge badge-unclaimed" style="font-size:0.6rem"><i class="fa-solid fa-ticket text-[9px]"></i>Not claimed</span>
-                            <?php endif; ?>
-                        </div>
+                        <span class="badge badge-<?= $s ?> flex-shrink-0"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
                     </div>
 
                     <div class="flex items-start gap-2 mb-2">
@@ -679,7 +679,7 @@ $statusIcons = [
 
                     <div class="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100">
                         <div class="flex items-center gap-1.5 min-w-0">
-                            <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired'])): ?>
+                            <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired','unclaimed'])): ?>
                                 <div class="w-5 h-5 rounded-md flex items-center justify-center text-[8px] font-black flex-shrink-0 <?= $s === 'declined' ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-700' ?>"><?= mb_strtoupper(mb_substr($approverName, 0, 1)) ?></div>
                                 <p class="text-[10px] text-slate-500 font-semibold truncate"><?= $s === 'declined' ? 'Declined' : 'Approved' ?> by <?= $approverName ?></p>
                             <?php else: ?>
@@ -718,7 +718,7 @@ const csrfName  = document.querySelector('meta[name="csrf-name"]')?.getAttribute
 const printLogMap = {};
 <?php foreach ($printLogMap as $resId => $pl): ?>
 printLogMap[<?= (int)$resId ?>] = {
-    printed: <?= isset($pl['printed']) ? ((int)$pl['printed'] ? 'true' : 'false') : 'false' ?>,
+    printed: <?= isset($pl['printed']) ? (in_array($pl['printed'],[true,1,'t','true','1'],true) ? 'true' : 'false') : 'false' ?>,
     pages:   <?= (int)($pl['pages'] ?? 0) ?>,
     at:      "<?= !empty($pl['printed_at']) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '' ?>"
 };
@@ -785,28 +785,17 @@ function refreshBothPrintCells(rid, pages) {
             else { cell.innerHTML = `<span class="print-pill-no"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>`; r.dataset.plPrinted = 'No'; r.dataset.plPages = ''; }
         }
     });
-    allCards.forEach(c => {
-        if (c.dataset.id == rid) {
-            const pip = c.querySelector('.print-pill-yes, .print-pill-no');
-            const pillHTML = pages > 0
-                ? `<span class="print-pill-yes flex-shrink-0"><i class="fa-solid fa-print text-[9px]"></i> ${pages}pg</span>`
-                : `<span class="print-pill-no flex-shrink-0"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>`;
-            if (pip) pip.outerHTML = pillHTML;
-            c.dataset.plPrinted = pages > 0 ? 'Yes' : 'No';
-            c.dataset.plPages   = pages > 0 ? pages : '';
-        }
-    });
 }
 
 function exportCSV() {
     const visibleRows = allTableRows.filter(r => r.style.display !== 'none');
-    const headers = ['ID','User Name','Email','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Unclaimed','Approved By','Approved At','Printed','Pages Printed','Print Logged At','Submitted At'];
+    const headers = ['ID','User Name','Email','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
     const escape  = v => { const s = String(v ?? ''); return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s; };
     const lines   = [headers.map(escape).join(',')];
     visibleRows.forEach(row => {
         try {
             const d = JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/, '').replace(/\)$/, ''));
-            lines.push([d.id??'',d.name??'',d.email??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.unclaimed?'Yes':'No',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',row.dataset.plAt??'',d.created??''].map(escape).join(','));
+            lines.push([d.id??'',d.name??'',d.email??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));
         } catch (e) {}
     });
     const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
@@ -823,16 +812,15 @@ function syncCards(tab) { document.querySelectorAll('[data-filter]').forEach(c =
 function applyFilters() {
     const q    = document.getElementById('searchInput').value.toLowerCase().trim();
     const date = document.getElementById('dateInput').value;
-    let n = 0;
-    // ★ "unclaimed" tab: approved rows where claimed==0
+    // ★ FIX: unclaimed tab now filters by data-status="unclaimed" (its own status)
     const matchesFilters = el => {
         let matchTab;
-        if      (curTab === 'all')       matchTab = true;
-        else if (curTab === 'unclaimed') matchTab = el.dataset.unclaimed === '1';
-        else if (curTab === 'declined')  matchTab = ['declined','canceled'].includes(el.dataset.status);
-        else                             matchTab = el.dataset.status === curTab;
+        if      (curTab === 'all')     matchTab = true;
+        else if (curTab === 'declined') matchTab = ['declined','canceled'].includes(el.dataset.status);
+        else                            matchTab = el.dataset.status === curTab;
         return matchTab && (!q || el.dataset.search.includes(q)) && (!date || el.dataset.date === date);
     };
+    let n = 0;
     allTableRows.forEach(row => { const show = matchesFilters(row); row.style.display = show ? '' : 'none'; if (show) n++; });
     let cardVisible = 0;
     allCards.forEach(card => { const show = matchesFilters(card); card.style.display = show ? '' : 'none'; if (show) cardVisible++; });
@@ -859,13 +847,15 @@ function sortTable(col) {
     document.querySelectorAll('thead th').forEach((th, i) => { th.classList.toggle('sorted', i === col); const ic = th.querySelector('.sort-icon'); if (ic) ic.className = `fa-solid ${i === col ? (sortDir[col] ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'} sort-icon`; });
 }
 
+// ★ STATUS_META now includes 'unclaimed' as distinct status
 const STATUS_META = {
-    pending:  { icon: 'fa-clock',          bg: '#fef3c7', color: '#92400e', label: 'Pending — Awaiting approval' },
-    approved: { icon: 'fa-circle-check',   bg: '#dcfce7', color: '#166534', label: 'Approved' },
-    claimed:  { icon: 'fa-check-double',   bg: '#f3e8ff', color: '#6b21a8', label: 'Claimed — Ticket used' },
-    declined: { icon: 'fa-xmark-circle',   bg: '#fee2e2', color: '#991b1b', label: 'Declined' },
-    canceled: { icon: 'fa-ban',            bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
-    expired:  { icon: 'fa-hourglass-end',  bg: '#f1f5f9', color: '#475569', label: 'Expired — Date has passed' },
+    pending:   { icon: 'fa-clock',          bg: '#fef3c7', color: '#92400e', label: 'Pending — Awaiting approval' },
+    approved:  { icon: 'fa-circle-check',   bg: '#dcfce7', color: '#166534', label: 'Approved' },
+    claimed:   { icon: 'fa-check-double',   bg: '#f3e8ff', color: '#6b21a8', label: 'Claimed — Ticket used' },
+    declined:  { icon: 'fa-xmark-circle',   bg: '#fee2e2', color: '#991b1b', label: 'Declined' },
+    canceled:  { icon: 'fa-ban',            bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
+    expired:   { icon: 'fa-hourglass-end',  bg: '#f1f5f9', color: '#475569', label: 'Expired — Was never approved' },
+    unclaimed: { icon: 'fa-ticket',         bg: '#fff7ed', color: '#c2410c', label: 'Unclaimed — Approved but did not show up' },
 };
 
 function openDetail(d) {
@@ -887,7 +877,7 @@ function openDetail(d) {
     document.getElementById('dCreated').textContent  = d.created;
 
     const approverRow = document.getElementById('dApprovedByRow');
-    if (d.approverName && ['approved','claimed','declined','expired'].includes(d.status)) {
+    if (d.approverName && ['approved','claimed','declined','expired','unclaimed'].includes(d.status)) {
         approverRow.style.display = 'flex';
         const isDeclined = d.status === 'declined';
         document.getElementById('dApprovedByLabel').textContent = isDeclined ? 'Declined By' : 'Approved By';
@@ -902,12 +892,14 @@ function openDetail(d) {
     bar.style.background = m.bg; bar.style.color = m.color;
     bar.innerHTML = `<i class="fa-solid ${m.icon}"></i> <span>${m.label}</span>`;
 
-    // ★ Show/hide not-yet-claimed banner
+    // Show unclaimed banner when status is 'unclaimed'
     document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
 
     const qrSec = document.getElementById('dQr'), clSec = document.getElementById('dClaimed');
-    if (d.claimed) { qrSec.style.display = 'none'; clSec.style.display = 'block'; }
-    else if (d.status === 'approved') {
+    // For unclaimed: show the QR code (it was approved, ticket exists, just never scanned)
+    if (d.claimed || d.status === 'claimed') {
+        qrSec.style.display = 'none'; clSec.style.display = 'block';
+    } else if (d.status === 'approved' || d.status === 'unclaimed') {
         clSec.style.display = 'none'; qrSec.style.display = 'flex';
         QRCode.toCanvas(document.getElementById('qrCanvas'), d.code, { width: 150, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } });
         document.getElementById('dTicketCode').textContent = d.code;

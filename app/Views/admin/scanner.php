@@ -26,19 +26,18 @@ $allReservations  = $reservationModel
         body { font-family:'Plus Jakarta Sans',sans-serif; background-color:#f1f5f9; background-image:radial-gradient(ellipse 900px 500px at 75% -5%,rgba(37,99,235,0.06) 0%,transparent 65%),radial-gradient(ellipse 600px 400px at 0% 100%,rgba(37,99,235,0.04) 0%,transparent 60%); background-attachment:fixed; color:#1e293b; }
 
         .sidebar-card { background:white; border-radius:32px; border:1px solid #e2e8f0; height:calc(100vh - 48px); position:sticky; top:24px; box-shadow:0 4px 24px rgba(0,0,0,0.06),0 1px 3px rgba(0,0,0,0.04); display:flex; flex-direction:column; overflow:hidden; }
-        .sidebar-header { flex-shrink:0; padding:16px; border-bottom:1px solid #e2e8f0; background:linear-gradient(135deg,#eff6ff 0%,#ffffff 100%); }
-        .sidebar-header h1 { font-family:'Syne',sans-serif; font-weight:800; letter-spacing:-0.04em; }
-        .sidebar-nav { flex:1; overflow-y:auto; overflow-x:hidden; padding:8px; }
+        .sidebar-header { flex-shrink:0; padding:20px 20px 16px; border-bottom:1px solid #f1f5f9; }
+        .sidebar-nav { flex:1; overflow-y:auto; overflow-x:hidden; padding:10px; }
         .sidebar-nav::-webkit-scrollbar { width:4px; }
         .sidebar-nav::-webkit-scrollbar-thumb { background:#e2e8f0; border-radius:4px; }
-        .sidebar-footer { flex-shrink:0; padding:16px; border-top:1px solid #e2e8f0; }
-        .sidebar-item { transition:all 0.2s cubic-bezier(0.4,0,0.2,1); }
-        .sidebar-item:not(.active):hover { background:#eff6ff !important; color:#2563eb !important; transform:translateX(3px); }
-        .sidebar-item.active { background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%); color:white; box-shadow:0 8px 20px rgba(37,99,235,0.28),0 2px 6px rgba(37,99,235,0.15); }
+        .sidebar-footer { flex-shrink:0; padding:16px; border-top:1px solid #f1f5f9; }
+        .sidebar-item { transition:all 0.18s; display:flex; align-items:center; gap:14px; padding:12px 18px; border-radius:16px; font-weight:600; font-size:.875rem; text-decoration:none; color:#64748b; }
+        .sidebar-item:hover { background:#eff6ff; color:#2563eb; }
+        .sidebar-item.active { background:#2563eb; color:white; box-shadow:0 8px 20px -4px rgba(37,99,235,0.35); }
+        .sidebar-item i { width:20px; text-align:center; font-size:1rem; flex-shrink:0; }
 
-        /* ★ iOS safe-area */
-        .mobile-nav-pill { position:fixed; bottom:calc(20px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%); width:92%; max-width:600px; background:rgba(15,23,42,0.97); backdrop-filter:blur(16px); border-radius:24px; padding:6px; z-index:100; box-shadow:0 20px 40px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06); }
-        .mobile-scroll-container { display:flex; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        .mobile-nav-pill { position:fixed; bottom:calc(16px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%); width:92%; max-width:600px; background:rgba(15,23,42,0.97); backdrop-filter:blur(12px); border-radius:24px; padding:6px; z-index:100; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); }
+        .mobile-scroll-container { display:flex; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
         .mobile-scroll-container::-webkit-scrollbar { display:none; }
 
         .content-card { background:white; border-radius:32px; border:1px solid #e2e8f0; box-shadow:0 4px 24px rgba(0,0,0,0.04),0 1px 3px rgba(0,0,0,0.03); padding:1.5rem; }
@@ -141,33 +140,36 @@ $navItems = [
     </div>
 </div>
 
+<!-- ════════ SIDEBAR ════════ -->
 <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
     <div class="sidebar-card">
         <div class="sidebar-header">
             <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Control Room</span>
-            <h1 class="text-2xl font-extrabold text-slate-800">Admin<span class="text-blue-600">.</span></h1>
+            <h1 class="text-2xl font-extrabold text-slate-800 mt-0.5">Admin<span class="text-blue-600">.</span></h1>
         </div>
         <nav class="sidebar-nav space-y-1">
             <?php foreach ($navItems as $item):
-                $active = ($page==$item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600';
+                $active = ($page == $item['key']) ? 'active' : '';
             ?>
-                <a href="<?= $item['url'] ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
-                    <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i><?= $item['label'] ?>
+                <a href="<?= $item['url'] ?>" class="sidebar-item <?= $active ?>">
+                    <i class="fa-solid <?= $item['icon'] ?>"></i>
+                    <?= $item['label'] ?>
                 </a>
             <?php endforeach; ?>
         </nav>
         <div class="sidebar-footer">
-            <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
+            <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all text-sm">
                 <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
             </a>
         </div>
     </div>
 </aside>
 
+<!-- ════════ MOBILE NAV ════════ -->
 <nav class="lg:hidden mobile-nav-pill">
     <div class="mobile-scroll-container text-white px-2">
         <?php foreach ($navItems as $item):
-            $btnClass = ($page==$item['key']) ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
+            $btnClass = ($page == $item['key']) ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
         ?>
             <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $btnClass ?>">
                 <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
@@ -181,6 +183,7 @@ $navItems = [
     </div>
 </nav>
 
+<!-- ════════ MAIN ════════ -->
 <main class="flex-1 min-w-0 p-4 lg:p-12 pb-32">
     <header class="flex justify-between items-center mb-6 lg:mb-10">
         <div>
@@ -254,20 +257,31 @@ $navItems = [
 </main>
 
 <script>
+// ── PHP data ──────────────────────────────────────────────────────
 const reservations = <?= json_encode($allReservations) ?>;
 const validateUrl  = '<?= base_url("admin/validateETicket") ?>';
 const csrfToken    = '<?= csrf_hash() ?>';
 const csrfName     = '<?= csrf_token() ?>';
 
+// ── State ─────────────────────────────────────────────────────────
 let videoStream=null, videoEl=null, canvasEl=null, rafId=null;
 let scanHistory=[], lastScanned=null, currentCode=null, currentReservation=null;
 let stats={total:0,valid:0,claimed:0,pending:0,invalid:0};
 let debugMode=false, scanning=false, availableCameras=[], currentCamIndex=0;
 
+// ── Debug helpers ─────────────────────────────────────────────────
 function debug(msg,data){if(!debugMode)return;const c=document.getElementById('debugContent'),t=new Date().toLocaleTimeString();c.innerHTML=`[${t}] ${msg}`+(data?'\n'+JSON.stringify(data,null,2):'')+'\n'+c.innerHTML;}
 function clearDebug(){document.getElementById('debugContent').innerHTML='';}
-function showAllReservations(){debug('All:',reservations.map(r=>({id:r.id,e_ticket_code:r.e_ticket_code,status:r.status,claimed:r.claimed})));}
+function showAllReservations(){debug('All:',reservations.map(r=>({id:r.id,code:r.e_ticket_code,status:r.status,claimed:r.claimed})));}
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.key==='D'){e.preventDefault();debugMode=!debugMode;document.getElementById('debugPanel').classList.toggle('debug-show');if(debugMode)showAllReservations();}});
+
+// ── BUG FIX #1: Robust claimed check ─────────────────────────────
+// PostgreSQL booleans JSON-encode as true/false (not 1/0).
+// parseInt(true)=NaN and parseInt('t')=NaN both fail ===1.
+// Use the same array-includes pattern as the PHP side.
+function isClaimed(res) {
+    return [true, 1, 't', 'true', '1'].includes(res.claimed);
+}
 
 function setCamStatus(live){document.getElementById('camDot').classList.toggle('live',live);document.getElementById('camStatusLabel').textContent=live?'LIVE':'Camera off';}
 
@@ -287,7 +301,6 @@ function buildScannerUI(){
     document.body.appendChild(canvasEl);
 }
 
-// ★ iOS-safe camera opening
 async function startScanner(camIndex) {
     if (location.protocol!=='https:' && location.hostname!=='localhost' && location.hostname!=='127.0.0.1') {
         showCameraError('Camera requires HTTPS.'); return;
@@ -299,13 +312,11 @@ async function startScanner(camIndex) {
     document.getElementById('stopBtn').style.display='inline-flex';
     buildScannerUI();
 
-    // ★ Request permission first with facingMode (works on iOS without enumeration)
     try {
         const tmp = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:'environment'} } });
         tmp.getTracks().forEach(t=>t.stop());
     } catch(e) { showCameraError('Could not access camera. Please allow camera permissions.'); return; }
 
-    // Enumerate after permission granted
     try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         availableCameras = devices.filter(d=>d.kind==='videoinput');
@@ -331,7 +342,6 @@ async function openCamera(index) {
     }
     const device=availableCameras[index];
     let stream=null;
-    // ★ Multiple constraint fallbacks for mobile compatibility
     const attempts=[
         device?.deviceId ? {video:{deviceId:{exact:device.deviceId},width:{ideal:1280},height:{ideal:720}}} : null,
         {video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}},
@@ -354,7 +364,7 @@ async function openCamera(index) {
             requestAnimationFrame(scanFrame);
         }).catch(e=>showCameraError('Could not play video: '+e.message));
     };
-    videoEl.onerror=e=>showCameraError('Video error');
+    videoEl.onerror=()=>showCameraError('Video error');
 }
 
 async function switchCamera(){
@@ -366,7 +376,6 @@ async function switchCamera(){
     btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-camera-rotate"></i>';
 }
 
-// ★ readyState >= 2 for mobile browser compatibility
 function scanFrame(){
     if(!scanning||!videoEl)return;
     if(videoEl.readyState>=2){
@@ -418,6 +427,7 @@ function showCameraError(msg){
     setCamStatus(false);
 }
 
+// ── Core: process a scanned/entered code ─────────────────────────
 function processCode(code){
     code=(code||'').trim();
     if(!code)return;
@@ -425,22 +435,29 @@ function processCode(code){
     currentCode=code;
     addToHistory(code);
     const res=findReservationByCode(code);
-    if(!res){stats.invalid++;updateStats();showResult('error','fa-circle-xmark','text-red-500','bg-red-50','Code Not Recognised',`"${code}" doesn't match any reservation.`,[],false);return;}
+    if(!res){
+        stats.invalid++;updateStats();
+        showResult('error','fa-circle-xmark','text-red-500','bg-red-50','Code Not Recognised',`"${code}" doesn't match any reservation.`,[],false);
+        return;
+    }
     debug('Found:',{id:res.id,status:res.status,claimed:res.claimed});
     currentReservation=res;
-    let pcLabel='—';
-    if(res.pc_numbers){try{const a=typeof res.pc_numbers==='string'?JSON.parse(res.pc_numbers):res.pc_numbers;pcLabel=Array.isArray(a)?a.join(', '):a;}catch{pcLabel=res.pc_numbers;}}
-    else if(res.pc_number){pcLabel=res.pc_number;}
 
-    // ★ Check claimed first
-    const effectiveStatus=(parseInt(res.claimed)===1)?'claimed':res.status;
+    let pcLabel='—';
+    if(res.pc_numbers){
+        try{const a=typeof res.pc_numbers==='string'?JSON.parse(res.pc_numbers):res.pc_numbers;pcLabel=Array.isArray(a)?a.join(', '):a;}
+        catch{pcLabel=res.pc_numbers;}
+    }else if(res.pc_number){pcLabel=res.pc_number;}
+
+    // ── BUG FIX #1 applied: use isClaimed() instead of parseInt(res.claimed)===1
+    const effectiveStatus = isClaimed(res) ? 'claimed' : res.status;
 
     const cfgMap={
-        approved:{state:'success',icon:'fa-circle-check',iconColor:'text-emerald-600',iconBg:'bg-emerald-50',title:'Access Granted',sub:'Reservation is approved and valid.'},
-        pending: {state:'warning',icon:'fa-clock',       iconColor:'text-amber-600',  iconBg:'bg-amber-50',  title:'Pending Approval',sub:'This reservation has not been approved yet.'},
-        declined:{state:'error',  icon:'fa-ban',         iconColor:'text-red-500',    iconBg:'bg-red-50',    title:'Access Denied',  sub:'This reservation has been declined.'},
-        canceled:{state:'error',  icon:'fa-ban',         iconColor:'text-red-500',    iconBg:'bg-red-50',    title:'Access Denied',  sub:'This reservation was canceled.'},
-        claimed: {state:'claimed',icon:'fa-check-double',iconColor:'text-purple-600', iconBg:'bg-purple-50', title:'Already Claimed',sub:'This ticket has already been used.'},
+        approved:{state:'success',icon:'fa-circle-check',iconColor:'text-emerald-600',iconBg:'bg-emerald-50',title:'Access Granted',       sub:'Reservation is approved and valid.'},
+        pending: {state:'warning',icon:'fa-clock',       iconColor:'text-amber-600',  iconBg:'bg-amber-50',  title:'Pending Approval',      sub:'This reservation has not been approved yet.'},
+        declined:{state:'error',  icon:'fa-ban',         iconColor:'text-red-500',    iconBg:'bg-red-50',    title:'Access Denied',         sub:'This reservation has been declined.'},
+        canceled:{state:'error',  icon:'fa-ban',         iconColor:'text-red-500',    iconBg:'bg-red-50',    title:'Access Denied',         sub:'This reservation was canceled.'},
+        claimed: {state:'claimed',icon:'fa-check-double',iconColor:'text-purple-600', iconBg:'bg-purple-50', title:'Already Claimed',       sub:'This ticket has already been used.'},
     };
     const cfg=cfgMap[effectiveStatus]||cfgMap.pending;
 
@@ -462,7 +479,7 @@ function processCode(code){
         {label:'E-Ticket Code', value:res.e_ticket_code||'—'},
         {label:'Status',        value:effectiveStatus.charAt(0).toUpperCase()+effectiveStatus.slice(1)},
     ];
-    if(parseInt(res.claimed)===1&&res.claimed_at) details.push({label:'Claimed At',value:new Date(res.claimed_at).toLocaleString()});
+    if(isClaimed(res)&&res.claimed_at) details.push({label:'Claimed At',value:new Date(res.claimed_at).toLocaleString()});
 
     showResult(cfg.state,cfg.icon,cfg.iconColor,cfg.iconBg,cfg.title,cfg.sub,details,effectiveStatus==='approved');
     document.getElementById('manualCode').value='';
@@ -471,15 +488,18 @@ function processCode(code){
 function findReservationByCode(code){
     if(!code)return null;
     let r=reservations.find(r=>r.e_ticket_code===code); if(r)return r;
-    if(!isNaN(code)){r=reservations.find(r=>r.id===parseInt(code)); if(r)return r;}
+    // numeric ID fallback
+    if(!isNaN(code)){r=reservations.find(r=>r.id===parseInt(code)||String(r.id)===code); if(r)return r;}
+    // pattern: SK-123-2026-01-01 / RES-123-...
     const m1=code.match(/(?:SK|ADMIN|RES)-(\d+)-/i); if(m1){r=reservations.find(r=>r.id===parseInt(m1[1])); if(r)return r;}
     const m2=code.match(/(?:SK|ADMIN|RES)(\d+)/i);   if(m2){r=reservations.find(r=>r.id===parseInt(m2[1])); if(r)return r;}
-    for(const rv of reservations){if(code.includes(rv.id.toString()))return rv;}
-    return reservations.find(r=>r.e_ticket_code&&code.includes(r.e_ticket_code))||null;
+    // substring match on e_ticket_code
+    for(const rv of reservations){if(rv.e_ticket_code&&code.includes(rv.e_ticket_code))return rv;}
+    return null;
 }
 
 function buildResultHTML(state,icon,iconColor,iconBg,title,sub,details,showValidate,idSuffix){
-    const rows=details.map(d=>`<div class="flex justify-between items-start py-2.5 border-b border-slate-100 last:border-0 gap-3"><span class="text-[0.65rem] font-black uppercase tracking-widest text-slate-400 flex-shrink-0 mt-0.5">${d.label}</span><span class="font-bold text-slate-800 text-sm text-right">${d.value}</span></div>`).join('');
+    const rows=details.map(d=>`<div class="flex justify-between items-start py-2.5 border-b border-slate-100 last:border-0 gap-3"><span class="text-[0.65rem] font-black uppercase tracking-widest text-slate-400 flex-shrink-0 mt-0.5">${d.label}</span><span class="font-bold text-slate-800 text-sm text-right break-all">${d.value}</span></div>`).join('');
     const validateSection=showValidate?`<div class="mt-5 pt-5 border-t border-slate-100"><button id="validateBtn${idSuffix}" onclick="validateTicket()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2"><i class="fa-solid fa-circle-check"></i> Mark as Used / Check In</button></div>`:'';
     return `<div class="flex items-center gap-4 mb-5"><div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl flex-shrink-0 ${iconBg} ${iconColor}"><i class="fa-solid ${icon}"></i></div><div class="flex-1 min-w-0"><p class="font-extrabold text-base text-slate-900 leading-tight">${title}</p><p class="text-sm text-slate-500 font-medium mt-0.5">${sub}</p></div></div><div class="space-y-0">${rows}</div>${validateSection}`;
 }
@@ -503,6 +523,7 @@ function showResult(state,icon,iconColor,iconBg,title,sub,details,showValidate){
 
 function closeResultSheet(){document.getElementById('resultOverlay').classList.remove('open');document.body.style.overflow='';}
 
+// ── BUG FIX #2 & #3: validateTicket updates local array ──────────
 function validateTicket(){
     if(!currentCode||!currentReservation)return;
     const isMobile=window.innerWidth<640;
@@ -516,15 +537,29 @@ function validateTicket(){
     .then(r=>r.json())
     .then(data=>{
         debug('Validate response:',data);
-        if(data.status==='success'){
+        if(data.status==='success'||data.updated){
+            // ── BUG FIX #2: Update the local reservations array so re-scanning
+            //    immediately shows "Already Claimed" instead of "Access Granted".
+            const localRes=reservations.find(r=>r.id===currentReservation.id);
+            if(localRes){
+                localRes.claimed=true;
+                localRes.claimed_at=new Date().toISOString();
+            }
             stats.valid=Math.max(0,stats.valid-1);stats.claimed++;updateStats();
             btn.innerHTML='<i class="fa-solid fa-circle-check"></i> Checked In!';
             btn.classList.replace('bg-blue-600','bg-emerald-500');
+            btn.disabled=true;
+            // Update result panel border color to reflect claimed state
             const panel=document.getElementById(isMobile?'resultSheet':'resultPanelInline');
-            if(panel&&!isMobile)panel.className='result-panel-inline content-card !p-0 border-2 result-claimed overflow-hidden transition-all duration-300';
-        }else if(data.status==='claimed'){
+            if(panel&&!isMobile) panel.className='result-panel-inline content-card !p-0 border-2 result-claimed overflow-hidden transition-all duration-300';
+            // Re-render history to update the status dot
+            renderHistory();
+        }else if(data.status==='error'&&(data.message||'').toLowerCase().includes('claimed')){
+            // Already claimed on the server side - update local too
+            const localRes=reservations.find(r=>r.id===currentReservation.id);
+            if(localRes) localRes.claimed=true;
             stats.valid=Math.max(0,stats.valid-1);stats.claimed++;updateStats();
-            btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-check-double"></i> Already claimed';
+            btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-check-double"></i> Already claimed';
             btn.className='w-full py-3.5 bg-purple-500 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 cursor-default';
         }else{
             btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> '+(data.message||'Failed');
@@ -536,6 +571,8 @@ function validateTicket(){
 
 function addToHistory(code){
     const time=new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+    // Remove previous entry of same code to avoid duplicates
+    scanHistory=scanHistory.filter(h=>h.code!==code);
     scanHistory.unshift({code,time});
     if(scanHistory.length>10)scanHistory.pop();
     renderHistory();
@@ -548,7 +585,8 @@ function renderHistory(){
     const iconMap ={approved:'fa-check',pending:'fa-clock',declined:'fa-ban',canceled:'fa-ban',claimed:'fa-check-double'};
     list.innerHTML=scanHistory.map(item=>{
         const res=findReservationByCode(item.code);
-        const eff=res?(parseInt(res.claimed)===1?'claimed':res.status):null;
+        // ── BUG FIX #1 applied in history too
+        const eff=res?(isClaimed(res)?'claimed':res.status):null;
         const sc=eff?(colorMap[eff]||'bg-slate-100 text-slate-400'):'bg-red-100 text-red-400';
         const si=eff?(iconMap[eff]||'fa-question'):'fa-xmark';
         return `<div class="history-item flex items-center justify-between p-3 bg-slate-50 rounded-2xl cursor-pointer" onclick="processCode('${item.code.replace(/'/g,"\\'")}')"><div class="overflow-hidden mr-3"><p class="font-bold text-slate-800 text-xs truncate">${item.code}</p><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">${item.time}</p></div><div class="w-8 h-8 rounded-xl ${sc} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${si} text-xs"></i></div></div>`;
