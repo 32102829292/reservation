@@ -13,9 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <style>
-        /* ─────────────────────────────────────────
-           ROOT VARIABLES
-        ───────────────────────────────────────── */
         :root {
             --green:       #16a34a;
             --green-dark:  #14532d;
@@ -32,7 +29,6 @@
         html { height: 100%; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--slate-bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* SIDEBAR */
         .sidebar-card { background: white; border-radius: 32px; border: 1px solid var(--card-border); height: calc(100vh - 48px); position: sticky; top: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,.05); display: flex; flex-direction: column; overflow: hidden; width: 100%; }
         .sidebar-header { flex-shrink: 0; padding: 20px 20px 16px; border-bottom: 1px solid #f1f5f9; }
         .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; scrollbar-width: thin; scrollbar-color: var(--card-border) transparent; }
@@ -44,26 +40,21 @@
         .sidebar-item.active { background: var(--green); color: white; box-shadow: 0 8px 20px -4px rgba(22,163,74,.35); }
         .sidebar-item i { width: 20px; text-align: center; font-size: 1rem; flex-shrink: 0; }
 
-        /* MOBILE NAV */
         .mobile-nav-pill { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(15,23,42,.97); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,.3); }
         .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
-        /* CARDS */
         .dash-card { background: white; border-radius: 24px; border: 1px solid var(--card-border); box-shadow: 0 1px 3px rgba(0,0,0,.04); }
         .stat-card { background: white; border-radius: 20px; padding: 1.25rem; border: 1px solid var(--card-border); transition: all .2s; position: relative; overflow: hidden; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0,0,0,.1); }
         .kpi-card { background: white; border-radius: 20px; padding: 1.1rem 1.25rem; border: 1px solid var(--card-border); border-left-width: 4px; transition: all .2s; }
         .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,.08); }
 
-        /* PROGRESS */
         .prog-bar  { height: 5px; border-radius: 999px; background: var(--card-border); overflow: hidden; }
         .prog-fill { height: 100%; border-radius: 999px; transition: width .8s cubic-bezier(.34,1.56,.64,1); }
 
-        /* CHARTS */
         .chart-wrap { position: relative; height: 220px; width: 100%; }
 
-        /* CALENDAR */
         #calendar { font-size: .78rem; }
         .fc .fc-toolbar { flex-wrap: wrap; gap: .5rem; }
         .fc-toolbar-title { font-size: .9rem !important; font-weight: 800 !important; color: var(--text-main) !important; }
@@ -75,13 +66,11 @@
         .fc-day-today .fc-daygrid-day-number { color: var(--green) !important; font-weight: 800 !important; }
         .fc-daygrid-day-number { font-size: .72rem; font-weight: 600; }
 
-        /* PILLS / BADGES */
         .avail-pill { font-size: .63rem; font-weight: 800; padding: .16rem .5rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
         .avail-on  { background: #dcfce7; color: #166634; }
         .avail-off { background: #fee2e2; color: #991b1b; }
         .avail-low { background: #fef3c7; color: #92400e; }
 
-        /* TIMER BANNER */
         .timer-banner { border-radius: 20px; padding: 1rem 1.25rem; border: 1px solid; }
         .timer-banner.active { background: #f0fdf4; border-color: #86efac; }
         .timer-banner.upcoming { background: #eff6ff; border-color: #bfdbfe; }
@@ -89,7 +78,6 @@
         .timer-pulse.pulse { animation: livePulse 1.5s infinite; }
         @keyframes livePulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.4);opacity:.6;} }
 
-        /* DATE MODAL */
         #dateModal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; }
         #dateModal.open { display: flex; }
         .modal-backdrop-layer { position: absolute; inset: 0; background: rgba(15,23,42,.55); backdrop-filter: blur(6px); }
@@ -101,7 +89,6 @@
         .date-row:hover { background: var(--slate-bg); }
         .date-row:last-child { border-bottom: none; }
 
-        /* NOTIF DROPDOWN */
         .notif-dropdown { position: fixed; top: 76px; right: 24px; width: 340px; background: white; border-radius: 24px; box-shadow: 0 20px 40px -8px rgba(0,0,0,.2); border: 1px solid var(--card-border); z-index: 300; display: none; }
         .notif-dropdown.open { display: block; animation: slideDown .2s ease; }
         @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
@@ -111,7 +98,6 @@
         .notif-item.unread { background: var(--green-light); border-left: 3px solid var(--green); }
         .notif-item:last-child { border-bottom: none; }
 
-        /* ACTIVE SESSION MONITOR */
         .tl-panel { background: white; border-radius: 24px; border: 1px solid var(--card-border); padding: 1.25rem; }
         .tl-session-card { background: var(--slate-bg); border-radius: 16px; border: 1px solid var(--card-border); padding: .875rem 1rem; border-left-width: 4px; transition: all .2s; }
         .tl-session-card:hover { box-shadow: 0 4px 12px -2px rgba(0,0,0,.08); }
@@ -131,7 +117,6 @@
         .tl-critical .tl-prog-fill { background: #ef4444; }
         .tl-ended    .tl-prog-fill { background: #94a3b8; }
 
-        /* SESSION TOASTS */
         #tl-toast-container { position: fixed; bottom: 88px; right: 20px; z-index: 9000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
         .tl-toast { background: #1e293b; color: white; border-radius: 16px; padding: .875rem 1.1rem; min-width: 280px; max-width: 360px; box-shadow: 0 12px 28px -4px rgba(0,0,0,.35); display: flex; align-items: flex-start; gap: 10px; pointer-events: auto; animation: toastIn .3s cubic-bezier(.34,1.56,.64,1) both; }
         .tl-toast.dismissing { animation: toastOut .2s ease forwards; }
@@ -143,65 +128,48 @@
         .tl-toast-title { font-size: .78rem; font-weight: 800; color: white; line-height: 1.3; }
         .tl-toast-sub   { font-size: .7rem; color: #94a3b8; margin-top: 2px; line-height: 1.4; }
 
-        /* LOGIN TOAST */
         #loginToast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 8999; background: #1e293b; color: white; border-radius: 20px; padding: .875rem 1.5rem; box-shadow: 0 16px 40px -8px rgba(0,0,0,.4); display: flex; align-items: center; gap: 12px; white-space: nowrap; animation: toastRise .4s cubic-bezier(.34,1.56,.64,1) both; }
         @keyframes toastRise { from{opacity:0;transform:translateX(-50%) translateY(20px) scale(.94);}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1);} }
 
-        /* LIBRARY */
         .library-banner { border-radius: 20px; padding: 1.25rem 1.5rem; position: relative; overflow: hidden; background: linear-gradient(135deg,#052e16 0%,#15803d 55%,#16a34a 100%); border: 1px solid #22c55e; }
         .library-banner::before { content:'📚'; position:absolute; right:-10px; top:-10px; font-size:6.5rem; opacity:.07; transform:rotate(14deg); pointer-events:none; line-height:1; }
         .book-row { display: flex; align-items: center; gap: 10px; padding: .6rem .75rem; border-radius: 14px; transition: all .18s; text-decoration: none; color: inherit; border: 1px solid transparent; }
         .book-row:hover { background: var(--green-light); border-color: var(--green-border); }
         .book-spine { width: 3px; border-radius: 4px; align-self: stretch; flex-shrink: 0; min-height: 30px; }
 
-        /* AI FINDER */
         .ai-shimmer { background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
         @keyframes shimmer { 0%{background-position:200% 0;}100%{background-position:-200% 0;} }
 
-        /* QUICK ACTIONS */
         .action-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: .875rem .5rem; border-radius: 16px; background: var(--green-light); border: 1px solid var(--green-border); transition: all .2s; text-decoration: none; color: var(--green); }
         .action-btn:hover { background: var(--green-mid); border-color: #86efac; transform: translateY(-2px); box-shadow: 0 8px 20px -4px rgba(22,163,74,.2); }
 
-        /* RECENT BOOKINGS */
         .booking-row { display: flex; align-items: center; gap: 10px; padding: .65rem .75rem; border-radius: 14px; transition: background .15s; }
         .booking-row:hover { background: var(--green-light); }
         .booking-row.expired { opacity: .55; }
 
-        /* SECTION DIVIDER */
         .section-divider { display: flex; align-items: center; gap: 12px; margin: 2.25rem 0 1.25rem; }
         .section-divider-line { flex: 1; height: 1px; background: var(--card-border); }
 
-        /* SECTION LABEL */
         .section-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: .65rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: .12em;
-            color: var(--text-faint);
-            margin-bottom: .875rem;
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: .65rem; font-weight: 900; text-transform: uppercase;
+            letter-spacing: .12em; color: var(--text-faint); margin-bottom: .875rem;
         }
         .section-label::before {
-            content: '';
-            display: inline-block;
-            width: 3px;
-            height: 14px;
-            border-radius: 2px;
-            background: var(--green);
-            flex-shrink: 0;
+            content: ''; display: inline-block; width: 3px; height: 14px;
+            border-radius: 2px; background: var(--green); flex-shrink: 0;
         }
 
-        /* ANIMATIONS */
         @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
         .fade-up { animation: fadeUp .35s ease both; }
 
-        /* LAYOUT */
         .page-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
         .sidebar-col  { width: 280px; flex-shrink: 0; padding: 24px; display: none; height: 100vh; overflow: hidden; }
         @media (min-width: 1024px) { .sidebar-col { display: block; } }
         .main-col { flex: 1; min-width: 0; height: 100vh; overflow-y: auto; }
+
+        /* SYNC BADGE — shows this data is system-wide */
+        .sync-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .62rem; font-weight: 800; padding: .2rem .55rem; border-radius: 999px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
     </style>
 </head>
 <body>
@@ -209,57 +177,75 @@
 <?php
 /* ═══════════════════════════════════════════════════
    PHP DATA PREPARATION
+   SYNC FIX: Use $allReservations (system-wide) for
+   stats, live sessions, and calendar so numbers match
+   what the admin sees.
 ═══════════════════════════════════════════════════ */
 $page     = $page ?? 'dashboard';
 $navItems = [
-    ['url'=>'/sk/dashboard',              'icon'=>'fa-house',           'label'=>'Dashboard',          'key'=>'dashboard'],
-    ['url'=>'/sk/reservations',           'icon'=>'fa-calendar-alt',    'label'=>'All Reservations',   'key'=>'reservations'],
-    ['url'=>'/sk/new-reservation',        'icon'=>'fa-plus',            'label'=>'New Reservation',    'key'=>'new-reservation'],
-    ['url'=>'/sk/user-requests',          'icon'=>'fa-users',           'label'=>'User Requests',      'key'=>'user-requests'],
-    ['url'=>'/sk/my-reservations',        'icon'=>'fa-calendar',        'label'=>'My Reservations',    'key'=>'my-reservations'],
-    ['url'=>'/sk/claimed-reservations',   'icon'=>'fa-check-double',    'label'=>'Claimed',            'key'=>'claimed-reservations'],
-    ['url'=>'/sk/books',                  'icon'=>'fa-book-open',       'label'=>'Library',            'key'=>'books'],
-    ['url'=>'/sk/scanner',                'icon'=>'fa-qrcode',          'label'=>'Scanner',            'key'=>'scanner'],
-    ['url'=>'/sk/profile',                'icon'=>'fa-regular fa-user', 'label'=>'Profile',            'key'=>'profile'],
+    ['url'=>'/sk/dashboard',            'icon'=>'fa-house',           'label'=>'Dashboard',        'key'=>'dashboard'],
+    ['url'=>'/sk/reservations',         'icon'=>'fa-calendar-alt',    'label'=>'All Reservations', 'key'=>'reservations'],
+    ['url'=>'/sk/new-reservation',      'icon'=>'fa-plus',            'label'=>'New Reservation',  'key'=>'new-reservation'],
+    ['url'=>'/sk/user-requests',        'icon'=>'fa-users',           'label'=>'User Requests',    'key'=>'user-requests'],
+    ['url'=>'/sk/my-reservations',      'icon'=>'fa-calendar',        'label'=>'My Reservations',  'key'=>'my-reservations'],
+    ['url'=>'/sk/claimed-reservations', 'icon'=>'fa-check-double',    'label'=>'Claimed',          'key'=>'claimed-reservations'],
+    ['url'=>'/sk/books',                'icon'=>'fa-book-open',       'label'=>'Library',          'key'=>'books'],
+    ['url'=>'/sk/scanner',              'icon'=>'fa-qrcode',          'label'=>'Scanner',          'key'=>'scanner'],
+    ['url'=>'/sk/profile',              'icon'=>'fa-regular fa-user', 'label'=>'Profile',          'key'=>'profile'],
 ];
 
-$approvalRate    = ($total ?? 0)    > 0 ? round((($approved ?? 0) / $total)    * 100) : 0;
-$utilizationRate = ($approved ?? 0) > 0 ? round((($claimed  ?? 0) / $approved) * 100) : 0;
+// ── Use system-wide $allReservations for synced stats ──────────────────────
+// $reservations    = current SK user's own reservations (for My Reservations)
+// $allReservations = all reservations system-wide (synced with admin view)
+$myRes  = $reservations    ?? [];   // personal — used for personal calendar, recent bookings
+$sysRes = $allReservations ?? [];   // system-wide — used for stats, live sessions
 
-$dashBooks            = $dashBooks            ?? [];
-$featuredBooks        = $featuredBooks        ?? [];
-$myBorrowings         = $myBorrowings         ?? [];
-$availableCount       = $availableCount       ?? 0;
-$totalBooks           = $totalBooks           ?? 0;
-$remainingReservations= $remainingReservations?? 0;
-$pendingUserCount     = $pendingUserCount     ?? 0;
+// System-wide counts (synced with admin)
+$sysTotal    = count($sysRes);
+$sysPending  = count(array_filter($sysRes, fn($r) => ($r['status']??'') === 'pending'));
+$sysApproved = count(array_filter($sysRes, fn($r) => ($r['status']??'') === 'approved'));
+$sysDeclined = count(array_filter($sysRes, fn($r) => in_array($r['status']??'', ['declined','canceled'])));
+$sysClaimed  = count(array_filter($sysRes, fn($r) => in_array($r['claimed']??false, [true,1,'t','true','1'], true)));
 
-// ─────────────────────────────────────────────────────────────────────────
-// BUG FIX #5 & #6: Old code was:
-//   $usedSlots = ($approved ?? 0) - ($remainingReservations);
-//   $maxSlots  = max(1, ($approved ?? 0));
-//
-// This was wrong because $approved is the all-time approved count (e.g. 1)
-// and $remainingReservations comes from a monthly window (e.g. 2 left of 3),
-// so 1 - 2 = -1, producing "-1/1 slots used" in the sidebar.
-//
-// Fix: use $usedThisMonth (monthly used) and $maxMonthlySlots (= 3)
-// that are now properly passed from the controller.
-// ─────────────────────────────────────────────────────────────────────────
+$sysToday    = date('Y-m-d');
+$sysTodayAll = array_filter($sysRes, fn($r) => ($r['reservation_date']??'') === $sysToday);
+$sysTodayTotal    = count($sysTodayAll);
+$sysTodayApproved = count(array_filter($sysTodayAll, fn($r) => ($r['status']??'') === 'approved'));
+$sysTodayPending  = count(array_filter($sysTodayAll, fn($r) => ($r['status']??'') === 'pending'));
+$sysTodayClaimed  = count(array_filter($sysTodayAll, fn($r) => in_array($r['claimed']??false, [true,1,'t','true','1'], true)));
+
+$sysApprovalRate    = $sysTotal    > 0 ? round($sysApproved / $sysTotal    * 100) : 0;
+$sysUtilizationRate = $sysApproved > 0 ? round($sysClaimed  / $sysApproved * 100) : 0;
+
+// Monthly total (system-wide, last 30 days)
+$thirtyDaysAgo = date('Y-m-d', strtotime('-30 days'));
+$sysMonthlyTotal = count(array_filter($sysRes, fn($r) => ($r['reservation_date']??'') >= $thirtyDaysAgo));
+
+// Keep controller-passed values as fallback for personal quota
+$remainingReservations = $remainingReservations ?? 0;
+$pendingUserCount      = $pendingUserCount      ?? 0;
+$dashBooks             = $dashBooks             ?? [];
+$featuredBooks         = $featuredBooks         ?? [];
+$myBorrowings          = $myBorrowings          ?? [];
+$availableCount        = $availableCount        ?? 0;
+$totalBooks            = $totalBooks            ?? 0;
+
+// Monthly quota (personal, from controller)
 $usedSlots = (int)($usedThisMonth   ?? 0);
 $maxSlots  = (int)($maxMonthlySlots ?? 3);
-$maxSlots  = max(1, $maxSlots); // prevent division by zero
+$maxSlots  = max(1, $maxSlots);
 $quotaPct  = min(100, round($usedSlots / $maxSlots * 100));
 
-/* ── Insights ── */
+/* ── Insights — use system-wide data ── */
 $insHourArr = array_fill(0,24,0);
 $insDowArr  = array_fill(0,7,0);
 $insMonArr  = array_fill(0,12,0);
 $insResMap  = [];
 $insDateVol = [];
 $ins7 = 0; $insPrev7 = 0;
-$myRes = $reservations ?? [];
-foreach ($myRes as $r) {
+
+// Use $sysRes for system-wide insights
+foreach ($sysRes as $r) {
     if (!empty($r['start_time']))       $insHourArr[(int)date('G', strtotime($r['start_time']))]++;
     if (!empty($r['reservation_date'])) {
         $insDowArr[(int)date('w', strtotime($r['reservation_date']))]++;
@@ -268,7 +254,8 @@ foreach ($myRes as $r) {
         $d = (int)floor((time()-strtotime($r['reservation_date']))/86400);
         if ($d>=0&&$d<7) $ins7++; if ($d>=7&&$d<14) $insPrev7++;
     }
-    $insResMap[$r['resource_name']??'Unknown'] = ($insResMap[$r['resource_name']??'Unknown'] ?? 0)+1;
+    $rname = $r['resource_name'] ?? $r['full_name'] ?? 'Unknown';
+    $insResMap[$rname] = ($insResMap[$rname] ?? 0) + 1;
 }
 $insPH  = array_search(max($insHourArr), $insHourArr);
 $insPD  = array_search(max($insDowArr),  $insDowArr);
@@ -287,15 +274,39 @@ $insBDL = $insBD ? date('M j, Y', strtotime($insBD)) : 'N/A';
 $insTrP = $insPrev7>0 ? round((($ins7-$insPrev7)/$insPrev7)*100) : ($ins7>0?100:0);
 $insTrD = $insTrP>=0?'up':'down';
 $insTrC = $insTrD==='up'?'#10b981':'#ef4444';
-$insNS  = ($approved??0)>0 ? round((($approved-($claimed??0))/$approved)*100) : 0;
-$insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 0;
+$insNS  = $sysApproved > 0 ? round((($sysApproved - $sysClaimed) / $sysApproved) * 100) : 0;
+$insDR  = $sysTotal    > 0 ? round(($sysDeclined / $sysTotal) * 100) : 0;
+
+// Chart data — rebuild from system-wide data
+$chartLabels = [];
+$chartData   = [];
+for ($i = 6; $i >= 0; $i--) {
+    $d = date('Y-m-d', strtotime("-$i days"));
+    $chartLabels[] = date('D', strtotime($d));
+    $chartData[]   = count(array_filter($sysRes, fn($r) => ($r['reservation_date']??'') === $d));
+}
+
+// Resource chart — from system-wide
+$resourceLabels = [];
+$resourceData   = [];
+$topResources   = [];
+$resCount = [];
+foreach ($sysRes as $r) {
+    $rn = $r['resource_name'] ?? 'Unknown';
+    $resCount[$rn] = ($resCount[$rn] ?? 0) + 1;
+}
+arsort($resCount);
+foreach (array_slice($resCount, 0, 5, true) as $rname => $cnt) {
+    $resourceLabels[] = $rname;
+    $resourceData[]   = (int)$cnt;
+    $topResources[]   = ['name' => $rname, 'count' => $cnt];
+}
+if (empty($resourceLabels)) { $resourceLabels = ['No Data']; $resourceData = [1]; }
 ?>
 
 <div class="page-wrapper">
 
-<!-- ════════════════════════════════════════════
-     SIDEBAR
-════════════════════════════════════════════ -->
+<!-- SIDEBAR -->
 <aside class="sidebar-col">
     <div class="sidebar-card">
         <div class="sidebar-header">
@@ -314,6 +325,15 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
             <?php endforeach; ?>
         </nav>
         <div class="sidebar-footer">
+            <!-- Quota bar (personal) -->
+            <div class="bg-slate-50 rounded-2xl p-3 mb-3 border border-slate-100">
+                <div class="flex items-center justify-between mb-1.5">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">My Monthly Quota</p>
+                    <span class="text-[10px] font-black text-green-600"><?= $usedSlots ?>/<?= $maxSlots ?></span>
+                </div>
+                <div class="prog-bar"><div class="prog-fill <?= $quotaPct >= 100 ? 'bg-red-500' : ($quotaPct >= 66 ? 'bg-amber-500' : 'bg-green-500') ?>" style="width:<?= $quotaPct ?>%"></div></div>
+                <p class="text-[10px] text-slate-400 font-medium mt-1"><?= $remainingReservations ?> slot<?= $remainingReservations != 1 ? 's' : '' ?> remaining this month</p>
+            </div>
             <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all text-sm">
                 <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
             </a>
@@ -321,9 +341,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
     </div>
 </aside>
 
-<!-- ════════════════════════════════════════════
-     MOBILE NAV
-════════════════════════════════════════════ -->
+<!-- MOBILE NAV -->
 <nav class="lg:hidden mobile-nav-pill">
     <div class="mobile-scroll-container text-white px-2">
         <?php foreach ($navItems as $item): $cls=($page==$item['key'])?'bg-green-700 font-semibold':'hover:bg-green-500/30'; ?>
@@ -339,9 +357,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
     </div>
 </nav>
 
-<!-- ════════════════════════════════════════════
-     MODALS & OVERLAYS
-════════════════════════════════════════════ -->
+<!-- MODALS -->
 <div id="dateModal" role="dialog" aria-modal="true">
     <div class="modal-backdrop-layer" onclick="closeDateModal()"></div>
     <div class="modal-box">
@@ -369,30 +385,27 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
 
 <div id="tl-toast-container"></div>
 
-<!-- Login toast (shown once per session) -->
 <div id="loginToast" style="display:none">
     <div class="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hand-wave text-white"></i></div>
     <div><p class="font-black text-sm">Welcome back, <?= htmlspecialchars($user_name ?? 'Officer') ?>!</p><p class="text-[11px] text-slate-400 mt-0.5"><?= date('l, F j') ?></p></div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     MAIN CONTENT
-════════════════════════════════════════════ -->
+<!-- MAIN CONTENT -->
 <div class="main-col">
 <main class="w-full max-w-screen-xl mx-auto px-4 lg:px-8 pt-6 pb-32">
 
-    <!-- ─── HEADER ──────────────────────────── -->
+    <!-- HEADER -->
     <header class="flex items-start justify-between mb-6 gap-4 fade-up">
         <div>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
                 <?php $hh=(int)date('H'); echo $hh<12?'Good morning':($hh<17?'Good afternoon':'Good evening'); ?>, <?= htmlspecialchars($user_name ?? 'Officer') ?>
             </p>
-            <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight">My Dashboard</h2>
-            <p class="text-slate-400 font-medium text-sm mt-0.5"><?= date('l, F j, Y') ?></p>
+            <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight">SK Dashboard</h2>
+            <p class="text-slate-400 font-medium text-sm mt-0.5"><?= date('l, F j, Y') ?> · <span class="sync-badge"><i class="fa-solid fa-rotate text-[9px]"></i> Synced with Admin</span></p>
         </div>
         <div class="flex items-center gap-3 flex-shrink-0 flex-wrap justify-end">
             <?php if (($pendingUserCount??0)>0): ?>
-                <a href="/sk/reservations?status=pending" class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-2xl font-bold text-xs hover:bg-amber-100 transition">
+                <a href="/sk/user-requests" class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-2xl font-bold text-xs hover:bg-amber-100 transition">
                     <i class="fa-solid fa-clock text-xs"></i> <?= $pendingUserCount ?> pending
                 </a>
             <?php endif; ?>
@@ -404,7 +417,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         </div>
     </header>
 
-    <!-- Timer banner (active reservation) -->
+    <!-- Timer banner (from personal reservations) -->
     <?php
     $activeBanner = null; $upcomingBanner = null; $now = time();
     foreach ($myRes as $r) {
@@ -421,22 +434,20 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
     <div class="timer-banner <?= $isActive?'active':'upcoming' ?> mb-5 flex items-center gap-3 fade-up" id="timerBanner" data-start="<?= strtotime($b['reservation_date'].'T'.$b['start_time']) ?>" data-end="<?= strtotime($b['reservation_date'].'T'.$b['end_time']) ?>" data-active="<?= $isActive?'1':'0' ?>">
         <div class="timer-pulse <?= $isActive?'pulse':'' ?>"></div>
         <div class="flex-1 min-w-0">
-            <p class="text-xs font-black <?= $isActive?'text-green-800':'text-blue-800' ?>"><?= $isActive?'Session in progress':'Starting soon' ?> · <?= htmlspecialchars($b['resource_name']??'Resource') ?></p>
+            <p class="text-xs font-black <?= $isActive?'text-green-800':'text-blue-800' ?>"><?= $isActive?'My session in progress':'My session starting soon' ?> · <?= htmlspecialchars($b['resource_name']??'Resource') ?></p>
             <p class="text-[11px] <?= $isActive?'text-green-600':'text-blue-500' ?> font-medium"><?= date('g:i A', strtotime($b['start_time'])) ?> – <?= date('g:i A', strtotime($b['end_time'])) ?></p>
         </div>
         <span id="timerDisplay" class="text-sm font-black <?= $isActive?'text-green-700':'text-blue-700' ?> font-variant-numeric tabular-nums">—</span>
     </div>
     <?php endif; ?>
 
-    <!-- ═══════════════════════════════════════
-         SECTION 1 — LIVE SESSIONS
-    ═══════════════════════════════════════════ -->
-    <p class="section-label">Live Monitor</p>
+    <!-- ═══ SECTION 1 — LIVE SESSIONS (system-wide, matches admin) ═══ -->
+    <p class="section-label">Live Monitor <span class="sync-badge ml-2">All Users</span></p>
     <div class="tl-panel mb-8">
         <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-timer text-green-600 text-sm"></i></div>
-                <div><h3 class="font-extrabold text-slate-800 text-sm leading-tight">Active Sessions</h3><p class="text-[10px] text-slate-400 font-medium">Real-time time tracking</p></div>
+                <div><h3 class="font-extrabold text-slate-800 text-sm leading-tight">Active Sessions</h3><p class="text-[10px] text-slate-400 font-medium">System-wide · Real-time tracking</p></div>
             </div>
             <div class="flex items-center gap-3">
                 <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Active</span>
@@ -448,50 +459,48 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         <p id="tl-no-sessions" class="hidden text-center text-sm text-slate-400 py-6 font-medium"><i class="fa-regular fa-circle-pause text-2xl text-slate-200 block mb-2"></i>No active sessions right now</p>
     </div>
 
-    <!-- ═══════════════════════════════════════
-         SECTION 2 — RESERVATION OVERVIEW
-    ═══════════════════════════════════════════ -->
-    <p class="section-label">Reservation Overview</p>
+    <!-- ═══ SECTION 2 — RESERVATION OVERVIEW (system-wide) ═══ -->
+    <p class="section-label">Reservation Overview <span class="sync-badge ml-2">System-wide</span></p>
 
-    <!-- 2a · Stat cards -->
+    <!-- Stat cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <div class="stat-card">
-            <div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-layer-group text-green-500 text-sm"></i></div><span class="text-[10px] font-black text-green-600 uppercase tracking-wider">+<?= $monthlyTotal??0 ?> mo</span></div>
+            <div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-layer-group text-green-500 text-sm"></i></div><span class="text-[10px] font-black text-green-600 uppercase tracking-wider">+<?= $sysMonthlyTotal ?> mo</span></div>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total</p>
-            <p class="text-3xl font-black text-slate-800"><?= $total??0 ?></p>
-            <p class="text-xs text-slate-400 mt-0.5 font-medium">Avg <span class="font-bold text-green-600"><?= ($total??0)>0?round(($total??0)/30,1):0 ?>/day</span></p>
+            <p class="text-3xl font-black text-slate-800"><?= $sysTotal ?></p>
+            <p class="text-xs text-slate-400 mt-0.5 font-medium">Avg <span class="font-bold text-green-600"><?= $sysTotal>0?round($sysTotal/30,1):0 ?>/day</span></p>
         </div>
         <div class="stat-card">
-            <div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i></div><span class="text-[10px] font-black text-emerald-600 uppercase tracking-wider"><?= $approvalRate ?>%</span></div>
+            <div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i></div><span class="text-[10px] font-black text-emerald-600 uppercase tracking-wider"><?= $sysApprovalRate ?>%</span></div>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Approved</p>
-            <p class="text-3xl font-black text-emerald-600"><?= $approved??0 ?></p>
-            <div class="prog-bar mt-2"><div class="prog-fill bg-emerald-500" style="width:<?= $approvalRate ?>%"></div></div>
+            <p class="text-3xl font-black text-emerald-600"><?= $sysApproved ?></p>
+            <div class="prog-bar mt-2"><div class="prog-fill bg-emerald-500" style="width:<?= $sysApprovalRate ?>%"></div></div>
             <p class="text-xs text-slate-400 mt-1.5 font-medium">Approval rate</p>
         </div>
         <div class="stat-card">
-            <div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center"><i class="fa-regular fa-clock text-amber-500 text-sm"></i></div><span class="text-[10px] font-black text-amber-600 uppercase tracking-wider"><?= $todayTotal??0 ?> today</span></div>
+            <div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center"><i class="fa-regular fa-clock text-amber-500 text-sm"></i></div><span class="text-[10px] font-black text-amber-600 uppercase tracking-wider"><?= $sysTodayTotal ?> today</span></div>
             <div class="grid grid-cols-3 gap-1 text-center mt-1">
-                <div><p class="text-xl font-black text-amber-600"><?= $todayPending??0 ?></p><p class="text-[9px] text-slate-400 font-bold">Pending</p></div>
-                <div><p class="text-xl font-black text-emerald-600"><?= $todayApproved??0 ?></p><p class="text-[9px] text-slate-400 font-bold">Approved</p></div>
-                <div><p class="text-xl font-black text-purple-600"><?= $todayClaimed??0 ?></p><p class="text-[9px] text-slate-400 font-bold">Claimed</p></div>
+                <div><p class="text-xl font-black text-amber-600"><?= $sysTodayPending ?></p><p class="text-[9px] text-slate-400 font-bold">Pending</p></div>
+                <div><p class="text-xl font-black text-emerald-600"><?= $sysTodayApproved ?></p><p class="text-[9px] text-slate-400 font-bold">Approved</p></div>
+                <div><p class="text-xl font-black text-purple-600"><?= $sysTodayClaimed ?></p><p class="text-[9px] text-slate-400 font-bold">Claimed</p></div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-check-double text-purple-500 text-sm"></i></div><span class="text-[10px] font-black text-purple-600 uppercase tracking-wider"><?= $utilizationRate ?>%</span></div>
+            <div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-check-double text-purple-500 text-sm"></i></div><span class="text-[10px] font-black text-purple-600 uppercase tracking-wider"><?= $sysUtilizationRate ?>%</span></div>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Claimed</p>
-            <p class="text-3xl font-black text-purple-600"><?= $claimed??0 ?></p>
-            <div class="prog-bar mt-2"><div class="prog-fill bg-purple-500" style="width:<?= $utilizationRate ?>%"></div></div>
+            <p class="text-3xl font-black text-purple-600"><?= $sysClaimed ?></p>
+            <div class="prog-bar mt-2"><div class="prog-fill bg-purple-500" style="width:<?= $sysUtilizationRate ?>%"></div></div>
             <p class="text-xs text-slate-400 mt-1.5 font-medium">Utilization rate</p>
         </div>
     </div>
 
-    <!-- 2b · KPI strip -->
+    <!-- KPI strip -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <?php foreach ([
-            ['Total',    $total??0,                'border-green-500',   'text-slate-700',   'fa-layer-group',    'text-green-500'],
-            ['Pending',  $pending??0,              'border-amber-500',   'text-amber-600',   'fa-clock',          'text-amber-500'],
-            ['Approved', $approved??0,             'border-emerald-500', 'text-emerald-600', 'fa-circle-check',   'text-emerald-500'],
-            ['Remaining',$remainingReservations,   'border-purple-500',  'text-purple-600',  'fa-hourglass-half', 'text-purple-500'],
+            ['Total',     $sysTotal,              'border-green-500',   'text-slate-700',   'fa-layer-group',    'text-green-500'],
+            ['Pending',   $sysPending,             'border-amber-500',   'text-amber-600',   'fa-clock',          'text-amber-500'],
+            ['Approved',  $sysApproved,            'border-emerald-500', 'text-emerald-600', 'fa-circle-check',   'text-emerald-500'],
+            ['My Slots',  $remainingReservations,  'border-purple-500',  'text-purple-600',  'fa-hourglass-half', 'text-purple-500'],
         ] as [$l,$v,$b,$c,$i,$ic]): ?>
             <div class="kpi-card <?= $b ?>">
                 <div class="flex items-center justify-between mb-2"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><?= $l ?></p><i class="fa-solid <?= $i ?> text-sm <?= $ic ?>"></i></div>
@@ -500,18 +509,18 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         <?php endforeach; ?>
     </div>
 
-    <!-- 2c · Charts -->
+    <!-- Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
         <div class="dash-card p-5">
             <div class="flex items-center justify-between mb-1">
-                <div><h3 class="font-extrabold text-slate-800 text-sm">Reservations Trend</h3><p class="text-[11px] text-slate-400 font-medium">Last 7 days</p></div>
-                <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full"><span class="w-2 h-2 rounded-full bg-green-500"></span>Reservations</span>
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Reservations Trend</h3><p class="text-[11px] text-slate-400 font-medium">Last 7 days · All users</p></div>
+                <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full"><span class="w-2 h-2 rounded-full bg-green-500"></span>System-wide</span>
             </div>
             <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
         </div>
         <div class="dash-card p-5">
             <div class="flex items-center justify-between mb-1">
-                <div><h3 class="font-extrabold text-slate-800 text-sm">Popular Resources</h3><p class="text-[11px] text-slate-400 font-medium">Most reserved</p></div>
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Popular Resources</h3><p class="text-[11px] text-slate-400 font-medium">Most reserved · All users</p></div>
                 <span class="text-[10px] font-black bg-green-50 text-green-600 px-2.5 py-1 rounded-full">Top 5</span>
             </div>
             <div class="flex items-center gap-6 mt-4">
@@ -521,18 +530,16 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════
-         SECTION 3 — SCHEDULE & ACTIVITY
-    ═══════════════════════════════════════════ -->
+    <!-- ═══ SECTION 3 — SCHEDULE & ACTIVITY ═══ -->
     <p class="section-label">Schedule &amp; Activity</p>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
 
-        <!-- Calendar -->
+        <!-- Calendar — shows ALL reservations -->
         <div class="lg:col-span-2 dash-card p-5">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-green-50 text-green-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-calendar-days text-sm"></i></div>
-                    <div><h3 class="font-extrabold text-slate-800 text-sm leading-tight">My Reservation Calendar</h3><p class="text-[10px] text-slate-400 font-medium">Click any date to view</p></div>
+                    <div><h3 class="font-extrabold text-slate-800 text-sm leading-tight">Reservation Calendar</h3><p class="text-[10px] text-slate-400 font-medium">All users · Click any date to view</p></div>
                 </div>
                 <div class="hidden sm:flex items-center gap-3 flex-wrap justify-end">
                     <?php foreach ([['#fbbf24','Pending'],['#10b981','Approved'],['#f87171','Declined'],['#a855f7','Claimed']] as [$c,$l]): ?>
@@ -547,9 +554,14 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         <div class="flex flex-col gap-4">
             <!-- Quick Stats -->
             <div class="rounded-2xl p-4 text-white" style="background:linear-gradient(135deg,#052e16,#16a34a);">
-                <div class="flex items-center gap-2 mb-3"><i class="fa-solid fa-bolt text-green-300 text-sm"></i><h3 class="font-black text-sm">Quick Stats</h3></div>
+                <div class="flex items-center gap-2 mb-3"><i class="fa-solid fa-bolt text-green-300 text-sm"></i><h3 class="font-black text-sm">System Stats</h3></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <?php foreach ([['Approval',$approvalRate.'%','fa-chart-line'],['Utilization',$utilizationRate.'%','fa-chart-pie'],['Remaining',$remainingReservations,'fa-hourglass-half'],['Total',$total??0,'fa-layer-group']] as [$l,$v,$ic]): ?>
+                    <?php foreach ([
+                        ['Approval',    $sysApprovalRate.'%',    'fa-chart-line'],
+                        ['Utilization', $sysUtilizationRate.'%', 'fa-chart-pie'],
+                        ['My Slots',    $remainingReservations,  'fa-hourglass-half'],
+                        ['Total',       $sysTotal,               'fa-layer-group'],
+                    ] as [$l,$v,$ic]): ?>
                         <div class="bg-white/10 rounded-xl p-3"><div class="flex items-center gap-1.5 mb-1"><i class="fa-solid <?= $ic ?> text-green-300 text-[10px]"></i><p class="text-[9px] text-green-200 font-black uppercase tracking-wider"><?= $l ?></p></div><p class="text-xl font-black"><?= $v ?></p></div>
                     <?php endforeach; ?>
                 </div>
@@ -559,14 +571,14 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
             <div class="dash-card p-4">
                 <h3 class="font-extrabold text-slate-800 text-sm mb-3">Quick Actions</h3>
                 <div class="grid grid-cols-2 gap-2">
-                    <a href="/sk/new-reservation" class="action-btn"><i class="fa-solid fa-plus text-lg"></i><span class="text-[10px] font-black text-center leading-tight">New Reservation</span></a>
-                    <a href="/sk/reservations" class="action-btn"><i class="fa-solid fa-calendar text-lg"></i><span class="text-[10px] font-black text-center leading-tight">My Reservations</span></a>
-                    <a href="/sk/books" class="action-btn"><i class="fa-solid fa-book-open text-lg"></i><span class="text-[10px] font-black text-center leading-tight">Browse Library</span></a>
-                    <a href="/sk/profile" class="action-btn"><i class="fa-regular fa-user text-lg"></i><span class="text-[10px] font-black text-center leading-tight">View Profile</span></a>
+                    <a href="/sk/new-reservation"  class="action-btn"><i class="fa-solid fa-plus text-lg"></i><span class="text-[10px] font-black text-center leading-tight">New Reservation</span></a>
+                    <a href="/sk/reservations"      class="action-btn"><i class="fa-solid fa-calendar text-lg"></i><span class="text-[10px] font-black text-center leading-tight">All Reservations</span></a>
+                    <a href="/sk/books"             class="action-btn"><i class="fa-solid fa-book-open text-lg"></i><span class="text-[10px] font-black text-center leading-tight">Browse Library</span></a>
+                    <a href="/sk/profile"           class="action-btn"><i class="fa-regular fa-user text-lg"></i><span class="text-[10px] font-black text-center leading-tight">View Profile</span></a>
                 </div>
             </div>
 
-            <!-- Recent Bookings -->
+            <!-- Recent Bookings — system-wide -->
             <div class="dash-card p-4 flex-1">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="font-extrabold text-slate-800 text-sm">Recent Bookings</h3>
@@ -574,28 +586,35 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
                 </div>
                 <div class="space-y-1">
                     <?php
-                    $recent = array_slice(array_reverse($myRes), 0, 4);
-                    foreach ($recent as $r):
-                        $st = ($r['claimed'] == 1 || $r['claimed'] === true || $r['claimed'] === 'true') ? 'claimed' : ($r['status']??'pending');
-                        $clr=['approved'=>'text-emerald-600','pending'=>'text-amber-600','declined'=>'text-rose-600','claimed'=>'text-purple-600'];
-                        $ico=['approved'=>'fa-circle-check','pending'=>'fa-clock','declined'=>'fa-xmark-circle','claimed'=>'fa-check-double'];
-                        $isExpired = !empty($r['reservation_date']) && strtotime($r['reservation_date']) < strtotime('today') && $st !== 'claimed';
+                    // Show latest 4 from ALL reservations (system-wide, synced with admin)
+                    $recentAll = array_slice(array_reverse($sysRes), 0, 4);
+                    foreach ($recentAll as $r):
+                        $isCl = in_array($r['claimed']??false, [true,1,'t','true','1'], true);
+                        $st   = $isCl ? 'claimed' : ($r['status']??'pending');
+                        $clr  = ['approved'=>'text-emerald-600','pending'=>'text-amber-600','declined'=>'text-rose-600','claimed'=>'text-purple-600'];
+                        $ico  = ['approved'=>'fa-circle-check','pending'=>'fa-clock','declined'=>'fa-xmark-circle','claimed'=>'fa-check-double'];
+                        $isExpired = !empty($r['reservation_date']) && strtotime($r['reservation_date']) < strtotime('today') && !$isCl;
+                        $rName = $r['resource_name'] ?? 'Resource';
+                        $vName = $r['visitor_name']  ?? $r['full_name'] ?? 'Guest';
                     ?>
                         <div class="booking-row <?= $isExpired?'expired':'' ?>">
                             <div class="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-desktop text-slate-500 text-xs"></i></div>
-                            <div class="flex-1 min-w-0"><p class="font-bold text-xs text-slate-800 truncate"><?= htmlspecialchars($r['resource_name']??'Resource') ?></p><p class="text-[10px] text-slate-400 truncate"><?= !empty($r['reservation_date'])?date('M j',strtotime($r['reservation_date'])):'—' ?> · <?= !empty($r['start_time'])?date('g:i A',strtotime($r['start_time'])):'—' ?></p></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold text-xs text-slate-800 truncate"><?= htmlspecialchars($rName) ?></p>
+                                <p class="text-[10px] text-slate-400 truncate"><?= htmlspecialchars($vName) ?> · <?= !empty($r['reservation_date'])?date('M j',strtotime($r['reservation_date'])):'—' ?></p>
+                            </div>
                             <div class="flex items-center gap-1 flex-shrink-0"><i class="fa-solid <?= $ico[$st]??'fa-circle' ?> text-xs <?= $clr[$st]??'text-slate-400' ?>"></i></div>
                         </div>
                     <?php endforeach; ?>
-                    <?php if (empty($recent)): ?><div class="text-center py-5"><i class="fa-regular fa-calendar-xmark text-2xl text-slate-200 mb-1 block"></i><p class="text-xs text-slate-400 font-medium">No bookings yet</p></div><?php endif; ?>
+                    <?php if (empty($recentAll)): ?>
+                        <div class="text-center py-5"><i class="fa-regular fa-calendar-xmark text-2xl text-slate-200 mb-1 block"></i><p class="text-xs text-slate-400 font-medium">No bookings yet</p></div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════
-         SECTION 4 — LIBRARY
-    ═══════════════════════════════════════════ -->
+    <!-- ═══ SECTION 4 — LIBRARY ═══ -->
     <div class="section-divider">
         <div class="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-green-600 text-sm"></i></div>
         <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Library</span>
@@ -604,9 +623,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
-        <!-- Left: banner + AI Finder -->
         <div class="flex flex-col gap-4">
-            <!-- Library banner -->
             <div class="library-banner">
                 <div class="relative z-10">
                     <p class="text-[10px] font-black tracking-[0.18em] text-green-300 uppercase mb-1">Book Collection</p>
@@ -618,8 +635,6 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
                     </div>
                 </div>
             </div>
-
-            <!-- AI Book Finder -->
             <div class="dash-card p-4">
                 <div class="flex items-center gap-2 mb-3">
                     <div class="w-7 h-7 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-wand-magic-sparkles text-green-600 text-xs"></i></div>
@@ -633,7 +648,6 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
             </div>
         </div>
 
-        <!-- Books Catalog + My Borrows -->
         <div class="lg:col-span-2 flex flex-col gap-4">
             <div class="dash-card p-5">
                 <div class="flex items-center justify-between mb-4">
@@ -668,16 +682,13 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
                     <div class="text-center py-10"><i class="fa-solid fa-book-open text-4xl text-slate-200 mb-3 block"></i><p class="text-sm text-slate-400 font-medium">No books available</p></div>
                 <?php endif; ?>
             </div>
-
-            <!-- My Active Borrows -->
             <?php if(!empty($myBorrowings)): ?>
             <div class="dash-card p-5">
                 <h3 class="font-extrabold text-slate-800 text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-book text-green-500 text-xs"></i> My Active Borrows</h3>
                 <div class="space-y-2">
                     <?php foreach(array_slice($myBorrowings,0,4) as $bw):
                         $due=!empty($bw['due_date'])?strtotime($bw['due_date']):null;
-                        $overdue=$due&&$due<time();
-                        $dueSoon=$due&&!$overdue&&$due<time()+3*86400;
+                        $overdue=$due&&$due<time(); $dueSoon=$due&&!$overdue&&$due<time()+3*86400;
                     ?>
                         <div class="flex items-center gap-3 p-2.5 bg-slate-50 rounded-2xl border border-slate-100">
                             <div class="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-green-600 text-xs"></i></div>
@@ -691,24 +702,21 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════
-         SECTION 5 — INSIGHTS & FORECASTING
-    ═══════════════════════════════════════════ -->
+    <!-- ═══ SECTION 5 — INSIGHTS (system-wide) ═══ -->
     <div class="section-divider">
         <div class="w-8 h-8 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-chart-mixed text-emerald-600 text-sm"></i></div>
         <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Insights &amp; Forecasting</span>
         <div class="section-divider-line"></div>
-        <span class="text-xs font-black text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl whitespace-nowrap flex-shrink-0"><i class="fa-solid fa-sparkles text-[10px] mr-1"></i>Auto-generated</span>
+        <span class="text-xs font-black text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl whitespace-nowrap flex-shrink-0"><i class="fa-solid fa-sparkles text-[10px] mr-1"></i>System-wide · Auto-generated</span>
     </div>
 
-    <!-- 5a · Summary cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <div class="dash-card p-4 relative overflow-hidden">
             <div class="absolute -right-3 -top-3 text-7xl opacity-[0.04] pointer-events-none select-none">⏰</div>
             <div class="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-sun text-amber-500 text-sm"></i></div>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Peak Hour</p>
             <p class="text-base font-black text-slate-800 leading-tight"><?= htmlspecialchars($insPHL) ?></p>
-            <p class="text-[10px] text-slate-400 font-medium mt-1">Your busiest window</p>
+            <p class="text-[10px] text-slate-400 font-medium mt-1">Busiest window</p>
             <div class="mt-3 h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:<?= max(array_values($insHourArr))>0?min(100,round($insHourArr[$insPH]/max(array_values($insHourArr))*100)):0 ?>%"></div></div>
         </div>
         <div class="dash-card p-4 relative overflow-hidden">
@@ -716,7 +724,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
             <div class="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-calendar-week text-green-500 text-sm"></i></div>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Busiest Day</p>
             <p class="text-base font-black text-slate-800 leading-tight"><?= htmlspecialchars($insPDL) ?></p>
-            <p class="text-[10px] text-slate-400 font-medium mt-1">Most bookings this day</p>
+            <p class="text-[10px] text-slate-400 font-medium mt-1">Most bookings</p>
             <div id="ins-dow-mini" class="flex gap-0.5 mt-3 items-end h-6"></div>
         </div>
         <div class="dash-card p-4 relative overflow-hidden">
@@ -737,11 +745,10 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         </div>
     </div>
 
-    <!-- 5b · Heatmap + Health -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
         <div class="lg:col-span-2 dash-card p-5">
             <div class="flex items-center justify-between mb-4">
-                <div><h3 class="font-extrabold text-slate-800 text-sm">Hourly Activity Heatmap</h3><p class="text-[11px] text-slate-400 font-medium">My booking density by hour</p></div>
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Hourly Activity Heatmap</h3><p class="text-[11px] text-slate-400 font-medium">Booking density by hour · All users</p></div>
                 <span class="text-[10px] font-black bg-amber-50 text-amber-600 px-2.5 py-1 rounded-full border border-amber-200">Demand Map</span>
             </div>
             <div id="ins-heatmap" class="grid gap-1.5" style="grid-template-columns:repeat(12,1fr)"></div>
@@ -758,7 +765,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
                 <div class="space-y-3">
                     <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">No-show rate</span><span class="font-black text-rose-600"><?= $insNS ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-rose-400" style="width:<?= $insNS ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Approved but never claimed</p></div>
                     <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">Decline rate</span><span class="font-black text-amber-600"><?= $insDR ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-amber-400" style="width:<?= $insDR ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Of all reservations rejected</p></div>
-                    <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">Claim rate</span><span class="font-black text-emerald-600"><?= $utilizationRate ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-emerald-500" style="width:<?= $utilizationRate ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Approved slots used</p></div>
+                    <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">Claim rate</span><span class="font-black text-emerald-600"><?= $sysUtilizationRate ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-emerald-500" style="width:<?= $sysUtilizationRate ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Approved slots used</p></div>
                 </div>
             </div>
             <div class="dash-card p-4">
@@ -776,18 +783,17 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         </div>
     </div>
 
-    <!-- 5c · Monthly chart + Resource ranking -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
         <div class="dash-card p-5">
             <div class="flex items-center justify-between mb-4">
-                <div><h3 class="font-extrabold text-slate-800 text-sm">Monthly Seasonality</h3><p class="text-[11px] text-slate-400 font-medium">Volume by calendar month</p></div>
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Monthly Seasonality</h3><p class="text-[11px] text-slate-400 font-medium">Volume by calendar month · All users</p></div>
                 <span class="text-[10px] font-black bg-green-50 text-green-600 px-2.5 py-1 rounded-full border border-green-200">Peak: <?= htmlspecialchars($insPML) ?></span>
             </div>
             <div class="chart-wrap" style="height:180px;"><canvas id="ins-month-chart"></canvas></div>
         </div>
         <div class="dash-card p-5">
             <div class="flex items-center justify-between mb-4">
-                <div><h3 class="font-extrabold text-slate-800 text-sm">Resource Demand Ranking</h3><p class="text-[11px] text-slate-400 font-medium">All-time count per resource</p></div>
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Resource Demand Ranking</h3><p class="text-[11px] text-slate-400 font-medium">All-time count · All users</p></div>
                 <span class="text-[10px] font-black bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-200">All Time</span>
             </div>
             <div id="ins-resource-ranking" class="space-y-2.5"></div>
@@ -798,13 +804,13 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
 </div><!-- /.main-col -->
 </div><!-- /.page-wrapper -->
 
-<!-- ════════════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════════ -->
 <script>
 /* ── Data ── */
-const allRes = <?= json_encode($reservations ?? []) ?>;
-const allResAll = <?= json_encode($allReservations ?? []) ?>;
+// myRes  = current SK officer's own reservations
+// sysRes = ALL reservations system-wide (synced with admin)
+const allRes    = <?= json_encode($myRes)  ?>;   // personal
+const allResAll = <?= json_encode($sysRes) ?>;   // system-wide
+
 const INS = {
     hourArr:      <?= json_encode(array_values($insHourArr)) ?>,
     dowArr:       <?= json_encode(array_values($insDowArr)) ?>,
@@ -819,12 +825,12 @@ const INS = {
     topResource:  <?= json_encode($insTopRes) ?>,
     peakDayLabel: <?= json_encode($insPDL) ?>,
     resourceMap:  <?= json_encode($insResMap) ?>,
-    totalCount:   <?= (int)($total ?? 0) ?>
+    totalCount:   <?= (int)$sysTotal ?>
 };
 
-const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
-const pct   = (v,max)   => max>0 ? clamp(Math.round(v/max*100),0,100) : 0;
-const timeAgo = t => { const s=Math.floor((Date.now()-new Date(t))/1000); if(s<60)return 'Just now'; if(s<3600)return `${Math.floor(s/60)}m ago`; if(s<86400)return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago`; };
+const clamp  = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
+const pct    = (v,max)   => max>0 ? clamp(Math.round(v/max*100),0,100) : 0;
+const timeAgo= t => { const s=Math.floor((Date.now()-new Date(t))/1000); if(s<60)return 'Just now'; if(s<3600)return `${Math.floor(s/60)}m ago`; if(s<86400)return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago`; };
 
 /* ── Login Toast ── */
 (function(){
@@ -832,7 +838,7 @@ const timeAgo = t => { const s=Math.floor((Date.now()-new Date(t))/1000); if(s<6
     if(!sessionStorage.getItem(key)){const t=document.getElementById('loginToast');t.style.display='flex';sessionStorage.setItem(key,'1');setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(()=>t.remove(),400);},4000);}
 })();
 
-/* ── Timer Banner ── */
+/* ── Timer Banner (personal) ── */
 (function(){
     const banner=document.getElementById('timerBanner');
     if(!banner)return;
@@ -853,13 +859,20 @@ function openDateModal(dateStr,list){
     document.getElementById('modalDateTitle').textContent=fmt;
     const c=document.getElementById('modalList');
     if(!list?.length){c.innerHTML=`<div class="py-8 text-center text-slate-400"><i class="fa-solid fa-calendar-xmark text-3xl mb-2 block text-slate-200"></i><p class="text-sm font-bold">No reservations on this date</p></div>`;}
-    else{c.innerHTML=[...list].sort((a,b)=>(a.start_time||'').localeCompare(b.start_time||'')).map(r=>{const st=(r.claimed==1||r.claimed===true||r.claimed==='true')?'claimed':(r.status||'pending');const clr={approved:'bg-emerald-100 text-emerald-700',pending:'bg-amber-100 text-amber-700',declined:'bg-rose-100 text-rose-700',claimed:'bg-purple-100 text-purple-700'};const t=r.start_time?r.start_time.slice(0,5):'—',et=r.end_time?r.end_time.slice(0,5):'';return `<div class="date-row" onclick="location='/sk/reservations?id=${r.id}'"><div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-desktop text-green-600 text-xs"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800 leading-tight truncate">${r.resource_name||'Resource'}</p><p class="text-xs text-slate-400 mt-0.5">${r.visitor_name||r.full_name||'Me'}</p></div><div class="text-right flex-shrink-0"><p class="text-xs font-black text-green-600">${t}${et?'–'+et:''}</p><span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${clr[st]||'bg-slate-100 text-slate-600'}">${st}</span></div></div>`;}).join('');}
+    else{c.innerHTML=[...list].sort((a,b)=>(a.start_time||'').localeCompare(b.start_time||'')).map(r=>{
+        const isCl=r.claimed==1||r.claimed===true||r.claimed==='true';
+        const st=isCl?'claimed':(r.status||'pending');
+        const clr={approved:'bg-emerald-100 text-emerald-700',pending:'bg-amber-100 text-amber-700',declined:'bg-rose-100 text-rose-700',claimed:'bg-purple-100 text-purple-700'};
+        const t=r.start_time?r.start_time.slice(0,5):'—',et=r.end_time?r.end_time.slice(0,5):'';
+        const name=r.visitor_name||r.full_name||'Guest';
+        return `<div class="date-row" onclick="location='/sk/reservations?id=${r.id}'"><div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-desktop text-green-600 text-xs"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800 leading-tight truncate">${r.resource_name||'Resource'}</p><p class="text-xs text-slate-400 mt-0.5">${name}</p></div><div class="text-right flex-shrink-0"><p class="text-xs font-black text-green-600">${t}${et?'–'+et:''}</p><span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${clr[st]||'bg-slate-100 text-slate-600'}">${st}</span></div></div>`;
+    }).join('');}
     document.getElementById('dateModal').classList.add('open');document.body.style.overflow='hidden';
 }
 function closeDateModal(){document.getElementById('dateModal').classList.remove('open');document.body.style.overflow='';}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDateModal();});
 
-/* ── Notifications ── */
+/* ── Notifications (from personal reservations) ── */
 let readIds=JSON.parse(localStorage.getItem('sk_read_notifs')||'[]'),notifs=[];
 function initNotifs(){
     allRes.filter(r=>['approved','declined'].includes(r.status||'')&&!readIds.includes(String(r.id))).slice(0,10).forEach(r=>notifs.push({id:r.id,msg:`Your ${r.resource_name||'resource'} reservation was ${r.status}`,time:r.updated_at||r.created_at||new Date().toISOString(),status:r.status}));
@@ -887,18 +900,17 @@ async function aiFind(){
     }catch(e){r.innerHTML=`<p class="text-xs text-rose-500 text-center py-2 font-medium">Search failed</p>`;}
 }
 
-/* ── Active Sessions ── */
+/* ── Active Sessions — SYSTEM-WIDE (matches admin) ── */
 const TL_WARN=5*60,TL_CRIT=2*60;
 let tlSessions={};
 function tlGetActiveSessions(){
     const today=new Date().toISOString().split('T')[0],nowMs=Date.now();
-    return allRes.filter(r=>{
+    // SYNC FIX: Use allResAll (system-wide) instead of allRes (personal only)
+    // Show all APPROVED sessions for today — same logic as admin scanner
+    // Does NOT require claimed=true: admin shows all approved active sessions
+    return allResAll.filter(r=>{
         if(!r.start_time||!r.end_time||!r.reservation_date||r.reservation_date!==today)return false;
         if((r.status||'').toLowerCase()!=='approved')return false;
-        // BUG FIX: Only show sessions where user HAS claimed (checked in).
-        // Old code excluded claimed→showed unclaimed, meaning sessions appeared
-        // before anyone physically arrived. Now we require claimed=true.
-        if(![true,1,'t','true','1'].includes(r.claimed))return false;
         const s=new Date(r.reservation_date+'T'+r.start_time).getTime(),e=new Date(r.reservation_date+'T'+r.end_time).getTime();
         return s<=nowMs&&e>=nowMs;
     });
@@ -918,21 +930,35 @@ document.addEventListener('DOMContentLoaded',()=>{
     tlRender();setInterval(tlRender,1000);
     initNotifs();
 
-    /* Trend */
+    /* Trend chart — system-wide data */
     const tCtx=document.getElementById('trendChart')?.getContext('2d');
-    if(tCtx)new Chart(tCtx,{type:'line',data:{labels:<?= json_encode($chartLabels??['Mon','Tue','Wed','Thu','Fri','Sat','Sun']) ?>,datasets:[{data:<?= json_encode($chartData??[0,0,0,0,0,0,0]) ?>,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.08)',borderWidth:2.5,tension:0.4,fill:true,pointBackgroundColor:'#16a34a',pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}},scales:{x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8',stepSize:1},beginAtZero:true}}}});
+    if(tCtx)new Chart(tCtx,{type:'line',data:{labels:<?= json_encode($chartLabels) ?>,datasets:[{data:<?= json_encode($chartData) ?>,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.08)',borderWidth:2.5,tension:0.4,fill:true,pointBackgroundColor:'#16a34a',pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}},scales:{x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8',stepSize:1},beginAtZero:true}}}});
 
-    /* Donut */
+    /* Donut chart — system-wide */
     const rCtx=document.getElementById('resourceChart')?.getContext('2d');
-    const rL=<?= json_encode($resourceLabels??['No Data']) ?>,rD=<?= json_encode($resourceData??[1]) ?>,pal=['#16a34a','#f59e0b','#8b5cf6','#10b981','#ec4899'];
+    const rL=<?= json_encode($resourceLabels) ?>,rD=<?= json_encode($resourceData) ?>,pal=['#16a34a','#f59e0b','#8b5cf6','#10b981','#ec4899'];
     if(rCtx){new Chart(rCtx,{type:'doughnut',data:{labels:rL,datasets:[{data:rD,backgroundColor:pal,borderWidth:0,hoverOffset:4}]},options:{responsive:false,animation:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}}}});const leg=document.getElementById('resourceLegend');if(leg)leg.innerHTML=rL.map((l,i)=>`<div class="flex items-center gap-2.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${pal[i]||'#94a3b8'}"></span><span class="text-sm text-slate-600 truncate flex-1 min-w-0 font-medium">${l}</span><span class="text-sm font-black text-slate-800 flex-shrink-0">${rD[i]}</span></div>`).join('');}
 
-    /* Calendar */
+    /* Calendar — all reservations (system-wide dots + modal) */
     const byDate={};
-    (allResAll.length?allResAll:allRes).forEach(r=>{if(!r.reservation_date)return;(byDate[r.reservation_date]=byDate[r.reservation_date]||[]).push(r);});
-    const myByDate={};allRes.forEach(r=>{if(!r.reservation_date)return;(myByDate[r.reservation_date]=myByDate[r.reservation_date]||[]).push(r);});
-    const events=allRes.filter(r=>r.reservation_date).map(r=>{const st=(r.claimed==1||r.claimed===true||r.claimed==='true')?'claimed':(r.status||'pending');const clr={approved:'#10b981',pending:'#fbbf24',declined:'#f87171',claimed:'#a855f7'};return{title:r.resource_name||'Reservation',start:r.reservation_date+(r.start_time?'T'+r.start_time:''),end:r.reservation_date+(r.end_time?'T'+r.end_time:''),backgroundColor:clr[st]||'#94a3b8',borderColor:'transparent',textColor:'#fff'};});
-    new FullCalendar.Calendar(document.getElementById('calendar'),{initialView:'dayGridMonth',headerToolbar:{left:'prev,next',center:'title',right:'today'},events,height:370,eventDisplay:'block',eventMaxStack:2,dateClick:info=>openDateModal(info.dateStr,myByDate[info.dateStr]||[]),eventClick:info=>openDateModal(info.event.startStr.split('T')[0],myByDate[info.event.startStr.split('T')[0]]||[]),dayCellDidMount:info=>{const d=info.date.toISOString().split('T')[0];const cnt=(myByDate[d]||[]).length;if(cnt){const b=document.createElement('div');b.style.cssText='font-size:8px;font-weight:800;color:white;background:#16a34a;border-radius:999px;width:15px;height:15px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:4px;margin-bottom:2px;';b.textContent=cnt;info.el.querySelector('.fc-daygrid-day-top')?.appendChild(b);}}}).render();
+    allResAll.forEach(r=>{if(!r.reservation_date)return;(byDate[r.reservation_date]=byDate[r.reservation_date]||[]).push(r);});
+    const events=allResAll.filter(r=>r.reservation_date).map(r=>{
+        const isCl=r.claimed==1||r.claimed===true||r.claimed==='true';
+        const st=isCl?'claimed':(r.status||'pending');
+        const clr={approved:'#10b981',pending:'#fbbf24',declined:'#f87171',claimed:'#a855f7'};
+        return{title:(r.visitor_name||r.full_name||'Guest')+' · '+(r.resource_name||'Resource'),start:r.reservation_date+(r.start_time?'T'+r.start_time:''),end:r.reservation_date+(r.end_time?'T'+r.end_time:''),backgroundColor:clr[st]||'#94a3b8',borderColor:'transparent',textColor:'#fff'};
+    });
+    new FullCalendar.Calendar(document.getElementById('calendar'),{
+        initialView:'dayGridMonth',headerToolbar:{left:'prev,next',center:'title',right:'today'},
+        events,height:370,eventDisplay:'block',eventMaxStack:2,
+        dateClick:info=>openDateModal(info.dateStr,byDate[info.dateStr]||[]),
+        eventClick:info=>openDateModal(info.event.startStr.split('T')[0],byDate[info.event.startStr.split('T')[0]]||[]),
+        dayCellDidMount:info=>{
+            const d=info.date.toISOString().split('T')[0];
+            const cnt=(byDate[d]||[]).length;
+            if(cnt){const b=document.createElement('div');b.style.cssText='font-size:8px;font-weight:800;color:white;background:#16a34a;border-radius:999px;width:15px;height:15px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:4px;margin-bottom:2px;';b.textContent=cnt;info.el.querySelector('.fc-daygrid-day-top')?.appendChild(b);}
+        }
+    }).render();
 
     /* ── Insights ── */
     (function(){
@@ -942,11 +968,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 
         /* Suggestion */
         const sg=document.getElementById('ins-suggestion');
-        if(sg){let t='';if(noShowRate>30)t=`High no-show rate (${noShowRate}%). Try setting a reminder before your sessions.`;else if(declineRate>25)t=`Many requests declined (${declineRate}%). Book "${topResource}" earlier in the day.`;else if(trendDir==='up'&&trendPct>20)t=`You're up ${trendPct}% this week — great momentum!`;else if(trendDir==='down'&&Math.abs(trendPct)>20)t=`Activity dropped ${Math.abs(trendPct)}% vs last week. Try booking "${topResource}" on ${peakDayLabel}.`;else t=`${peakDayLabel}s are your most active day. Book "${topResource}" during that time for best availability.`;sg.textContent=t;}
+        if(sg){let t='';if(noShowRate>30)t=`High no-show rate (${noShowRate}%). Consider sending reminders before sessions.`;else if(declineRate>25)t=`Many requests declined (${declineRate}%). Book "${topResource}" earlier for better chances.`;else if(trendDir==='up'&&trendPct>20)t=`System up ${trendPct}% this week — high demand period!`;else if(trendDir==='down'&&Math.abs(trendPct)>20)t=`Activity dropped ${Math.abs(trendPct)}%. ${peakDayLabel}s are still busiest — try booking then.`;else t=`${peakDayLabel}s have the highest system demand. Book "${topResource}" early for best availability.`;sg.textContent=t;}
 
         /* Heatmap */
         const hm=document.getElementById('ins-heatmap');
-        if(hm){hm.innerHTML='';const f12=h=>{const ap=h<12?'AM':'PM';const h12=h%12||12;return `${h12}${ap}`;};for(let h=0;h<24;h++){const cell=document.createElement('div');const alpha=0.07+(pct(hourArr[h],maxH)/100)*0.88;const isPk=h===peakHourIdx;cell.className='ins-heatmap-cell';cell.style.cssText=`background:rgba(22,163,74,${alpha.toFixed(2)});border-radius:6px;height:32px;position:relative;${isPk?'box-shadow:0 0 0 2px #16a34a;':''}`;cell.title=`${f12(h)}: ${hourArr[h]} reservations`;if(isPk){const p=document.createElement('div');p.style.cssText='position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#fbbf24;';cell.appendChild(p);}hm.appendChild(cell);}}
+        if(hm){hm.innerHTML='';const f12=h=>{const ap=h<12?'AM':'PM';const h12=h%12||12;return `${h12}${ap}`;};for(let h=0;h<24;h++){const cell=document.createElement('div');const alpha=0.07+(pct(hourArr[h],maxH)/100)*0.88;const isPk=h===peakHourIdx;cell.style.cssText=`background:rgba(22,163,74,${alpha.toFixed(2)});border-radius:6px;height:32px;position:relative;${isPk?'box-shadow:0 0 0 2px #16a34a;':''}`;cell.title=`${f12(h)}: ${hourArr[h]} reservations`;if(isPk){const p=document.createElement('div');p.style.cssText='position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#fbbf24;';cell.appendChild(p);}hm.appendChild(cell);}}
 
         /* DoW bars */
         const be=document.getElementById('ins-dow-bars'),le=document.getElementById('ins-dow-labels');

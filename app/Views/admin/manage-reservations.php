@@ -50,7 +50,6 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
         .res-card[data-status="claimed"]::before   { background: #a855f7; }
         .res-card[data-status="declined"]::before,
         .res-card[data-status="canceled"]::before  { background: #ef4444; }
-        /* ★ FIX: unclaimed = orange, expired = grey */
         .res-card[data-status="unclaimed"]::before { background: #fb923c; }
         .res-card[data-status="expired"]::before   { background: #94a3b8; }
 
@@ -60,7 +59,6 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
         .badge-declined, .badge-canceled { background: #fee2e2; color: #991b1b; }
         .badge-claimed   { background: #f3e8ff; color: #6b21a8; }
         .badge-expired   { background: #f1f5f9; color: #64748b; }
-        /* ★ FIX: unclaimed gets its own distinct badge */
         .badge-unclaimed { background: #fff7ed; color: #c2410c; border: 1px dashed #fdba74; }
 
         .stat-card { background: white; border-radius: 20px; padding: 1.1rem 1.25rem; border: 1px solid #e2e8f0; border-left-width: 4px; transition: all 0.2s; cursor: pointer; }
@@ -125,6 +123,7 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
 <body class="flex min-h-screen">
 
 <?php
+// ── ADMIN nav items — all routes point to /admin/... ──────────────────────
 $navItems = [
     ['url' => '/admin/dashboard',           'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
     ['url' => '/admin/new-reservation',     'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'new-reservation'],
@@ -152,18 +151,14 @@ foreach (($reservations ?? []) as $res) {
     $isClaimed  = in_array($claimedVal, [true, 1, 't', 'true', '1'], true);
 
     if ($isClaimed) {
-        // 1. Ticket scanned → claimed (highest priority)
         $s = 'claimed';
     } elseif ($s === 'approved') {
-        // 2. Approved but end time already passed and never claimed → UNCLAIMED (no-show)
         $edt = strtotime(($res['reservation_date'] ?? '') . ' ' . ($res['end_time'] ?? '23:59'));
         if ($edt && $edt < time()) $s = 'unclaimed';
     } elseif ($s === 'pending') {
-        // 3. Pending and reservation date already passed → EXPIRED (was never approved)
         $rdt = strtotime($res['reservation_date'] ?? '');
         if ($rdt && $rdt < strtotime('today')) $s = 'expired';
     }
-    // declined/canceled stay as-is
 
     $res['_status']    = $s;
     $res['_unclaimed'] = ($s === 'unclaimed');
@@ -188,7 +183,7 @@ $statusIcons = [
     'declined'  => 'fa-xmark',
     'canceled'  => 'fa-ban',
     'expired'   => 'fa-hourglass-end',
-    'unclaimed' => 'fa-ticket',  // ★ NEW
+    'unclaimed' => 'fa-ticket',
 ];
 ?>
 
@@ -329,7 +324,9 @@ $statusIcons = [
     </div>
 </div>
 
-<!-- SIDEBAR -->
+<!-- ══════════════════════════════════════════════════════
+     ADMIN SIDEBAR — blue accent, /admin/... routes only
+     ══════════════════════════════════════════════════════ -->
 <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
     <div class="sidebar-card">
         <div class="sidebar-header">
@@ -338,7 +335,7 @@ $statusIcons = [
         </div>
         <nav class="sidebar-nav space-y-1">
             <?php foreach ($navItems as $item):
-                $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
+                $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600';
             ?>
                 <a href="<?= $item['url'] ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
                     <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
@@ -357,7 +354,9 @@ $statusIcons = [
     </div>
 </aside>
 
-<!-- MOBILE NAV -->
+<!-- ══════════════════════════════════════════
+     MOBILE NAV — admin routes
+     ══════════════════════════════════════════ -->
 <nav class="lg:hidden mobile-nav-pill">
     <div class="mobile-scroll-container text-white px-2">
         <?php foreach ($navItems as $item):
@@ -813,10 +812,9 @@ function syncCards(tab) { document.querySelectorAll('[data-filter]').forEach(c =
 function applyFilters() {
     const q    = document.getElementById('searchInput').value.toLowerCase().trim();
     const date = document.getElementById('dateInput').value;
-    // ★ FIX: unclaimed tab now filters by data-status="unclaimed" (its own status)
     const matchesFilters = el => {
         let matchTab;
-        if      (curTab === 'all')     matchTab = true;
+        if      (curTab === 'all')      matchTab = true;
         else if (curTab === 'declined') matchTab = ['declined','canceled'].includes(el.dataset.status);
         else                            matchTab = el.dataset.status === curTab;
         return matchTab && (!q || el.dataset.search.includes(q)) && (!date || el.dataset.date === date);
@@ -848,7 +846,6 @@ function sortTable(col) {
     document.querySelectorAll('thead th').forEach((th, i) => { th.classList.toggle('sorted', i === col); const ic = th.querySelector('.sort-icon'); if (ic) ic.className = `fa-solid ${i === col ? (sortDir[col] ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'} sort-icon`; });
 }
 
-// ★ STATUS_META now includes 'unclaimed' as distinct status
 const STATUS_META = {
     pending:   { icon: 'fa-clock',          bg: '#fef3c7', color: '#92400e', label: 'Pending — Awaiting approval' },
     approved:  { icon: 'fa-circle-check',   bg: '#dcfce7', color: '#166534', label: 'Approved' },
@@ -893,11 +890,9 @@ function openDetail(d) {
     bar.style.background = m.bg; bar.style.color = m.color;
     bar.innerHTML = `<i class="fa-solid ${m.icon}"></i> <span>${m.label}</span>`;
 
-    // Show unclaimed banner when status is 'unclaimed'
     document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
 
     const qrSec = document.getElementById('dQr'), clSec = document.getElementById('dClaimed');
-    // For unclaimed: show the QR code (it was approved, ticket exists, just never scanned)
     if (d.claimed || d.status === 'claimed') {
         qrSec.style.display = 'none'; clSec.style.display = 'block';
     } else if (d.status === 'approved' || d.status === 'unclaimed') {
