@@ -576,7 +576,6 @@ class AdminController extends Controller
             'resource_id'      => $this->request->getPost('resource_id'),
             'visitor_name'     => $this->request->getPost('visitor_name'),
             'visitor_type'     => $userType,
-            'user_email'       => $this->request->getPost('user_email') ?: null,
             'reservation_date' => $this->request->getPost('reservation_date'),
             'start_time'       => $this->request->getPost('start_time'),
             'end_time'         => $this->request->getPost('end_time'),
@@ -590,13 +589,22 @@ class AdminController extends Controller
         ];
 
         if ($userType === 'User') {
-            $userId = $this->request->getPost('user_id');
+            // FIX: cast user_id to int and resolve email from DB — never store raw POST email as user_id
+            $userId = (int) $this->request->getPost('user_id');
             if (!$userId) {
                 return redirect()->back()->with('error', 'Please select a registered user from the list.');
             }
             $data['user_id'] = $userId;
+
+            // Resolve email from DB for any downstream use
+            $userRow = $this->db->table('users')
+                ->select('email')
+                ->where('id', $userId)
+                ->get()->getRowArray();
+            $data['user_email'] = $userRow['email'] ?? null;
         } else {
-            $data['user_id'] = null;
+            $data['user_id']    = null;
+            $data['user_email'] = $this->request->getPost('user_email') ?: null;
         }
 
         $newId        = $this->reservationModel->insert($data, true);
@@ -1228,7 +1236,6 @@ PROMPT;
         $response   = curl_exec($ch);
         $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError  = curl_error($ch);
-        $curlErrNo  = curl_errno($ch);
         curl_close($ch);
 
         if ($curlError) {

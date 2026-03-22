@@ -16,12 +16,6 @@ class SkController extends BaseController
 
         $skUserId = session()->get('user_id');
 
-        // ─────────────────────────────────────────────────────────────────
-        // BUG FIX #1: Added JOIN on resources and users so resource_name,
-        //             visitor_name, user_email are available in the view.
-        //             Without this, resource_name was always null → "Unknown"
-        //             appeared in Insights, Recent Bookings, and Timer Banner.
-        // ─────────────────────────────────────────────────────────────────
         $myReservations = $model->db->table('reservations r')
             ->select([
                 'r.*',
@@ -66,11 +60,6 @@ class SkController extends BaseController
         $approved = count(array_filter($myReservations, fn($r) => ($r['status'] ?? '') === 'approved'));
         $declined = count(array_filter($myReservations, fn($r) => in_array($r['status'] ?? '', ['declined', 'canceled'])));
 
-        // ─────────────────────────────────────────────────────────────────
-        // BUG FIX #2: $claimed was counting ALL users' claimed reservations,
-        //             causing a 300% utilization / claim rate.
-        //             Now filtered to the current SK user only.
-        // ─────────────────────────────────────────────────────────────────
         $claimed = $model
             ->where('user_id', $skUserId)
             ->where('claimed', true)
@@ -132,7 +121,6 @@ class SkController extends BaseController
         $approvalRate    = $total > 0    ? round(($approved / $total) * 100)   : 0;
         $utilizationRate = $approved > 0 ? round(($claimed  / $approved) * 100) : 0;
 
-        // ── Books ──
         $allBooks = $db->table('books')
             ->where('status', 'active')
             ->orderBy('title', 'ASC')
@@ -141,7 +129,6 @@ class SkController extends BaseController
         $totalBooks     = count($allBooks);
         $availableCount = count(array_filter($allBooks, fn($b) => (int)($b['available_copies'] ?? 0) > 0));
 
-        // ── My Borrowings ──
         $myBorrowings = $db->table('book_borrowings bb')
             ->select('bb.*, b.title as book_title, b.author, b.genre, bb.due_date')
             ->join('books b', 'b.id = bb.book_id', 'left')
@@ -149,7 +136,6 @@ class SkController extends BaseController
             ->orderBy('bb.created_at', 'DESC')
             ->get()->getResultArray();
 
-        // ── All borrow requests ──
         $dashBorrowReqs = $db->table('book_borrowings bb')
             ->select('bb.id, bb.status, bb.created_at, b.title as book_title, u.name as resident_name')
             ->join('books b', 'b.id = bb.book_id', 'left')
@@ -159,7 +145,6 @@ class SkController extends BaseController
 
         $pendingBorrowings = count(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending'));
 
-        // ── Fairness quota ──
         $startOfMonth     = date('Y-m-01');
         $endOfMonth       = date('Y-m-t');
         $maxMonthlySlots  = 3;
@@ -196,8 +181,6 @@ class SkController extends BaseController
             'pendingUserCount'      => $pendingUserCount,
             'approvalRate'          => $approvalRate,
             'utilizationRate'       => $utilizationRate,
-            // ── BUG FIX #3: dashBooks was missing — view uses $dashBooks
-            //    but controller only passed 'featuredBooks'. Added both.
             'dashBooks'             => $allBooks,
             'featuredBooks'         => $allBooks,
             'availableCount'        => $availableCount,
@@ -206,9 +189,6 @@ class SkController extends BaseController
             'dashBorrowReqs'        => $dashBorrowReqs,
             'pendingBorrowings'     => $pendingBorrowings,
             'remainingReservations' => $remainingReservations,
-            // ── BUG FIX #4: Pass monthly quota data so view calculates
-            //    the sidebar quota bar correctly instead of using
-            //    all-time $approved which caused "-1/1 slots used".
             'usedThisMonth'         => $usedThisMonth,
             'maxMonthlySlots'       => $maxMonthlySlots,
         ]);
@@ -452,10 +432,10 @@ class SkController extends BaseController
     {
         $request          = $this->request;
         $reservationModel = new ReservationModel();
+        $db               = db_connect();
 
         $visitorType         = $request->getPost('visitor_type');
-        $userId              = $request->getPost('user_id');
-        $userEmail           = $request->getPost('user_email');
+        $userId              = (int) $request->getPost('user_id');   // FIX: cast to int immediately
         $visitorName         = $request->getPost('visitor_name');
         $visitorContactEmail = $request->getPost('visitor_contact_email');
         $reservationDate     = $request->getPost('reservation_date');
@@ -467,6 +447,7 @@ class SkController extends BaseController
         $pcsJson             = $request->getPost('pcs');
         $pcs                 = json_decode($pcsJson, true) ?? [];
 
+        // Validate registered user was actually selected
         if ($visitorType === 'User' && empty($userId)) {
             if ($request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Please select a registered user.']);
@@ -474,8 +455,21 @@ class SkController extends BaseController
             return redirect()->back()->with('error', 'Please select a registered user.');
         }
 
-        if ($visitorType === 'User' && !empty($userEmail)) {
-            $fairness = $reservationModel->checkFairness($userEmail);
+        // FIX: Resolve the user's email from the DB using user_id (integer),
+        //      never pass the POST 'user_email' string into a user_id query.
+        $resolvedEmail = null;
+        if ($visitorType === 'User' && $userId > 0) {
+            $userRow = $db->table('users')
+                ->select('email')
+                ->where('id', $userId)   // integer → integer, no type mismatch
+                ->get()->getRowArray();
+
+            $resolvedEmail = $userRow['email'] ?? null;
+        }
+
+        // Fairness check — uses the email we resolved from the DB, not the raw POST value
+        if ($visitorType === 'User' && $resolvedEmail) {
+            $fairness = $reservationModel->checkFairness($resolvedEmail);
             if (!$fairness['fair']) {
                 $message = isset($fairness['blocked'])
                     ? 'AI Fairness Check: Exceeded limit. Blocked until ' . $fairness['until']
@@ -490,7 +484,7 @@ class SkController extends BaseController
         $eTicket = $this->generateETicket();
 
         $data = [
-            'user_id'          => ($visitorType === 'User' && !empty($userId)) ? (int)$userId : null,
+            'user_id'          => ($visitorType === 'User' && $userId > 0) ? $userId : null,
             'visitor_type'     => $visitorType,
             'visitor_name'     => $visitorName,
             'visitor_email'    => $visitorContactEmail,
