@@ -395,7 +395,11 @@ class AdminController extends Controller
                 log_message('error', 'logActivity failed in logPrint: ' . $e->getMessage());
             }
 
-            return $this->response->setJSON(['ok' => true]);
+            return $this->response->setJSON([
+    'ok'         => true,
+    'csrf_token' => csrf_token(),   // field name  — JS uses this as the form key
+    'csrf_hash'  => csrf_hash(),    // new value   — JS replaces the stale token with this
+]);
 
         } catch (\Exception $e) {
             log_message('error', 'logPrint failed: ' . $e->getMessage());
