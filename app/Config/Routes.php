@@ -88,10 +88,6 @@ $routes->group('sk', ['filter' => 'role:sk'], function($routes) {
     $routes->get('get-pending-count',        'SkController::getPendingCount');
     $routes->post('check-new-reservations',  'SkController::checkNewReservations');
 
-    // Claimed reservations
-    $routes->get('claimed-reservations', 'SkController::claimedReservations');
-    $routes->get('export-claimed-excel', 'SkController::exportClaimedToExcel');
-
     // Books — SK manage
     $routes->get('books',                        'BookController::manage');
     $routes->get('books/create',                 'BookController::create');

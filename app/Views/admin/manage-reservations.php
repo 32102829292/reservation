@@ -123,7 +123,6 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
 <body class="flex min-h-screen">
 
 <?php
-// ── ADMIN nav items — all routes point to /admin/... ──────────────────────
 $navItems = [
     ['url' => '/admin/dashboard',           'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
     ['url' => '/admin/new-reservation',     'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'new-reservation'],
@@ -137,13 +136,6 @@ $navItems = [
     ['url' => '/admin/profile',             'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
 ];
 
-// ═══════════════════════════════════════════════════════════════════
-// STATUS RESOLUTION — ORDER MATTERS
-// claimed   = ticket was scanned
-// approved  = approved, time not yet passed
-// unclaimed = approved + time passed + NEVER claimed (no-show)
-// expired   = pending + date passed (was never even approved)
-// ═══════════════════════════════════════════════════════════════════
 $processed = [];
 foreach (($reservations ?? []) as $res) {
     $s          = strtolower($res['status'] ?? 'pending');
@@ -324,9 +316,7 @@ $statusIcons = [
     </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     ADMIN SIDEBAR — blue accent, /admin/... routes only
-     ══════════════════════════════════════════════════════ -->
+<!-- SIDEBAR -->
 <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
     <div class="sidebar-card">
         <div class="sidebar-header">
@@ -354,9 +344,7 @@ $statusIcons = [
     </div>
 </aside>
 
-<!-- ══════════════════════════════════════════
-     MOBILE NAV — admin routes
-     ══════════════════════════════════════════ -->
+<!-- MOBILE NAV -->
 <nav class="lg:hidden mobile-nav-pill">
     <div class="mobile-scroll-container text-white px-2">
         <?php foreach ($navItems as $item):
@@ -503,8 +491,7 @@ $statusIcons = [
                                 'resource'=>$resource, 'pc'=>$pc, 'date'=>$date, 'rawDate'=>$rawDate,
                                 'start'=>$start, 'end'=>$end, 'purpose'=>$purpose, 'type'=>$type,
                                 'created'=>$created, 'code'=>$code,
-                                'claimed'=>$isClaimed,
-                                'unclaimed'=>$isUnclaimed,
+                                'claimed'=>$isClaimed, 'unclaimed'=>$isUnclaimed,
                                 'approverName'=>$approverName, 'approverEmail'=>$approverEmail, 'approvedAt'=>$approvedAt,
                                 'plPrinted'=>$plPrinted, 'plPages'=>$plPages, 'plAt'=>$plAt,
                             ]);
@@ -519,7 +506,6 @@ $statusIcons = [
                             data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
                             data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
                             onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
-
                             <td><span class="text-xs font-black text-slate-400 font-mono">#<?= $res['id'] ?></span></td>
                             <td>
                                 <p class="font-bold text-sm text-slate-800 leading-tight"><?= $name ?></p>
@@ -534,9 +520,7 @@ $statusIcons = [
                                 <p class="text-[11px] text-green-500 font-semibold mt-0.5"><?= $start ?> – <?= $end ?></p>
                             </td>
                             <td><span class="text-sm text-slate-500 font-medium" style="display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:130px"><?= $purpose ?></span></td>
-                            <td>
-                                <span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
-                            </td>
+                            <td><span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span></td>
                             <td onclick="event.stopPropagation()">
                                 <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired','unclaimed'])): ?>
                                     <div class="flex items-center gap-1.5">
@@ -619,8 +603,7 @@ $statusIcons = [
                     'resource'=>$resource, 'pc'=>$pc, 'date'=>$date, 'rawDate'=>$rawDate,
                     'start'=>$start, 'end'=>$end, 'purpose'=>$purpose, 'type'=>$type,
                     'created'=>$created, 'code'=>$code,
-                    'claimed'=>$isClaimed,
-                    'unclaimed'=>$isUnclaimed,
+                    'claimed'=>$isClaimed, 'unclaimed'=>$isUnclaimed,
                     'approverName'=>$approverName, 'approverEmail'=>$approverEmail, 'approvedAt'=>$approvedAt,
                     'plPrinted'=>$plPrinted, 'plPages'=>$plPages, 'plAt'=>$plAt,
                 ]);
@@ -644,7 +627,6 @@ $statusIcons = [
                      data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
                      data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
                      onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
-
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-10 h-10 rounded-2xl <?= $avatarBg ?> flex items-center justify-center font-black text-sm flex-shrink-0">
                             <?= mb_strtoupper(mb_substr(strip_tags($name), 0, 1)) ?>
@@ -655,7 +637,6 @@ $statusIcons = [
                         </div>
                         <span class="badge badge-<?= $s ?> flex-shrink-0"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
                     </div>
-
                     <div class="flex items-start gap-2 mb-2">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 mb-1">
@@ -668,15 +649,16 @@ $statusIcons = [
                                 <span class="text-[10px] text-green-500 font-bold"><?= $start ?> – <?= $end ?></span>
                             </div>
                         </div>
-                        <?php if ($plPrinted === true): ?>
-                            <span class="print-pill-yes flex-shrink-0"><i class="fa-solid fa-print text-[9px]"></i> <?= $plPages ?>pg</span>
-                        <?php elseif ($plPrinted === false): ?>
-                            <span class="print-pill-no flex-shrink-0"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>
-                        <?php endif; ?>
+                        <!-- print pill wrapper — targeted by JS -->
+                        <div class="card-print-pill flex-shrink-0">
+                            <?php if ($plPrinted === true): ?>
+                                <span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> <?= $plPages ?>pg</span>
+                            <?php elseif ($plPrinted === false): ?>
+                                <span class="print-pill-no"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>
+                            <?php endif; ?>
+                        </div>
                     </div>
-
                     <p class="text-[11px] text-slate-400 font-medium truncate mb-3"><?= $purpose ?></p>
-
                     <div class="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100">
                         <div class="flex items-center gap-1.5 min-w-0">
                             <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired','unclaimed'])): ?>
@@ -712,8 +694,20 @@ const allCards     = Array.from(document.querySelectorAll('#mobileCardList .res-
 let   curTab       = 'all';
 let   approveTargetId = null, declineTargetId = null;
 
-const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
-const csrfName  = document.querySelector('meta[name="csrf-name"]')?.getAttribute('content')  ?? 'csrf_token';
+// ── CSRF: read from meta tags, refreshed after every successful POST ───────
+let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+let csrfName  = document.querySelector('meta[name="csrf-name"]')?.getAttribute('content')  ?? 'csrf_token';
+
+// Call this after every successful JSON response that returns new CSRF values
+function refreshCsrf(data) {
+    if (data.csrf_hash && data.csrf_token) {
+        csrfToken = data.csrf_hash;
+        csrfName  = data.csrf_token;
+        // Also update the meta tags so the approve/decline forms stay fresh
+        document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', csrfToken);
+        document.querySelector('meta[name="csrf-name"]')?.setAttribute('content', csrfName);
+    }
+}
 
 const printLogMap = {};
 <?php foreach ($printLogMap as $resId => $pl): ?>
@@ -726,6 +720,7 @@ printLogMap[<?= (int)$resId ?>] = {
 
 let _currentReservationId = null;
 
+// ── FIXED: refreshes CSRF token after save so desktop works without reload ─
 async function savePrintLog() {
     const rid   = _currentReservationId;
     const pages = parseInt(document.getElementById('printPagesInput').value, 10) || 0;
@@ -735,54 +730,106 @@ async function savePrintLog() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Saving…';
     msg.textContent = ''; msg.style.color = '';
+
     const body = new FormData();
-    body.append(csrfName, csrfToken);
+    body.append(csrfName, csrfToken);   // always use current (refreshed) token
     body.append('reservation_id', rid);
     body.append('printed', pages > 0 ? 1 : 0);
     body.append('pages', pages);
+
     try {
-        const res  = await fetch('<?= base_url('admin/log-print') ?>', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body });
-        const data = await res.json();
+        const res  = await fetch('<?= base_url('admin/log-print') ?>', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body
+        });
+
+        // ── Parse response — handle both JSON and unexpected HTML (500/404) ──
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); }
+        catch { throw new Error(`Server error (${res.status})`); }
+
         if (data.ok) {
+            // ── Refresh CSRF token so next save works without page reload ──
+            refreshCsrf(data);
+
             const now = new Date();
-            const fmt = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const fmt = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      + ' · '
+                      + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
             printLogMap[rid] = { printed: pages > 0, pages, at: fmt };
             refreshPrintLogStrip(rid);
-            refreshBothPrintCells(rid, pages);
-            msg.textContent = pages > 0 ? `✓ Saved — ${pages} page${pages !== 1 ? 's' : ''} printed` : '✓ Saved — no printing logged';
+            refreshBothPrintCells(rid, pages);   // updates table row + mobile card
+            msg.textContent = pages > 0
+                ? `✓ Saved — ${pages} page${pages !== 1 ? 's' : ''} printed`
+                : '✓ Saved — no printing logged';
             msg.style.color = '#16a34a';
             btn.innerHTML = '<i class="fa-solid fa-check text-xs"></i> Saved';
-            setTimeout(() => { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs"></i> Save'; }, 2000);
-        } else { throw new Error(data.error ?? 'Unknown error'); }
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs"></i> Save';
+            }, 2000);
+        } else {
+            throw new Error(data.error ?? 'Unknown error');
+        }
     } catch (err) {
-        msg.textContent = '✗ Failed: ' + err.message; msg.style.color = '#ef4444';
-        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs"></i> Save';
+        msg.textContent = '✗ Failed: ' + err.message;
+        msg.style.color = '#ef4444';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs"></i> Save';
     }
 }
 
 function refreshPrintLogStrip(rid) {
-    const plog = printLogMap[rid];
+    const plog  = printLogMap[rid];
     const logEl = document.getElementById('dPrintLog');
     if (!plog) { logEl.style.display = 'none'; return; }
     logEl.style.display = 'flex';
-    const logText = document.getElementById('dPrintText'), logBadge = document.getElementById('dPrintBadge');
+    const logText  = document.getElementById('dPrintText');
+    const logBadge = document.getElementById('dPrintBadge');
     if (plog.printed) {
-        logText.textContent = `Printed ${plog.pages} page${plog.pages !== 1 ? 's' : ''}` + (plog.at ? ` · ${plog.at}` : '');
+        logText.textContent  = `Printed ${plog.pages} page${plog.pages !== 1 ? 's' : ''}` + (plog.at ? ` · ${plog.at}` : '');
         logBadge.textContent = `${plog.pages}pg`;
-        logBadge.className = 'text-[10px] font-black px-2.5 py-1 rounded-full bg-green-100 text-green-700';
+        logBadge.className   = 'text-[10px] font-black px-2.5 py-1 rounded-full bg-green-100 text-green-700';
     } else {
-        logText.textContent = 'No printing during this session';
+        logText.textContent  = 'No printing during this session';
         logBadge.textContent = 'No print';
-        logBadge.className = 'text-[10px] font-black px-2.5 py-1 rounded-full bg-slate-200 text-slate-500';
+        logBadge.className   = 'text-[10px] font-black px-2.5 py-1 rounded-full bg-slate-200 text-slate-500';
     }
 }
 
+// ── FIXED: now updates BOTH desktop table rows AND mobile cards instantly ──
 function refreshBothPrintCells(rid, pages) {
-    allTableRows.forEach(r => {
-        if (r.dataset.id == rid) {
-            const cell = r.cells[7];
-            if (pages > 0) { cell.innerHTML = `<span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> ${pages}pg</span>`; r.dataset.plPrinted = 'Yes'; r.dataset.plPages = pages; }
-            else { cell.innerHTML = `<span class="print-pill-no"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>`; r.dataset.plPrinted = 'No'; r.dataset.plPages = ''; }
+    // Desktop table — column index 7 = Print column
+    allTableRows.forEach(row => {
+        if (row.dataset.id == rid) {
+            const cell = row.cells[7];
+            if (pages > 0) {
+                cell.innerHTML      = `<span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> ${pages}pg</span>`;
+                row.dataset.plPrinted = 'Yes';
+                row.dataset.plPages   = pages;
+            } else {
+                cell.innerHTML      = `<span class="print-pill-no"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>`;
+                row.dataset.plPrinted = 'No';
+                row.dataset.plPages   = '';
+            }
+        }
+    });
+
+    // Mobile cards — update the .card-print-pill wrapper
+    allCards.forEach(card => {
+        if (card.dataset.id == rid) {
+            const wrapper = card.querySelector('.card-print-pill');
+            if (wrapper) {
+                if (pages > 0) {
+                    wrapper.innerHTML = `<span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> ${pages}pg</span>`;
+                } else {
+                    wrapper.innerHTML = `<span class="print-pill-no"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>`;
+                }
+            }
+            card.dataset.plPrinted = pages > 0 ? 'Yes' : 'No';
+            card.dataset.plPages   = pages > 0 ? pages : '';
         }
     });
 }
@@ -841,19 +888,27 @@ function clearFilters() {
 let sortDir = {};
 function sortTable(col) {
     sortDir[col] = !sortDir[col];
-    const tbody  = document.getElementById('tableBody');
-    Array.from(tbody.querySelectorAll('.res-row')).sort((a, b) => { const at = (a.cells[col]?.innerText ?? '').trim().toLowerCase(); const bt = (b.cells[col]?.innerText ?? '').trim().toLowerCase(); return sortDir[col] ? at.localeCompare(bt) : bt.localeCompare(at); }).forEach(r => tbody.appendChild(r));
-    document.querySelectorAll('thead th').forEach((th, i) => { th.classList.toggle('sorted', i === col); const ic = th.querySelector('.sort-icon'); if (ic) ic.className = `fa-solid ${i === col ? (sortDir[col] ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'} sort-icon`; });
+    const tbody = document.getElementById('tableBody');
+    Array.from(tbody.querySelectorAll('.res-row')).sort((a, b) => {
+        const at = (a.cells[col]?.innerText ?? '').trim().toLowerCase();
+        const bt = (b.cells[col]?.innerText ?? '').trim().toLowerCase();
+        return sortDir[col] ? at.localeCompare(bt) : bt.localeCompare(at);
+    }).forEach(r => tbody.appendChild(r));
+    document.querySelectorAll('thead th').forEach((th, i) => {
+        th.classList.toggle('sorted', i === col);
+        const ic = th.querySelector('.sort-icon');
+        if (ic) ic.className = `fa-solid ${i === col ? (sortDir[col] ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'} sort-icon`;
+    });
 }
 
 const STATUS_META = {
-    pending:   { icon: 'fa-clock',          bg: '#fef3c7', color: '#92400e', label: 'Pending — Awaiting approval' },
-    approved:  { icon: 'fa-circle-check',   bg: '#dcfce7', color: '#166534', label: 'Approved' },
-    claimed:   { icon: 'fa-check-double',   bg: '#f3e8ff', color: '#6b21a8', label: 'Claimed — Ticket used' },
-    declined:  { icon: 'fa-xmark-circle',   bg: '#fee2e2', color: '#991b1b', label: 'Declined' },
-    canceled:  { icon: 'fa-ban',            bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
-    expired:   { icon: 'fa-hourglass-end',  bg: '#f1f5f9', color: '#475569', label: 'Expired — Was never approved' },
-    unclaimed: { icon: 'fa-ticket',         bg: '#fff7ed', color: '#c2410c', label: 'Unclaimed — Approved but did not show up' },
+    pending:   { icon: 'fa-clock',         bg: '#fef3c7', color: '#92400e', label: 'Pending — Awaiting approval' },
+    approved:  { icon: 'fa-circle-check',  bg: '#dcfce7', color: '#166534', label: 'Approved' },
+    claimed:   { icon: 'fa-check-double',  bg: '#f3e8ff', color: '#6b21a8', label: 'Claimed — Ticket used' },
+    declined:  { icon: 'fa-xmark-circle',  bg: '#fee2e2', color: '#991b1b', label: 'Declined' },
+    canceled:  { icon: 'fa-ban',           bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
+    expired:   { icon: 'fa-hourglass-end', bg: '#f1f5f9', color: '#475569', label: 'Expired — Was never approved' },
+    unclaimed: { icon: 'fa-ticket',        bg: '#fff7ed', color: '#c2410c', label: 'Unclaimed — Approved but did not show up' },
 };
 
 function openDetail(d) {
@@ -861,7 +916,10 @@ function openDetail(d) {
     const plog = printLogMap[d.id];
     document.getElementById('printPagesInput').value = plog ? (plog.printed ? plog.pages : 0) : 0;
     document.getElementById('printSaveMsg').textContent = '';
-    const saveBtn = document.getElementById('savePrintBtn'); saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs"></i> Save';
+    const saveBtn = document.getElementById('savePrintBtn');
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs"></i> Save';
+
     const m = STATUS_META[d.status] || STATUS_META.pending;
     document.getElementById('dId').textContent       = 'Reservation #' + d.id;
     document.getElementById('dName').textContent     = d.name;
@@ -902,6 +960,7 @@ function openDetail(d) {
     } else { qrSec.style.display = 'none'; clSec.style.display = 'none'; }
 
     refreshPrintLogStrip(d.id);
+
     const acts = document.getElementById('dActions');
     if (d.status === 'pending') {
         acts.innerHTML = `<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve flex-1"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline flex-1"><i class="fa-solid fa-xmark"></i> Decline</button>`;
@@ -912,13 +971,27 @@ function openDetail(d) {
     document.body.style.overflow = 'hidden';
 }
 
-function downloadTicket() { const canvas = document.getElementById('qrCanvas'), code = document.getElementById('dTicketCode').textContent; const link = document.createElement('a'); link.download = `E-Ticket-${code}.png`; link.href = canvas.toDataURL('image/png'); link.click(); }
+function downloadTicket() {
+    const canvas = document.getElementById('qrCanvas'), code = document.getElementById('dTicketCode').textContent;
+    const link = document.createElement('a');
+    link.download = `E-Ticket-${code}.png`; link.href = canvas.toDataURL('image/png'); link.click();
+}
 
 function triggerApprove(id, name) { approveTargetId = id; document.getElementById('approveConfirmName').textContent = name ? `"${name}"` : ''; openModal('approve'); }
 function triggerDecline(id, name) { declineTargetId = id; document.getElementById('declineConfirmName').textContent = name ? `"${name}"` : ''; openModal('decline'); }
 
-document.getElementById('confirmApproveBtn').addEventListener('click', function () { if (!approveTargetId) return; this.disabled = true; this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving…'; document.getElementById('approveId').value = approveTargetId; document.getElementById('approveForm').submit(); });
-document.getElementById('confirmDeclineBtn').addEventListener('click', function () { if (!declineTargetId) return; this.disabled = true; this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Declining…'; document.getElementById('declineId').value = declineTargetId; document.getElementById('declineForm').submit(); });
+document.getElementById('confirmApproveBtn').addEventListener('click', function () {
+    if (!approveTargetId) return;
+    this.disabled = true; this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving…';
+    document.getElementById('approveId').value = approveTargetId;
+    document.getElementById('approveForm').submit();
+});
+document.getElementById('confirmDeclineBtn').addEventListener('click', function () {
+    if (!declineTargetId) return;
+    this.disabled = true; this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Declining…';
+    document.getElementById('declineId').value = declineTargetId;
+    document.getElementById('declineForm').submit();
+});
 
 const modalIds = { detail: 'detailModal', approve: 'approveModal', decline: 'declineModal' };
 function openModal(key)  { const el = document.getElementById(modalIds[key]); if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; } }

@@ -40,82 +40,116 @@
         .sidebar-item.active { background: var(--blue); color: white; box-shadow: 0 8px 20px -4px rgba(37,99,235,.35); }
         .sidebar-item i { width: 20px; text-align: center; font-size: 1rem; flex-shrink: 0; }
 
-        .mobile-nav-pill { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(15,23,42,.97); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,.3); }
-        .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        /* ── Mobile nav ── */
+        .mobile-nav-pill { position: fixed; bottom: calc(12px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%); width: 94%; max-width: 600px; background: rgba(15,23,42,.97); backdrop-filter: blur(12px); border-radius: 22px; padding: 5px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,.3); }
+        .mobile-scroll-container { display: flex; gap: 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 0 2px; }
         .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
-        .dash-card { background: white; border-radius: 24px; border: 1px solid var(--card-border); box-shadow: 0 1px 3px rgba(0,0,0,.04); }
-        .stat-card { background: white; border-radius: 20px; padding: 1.25rem; border: 1px solid var(--card-border); transition: all .2s; position: relative; overflow: hidden; }
+        /* ── Cards ── */
+        .dash-card { background: white; border-radius: 20px; border: 1px solid var(--card-border); box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+        @media (min-width:640px) { .dash-card { border-radius: 24px; } }
+        .stat-card { background: white; border-radius: 18px; padding: .9rem; border: 1px solid var(--card-border); transition: all .2s; position: relative; overflow: hidden; }
+        @media (min-width:640px) { .stat-card { border-radius: 20px; padding: 1.25rem; } }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0,0,0,.1); }
-        .kpi-card { background: white; border-radius: 20px; padding: 1.1rem 1.25rem; border: 1px solid var(--card-border); border-left-width: 4px; transition: all .2s; }
+        .kpi-card { background: white; border-radius: 18px; padding: .9rem 1rem; border: 1px solid var(--card-border); border-left-width: 4px; transition: all .2s; }
+        @media (min-width:640px) { .kpi-card { border-radius: 20px; padding: 1.1rem 1.25rem; } }
         .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,.08); }
 
         .prog-bar  { height: 5px; border-radius: 999px; background: var(--card-border); overflow: hidden; }
         .prog-fill { height: 100%; border-radius: 999px; transition: width .8s cubic-bezier(.34,1.56,.64,1); }
 
-        .chart-wrap { position: relative; height: 220px; width: 100%; }
+        /* ── Charts — shorter on mobile ── */
+        .chart-wrap { position: relative; height: 170px; width: 100%; }
+        @media (min-width:640px) { .chart-wrap { height: 220px; } }
 
-        #calendar { font-size: .78rem; }
-        .fc .fc-toolbar { flex-wrap: wrap; gap: .5rem; }
-        .fc-toolbar-title { font-size: .9rem !important; font-weight: 800 !important; color: var(--text-main) !important; }
-        .fc-button-primary { background: var(--blue) !important; border-color: var(--blue) !important; border-radius: 10px !important; font-family: 'Plus Jakarta Sans',sans-serif !important; font-weight: 700 !important; font-size: .72rem !important; padding: .28rem .6rem !important; }
+        /* ── Resource donut — stacks on very small screens ── */
+        .resource-chart-wrap { display: flex; align-items: center; gap: 16px; margin-top: .875rem; flex-wrap: wrap; }
+        .resource-chart-canvas { width: 130px !important; height: 130px !important; flex-shrink: 0; }
+        @media (min-width:400px) { .resource-chart-canvas { width: 150px !important; height: 150px !important; } }
+
+        /* ── Calendar ── */
+        #calendar { font-size: .75rem; }
+        @media (min-width:640px) { #calendar { font-size: .78rem; } }
+        .fc .fc-toolbar { flex-wrap: wrap; gap: .4rem; }
+        .fc-toolbar-title { font-size: .85rem !important; font-weight: 800 !important; color: var(--text-main) !important; }
+        @media (min-width:640px) { .fc-toolbar-title { font-size: .9rem !important; } }
+        .fc-button-primary { background: var(--blue) !important; border-color: var(--blue) !important; border-radius: 10px !important; font-family: 'Plus Jakarta Sans',sans-serif !important; font-weight: 700 !important; font-size: .7rem !important; padding: .25rem .55rem !important; }
         .fc-button-primary:hover { background: var(--blue-dark) !important; }
-        .fc-daygrid-event { border-radius: 5px !important; font-size: .65rem !important; font-weight: 700 !important; padding: 1px 4px !important; border: none !important; cursor: pointer !important; }
+        .fc-daygrid-event { border-radius: 4px !important; font-size: .6rem !important; font-weight: 700 !important; padding: 1px 3px !important; border: none !important; cursor: pointer !important; }
         .fc-daygrid-day:hover { background: var(--blue-light) !important; cursor: pointer; }
         .fc-day-today { background: var(--blue-light) !important; }
         .fc-day-today .fc-daygrid-day-number { color: var(--blue) !important; font-weight: 800 !important; }
-        .fc-daygrid-day-number { font-size: .72rem; font-weight: 600; }
+        .fc-daygrid-day-number { font-size: .68rem; font-weight: 600; }
 
-        .avail-pill { font-size: .63rem; font-weight: 800; padding: .16rem .5rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
+        .avail-pill { font-size: .6rem; font-weight: 800; padding: .14rem .45rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
         .avail-on  { background: #dcfce7; color: #166634; }
         .avail-off { background: #fee2e2; color: #991b1b; }
         .avail-low { background: #fef3c7; color: #92400e; }
 
-        #dateModal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; }
+        /* ── Date modal ── */
+        #dateModal { display: none; position: fixed; inset: 0; z-index: 200; align-items: flex-end; justify-content: center; padding: 0; }
+        @media (min-width:480px) { #dateModal { align-items: center; padding: 12px; } }
         #dateModal.open { display: flex; }
         .modal-backdrop-layer { position: absolute; inset: 0; background: rgba(15,23,42,.55); backdrop-filter: blur(6px); }
-        .modal-box { position: relative; margin: auto; background: white; border-radius: 32px; width: 94%; max-width: 560px; max-height: 88vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,.35); animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both; }
-        @keyframes popIn { from { opacity:0; transform: scale(.92) translateY(16px); } to { opacity:1; transform:none; } }
+        .modal-box { position: relative; background: white; border-radius: 28px 28px 0 0; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,.35); animation: slideUp .22s cubic-bezier(.34,1.56,.64,1) both; }
+        @media (min-width:480px) { .modal-box { border-radius: 32px; animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both; } }
+        @keyframes popIn  { from { opacity:0; transform: scale(.92) translateY(16px); } to { opacity:1; transform:none; } }
+        @keyframes slideUp{ from { opacity:0; transform: translateY(40px); } to { opacity:1; transform:none; } }
         .modal-box::-webkit-scrollbar { width: 4px; }
         .modal-box::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
         .date-row { display: flex; align-items: center; gap: 12px; padding: .75rem 1rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background .15s; border-radius: 12px; }
         .date-row:hover { background: var(--slate-bg); }
         .date-row:last-child { border-bottom: none; }
 
-        .notif-dropdown { position: fixed; top: 76px; right: 24px; width: 340px; background: white; border-radius: 24px; box-shadow: 0 20px 40px -8px rgba(0,0,0,.2); border: 1px solid var(--card-border); z-index: 300; display: none; }
+        /* ── Notification dropdown — responsive ── */
+        .notif-dropdown {
+            position: fixed; top: 68px; left: 12px; right: 12px; width: auto;
+            background: white; border-radius: 20px;
+            box-shadow: 0 20px 40px -8px rgba(0,0,0,.2);
+            border: 1px solid var(--card-border); z-index: 300; display: none;
+        }
+        @media (min-width:480px) {
+            .notif-dropdown { left: auto; right: 20px; width: 340px; top: 76px; border-radius: 24px; }
+        }
         .notif-dropdown.open { display: block; animation: slideDown .2s ease; }
         @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
-        .notif-list { max-height: 340px; overflow-y: auto; }
+        .notif-list { max-height: 280px; overflow-y: auto; }
+        @media (min-width:480px) { .notif-list { max-height: 340px; } }
         .notif-item { padding: .85rem 1.25rem; border-bottom: 1px solid #f1f5f9; transition: background .15s; cursor: pointer; }
         .notif-item:hover { background: var(--slate-bg); }
         .notif-item.unread { background: var(--blue-light); border-left: 3px solid var(--blue); }
         .notif-item:last-child { border-bottom: none; }
 
-        #tl-print-modal { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15,23,42,.65); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1.5rem; }
+        /* ── Print modal — bottom sheet on mobile ── */
+        #tl-print-modal { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15,23,42,.65); backdrop-filter: blur(8px); align-items: flex-end; justify-content: center; }
+        @media (min-width:480px) { #tl-print-modal { align-items: center; padding: 1.5rem; } }
         #tl-print-modal.show { display: flex; animation: fadeIn .15s ease; }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        .tl-modal-card { background: white; border-radius: 28px; width: 100%; max-width: 420px; padding: 2rem; animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both; }
+        .tl-modal-card { background: white; border-radius: 28px 28px 0 0; width: 100%; max-width: 420px; padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom,0px)); animation: slideUp .22s cubic-bezier(.34,1.56,.64,1) both; }
+        @media (min-width:480px) { .tl-modal-card { border-radius: 28px; padding: 2rem; animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both; } }
         .tl-print-toggle { display: flex; border-radius: 14px; overflow: hidden; border: 1px solid var(--card-border); background: var(--slate-bg); }
-        .tl-print-toggle button { flex: 1; padding: .75rem; font-size: .8rem; font-weight: 700; border: none; background: transparent; cursor: pointer; transition: all .15s; color: var(--text-muted); font-family: inherit; }
+        .tl-print-toggle button { flex: 1; padding: .75rem .5rem; font-size: .78rem; font-weight: 700; border: none; background: transparent; cursor: pointer; transition: all .15s; color: var(--text-muted); font-family: inherit; }
         .tl-print-toggle button.active { background: var(--blue); color: white; border-radius: 12px; box-shadow: 0 4px 12px -2px rgba(37,99,235,.35); }
         .tl-page-counter { display: flex; align-items: center; gap: 12px; background: var(--slate-bg); border-radius: 14px; padding: .75rem 1rem; border: 1px solid var(--card-border); }
-        .tl-page-counter button { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--card-border); background: white; font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--blue); transition: all .15s; }
+        .tl-page-counter button { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--card-border); background: white; font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--blue); transition: all .15s; flex-shrink: 0; }
         .tl-page-counter button:hover { background: var(--blue-light); border-color: var(--blue-border); }
         .tl-page-num { flex: 1; text-align: center; font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
-        .tl-save-btn { width: 100%; padding: .875rem; border-radius: 16px; border: none; background: var(--blue); color: white; font-size: .875rem; font-weight: 800; cursor: pointer; transition: all .2s; margin-top: 1.25rem; font-family: inherit; }
+        .tl-save-btn { width: 100%; padding: .875rem; border-radius: 16px; border: none; background: var(--blue); color: white; font-size: .875rem; font-weight: 800; cursor: pointer; transition: all .2s; margin-top: 1rem; font-family: inherit; }
         .tl-save-btn:hover { background: var(--blue-dark); box-shadow: 0 8px 20px -4px rgba(37,99,235,.45); }
         .tl-save-btn:disabled { opacity: .6; cursor: not-allowed; }
-        .tl-skip-btn { width: 100%; padding: .75rem; border-radius: 16px; border: none; background: transparent; color: var(--text-faint); font-size: .8rem; font-weight: 700; cursor: pointer; transition: color .15s; margin-top: .5rem; font-family: inherit; }
+        .tl-skip-btn { width: 100%; padding: .75rem; border-radius: 16px; border: none; background: transparent; color: var(--text-faint); font-size: .8rem; font-weight: 700; cursor: pointer; transition: color .15s; margin-top: .4rem; font-family: inherit; }
         .tl-skip-btn:hover { color: var(--text-muted); }
 
-        .tl-panel { background: white; border-radius: 24px; border: 1px solid var(--card-border); padding: 1.25rem; }
-        .tl-session-card { background: var(--slate-bg); border-radius: 16px; border: 1px solid var(--card-border); padding: .875rem 1rem; border-left-width: 4px; transition: all .2s; }
+        /* ── Session cards ── */
+        .tl-panel { background: white; border-radius: 20px; border: 1px solid var(--card-border); padding: 1rem; }
+        @media (min-width:640px) { .tl-panel { border-radius: 24px; padding: 1.25rem; } }
+        .tl-session-card { background: var(--slate-bg); border-radius: 14px; border: 1px solid var(--card-border); padding: .75rem .875rem; border-left-width: 4px; transition: all .2s; }
         .tl-session-card:hover { box-shadow: 0 4px 12px -2px rgba(0,0,0,.08); }
         .tl-session-card.tl-ok       { border-left-color: #10b981; }
         .tl-session-card.tl-warning  { border-left-color: #f59e0b; }
         .tl-session-card.tl-critical { border-left-color: #ef4444; }
         .tl-session-card.tl-ended    { border-left-color: #94a3b8; opacity: .65; }
-        .tl-countdown { display: inline-flex; align-items: center; gap: 5px; padding: .25rem .65rem; border-radius: 999px; font-size: .72rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .tl-countdown { display: inline-flex; align-items: center; gap: 4px; padding: .2rem .55rem; border-radius: 999px; font-size: .7rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; }
         .tl-ok       .tl-countdown { background: #dcfce7; color: #166634; }
         .tl-warning  .tl-countdown { background: #fef3c7; color: #92400e; }
         .tl-critical .tl-countdown { background: #fee2e2; color: #991b1b; }
@@ -127,48 +161,64 @@
         .tl-critical .tl-prog-fill { background: #ef4444; }
         .tl-ended    .tl-prog-fill { background: #94a3b8; }
 
-        #tl-toast-container { position: fixed; bottom: 88px; right: 20px; z-index: 9000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-        .tl-toast { background: #1e293b; color: white; border-radius: 16px; padding: .875rem 1.1rem; min-width: 280px; max-width: 360px; box-shadow: 0 12px 28px -4px rgba(0,0,0,.35); display: flex; align-items: flex-start; gap: 10px; pointer-events: auto; animation: toastIn .3s cubic-bezier(.34,1.56,.64,1) both; }
+        /* ── Toasts ── */
+        #tl-toast-container { position: fixed; bottom: calc(80px + env(safe-area-inset-bottom,0px)); right: 10px; z-index: 9000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; width: calc(100vw - 20px); max-width: 340px; }
+        @media (min-width:480px) { #tl-toast-container { right: 20px; width: auto; } }
+        .tl-toast { background: #1e293b; color: white; border-radius: 16px; padding: .875rem 1rem; box-shadow: 0 12px 28px -4px rgba(0,0,0,.35); display: flex; align-items: flex-start; gap: 10px; pointer-events: auto; animation: toastIn .3s cubic-bezier(.34,1.56,.64,1) both; }
         .tl-toast.dismissing { animation: toastOut .2s ease forwards; }
         @keyframes toastIn  { from { opacity:0; transform: translateX(20px) scale(.95); } to { opacity:1; transform:none; } }
         @keyframes toastOut { to   { opacity:0; transform: translateX(24px) scale(.95); } }
-        .tl-toast-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .85rem; }
+        .tl-toast-icon { width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .8rem; }
         .tl-toast-warning .tl-toast-icon { background: #f59e0b22; color: #f59e0b; }
         .tl-toast-expired .tl-toast-icon { background: #ef444422; color: #ef4444; }
-        .tl-toast-title { font-size: .78rem; font-weight: 800; color: white; line-height: 1.3; }
-        .tl-toast-sub   { font-size: .7rem; color: #94a3b8; margin-top: 2px; line-height: 1.4; }
+        .tl-toast-title { font-size: .75rem; font-weight: 800; color: white; line-height: 1.3; }
+        .tl-toast-sub   { font-size: .68rem; color: #94a3b8; margin-top: 2px; line-height: 1.4; }
 
-        .library-banner { background: linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 55%,#2563eb 100%); border-radius: 20px; padding: 1.25rem 1.5rem; position: relative; overflow: hidden; border: 1px solid #3b82f6; }
-        .library-banner::before { content:'📚'; position:absolute; right:-10px; top:-10px; font-size:6.5rem; opacity:.07; transform:rotate(14deg); pointer-events:none; line-height:1; }
-        .book-row { display: flex; align-items: center; gap: 10px; padding: .6rem .75rem; border-radius: 14px; transition: all .18s; text-decoration: none; color: inherit; border: 1px solid transparent; }
+        /* ── Library ── */
+        .library-banner { background: linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 55%,#2563eb 100%); border-radius: 18px; padding: 1.1rem; position: relative; overflow: hidden; border: 1px solid #3b82f6; }
+        @media (min-width:640px) { .library-banner { border-radius: 20px; padding: 1.25rem 1.5rem; } }
+        .library-banner::before { content:'📚'; position:absolute; right:-10px; top:-10px; font-size:6rem; opacity:.07; transform:rotate(14deg); pointer-events:none; line-height:1; }
+        .book-row { display: flex; align-items: center; gap: 8px; padding: .55rem .65rem; border-radius: 12px; transition: all .18s; text-decoration: none; color: inherit; border: 1px solid transparent; }
+        @media (min-width:640px) { .book-row { gap: 10px; padding: .6rem .75rem; border-radius: 14px; } }
         .book-row:hover { background: var(--blue-light); border-color: var(--blue-border); }
-        .book-spine { width: 3px; border-radius: 4px; align-self: stretch; flex-shrink: 0; min-height: 30px; }
-        .borrow-req { display: flex; align-items: center; gap: 10px; padding: .65rem .75rem; border-radius: 14px; background: var(--blue-light); border: 1px solid var(--blue-border); transition: all .18s; }
-        .borrow-req:hover { background: var(--blue-mid); border-color: #93c5fd; }
-        .btn-approve { font-size: .65rem; font-weight: 800; padding: .25rem .6rem; border-radius: 10px; background: var(--blue); color: white; border: none; cursor: pointer; transition: background .15s; }
+        .book-spine { width: 3px; border-radius: 4px; align-self: stretch; flex-shrink: 0; min-height: 26px; }
+        .borrow-req { display: flex; align-items: center; gap: 8px; padding: .6rem .7rem; border-radius: 12px; background: var(--blue-light); border: 1px solid var(--blue-border); transition: all .18s; }
+        @media (min-width:640px) { .borrow-req { gap: 10px; padding: .65rem .75rem; border-radius: 14px; } }
+        .borrow-req:hover { background: var(--blue-mid); }
+        .btn-approve { font-size: .65rem; font-weight: 800; padding: .35rem .7rem; border-radius: 10px; background: var(--blue); color: white; border: none; cursor: pointer; transition: background .15s; min-width: 34px; min-height: 34px; }
         .btn-approve:hover { background: var(--blue-dark); }
-        .btn-reject  { font-size: .65rem; font-weight: 800; padding: .25rem .6rem; border-radius: 10px; background: #fee2e2; color: #dc2626; border: none; cursor: pointer; transition: background .15s; }
+        .btn-reject  { font-size: .65rem; font-weight: 800; padding: .35rem .7rem; border-radius: 10px; background: #fee2e2; color: #dc2626; border: none; cursor: pointer; transition: background .15s; min-width: 34px; min-height: 34px; }
         .btn-reject:hover { background: #fecaca; }
-
-        .pending-item { padding: .75rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; transition: all .2s; cursor: pointer; }
+        .pending-item { padding: .7rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; transition: all .2s; cursor: pointer; }
         .pending-item:hover { background: #fef3c7; border-color: #fbbf24; }
 
-        .ins-heatmap-cell { height: 32px; border-radius: 6px; cursor: default; transition: transform .15s; position: relative; }
+        /* ── Heatmap cells ── */
+        .ins-heatmap-cell { height: 26px; border-radius: 5px; cursor: default; transition: transform .15s; position: relative; }
+        @media (min-width:640px) { .ins-heatmap-cell { height: 32px; border-radius: 6px; } }
         .ins-heatmap-cell:hover { transform: scaleY(1.1); }
 
-        .section-divider { display: flex; align-items: center; gap: 12px; margin: 2.25rem 0 1.25rem; }
-        .section-divider-line { flex: 1; height: 1px; background: var(--card-border); }
+        /* ── Section dividers ── */
+        .section-divider { display: flex; align-items: center; gap: 10px; margin: 1.75rem 0 1rem; }
+        @media (min-width:640px) { .section-divider { gap: 12px; margin: 2.25rem 0 1.25rem; } }
+        .section-divider-line { flex: 1; height: 1px; background: var(--card-border); min-width: 0; }
 
-        .section-label { display: inline-flex; align-items: center; gap: 8px; font-size: .65rem; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; color: var(--text-faint); margin-bottom: .875rem; }
+        .section-label { display: inline-flex; align-items: center; gap: 8px; font-size: .65rem; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; color: var(--text-faint); margin-bottom: .75rem; }
         .section-label::before { content: ''; display: inline-block; width: 3px; height: 14px; border-radius: 2px; background: var(--blue); flex-shrink: 0; }
 
         @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
         .fade-up { animation: fadeUp .35s ease both; }
 
+        /* ── Layout shell ── */
         .page-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
         .sidebar-col  { width: 280px; flex-shrink: 0; padding: 24px; display: none; height: 100vh; overflow: hidden; }
         @media (min-width: 1024px) { .sidebar-col { display: block; } }
-        .main-col { flex: 1; min-width: 0; height: 100vh; overflow-y: auto; }
+        .main-col { flex: 1; min-width: 0; height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+        /* ── Main bottom padding — clears mobile nav ── */
+        .dash-main { padding-bottom: calc(90px + env(safe-area-inset-bottom,16px)); }
+
+        /* ── drag handle ── */
+        .sheet-handle { width: 36px; height: 4px; background: #e2e8f0; border-radius: 999px; margin: 0 auto 1rem; }
     </style>
 </head>
 <body>
@@ -232,7 +282,7 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
 
 <div class="page-wrapper">
 
-<!-- ════════ SIDEBAR ════════ -->
+<!-- SIDEBAR -->
 <aside class="sidebar-col">
     <div class="sidebar-card">
         <div class="sidebar-header">
@@ -261,53 +311,57 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
     </div>
 </aside>
 
-<!-- ════════ MOBILE NAV ════════ -->
+<!-- MOBILE NAV -->
 <nav class="lg:hidden mobile-nav-pill">
-    <div class="mobile-scroll-container text-white px-2">
-        <?php foreach ($navItems as $item): $cls=($page==$item['key'])?'bg-blue-700 font-semibold':'hover:bg-blue-500/30'; ?>
-            <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
-                <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
-                <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+    <div class="mobile-scroll-container text-white">
+        <?php foreach ($navItems as $item): $cls=($page==$item['key'])?'bg-blue-700':'hover:bg-white/10'; ?>
+            <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-2.5 min-w-[60px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
+                <i class="fa-solid <?= $item['icon'] ?> text-base"></i>
+                <span class="text-[9px] mt-0.5 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
             </a>
         <?php endforeach; ?>
-        <a href="/logout" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
-            <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
-            <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
+        <a href="/logout" class="flex flex-col items-center justify-center py-2 px-2.5 min-w-[60px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
+            <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
+            <span class="text-[9px] mt-0.5 text-center leading-tight whitespace-nowrap">Logout</span>
         </a>
     </div>
 </nav>
 
-<!-- ════════ MODALS ════════ -->
+<!-- DATE MODAL -->
 <div id="dateModal" role="dialog" aria-modal="true">
     <div class="modal-backdrop-layer" onclick="closeDateModal()"></div>
     <div class="modal-box">
-        <div class="flex items-center justify-between px-7 pt-7 pb-4 border-b border-slate-100">
-            <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Schedule</p><h3 id="modalDateTitle" class="text-lg font-black text-slate-900"></h3></div>
-            <button onclick="closeDateModal()" class="w-9 h-9 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+        <div class="sheet-handle sm:hidden mt-3"></div>
+        <div class="flex items-center justify-between px-5 pt-4 pb-4 border-b border-slate-100 sm:px-7 sm:pt-7">
+            <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Schedule</p><h3 id="modalDateTitle" class="text-base font-black text-slate-900 sm:text-lg"></h3></div>
+            <button onclick="closeDateModal()" class="w-9 h-9 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div id="modalList" class="px-4 py-3 space-y-1"></div>
-        <div class="px-7 pb-7 pt-2"><button onclick="closeDateModal()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 rounded-2xl font-bold text-slate-600 text-sm transition">Close</button></div>
+        <div id="modalList" class="px-3 py-3 space-y-1 sm:px-4"></div>
+        <div class="px-5 pb-5 pt-2 sm:px-7 sm:pb-7"><button onclick="closeDateModal()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 rounded-2xl font-bold text-slate-600 text-sm transition">Close</button></div>
     </div>
 </div>
 
+<!-- NOTIF DROPDOWN -->
 <div id="notifDropdown" class="notif-dropdown">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+    <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-100 sm:px-5 sm:py-4">
         <p class="font-black text-slate-800 text-sm">Notifications</p>
         <button onclick="markAllRead()" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-bold transition">Mark all read</button>
     </div>
     <div id="notifList" class="notif-list"><div class="p-6 text-center text-slate-400"><i class="fa-regular fa-bell-slash text-3xl mb-2 block text-slate-200"></i><p class="text-sm font-bold">No notifications</p></div></div>
 </div>
 
+<!-- PRINT MODAL -->
 <div id="tl-print-modal">
     <div class="tl-modal-card">
-        <div class="flex items-center gap-3 mb-5">
-            <div class="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center"><i class="fa-solid fa-print text-blue-600"></i></div>
+        <div class="sheet-handle sm:hidden"></div>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-print text-blue-600"></i></div>
             <div><h3 class="font-black text-slate-900 text-base" id="tl-modal-title">Session Ended</h3><p class="text-xs text-slate-400 font-medium" id="tl-modal-sub">Did this user print?</p></div>
         </div>
         <p class="text-xs text-slate-500 font-semibold mb-3 uppercase tracking-widest">Did they print?</p>
         <div class="tl-print-toggle mb-4">
-            <button id="tl-yes-btn" class="active" onclick="tlSetPrinted(true)"><i class="fa-solid fa-check mr-1.5"></i> Yes, they printed</button>
-            <button id="tl-no-btn" onclick="tlSetPrinted(false)"><i class="fa-solid fa-xmark mr-1.5"></i> No print</button>
+            <button id="tl-yes-btn" class="active" onclick="tlSetPrinted(true)"><i class="fa-solid fa-check mr-1"></i> Yes, they printed</button>
+            <button id="tl-no-btn" onclick="tlSetPrinted(false)"><i class="fa-solid fa-xmark mr-1"></i> No print</button>
         </div>
         <div id="tl-page-section">
             <p class="text-xs text-slate-500 font-semibold mb-2 uppercase tracking-widest">Pages printed</p>
@@ -317,37 +371,42 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
                 <button onclick="tlAdjustPages(1)"><i class="fa-solid fa-plus text-xs"></i></button>
             </div>
         </div>
-        <button class="tl-save-btn" id="tl-save-btn" onclick="tlSavePrint()"><i class="fa-solid fa-floppy-disk mr-2"></i> Save & Log</button>
+        <button class="tl-save-btn" id="tl-save-btn" onclick="tlSavePrint()"><i class="fa-solid fa-floppy-disk mr-2"></i> Save &amp; Log</button>
         <button class="tl-skip-btn" onclick="tlSkipPrint()">Skip — don't log</button>
     </div>
 </div>
 <div id="tl-toast-container"></div>
 
-<!-- ════════ MAIN ════════ -->
+<!-- MAIN -->
 <div class="main-col">
-<main class="w-full max-w-screen-xl mx-auto px-4 lg:px-8 pt-6 pb-32">
+<main class="w-full max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-8 pt-5 sm:pt-6 dash-main">
 
-    <header class="flex items-start justify-between mb-8 gap-4 fade-up">
-        <div>
+    <!-- HEADER -->
+    <header class="flex items-start justify-between mb-5 sm:mb-8 gap-3 fade-up">
+        <div class="min-w-0">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
                 <?php $hh=(int)date('H'); echo $hh<12?'Good morning':($hh<17?'Good afternoon':'Good evening'); ?>
             </p>
-            <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight">Dashboard &amp; Analytics</h2>
-            <p class="text-slate-400 font-medium text-sm mt-0.5"><?= date('l, F j, Y') ?></p>
+            <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight">Dashboard &amp; Analytics</h2>
+            <p class="text-slate-400 font-medium text-xs sm:text-sm mt-0.5"><?= date('l, F j, Y') ?></p>
         </div>
-        <div class="flex items-center gap-3 flex-shrink-0 flex-wrap justify-end">
+        <div class="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
             <div class="hidden sm:flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-3 py-2">
                 <i class="fa-regular fa-calendar text-blue-600 text-xs"></i>
                 <span class="text-xs font-bold text-slate-600"><?= date('M j, Y') ?></span>
             </div>
             <?php if (($pending??0)>0): ?>
-                <a href="/admin/manage-reservations" class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-2xl font-bold text-xs hover:bg-amber-100 transition">
-                    <i class="fa-solid fa-clock text-xs"></i> <?= $pending ?> pending
+                <a href="/admin/manage-reservations" class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-2 rounded-2xl font-bold text-xs hover:bg-amber-100 transition whitespace-nowrap">
+                    <i class="fa-solid fa-clock text-xs"></i>
+                    <span><?= $pending ?></span>
+                    <span class="hidden sm:inline">pending</span>
                 </a>
             <?php endif; ?>
             <?php if ($pendingBorrowings>0): ?>
-                <a href="/admin/books#borrowings" class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded-2xl font-bold text-xs hover:bg-blue-100 transition">
-                    <i class="fa-solid fa-book text-xs"></i> <?= $pendingBorrowings ?> borrow<?= $pendingBorrowings!=1?'s':'' ?>
+                <a href="/admin/books#borrowings" class="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 px-2.5 py-2 rounded-2xl font-bold text-xs hover:bg-blue-100 transition whitespace-nowrap">
+                    <i class="fa-solid fa-book text-xs"></i>
+                    <span><?= $pendingBorrowings ?></span>
+                    <span class="hidden sm:inline">borrow<?= $pendingBorrowings!=1?'s':'' ?></span>
                 </a>
             <?php endif; ?>
             <div class="relative">
@@ -359,81 +418,147 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
 
     <!-- SECTION 1 — LIVE SESSIONS -->
     <p class="section-label">Live Monitor</p>
-    <div class="tl-panel mb-8">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-timer text-blue-600 text-sm"></i></div>
-                <div><h3 class="font-extrabold text-slate-800 text-sm leading-tight">Active Sessions</h3><p class="text-[10px] text-slate-400 font-medium">Users currently checked in</p></div>
+    <div class="tl-panel mb-5 sm:mb-8">
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-timer text-blue-600 text-sm"></i></div>
+                <div>
+                    <h3 class="font-extrabold text-slate-800 text-sm leading-tight">Active Sessions</h3>
+                    <p class="text-[10px] text-slate-400 font-medium hidden sm:block">Users currently checked in</p>
+                </div>
             </div>
-            <div class="flex items-center gap-3">
-                <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Active</span>
-                <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Warning</span>
-                <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-red-400"></span>Critical</span>
+            <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"></span><span class="hidden xs:inline">Active</span></span>
+                <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span><span class="hidden xs:inline">Warn</span></span>
+                <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2 h-2 rounded-full bg-red-400 flex-shrink-0"></span><span class="hidden xs:inline">Crit</span></span>
             </div>
         </div>
-        <div id="tl-sessions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+        <div id="tl-sessions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3"></div>
         <p id="tl-no-sessions" class="hidden text-center text-sm text-slate-400 py-6 font-medium"><i class="fa-regular fa-circle-pause text-2xl text-slate-200 block mb-2"></i>No active sessions right now</p>
     </div>
 
     <!-- SECTION 2 — RESERVATION OVERVIEW -->
     <p class="section-label">Reservation Overview</p>
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <div class="stat-card"><div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-layer-group text-blue-500 text-sm"></i></div><span class="text-[10px] font-black text-blue-600 uppercase tracking-wider">+<?= $monthlyTotal??0 ?> mo</span></div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total</p><p class="text-3xl font-black text-slate-800"><?= $total??0 ?></p><p class="text-xs text-slate-400 mt-0.5 font-medium">Avg <span class="font-bold text-blue-600"><?= ($total??0)>0?round(($total??0)/30,1):0 ?>/day</span></p></div>
-        <div class="stat-card"><div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i></div><span class="text-[10px] font-black text-emerald-600 uppercase tracking-wider"><?= $approvalRate ?>%</span></div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Approved</p><p class="text-3xl font-black text-emerald-600"><?= $approved??0 ?></p><div class="prog-bar mt-2"><div class="prog-fill bg-emerald-500" style="width:<?= $approvalRate ?>%"></div></div><p class="text-xs text-slate-400 mt-1.5 font-medium">Approval rate</p></div>
-        <div class="stat-card"><div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center"><i class="fa-regular fa-clock text-amber-500 text-sm"></i></div><span class="text-[10px] font-black text-amber-600 uppercase tracking-wider"><?= $todayTotal??0 ?> today</span></div><div class="grid grid-cols-3 gap-1 text-center mt-1"><div><p class="text-xl font-black text-amber-600"><?= $todayPending??0 ?></p><p class="text-[9px] text-slate-400 font-bold">Pending</p></div><div><p class="text-xl font-black text-emerald-600"><?= $todayApproved??0 ?></p><p class="text-[9px] text-slate-400 font-bold">Approved</p></div><div><p class="text-xl font-black text-purple-600"><?= $todayClaimed??0 ?></p><p class="text-[9px] text-slate-400 font-bold">Claimed</p></div></div></div>
-        <div class="stat-card"><div class="flex items-start justify-between mb-3"><div class="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-check-double text-purple-500 text-sm"></i></div><span class="text-[10px] font-black text-purple-600 uppercase tracking-wider"><?= $utilizationRate ?>%</span></div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Claimed</p><p class="text-3xl font-black text-purple-600"><?= $claimed??0 ?></p><div class="prog-bar mt-2"><div class="prog-fill bg-purple-500" style="width:<?= $utilizationRate ?>%"></div></div><p class="text-xs text-slate-400 mt-1.5 font-medium">Utilization rate</p></div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-2.5 sm:mb-4">
+        <div class="stat-card">
+            <div class="flex items-start justify-between mb-2">
+                <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-layer-group text-blue-500 text-sm"></i></div>
+                <span class="text-[9px] font-black text-blue-600 uppercase tracking-wider">+<?= $monthlyTotal??0 ?> mo</span>
+            </div>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total</p>
+            <p class="text-2xl sm:text-3xl font-black text-slate-800"><?= $total??0 ?></p>
+            <p class="text-[10px] text-slate-400 mt-0.5 font-medium">Avg <span class="font-bold text-blue-600"><?= ($total??0)>0?round(($total??0)/30,1):0 ?>/day</span></p>
+        </div>
+        <div class="stat-card">
+            <div class="flex items-start justify-between mb-2">
+                <div class="w-8 h-8 bg-emerald-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i></div>
+                <span class="text-[9px] font-black text-emerald-600 uppercase tracking-wider"><?= $approvalRate ?>%</span>
+            </div>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Approved</p>
+            <p class="text-2xl sm:text-3xl font-black text-emerald-600"><?= $approved??0 ?></p>
+            <div class="prog-bar mt-1.5"><div class="prog-fill bg-emerald-500" style="width:<?= $approvalRate ?>%"></div></div>
+            <p class="text-[10px] text-slate-400 mt-1 font-medium">Approval rate</p>
+        </div>
+        <div class="stat-card">
+            <div class="flex items-start justify-between mb-2">
+                <div class="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center"><i class="fa-regular fa-clock text-amber-500 text-sm"></i></div>
+                <span class="text-[9px] font-black text-amber-600 uppercase tracking-wider"><?= $todayTotal??0 ?> today</span>
+            </div>
+            <div class="grid grid-cols-3 gap-0.5 text-center mt-0.5">
+                <div><p class="text-lg sm:text-xl font-black text-amber-600"><?= $todayPending??0 ?></p><p class="text-[8px] text-slate-400 font-bold">Pend</p></div>
+                <div><p class="text-lg sm:text-xl font-black text-emerald-600"><?= $todayApproved??0 ?></p><p class="text-[8px] text-slate-400 font-bold">Appvd</p></div>
+                <div><p class="text-lg sm:text-xl font-black text-purple-600"><?= $todayClaimed??0 ?></p><p class="text-[8px] text-slate-400 font-bold">Clmd</p></div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="flex items-start justify-between mb-2">
+                <div class="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center"><i class="fa-solid fa-check-double text-purple-500 text-sm"></i></div>
+                <span class="text-[9px] font-black text-purple-600 uppercase tracking-wider"><?= $utilizationRate ?>%</span>
+            </div>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Claimed</p>
+            <p class="text-2xl sm:text-3xl font-black text-purple-600"><?= $claimed??0 ?></p>
+            <div class="prog-bar mt-1.5"><div class="prog-fill bg-purple-500" style="width:<?= $utilizationRate ?>%"></div></div>
+            <p class="text-[10px] text-slate-400 mt-1 font-medium">Utilization rate</p>
+        </div>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-4">
         <?php foreach ([['Total',$total??0,'border-blue-500','text-slate-700','fa-layer-group','text-blue-500'],['Pending',$pending??0,'border-amber-500','text-amber-600','fa-clock','text-amber-500'],['Approved',$approved??0,'border-emerald-500','text-emerald-600','fa-circle-check','text-emerald-500'],['Declined',$declined??0,'border-rose-500','text-rose-600','fa-xmark-circle','text-rose-500']] as [$l,$v,$b,$c,$i,$ic]): ?>
-            <div class="kpi-card <?= $b ?>"><div class="flex items-center justify-between mb-2"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><?= $l ?></p><i class="fa-solid <?= $i ?> text-sm <?= $ic ?>"></i></div><p class="text-2xl font-black <?= $c ?>"><?= $v ?></p></div>
+            <div class="kpi-card <?= $b ?>">
+                <div class="flex items-center justify-between mb-1.5">
+                    <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest"><?= $l ?></p>
+                    <i class="fa-solid <?= $i ?> text-sm <?= $ic ?>"></i>
+                </div>
+                <p class="text-xl sm:text-2xl font-black <?= $c ?>"><?= $v ?></p>
+            </div>
         <?php endforeach; ?>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
-        <div class="dash-card p-5"><div class="flex items-center justify-between mb-1"><div><h3 class="font-extrabold text-slate-800 text-sm">Reservations Trend</h3><p class="text-[11px] text-slate-400 font-medium">Last 7 days</p></div><span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Reservations</span></div><div class="chart-wrap"><canvas id="trendChart"></canvas></div></div>
-        <div class="dash-card p-5"><div class="flex items-center justify-between mb-1"><div><h3 class="font-extrabold text-slate-800 text-sm">Popular Resources</h3><p class="text-[11px] text-slate-400 font-medium">Most reserved</p></div><span class="text-[10px] font-black bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full">Top 5</span></div><div class="flex items-center gap-6 mt-4"><div style="position:relative;width:160px;height:160px;flex-shrink:0;"><canvas id="resourceChart" width="160" height="160"></canvas></div><div id="resourceLegend" class="flex-1 min-w-0 space-y-3"></div></div></div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5 mb-5 sm:mb-8">
+        <div class="dash-card p-4 sm:p-5">
+            <div class="flex items-center justify-between mb-2">
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Reservations Trend</h3><p class="text-[11px] text-slate-400 font-medium">Last 7 days</p></div>
+                <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Reservations</span>
+            </div>
+            <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+        </div>
+        <div class="dash-card p-4 sm:p-5">
+            <div class="flex items-center justify-between mb-2">
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Popular Resources</h3><p class="text-[11px] text-slate-400 font-medium">Most reserved</p></div>
+                <span class="text-[10px] font-black bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full">Top 5</span>
+            </div>
+            <div class="resource-chart-wrap">
+                <canvas id="resourceChart" class="resource-chart-canvas" width="140" height="140"></canvas>
+                <div id="resourceLegend" class="flex-1 min-w-0 space-y-2"></div>
+            </div>
+        </div>
     </div>
 
     <!-- SECTION 3 — SCHEDULE & MANAGEMENT -->
     <p class="section-label">Schedule &amp; Management</p>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
-        <div class="lg:col-span-2 dash-card p-5">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-3"><div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-calendar-days text-sm"></i></div><div><h3 class="font-extrabold text-slate-800 text-sm leading-tight">Reservation Calendar</h3><p class="text-[10px] text-slate-400 font-medium">Click any date to view</p></div></div>
-                <div class="hidden sm:flex items-center gap-3 flex-wrap justify-end">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-5 mb-5 sm:mb-8">
+        <div class="lg:col-span-2 dash-card p-4 sm:p-5">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-calendar-days text-sm"></i></div>
+                    <div><h3 class="font-extrabold text-slate-800 text-sm leading-tight">Reservation Calendar</h3><p class="text-[10px] text-slate-400 font-medium">Click any date</p></div>
+                </div>
+                <div class="hidden md:flex items-center gap-2 flex-wrap justify-end">
                     <?php foreach ([['#fbbf24','Pending'],['#10b981','Approved'],['#f87171','Declined'],['#a855f7','Claimed']] as [$c,$l]): ?>
-                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-500"><span class="w-2 h-2 rounded-full" style="background:<?= $c ?>"></span><?= $l ?></span>
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-500"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:<?= $c ?>"></span><?= $l ?></span>
                     <?php endforeach; ?>
                 </div>
             </div>
             <div id="calendar"></div>
         </div>
-        <div class="flex flex-col gap-4">
-            <div class="rounded-2xl p-4 text-white" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);">
-                <div class="flex items-center gap-2 mb-3"><i class="fa-solid fa-bolt text-blue-300 text-sm"></i><h3 class="font-black text-sm">Quick Stats</h3></div>
+        <div class="flex flex-col gap-3">
+            <div class="rounded-2xl p-3.5 sm:p-4 text-white" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);">
+                <div class="flex items-center gap-2 mb-2.5"><i class="fa-solid fa-bolt text-blue-300 text-sm"></i><h3 class="font-black text-sm">Quick Stats</h3></div>
                 <div class="grid grid-cols-2 gap-2">
                     <?php foreach ([['Approval',$approvalRate.'%','fa-chart-line'],['Utilization',$utilizationRate.'%','fa-chart-pie'],['Resources',$totalResources??0,'fa-desktop'],['Users',$totalUsers??0,'fa-users']] as [$l,$v,$ic]): ?>
-                        <div class="bg-white/10 rounded-xl p-3"><div class="flex items-center gap-1.5 mb-1"><i class="fa-solid <?= $ic ?> text-blue-300 text-[10px]"></i><p class="text-[9px] text-blue-200 font-black uppercase tracking-wider"><?= $l ?></p></div><p class="text-xl font-black"><?= $v ?></p></div>
+                        <div class="bg-white/10 rounded-xl p-2.5"><div class="flex items-center gap-1.5 mb-1"><i class="fa-solid <?= $ic ?> text-blue-300 text-[10px]"></i><p class="text-[9px] text-blue-200 font-black uppercase tracking-wider"><?= $l ?></p></div><p class="text-xl font-black"><?= $v ?></p></div>
                     <?php endforeach; ?>
                 </div>
             </div>
-            <div class="dash-card p-4 flex-1">
-                <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold text-slate-800 text-sm">Needs Approval</h3><?php if(($pending??0)>0): ?><a href="/admin/manage-reservations?status=pending" class="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl hover:bg-amber-100 transition">View all →</a><?php endif; ?></div>
+            <div class="dash-card p-3.5 sm:p-4 flex-1">
+                <div class="flex items-center justify-between mb-2.5">
+                    <h3 class="font-extrabold text-slate-800 text-sm">Needs Approval</h3>
+                    <?php if(($pending??0)>0): ?><a href="/admin/manage-reservations?status=pending" class="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl hover:bg-amber-100 transition whitespace-nowrap">View all →</a><?php endif; ?>
+                </div>
                 <div class="space-y-2 max-h-52 overflow-y-auto">
                     <?php $pl=array_filter($reservations??[],fn($r)=>($r['status']??'')==='pending');
                     if(!empty($pl)):foreach(array_slice($pl,0,4) as $res): ?>
-                        <a href="/admin/manage-reservations?id=<?= $res['id'] ?>" class="pending-item block"><div class="font-bold text-slate-800 text-xs truncate"><?= htmlspecialchars($res['resource_name']??'Resource') ?></div><div class="text-[11px] text-slate-500 mt-0.5"><?= htmlspecialchars($res['visitor_name']??'Unknown') ?></div><div class="text-[11px] text-slate-400 mt-0.5"><?= !empty($res['reservation_date'])?date('M j',strtotime($res['reservation_date'])):'—' ?> · <?= !empty($res['start_time'])?date('g:i A',strtotime($res['start_time'])):'—' ?></div></a>
+                        <a href="/admin/manage-reservations?id=<?= $res['id'] ?>" class="pending-item block"><div class="font-bold text-slate-800 text-xs truncate"><?= htmlspecialchars($res['resource_name']??'Resource') ?></div><div class="text-[11px] text-slate-500 mt-0.5 truncate"><?= htmlspecialchars($res['visitor_name']??'Unknown') ?></div><div class="text-[11px] text-slate-400 mt-0.5"><?= !empty($res['reservation_date'])?date('M j',strtotime($res['reservation_date'])):'—' ?> · <?= !empty($res['start_time'])?date('g:i A',strtotime($res['start_time'])):'—' ?></div></a>
                     <?php endforeach;
                     $pc=count($pl);if($pc>4): ?><a href="/admin/manage-reservations?status=pending" class="block text-center text-xs text-amber-600 font-bold py-1 hover:text-amber-700">+<?= $pc-4 ?> more →</a><?php endif;
-                    else: ?><div class="text-center py-6"><i class="fa-regular fa-circle-check text-2xl text-slate-200 mb-1 block"></i><p class="text-xs text-slate-400 font-medium">All caught up!</p></div><?php endif; ?>
+                    else: ?><div class="text-center py-5"><i class="fa-regular fa-circle-check text-2xl text-slate-200 mb-1 block"></i><p class="text-xs text-slate-400 font-medium">All caught up!</p></div><?php endif; ?>
                 </div>
             </div>
-            <div class="dash-card p-4">
-                <h3 class="font-extrabold text-slate-800 text-sm mb-3">Top Resources</h3>
+            <div class="dash-card p-3.5 sm:p-4">
+                <h3 class="font-extrabold text-slate-800 text-sm mb-2.5">Top Resources</h3>
                 <div class="space-y-2">
                     <?php if(!empty($topResources)):foreach(array_slice($topResources,0,4) as $i=>$r): ?>
-                        <div class="flex items-center gap-3"><span class="w-5 h-5 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 flex-shrink-0"><?= $i+1 ?></span><span class="flex-1 text-xs font-semibold text-slate-700 truncate"><?= htmlspecialchars($r['name']) ?></span><span class="text-xs font-black text-blue-600"><?= $r['count'] ?></span></div>
+                        <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 flex-shrink-0"><?= $i+1 ?></span><span class="flex-1 text-xs font-semibold text-slate-700 truncate"><?= htmlspecialchars($r['name']) ?></span><span class="text-xs font-black text-blue-600 flex-shrink-0"><?= $r['count'] ?></span></div>
                     <?php endforeach;else: ?><p class="text-xs text-slate-400 text-center py-3 font-medium">No data yet</p><?php endif; ?>
                 </div>
             </div>
@@ -445,28 +570,67 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-book-open text-blue-600 text-sm"></i></div>
         <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Library</span>
         <div class="section-divider-line"></div>
-        <a href="/admin/books" class="text-xs font-black text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition whitespace-nowrap flex-shrink-0">Manage Library →</a>
+        <a href="/admin/books" class="text-xs font-black text-blue-600 bg-blue-50 border border-blue-200 px-2.5 sm:px-3 py-1.5 rounded-xl hover:bg-blue-100 transition whitespace-nowrap flex-shrink-0">Manage →</a>
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
-        <div class="flex flex-col gap-4">
-            <div class="library-banner"><div class="relative z-10"><p class="text-[10px] font-black tracking-[0.18em] text-blue-300 uppercase mb-1">Book Collection</p><p class="text-2xl font-black text-white leading-tight"><?= $bookAvailCount ?> <span class="text-sm font-semibold text-blue-300">available</span></p><p class="text-blue-400 text-xs font-medium mb-4"><?= $bookTotalCount ?> total titles</p><div class="grid grid-cols-2 gap-2"><div class="bg-white/10 rounded-xl px-3 py-2.5 text-center"><p class="text-xl font-black text-white"><?= $pendingBorrowings ?></p><p class="text-[9px] font-black text-blue-300 uppercase tracking-wider mt-0.5">Borrow Requests</p></div><div class="bg-white/10 rounded-xl px-3 py-2.5 text-center"><?php $bpct=$bookTotalCount>0?round($bookAvailCount/$bookTotalCount*100):0; ?><p class="text-xl font-black text-white"><?= $bpct ?>%</p><p class="text-[9px] font-black text-blue-300 uppercase tracking-wider mt-0.5">In Stock</p></div></div></div></div>
-            <div class="dash-card p-4 flex-1">
-                <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold text-slate-800 text-sm">Borrow Requests</h3><?php if($pendingBorrowings>0): ?><a href="/admin/books#borrowings" class="text-[10px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl hover:bg-blue-100 transition">All <?= $pendingBorrowings ?> →</a><?php endif; ?></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-5 mb-5 sm:mb-8">
+        <div class="flex flex-col gap-3">
+            <div class="library-banner">
+                <div class="relative z-10">
+                    <p class="text-[10px] font-black tracking-[0.18em] text-blue-300 uppercase mb-1">Book Collection</p>
+                    <p class="text-2xl font-black text-white leading-tight"><?= $bookAvailCount ?> <span class="text-sm font-semibold text-blue-300">available</span></p>
+                    <p class="text-blue-400 text-xs font-medium mb-3"><?= $bookTotalCount ?> total titles</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-white/10 rounded-xl px-2.5 py-2 text-center"><p class="text-xl font-black text-white"><?= $pendingBorrowings ?></p><p class="text-[9px] font-black text-blue-300 uppercase tracking-wider mt-0.5">Borrow Reqs</p></div>
+                        <div class="bg-white/10 rounded-xl px-2.5 py-2 text-center"><?php $bpct=$bookTotalCount>0?round($bookAvailCount/$bookTotalCount*100):0; ?><p class="text-xl font-black text-white"><?= $bpct ?>%</p><p class="text-[9px] font-black text-blue-300 uppercase tracking-wider mt-0.5">In Stock</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="dash-card p-3.5 sm:p-4 flex-1">
+                <div class="flex items-center justify-between mb-2.5">
+                    <h3 class="font-extrabold text-slate-800 text-sm">Borrow Requests</h3>
+                    <?php if($pendingBorrowings>0): ?><a href="/admin/books#borrowings" class="text-[10px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl hover:bg-blue-100 transition whitespace-nowrap">All <?= $pendingBorrowings ?> →</a><?php endif; ?>
+                </div>
                 <?php $sr=array_slice(array_values(array_filter($dashBorrowReqs,fn($b)=>($b['status']??'')==='pending')),0,4);
                 if(!empty($sr)): ?>
-                    <div class="space-y-2"><?php foreach($sr as $bw): ?><div class="borrow-req"><div class="w-8 h-8 bg-white rounded-xl flex items-center justify-center flex-shrink-0 border border-blue-100 font-black text-sm text-blue-600"><?= mb_strtoupper(mb_substr($bw['book_title']??'B',0,1)) ?></div><div class="flex-1 min-w-0"><p class="font-bold text-xs text-slate-800 truncate"><?= htmlspecialchars($bw['book_title']??'Unknown Book') ?></p><p class="text-[10px] text-slate-500 truncate"><?= htmlspecialchars($bw['resident_name']??'Unknown') ?></p></div><div class="flex gap-1 flex-shrink-0"><form method="post" action="/admin/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-approve">✓</button></form><form method="post" action="/admin/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-reject">✕</button></form></div></div><?php endforeach; ?></div>
+                    <div class="space-y-2"><?php foreach($sr as $bw): ?>
+                        <div class="borrow-req">
+                            <div class="w-8 h-8 bg-white rounded-xl flex items-center justify-center flex-shrink-0 border border-blue-100 font-black text-sm text-blue-600"><?= mb_strtoupper(mb_substr($bw['book_title']??'B',0,1)) ?></div>
+                            <div class="flex-1 min-w-0"><p class="font-bold text-xs text-slate-800 truncate"><?= htmlspecialchars($bw['book_title']??'Unknown Book') ?></p><p class="text-[10px] text-slate-500 truncate"><?= htmlspecialchars($bw['resident_name']??'Unknown') ?></p></div>
+                            <div class="flex gap-1 flex-shrink-0">
+                                <form method="post" action="/admin/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-approve">✓</button></form>
+                                <form method="post" action="/admin/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-reject">✕</button></form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?></div>
                 <?php else: ?><div class="text-center py-5"><i class="fa-regular fa-circle-check text-2xl text-slate-200 mb-1 block"></i><p class="text-xs text-slate-400 font-medium">No pending requests</p></div><?php endif; ?>
             </div>
         </div>
-        <div class="lg:col-span-2 dash-card p-5">
-            <div class="flex items-center justify-between mb-4"><div><h3 class="font-extrabold text-slate-800 text-sm">Books Catalog</h3><p class="text-[10px] text-slate-400 font-medium">Availability at a glance</p></div><a href="/admin/books" class="text-[10px] font-black text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-xl border border-blue-200 hover:bg-blue-100 transition flex items-center gap-1"><i class="fa-solid fa-plus text-[9px]"></i> Add Book</a></div>
+        <div class="lg:col-span-2 dash-card p-4 sm:p-5">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Books Catalog</h3><p class="text-[10px] text-slate-400 font-medium">Availability at a glance</p></div>
+                <a href="/admin/books" class="text-[10px] font-black text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-xl border border-blue-200 hover:bg-blue-100 transition flex items-center gap-1 whitespace-nowrap flex-shrink-0"><i class="fa-solid fa-plus text-[9px]"></i> Add</a>
+            </div>
             <?php if(!empty($dashBooks)): $gc=['fiction'=>'#3b82f6','fantasy'=>'#8b5cf6','poetry'=>'#ec4899','humor'=>'#f59e0b','history'=>'#78716c','science'=>'#06b6d4','romance'=>'#f43f5e']; ?>
-                <div class="grid grid-cols-12 gap-2 px-3 pb-2 border-b border-slate-100 mb-1"><div class="col-span-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Title</div><div class="col-span-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">Author</div><div class="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">Genre</div><div class="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Stock</div></div>
-                <div class="space-y-0.5"><?php foreach(array_slice($dashBooks,0,9) as $book): $g=$book['genre']??'';$sc=$gc[strtolower($g)]??'#2563eb';$av=(int)($book['available_copies']??0);$tc=(int)($book['total_copies']??1);$ac=$av===0?'avail-off':($av<=1?'avail-low':'avail-on');$at=$av===0?'Out':($av<=1?'1 left':$av.' left'); ?>
-                    <a href="/admin/books" class="book-row grid grid-cols-12 gap-2 items-center"><div class="col-span-5 flex items-center gap-2 min-w-0"><div class="book-spine" style="background:<?= $sc ?>"></div><div class="min-w-0"><p class="font-bold text-xs text-slate-800 truncate leading-tight"><?= htmlspecialchars($book['title']) ?></p><p class="text-[10px] text-slate-400 truncate sm:hidden"><?= htmlspecialchars($book['author']??'—') ?></p></div></div><div class="col-span-3 hidden sm:block"><p class="text-xs text-slate-500 truncate"><?= htmlspecialchars($book['author']??'—') ?></p></div><div class="col-span-2 hidden sm:block"><?php if(!empty($book['genre'])): ?><span class="text-[10px] font-bold text-slate-500 truncate block"><?= htmlspecialchars($book['genre']) ?></span><?php else: ?><span class="text-[10px] text-slate-300">—</span><?php endif; ?></div><div class="col-span-2 flex items-center justify-end gap-1.5"><span class="text-[10px] text-slate-400 font-medium hidden sm:inline"><?= $av ?>/<?= $tc ?></span><span class="avail-pill <?= $ac ?>"><?= $at ?></span></div></a>
-                <?php endforeach; ?></div>
+                <div class="grid grid-cols-12 gap-2 px-2 sm:px-3 pb-2 border-b border-slate-100 mb-1">
+                    <div class="col-span-7 sm:col-span-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Title</div>
+                    <div class="col-span-3 text-[9px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">Author</div>
+                    <div class="col-span-2 text-[9px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">Genre</div>
+                    <div class="col-span-5 sm:col-span-2 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Stock</div>
+                </div>
+                <div class="space-y-0.5">
+                    <?php foreach(array_slice($dashBooks,0,9) as $book): $g=$book['genre']??'';$sc=$gc[strtolower($g)]??'#2563eb';$av=(int)($book['available_copies']??0);$tc=(int)($book['total_copies']??1);$ac=$av===0?'avail-off':($av<=1?'avail-low':'avail-on');$at=$av===0?'Out':($av<=1?'1 left':$av.' left'); ?>
+                        <a href="/admin/books" class="book-row grid grid-cols-12 gap-2 items-center">
+                            <div class="col-span-7 sm:col-span-5 flex items-center gap-2 min-w-0"><div class="book-spine" style="background:<?= $sc ?>"></div><div class="min-w-0"><p class="font-bold text-xs text-slate-800 truncate leading-tight"><?= htmlspecialchars($book['title']) ?></p><p class="text-[10px] text-slate-400 truncate sm:hidden"><?= htmlspecialchars($book['author']??'—') ?></p></div></div>
+                            <div class="col-span-3 hidden sm:block"><p class="text-xs text-slate-500 truncate"><?= htmlspecialchars($book['author']??'—') ?></p></div>
+                            <div class="col-span-2 hidden sm:block"><?php if(!empty($book['genre'])): ?><span class="text-[10px] font-bold text-slate-500 truncate block"><?= htmlspecialchars($book['genre']) ?></span><?php else: ?><span class="text-[10px] text-slate-300">—</span><?php endif; ?></div>
+                            <div class="col-span-5 sm:col-span-2 flex items-center justify-end gap-1.5"><span class="text-[10px] text-slate-400 font-medium hidden sm:inline"><?= $av ?>/<?= $tc ?></span><span class="avail-pill <?= $ac ?>"><?= $at ?></span></div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
                 <?php if(count($dashBooks)>9): ?><div class="mt-3 pt-3 border-t border-slate-100 text-center"><a href="/admin/books" class="text-xs font-bold text-blue-600 hover:text-blue-700">+<?= count($dashBooks)-9 ?> more books →</a></div><?php endif; ?>
-            <?php else: ?><div class="text-center py-12"><i class="fa-solid fa-book-open text-4xl text-slate-200 mb-3 block"></i><p class="text-sm text-slate-400 font-medium">No books yet</p><a href="/admin/books" class="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition"><i class="fa-solid fa-plus text-[10px]"></i> Add the first book</a></div><?php endif; ?>
+            <?php else: ?>
+                <div class="text-center py-10"><i class="fa-solid fa-book-open text-4xl text-slate-200 mb-3 block"></i><p class="text-sm text-slate-400 font-medium">No books yet</p><a href="/admin/books" class="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition"><i class="fa-solid fa-plus text-[10px]"></i> Add the first book</a></div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -475,25 +639,66 @@ $insDR  = ($total??0)>0    ? round((($declined??0)/$total)*100)               : 
         <div class="w-8 h-8 bg-violet-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-chart-mixed text-violet-600 text-sm"></i></div>
         <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Insights &amp; Forecasting</span>
         <div class="section-divider-line"></div>
-        <span class="text-xs font-black text-violet-600 bg-violet-50 border border-violet-200 px-3 py-1.5 rounded-xl whitespace-nowrap flex-shrink-0"><i class="fa-solid fa-sparkles text-[10px] mr-1"></i>Auto-generated</span>
+        <span class="text-xs font-black text-violet-600 bg-violet-50 border border-violet-200 px-2.5 sm:px-3 py-1.5 rounded-xl whitespace-nowrap flex-shrink-0"><i class="fa-solid fa-sparkles text-[10px] mr-1"></i><span class="hidden sm:inline">Auto-generated</span><span class="sm:hidden">Auto</span></span>
     </div>
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-        <div class="dash-card p-4 relative overflow-hidden"><div class="absolute -right-3 -top-3 text-7xl opacity-[0.04] pointer-events-none select-none">⏰</div><div class="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-sun text-amber-500 text-sm"></i></div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Peak Hour</p><p class="text-base font-black text-slate-800 leading-tight"><?= htmlspecialchars($insPHL) ?></p><p class="text-[10px] text-slate-400 font-medium mt-1">Busiest window</p><div class="mt-3 h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:<?= max(array_values($insHourArr))>0?min(100,round($insHourArr[$insPH]/max(array_values($insHourArr))*100)):0 ?>%"></div></div></div>
-        <div class="dash-card p-4 relative overflow-hidden"><div class="absolute -right-3 -top-3 text-7xl opacity-[0.04] pointer-events-none select-none">📅</div><div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-calendar-week text-blue-500 text-sm"></i></div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Busiest Day</p><p class="text-base font-black text-slate-800 leading-tight"><?= htmlspecialchars($insPDL) ?></p><p class="text-[10px] text-slate-400 font-medium mt-1">Highest reservation day</p><div id="ins-dow-mini" class="flex gap-0.5 mt-3 items-end h-6"></div></div>
-        <div class="dash-card p-4 relative overflow-hidden"><div class="absolute -right-3 -top-3 text-7xl opacity-[0.04] pointer-events-none select-none">🖥️</div><div class="w-8 h-8 bg-emerald-50 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-fire text-emerald-500 text-sm"></i></div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Most Wanted</p><p class="text-base font-black text-slate-800 leading-tight truncate"><?= htmlspecialchars($insTopRes) ?></p><p class="text-[10px] text-slate-400 font-medium mt-1"><?= $insTopResCnt ?> reservations</p><div class="mt-3"><span class="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><i class="fa-solid fa-arrow-trend-up text-[8px]"></i> High demand</span></div></div>
-        <div class="dash-card p-4 relative overflow-hidden"><div class="absolute -right-3 -top-3 text-7xl opacity-[0.04] pointer-events-none select-none">📈</div><div class="w-8 h-8 bg-violet-50 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-chart-line text-violet-500 text-sm"></i></div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">WoW Trend</p><p class="text-base font-black leading-tight" style="color:<?= $insTrC ?>"><?= ($insTrD==='up'?'+':'').$insTrP ?>%</p><p class="text-[10px] text-slate-400 font-medium mt-1">vs previous 7 days</p><div class="mt-3 h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:<?= min(abs($insTrP),100) ?>%;background:<?= $insTrC ?>"></div></div></div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-4 sm:mb-5">
+        <div class="dash-card p-3 sm:p-4 relative overflow-hidden"><div class="absolute -right-3 -top-3 text-6xl opacity-[0.04] pointer-events-none select-none">⏰</div><div class="w-7 h-7 sm:w-8 sm:h-8 bg-amber-50 rounded-xl flex items-center justify-center mb-2 sm:mb-3"><i class="fa-solid fa-sun text-amber-500 text-sm"></i></div><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Peak Hour</p><p class="text-sm font-black text-slate-800 leading-tight"><?= htmlspecialchars($insPHL) ?></p><p class="text-[10px] text-slate-400 font-medium mt-1">Busiest window</p><div class="mt-2 h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:<?= max(array_values($insHourArr))>0?min(100,round($insHourArr[$insPH]/max(array_values($insHourArr))*100)):0 ?>%"></div></div></div>
+        <div class="dash-card p-3 sm:p-4 relative overflow-hidden"><div class="absolute -right-3 -top-3 text-6xl opacity-[0.04] pointer-events-none select-none">📅</div><div class="w-7 h-7 sm:w-8 sm:h-8 bg-blue-50 rounded-xl flex items-center justify-center mb-2 sm:mb-3"><i class="fa-solid fa-calendar-week text-blue-500 text-sm"></i></div><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Busiest Day</p><p class="text-sm font-black text-slate-800 leading-tight"><?= htmlspecialchars($insPDL) ?></p><p class="text-[10px] text-slate-400 font-medium mt-1">Highest day</p><div id="ins-dow-mini" class="flex gap-0.5 mt-2 items-end h-5"></div></div>
+        <div class="dash-card p-3 sm:p-4 relative overflow-hidden"><div class="absolute -right-3 -top-3 text-6xl opacity-[0.04] pointer-events-none select-none">🖥️</div><div class="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-50 rounded-xl flex items-center justify-center mb-2 sm:mb-3"><i class="fa-solid fa-fire text-emerald-500 text-sm"></i></div><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Most Wanted</p><p class="text-sm font-black text-slate-800 leading-tight truncate"><?= htmlspecialchars($insTopRes) ?></p><p class="text-[10px] text-slate-400 font-medium mt-1"><?= $insTopResCnt ?> reservations</p><div class="mt-2"><span class="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><i class="fa-solid fa-arrow-trend-up text-[8px]"></i> High demand</span></div></div>
+        <div class="dash-card p-3 sm:p-4 relative overflow-hidden"><div class="absolute -right-3 -top-3 text-6xl opacity-[0.04] pointer-events-none select-none">📈</div><div class="w-7 h-7 sm:w-8 sm:h-8 bg-violet-50 rounded-xl flex items-center justify-center mb-2 sm:mb-3"><i class="fa-solid fa-chart-line text-violet-500 text-sm"></i></div><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">WoW Trend</p><p class="text-sm font-black leading-tight" style="color:<?= $insTrC ?>"><?= ($insTrD==='up'?'+':'').$insTrP ?>%</p><p class="text-[10px] text-slate-400 font-medium mt-1">vs prev 7 days</p><div class="mt-2 h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:<?= min(abs($insTrP),100) ?>%;background:<?= $insTrC ?>"></div></div></div>
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-        <div class="lg:col-span-2 dash-card p-5"><div class="flex items-center justify-between mb-4"><div><h3 class="font-extrabold text-slate-800 text-sm">Hourly Activity Heatmap</h3><p class="text-[11px] text-slate-400 font-medium">Density by hour · all time</p></div><span class="text-[10px] font-black bg-amber-50 text-amber-600 px-2.5 py-1 rounded-full border border-amber-200">Demand Map</span></div><div id="ins-heatmap" class="grid gap-1.5" style="grid-template-columns:repeat(12,1fr)"></div><div class="flex justify-between mt-1.5 px-0.5"><span class="text-[9px] text-slate-400 font-bold">12 AM</span><span class="text-[9px] text-slate-400 font-bold">12 PM</span><span class="text-[9px] text-slate-400 font-bold">11 PM</span></div><div class="mt-5 pt-4 border-t border-slate-100"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Day-of-Week Volume</p><div id="ins-dow-bars" class="flex gap-2 items-end h-16"></div><div id="ins-dow-labels" class="flex gap-2 mt-1.5"></div></div></div>
-        <div class="flex flex-col gap-3">
-            <div class="dash-card p-4"><h3 class="font-extrabold text-slate-800 text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-rose-400 text-xs"></i> Health Indicators</h3><div class="space-y-3"><div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">No-show rate</span><span class="font-black text-rose-600"><?= $insNS ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-rose-400" style="width:<?= $insNS ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Approved but never claimed</p></div><div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">Decline rate</span><span class="font-black text-amber-600"><?= $insDR ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-amber-400" style="width:<?= $insDR ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Of all reservations rejected</p></div><div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">Claim rate</span><span class="font-black text-emerald-600"><?= $utilizationRate ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-emerald-500" style="width:<?= $utilizationRate ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Approved slots used</p></div></div></div>
-            <div class="dash-card p-4"><h3 class="font-extrabold text-slate-800 text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-crown text-amber-400 text-xs"></i> Record Day</h3><p class="text-2xl font-black text-slate-800"><?= $insBDC ?></p><p class="text-xs text-slate-500 font-semibold"><?= htmlspecialchars($insBDL) ?></p><p class="text-[10px] text-slate-400 font-medium mt-1">Most reservations in a single day</p></div>
-            <div class="rounded-2xl p-4 border border-violet-200 bg-violet-50"><div class="flex items-start gap-2.5"><div class="w-8 h-8 bg-violet-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fa-solid fa-lightbulb text-violet-600 text-xs"></i></div><div><p class="text-xs font-black text-violet-800 mb-1">Smart Suggestion</p><p class="text-[11px] text-violet-700 font-medium leading-relaxed" id="ins-suggestion">Analyzing patterns…</p></div></div></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-5 mb-4 sm:mb-5">
+        <div class="lg:col-span-2 dash-card p-4 sm:p-5">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Hourly Activity Heatmap</h3><p class="text-[11px] text-slate-400 font-medium">Density by hour · all time</p></div>
+                <span class="text-[10px] font-black bg-amber-50 text-amber-600 px-2.5 py-1 rounded-full border border-amber-200 whitespace-nowrap flex-shrink-0">Demand Map</span>
+            </div>
+            <div id="ins-heatmap" class="grid gap-1 sm:gap-1.5" style="grid-template-columns:repeat(12,1fr)"></div>
+            <div class="flex justify-between mt-1.5 px-0.5"><span class="text-[9px] text-slate-400 font-bold">12 AM</span><span class="text-[9px] text-slate-400 font-bold">12 PM</span><span class="text-[9px] text-slate-400 font-bold">11 PM</span></div>
+            <div class="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-100">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 sm:mb-3">Day-of-Week Volume</p>
+                <div id="ins-dow-bars" class="flex gap-1 sm:gap-2 items-end h-12 sm:h-16"></div>
+                <div id="ins-dow-labels" class="flex gap-1 sm:gap-2 mt-1.5"></div>
+            </div>
+        </div>
+        <div class="flex flex-col gap-2.5 sm:gap-3">
+            <div class="dash-card p-3.5 sm:p-4">
+                <h3 class="font-extrabold text-slate-800 text-sm mb-2.5 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-rose-400 text-xs"></i> Health Indicators</h3>
+                <div class="space-y-2.5">
+                    <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">No-show rate</span><span class="font-black text-rose-600"><?= $insNS ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-rose-400" style="width:<?= $insNS ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Approved but never claimed</p></div>
+                    <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">Decline rate</span><span class="font-black text-amber-600"><?= $insDR ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-amber-400" style="width:<?= $insDR ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Of all reservations rejected</p></div>
+                    <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">Claim rate</span><span class="font-black text-emerald-600"><?= $utilizationRate ?>%</span></div><div class="prog-bar"><div class="prog-fill bg-emerald-500" style="width:<?= $utilizationRate ?>%"></div></div><p class="text-[9px] text-slate-400 mt-0.5 font-medium">Approved slots used</p></div>
+                </div>
+            </div>
+            <div class="dash-card p-3.5 sm:p-4">
+                <h3 class="font-extrabold text-slate-800 text-sm mb-2.5 flex items-center gap-2"><i class="fa-solid fa-crown text-amber-400 text-xs"></i> Record Day</h3>
+                <p class="text-2xl font-black text-slate-800"><?= $insBDC ?></p>
+                <p class="text-xs text-slate-500 font-semibold"><?= htmlspecialchars($insBDL) ?></p>
+                <p class="text-[10px] text-slate-400 font-medium mt-1">Most reservations in a single day</p>
+            </div>
+            <div class="rounded-2xl p-3.5 sm:p-4 border border-violet-200 bg-violet-50">
+                <div class="flex items-start gap-2.5">
+                    <div class="w-8 h-8 bg-violet-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fa-solid fa-lightbulb text-violet-600 text-xs"></i></div>
+                    <div><p class="text-xs font-black text-violet-800 mb-1">Smart Suggestion</p><p class="text-[11px] text-violet-700 font-medium leading-relaxed" id="ins-suggestion">Analyzing patterns…</p></div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
-        <div class="dash-card p-5"><div class="flex items-center justify-between mb-4"><div><h3 class="font-extrabold text-slate-800 text-sm">Monthly Seasonality</h3><p class="text-[11px] text-slate-400 font-medium">Volume by calendar month</p></div><span class="text-[10px] font-black bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full border border-blue-200">Peak: <?= htmlspecialchars($insPML) ?></span></div><div class="chart-wrap" style="height:180px;"><canvas id="ins-month-chart"></canvas></div></div>
-        <div class="dash-card p-5"><div class="flex items-center justify-between mb-4"><div><h3 class="font-extrabold text-slate-800 text-sm">Resource Demand Ranking</h3><p class="text-[11px] text-slate-400 font-medium">All-time count per resource</p></div><span class="text-[10px] font-black bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-200">All Time</span></div><div id="ins-resource-ranking" class="space-y-2.5"></div></div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5 mb-6 sm:mb-8">
+        <div class="dash-card p-4 sm:p-5">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Monthly Seasonality</h3><p class="text-[11px] text-slate-400 font-medium">Volume by calendar month</p></div>
+                <span class="text-[10px] font-black bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full border border-blue-200 whitespace-nowrap flex-shrink-0">Peak: <?= htmlspecialchars($insPML) ?></span>
+            </div>
+            <div class="chart-wrap" style="height:150px;"><canvas id="ins-month-chart"></canvas></div>
+        </div>
+        <div class="dash-card p-4 sm:p-5">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <div><h3 class="font-extrabold text-slate-800 text-sm">Resource Demand Ranking</h3><p class="text-[11px] text-slate-400 font-medium">All-time count per resource</p></div>
+                <span class="text-[10px] font-black bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-200 whitespace-nowrap flex-shrink-0">All Time</span>
+            </div>
+            <div id="ins-resource-ranking" class="space-y-2 sm:space-y-2.5"></div>
+        </div>
     </div>
 
 </main>
@@ -523,13 +728,8 @@ const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
 const pct   = (v,max)   => max>0 ? clamp(Math.round(v/max*100),0,100) : 0;
 const timeAgo = t => { const s=Math.floor((Date.now()-new Date(t))/1000); if(s<60)return 'Just now'; if(s<3600)return `${Math.floor(s/60)}m ago`; if(s<86400)return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago`; };
 
-// ══════════════════════════════════════════════════════════════
-// BUG FIX: isClaimed() — robust PostgreSQL boolean check
-// parseInt(true)=NaN, parseInt('t')=NaN — never use ===1
-// ══════════════════════════════════════════════════════════════
 function isClaimed(r){ return [true,1,'t','true','1'].includes(r.claimed); }
 
-/* ── Date Modal ── */
 function openDateModal(dateStr,list){
     const fmt=new Date(dateStr+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
     document.getElementById('modalDateTitle').textContent=fmt;
@@ -539,14 +739,13 @@ function openDateModal(dateStr,list){
         const st=isClaimed(r)?'claimed':(r.status||'pending');
         const clr={approved:'bg-emerald-100 text-emerald-700',pending:'bg-amber-100 text-amber-700',declined:'bg-rose-100 text-rose-700',claimed:'bg-purple-100 text-purple-700'};
         const t=r.start_time?r.start_time.slice(0,5):'—',et=r.end_time?r.end_time.slice(0,5):'';
-        return `<div class="date-row" onclick="location='/admin/manage-reservations?id=${r.id}'"><div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-desktop text-blue-600 text-xs"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800 leading-tight truncate">${r.resource_name||'Resource'}</p><p class="text-xs text-slate-400 mt-0.5">${r.visitor_name||r.full_name||'Guest'}</p></div><div class="text-right flex-shrink-0"><p class="text-xs font-black text-blue-600">${t}${et?'–'+et:''}</p><span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${clr[st]||'bg-slate-100 text-slate-600'}">${st}</span></div></div>`;
+        return `<div class="date-row" onclick="location='/admin/manage-reservations?id=${r.id}'"><div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-desktop text-blue-600 text-xs"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800 leading-tight truncate">${r.resource_name||'Resource'}</p><p class="text-xs text-slate-400 mt-0.5 truncate">${r.visitor_name||r.full_name||'Guest'}</p></div><div class="text-right flex-shrink-0"><p class="text-xs font-black text-blue-600">${t}${et?'–'+et:''}</p><span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${clr[st]||'bg-slate-100 text-slate-600'}">${st}</span></div></div>`;
     }).join('');}
     document.getElementById('dateModal').classList.add('open');document.body.style.overflow='hidden';
 }
 function closeDateModal(){document.getElementById('dateModal').classList.remove('open');document.body.style.overflow='';}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDateModal();});
 
-/* ── Notifications ── */
 let readIds=JSON.parse(localStorage.getItem('admin_read_notifs')||'[]'),notifs=[];
 function initNotifs(){
     allRes.filter(r=>r.status==='pending'&&!readIds.includes(String(r.id))).slice(0,10).forEach(r=>notifs.push({id:r.id,msg:`${r.visitor_name||'User'} requested ${r.resource_name||'a resource'}`,time:r.created_at||new Date().toISOString()}));
@@ -563,7 +762,6 @@ function markAllRead(){notifs.forEach(n=>{if(!readIds.includes(String(n.id)))rea
 function toggleNotif(){document.getElementById('notifDropdown').classList.toggle('open');}
 document.addEventListener('click',e=>{const d=document.getElementById('notifDropdown'),b=document.getElementById('bellBtn');if(!b.contains(e.target)&&!d.contains(e.target))d.classList.remove('open');});
 
-/* ── Print Modal ── */
 const TL_LOGGED_KEY='tl_admin_print_logged',CSRF_TOKEN=document.querySelector('meta[name="csrf-token"]')?.content||'',PRINT_EP='/admin/log-print';
 let tlSessions={},tlPrintQueue=[],tlCurrentPrint=null,tlPageCount=1,tlPrinted=true;
 function tlGetLogged(){try{return JSON.parse(localStorage.getItem(TL_LOGGED_KEY)||'[]');}catch(e){return[];}}
@@ -577,29 +775,22 @@ function tlSkipPrint(){if(tlCurrentPrint)tlMarkLogged(tlCurrentPrint.id);tlClose
 function tlClosePrintModal(){document.getElementById('tl-print-modal').classList.remove('show');document.body.style.overflow='';tlCurrentPrint=null;}
 function tlNextPrintModal(){if(tlPrintQueue.length>0)setTimeout(()=>tlOpenPrintModal(tlPrintQueue.shift()),400);}
 
-/* ── Active Sessions ── */
 const TL_WARN=5*60,TL_CRIT=2*60;
 
-// ══════════════════════════════════════════════════════════════════
-// BUG FIX: Sessions now only appear AFTER the user has claimed
-// (scanned their QR code). Previously the filter excluded claimed
-// reservations — showing sessions before anyone physically arrived.
-// Fix: REQUIRE isClaimed(r)===true to show in live monitor.
-// ══════════════════════════════════════════════════════════════════
 function tlGetActiveSessions(){
     const today=new Date().toISOString().split('T')[0],nowMs=Date.now();
     return allRes.filter(r=>{
         if(!r.start_time||!r.end_time||!r.reservation_date||r.reservation_date!==today)return false;
         if((r.status||'').toLowerCase()!=='approved')return false;
-        if(!isClaimed(r))return false; // must be claimed to appear as active
+        if(!isClaimed(r))return false;
         const s=new Date(r.reservation_date+'T'+r.start_time).getTime(),e=new Date(r.reservation_date+'T'+r.end_time).getTime();
-        return s<=nowMs&&e>=nowMs; // within actual session window
+        return s<=nowMs&&e>=nowMs;
     });
 }
 
 const tlFmt=ms=>{if(ms<=0)return 'Ended';const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);if(h>0)return `${h}h ${m%60}m`;if(m>0)return `${m}m ${s%60}s`;return `${s}s`;};
 const tlState=ms=>ms<=0?'tl-ended':ms<=TL_CRIT*1000?'tl-critical':ms<=TL_WARN*1000?'tl-warning':'tl-ok';
-function tlToast(type,title,sub){const c=document.getElementById('tl-toast-container'),t=document.createElement('div');t.className=`tl-toast tl-toast-${type}`;const ic=type==='warning'?'fa-triangle-exclamation':'fa-clock-rotate-left';t.innerHTML=`<div class="tl-toast-icon"><i class="fa-solid ${ic}"></i></div><div class="flex-1 min-w-0"><p class="tl-toast-title">${title}</p><p class="tl-toast-sub">${sub}</p></div><button onclick="this.closest('.tl-toast').remove()" style="background:none;border:none;color:#64748b;cursor:pointer;padding:0;font-size:.8rem;"><i class="fa-solid fa-xmark"></i></button>`;c.appendChild(t);setTimeout(()=>{t.classList.add('dismissing');setTimeout(()=>t.remove(),220);},7000);}
+function tlToast(type,title,sub){const c=document.getElementById('tl-toast-container'),t=document.createElement('div');t.className=`tl-toast tl-toast-${type}`;const ic=type==='warning'?'fa-triangle-exclamation':'fa-clock-rotate-left';t.innerHTML=`<div class="tl-toast-icon"><i class="fa-solid ${ic}"></i></div><div class="flex-1 min-w-0"><p class="tl-toast-title">${title}</p><p class="tl-toast-sub">${sub}</p></div><button onclick="this.closest('.tl-toast').remove()" style="background:none;border:none;color:#64748b;cursor:pointer;padding:0;font-size:.8rem;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>`;c.appendChild(t);setTimeout(()=>{t.classList.add('dismissing');setTimeout(()=>t.remove(),220);},7000);}
 
 function tlRender(){
     const sessions=tlGetActiveSessions(),grid=document.getElementById('tl-sessions-grid'),noS=document.getElementById('tl-no-sessions'),nowMs=Date.now();
@@ -615,22 +806,23 @@ function tlRender(){
         if(!card){card=document.createElement('div');card.id=`tl-card-${r.id}`;grid.appendChild(card);}
         const sf=r.start_time?r.start_time.substring(0,5):'–',ef=r.end_time?r.end_time.substring(0,5):'–',usedMin=Math.max(0,Math.floor(elMs/60000)),logged=tlIsLogged(r.id);
         card.className=`tl-session-card ${state}`;
-        card.innerHTML=`<div class="flex items-start justify-between gap-2 mb-2"><div class="min-w-0 flex-1"><p class="font-extrabold text-slate-800 text-xs truncate">${name}</p><p class="text-[10px] text-slate-400 truncate mt-0.5">${res}</p></div><span class="tl-countdown flex-shrink-0"><i class="fa-regular fa-clock" style="font-size:.6rem"></i>${tlFmt(remMs)}</span></div><div class="tl-prog-track"><div class="tl-prog-fill" style="width:${prog}%"></div></div><div class="flex items-center justify-between mt-2"><span class="text-[10px] text-slate-400 font-medium">${sf} – ${ef}</span><span class="text-[10px] font-bold text-slate-500">${usedMin} min used</span></div>${logged&&remMs<=0?'<div class="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-emerald-600"><i class="fa-solid fa-check text-[9px]"></i> Print logged</div>':''}`;
+        card.innerHTML=`<div class="flex items-start justify-between gap-2 mb-2"><div class="min-w-0 flex-1"><p class="font-extrabold text-slate-800 text-xs truncate">${name}</p><p class="text-[10px] text-slate-400 truncate mt-0.5">${res}</p></div><span class="tl-countdown"><i class="fa-regular fa-clock" style="font-size:.6rem"></i>${tlFmt(remMs)}</span></div><div class="tl-prog-track"><div class="tl-prog-fill" style="width:${prog}%"></div></div><div class="flex items-center justify-between mt-2"><span class="text-[10px] text-slate-400 font-medium">${sf} – ${ef}</span><span class="text-[10px] font-bold text-slate-500">${usedMin}m</span></div>${logged&&remMs<=0?'<div class="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-emerald-600"><i class="fa-solid fa-check text-[9px]"></i> Logged</div>':''}`;
     });
     const ids=sessions.map(r=>`tl-card-${r.id}`);Array.from(grid.children).forEach(c=>{if(!ids.includes(c.id))c.remove();});
 }
 
-/* ── DOMContentLoaded ── */
 document.addEventListener('DOMContentLoaded',()=>{
     tlRender();setInterval(tlRender,1000);
     initNotifs();
 
+    const isMobile = window.innerWidth < 640;
+
     const tCtx=document.getElementById('trendChart')?.getContext('2d');
-    if(tCtx)new Chart(tCtx,{type:'line',data:{labels:<?= json_encode($chartLabels??['Mon','Tue','Wed','Thu','Fri','Sat','Sun']) ?>,datasets:[{data:<?= json_encode($chartData??[0,0,0,0,0,0,0]) ?>,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.08)',borderWidth:2.5,tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}},scales:{x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Plus Jakarta Sans',size:11},color:'#94a3b8',stepSize:1},beginAtZero:true}}}});
+    if(tCtx)new Chart(tCtx,{type:'line',data:{labels:<?= json_encode($chartLabels??['Mon','Tue','Wed','Thu','Fri','Sat','Sun']) ?>,datasets:[{data:<?= json_encode($chartData??[0,0,0,0,0,0,0]) ?>,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.08)',borderWidth:2.5,tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointRadius:isMobile?2:4,pointHoverRadius:isMobile?4:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}},scales:{x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:isMobile?9:11},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Plus Jakarta Sans',size:isMobile?9:11},color:'#94a3b8',stepSize:1},beginAtZero:true}}}});
 
     const rCtx=document.getElementById('resourceChart')?.getContext('2d');
     const rL=<?= json_encode($resourceLabels??['No Data']) ?>,rD=<?= json_encode($resourceData??[1]) ?>,pal=['#2563eb','#f59e0b','#8b5cf6','#10b981','#ec4899'];
-    if(rCtx){new Chart(rCtx,{type:'doughnut',data:{labels:rL,datasets:[{data:rD,backgroundColor:pal,borderWidth:0,hoverOffset:4}]},options:{responsive:false,animation:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}}}});const leg=document.getElementById('resourceLegend');if(leg)leg.innerHTML=rL.map((l,i)=>`<div class="flex items-center gap-2.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${pal[i]||'#94a3b8'}"></span><span class="text-sm text-slate-600 truncate flex-1 min-w-0 font-medium">${l}</span><span class="text-sm font-black text-slate-800 flex-shrink-0">${rD[i]}</span></div>`).join('');}
+    if(rCtx){new Chart(rCtx,{type:'doughnut',data:{labels:rL,datasets:[{data:rD,backgroundColor:pal,borderWidth:0,hoverOffset:4}]},options:{responsive:false,animation:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}}}});const leg=document.getElementById('resourceLegend');if(leg)leg.innerHTML=rL.map((l,i)=>`<div class="flex items-center gap-2 min-w-0"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${pal[i]||'#94a3b8'}"></span><span class="text-xs text-slate-600 truncate flex-1 min-w-0 font-medium">${l}</span><span class="text-xs font-black text-slate-800 flex-shrink-0">${rD[i]}</span></div>`).join('');}
 
     const byDate={};
     allRes.forEach(r=>{if(!r.reservation_date)return;(byDate[r.reservation_date]=byDate[r.reservation_date]||[]).push(r);});
@@ -639,7 +831,17 @@ document.addEventListener('DOMContentLoaded',()=>{
         const clr={approved:'#10b981',pending:'#fbbf24',declined:'#f87171',claimed:'#a855f7'};
         return{title:r.resource_name||'Reservation',start:r.reservation_date+(r.start_time?'T'+r.start_time:''),end:r.reservation_date+(r.end_time?'T'+r.end_time:''),backgroundColor:clr[st]||'#94a3b8',borderColor:'transparent',textColor:'#fff'};
     });
-    new FullCalendar.Calendar(document.getElementById('calendar'),{initialView:'dayGridMonth',headerToolbar:{left:'prev,next',center:'title',right:'today'},events,height:370,eventDisplay:'block',eventMaxStack:2,dateClick:info=>openDateModal(info.dateStr,byDate[info.dateStr]||[]),eventClick:info=>openDateModal(info.event.startStr.split('T')[0],byDate[info.event.startStr.split('T')[0]]||[]),dayCellDidMount:info=>{const d=info.date.toISOString().split('T')[0];const cnt=(byDate[d]||[]).length;if(cnt){const b=document.createElement('div');b.style.cssText='font-size:8px;font-weight:800;color:white;background:#2563eb;border-radius:999px;width:15px;height:15px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:4px;margin-bottom:2px;';b.textContent=cnt;info.el.querySelector('.fc-daygrid-day-top')?.appendChild(b);}}}).render();
+    new FullCalendar.Calendar(document.getElementById('calendar'),{
+        initialView:'dayGridMonth',
+        headerToolbar:{left:'prev,next',center:'title',right:'today'},
+        events,
+        height:isMobile?250:370,
+        eventDisplay:'block',
+        eventMaxStack:isMobile?1:2,
+        dateClick:info=>openDateModal(info.dateStr,byDate[info.dateStr]||[]),
+        eventClick:info=>openDateModal(info.event.startStr.split('T')[0],byDate[info.event.startStr.split('T')[0]]||[]),
+        dayCellDidMount:info=>{const d=info.date.toISOString().split('T')[0];const cnt=(byDate[d]||[]).length;if(cnt){const b=document.createElement('div');b.style.cssText='font-size:7px;font-weight:800;color:white;background:#2563eb;border-radius:999px;width:13px;height:13px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:2px;';b.textContent=cnt;info.el.querySelector('.fc-daygrid-day-top')?.appendChild(b);}}
+    }).render();
 
     (function(){
         const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MONTH=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -650,16 +852,16 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(sg){let t='';if(noShowRate>30)t=`High no-show rate (${noShowRate}%). Consider sending session reminders.`;else if(declineRate>25)t=`Decline rate elevated (${declineRate}%). Review approval rules or add resources.`;else if(trendDir==='up'&&trendPct>20)t=`Reservations up ${trendPct}% this week — keep "${topResource}" available.`;else if(trendDir==='down'&&Math.abs(trendPct)>20)t=`Bookings dropped ${Math.abs(trendPct)}% vs last week. Consider outreach.`;else t=`${peakDayLabel}s are your busiest day — staff up and keep "${topResource}" free.`;sg.textContent=t;}
 
         const hm=document.getElementById('ins-heatmap');
-        if(hm){hm.innerHTML='';const f12=h=>{const ap=h<12?'AM':'PM';const h12=h%12||12;return `${h12}${ap}`;};for(let h=0;h<24;h++){const cell=document.createElement('div');const alpha=0.07+(pct(hourArr[h],maxH)/100)*0.88;const isPk=h===peakHourIdx;cell.className='ins-heatmap-cell';cell.style.cssText=`background:rgba(37,99,235,${alpha.toFixed(2)});${isPk?'box-shadow:0 0 0 2px #2563eb;':''}`;cell.title=`${f12(h)}: ${hourArr[h]} reservations`;if(isPk){const p=document.createElement('div');p.style.cssText='position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#fbbf24;';cell.appendChild(p);}hm.appendChild(cell);}}
+        if(hm){hm.innerHTML='';const f12=h=>{const ap=h<12?'AM':'PM';const h12=h%12||12;return `${h12}${ap}`;};for(let h=0;h<24;h++){const cell=document.createElement('div');const alpha=0.07+(pct(hourArr[h],maxH)/100)*0.88;const isPk=h===peakHourIdx;cell.className='ins-heatmap-cell';cell.style.cssText=`background:rgba(37,99,235,${alpha.toFixed(2)});${isPk?'box-shadow:0 0 0 2px #2563eb;':''}`;cell.title=`${f12(h)}: ${hourArr[h]} reservations`;if(isPk){const p=document.createElement('div');p.style.cssText='position:absolute;top:2px;right:2px;width:4px;height:4px;border-radius:50%;background:#fbbf24;';cell.appendChild(p);}hm.appendChild(cell);}}
 
         const be=document.getElementById('ins-dow-bars'),le=document.getElementById('ins-dow-labels');
-        if(be&&le){be.innerHTML='';le.innerHTML='';dowArr.forEach((cnt,i)=>{const bar=document.createElement('div');bar.style.cssText=`flex:1;border-radius:6px 6px 0 0;background:${i===peakDowIdx?'#2563eb':'#bfdbfe'};height:${Math.max(pct(cnt,maxD),4)}%;min-height:4px;`;bar.title=`${DOW[i]}: ${cnt}`;be.appendChild(bar);const lbl=document.createElement('div');lbl.style.cssText=`flex:1;text-align:center;font-size:9px;font-weight:${i===peakDowIdx?'800':'600'};color:${i===peakDowIdx?'#2563eb':'#94a3b8'};`;lbl.textContent=DOW[i];le.appendChild(lbl);});}
+        if(be&&le){be.innerHTML='';le.innerHTML='';dowArr.forEach((cnt,i)=>{const bar=document.createElement('div');bar.style.cssText=`flex:1;border-radius:4px 4px 0 0;background:${i===peakDowIdx?'#2563eb':'#bfdbfe'};height:${Math.max(pct(cnt,maxD),4)}%;min-height:4px;`;bar.title=`${DOW[i]}: ${cnt}`;be.appendChild(bar);const lbl=document.createElement('div');lbl.style.cssText=`flex:1;text-align:center;font-size:8px;font-weight:${i===peakDowIdx?'800':'600'};color:${i===peakDowIdx?'#2563eb':'#94a3b8'};`;lbl.textContent=isMobile?DOW[i].slice(0,1):DOW[i].slice(0,3);le.appendChild(lbl);});}
 
         const mini=document.getElementById('ins-dow-mini');
         if(mini){mini.innerHTML='';dowArr.forEach((cnt,i)=>{const b=document.createElement('div');b.style.cssText=`flex:1;border-radius:3px;background:${i===peakDowIdx?'#2563eb':'#dbeafe'};height:${Math.max(pct(cnt,maxD),10)}%;min-height:3px;`;mini.appendChild(b);});}
 
         const mCtx=document.getElementById('ins-month-chart')?.getContext('2d');
-        if(mCtx)new Chart(mCtx,{type:'bar',data:{labels:MONTH,datasets:[{data:monthArr,backgroundColor:monthArr.map((_,i)=>i===peakMonthIdx?'#2563eb':'rgba(37,99,235,0.15)'),borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.raw} reservations`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:10},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},beginAtZero:true,ticks:{font:{family:'Plus Jakarta Sans',size:10},color:'#94a3b8',stepSize:1}}}}});
+        if(mCtx)new Chart(mCtx,{type:'bar',data:{labels:MONTH,datasets:[{data:monthArr,backgroundColor:monthArr.map((_,i)=>i===peakMonthIdx?'#2563eb':'rgba(37,99,235,0.15)'),borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.raw} reservations`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:isMobile?8:10},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},beginAtZero:true,ticks:{font:{family:'Plus Jakarta Sans',size:isMobile?8:10},color:'#94a3b8',stepSize:1}}}}});
 
         const rk=document.getElementById('ins-resource-ranking');
         if(rk){const entries=Object.entries(resourceMap).sort((a,b)=>b[1]-a[1]),topMax=entries[0]?.[1]||1,colors=['#2563eb','#f59e0b','#8b5cf6','#10b981','#ec4899','#06b6d4','#f87171'];rk.innerHTML=!entries.length?'<p class="text-xs text-slate-400 text-center py-6 font-medium">No data yet</p>':entries.slice(0,7).map(([name,cnt],i)=>{const w=pct(cnt,topMax),c=colors[i]||'#94a3b8',share=totalCount>0?Math.round(cnt/totalCount*100):0;return `<div><div class="flex items-center justify-between mb-1 gap-2"><div class="flex items-center gap-2 min-w-0"><span class="w-5 h-5 rounded-lg flex items-center justify-center text-[9px] font-black text-white flex-shrink-0" style="background:${c}">${i+1}</span><span class="text-xs font-semibold text-slate-700 truncate">${name}</span></div><div class="flex items-center gap-1.5 flex-shrink-0"><span class="text-[10px] text-slate-400 font-medium">${share}%</span><span class="text-xs font-black text-slate-800">${cnt}</span></div></div><div class="prog-bar"><div class="prog-fill" style="width:${w}%;background:${c}"></div></div></div>`;}).join('');}
