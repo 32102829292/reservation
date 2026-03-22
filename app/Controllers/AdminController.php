@@ -572,6 +572,8 @@ class AdminController extends Controller
         $userType    = $this->request->getPost('visitor_type');
         $eTicketCode = 'ADMIN' . strtoupper(uniqid());
 
+        // FIX: $data uses only columns that actually exist in the DB.
+        //      Added 'claimed' => false which is required by the DB boolean column.
         $data = [
             'resource_id'      => $this->request->getPost('resource_id'),
             'visitor_name'     => $this->request->getPost('visitor_name'),
@@ -582,6 +584,7 @@ class AdminController extends Controller
             'purpose'          => $this->request->getPost('purpose'),
             'pc_number'        => $this->request->getPost('pc_number') ?: null,
             'status'           => 'approved',
+            'claimed'          => false,    // FIX: required bool column
             'approved_by'      => session()->get('user_id'),
             'e_ticket_code'    => $eTicketCode,
             'created_at'       => date('Y-m-d H:i:s'),
@@ -589,7 +592,6 @@ class AdminController extends Controller
         ];
 
         if ($userType === 'User') {
-            // FIX: cast user_id to int and resolve email from DB — never store raw POST email as user_id
             $userId = (int) $this->request->getPost('user_id');
             if (!$userId) {
                 return redirect()->back()->with('error', 'Please select a registered user from the list.');

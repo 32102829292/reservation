@@ -4,14 +4,29 @@ use CodeIgniter\Model;
 
 class ReservationModel extends Model
 {
-    protected $table = 'reservations';
+    protected $table      = 'reservations';
     protected $primaryKey = 'id';
 
+    // Exactly matches the real DB columns
     protected $allowedFields = [
-        'user_id', 'resource_id', 'pc_number', 'pc_numbers', 'reservation_date',
-        'start_time', 'end_time', 'purpose', 'status', 'claimed', 'claimed_at', 'approved_by',
-        'e_ticket_code', 'created_at', 'updated_at', 'visitor_type',
-        'visitor_name', 'visitor_email', 'user_email', 'reservation_type',
+        'user_id',
+        'resource_id',
+        'reservation_date',
+        'start_time',
+        'end_time',
+        'purpose',
+        'pc_number',           // varchar, singular — matches DB
+        'visitor_type',
+        'visitor_name',
+        'user_email',
+        'status',
+        'claimed',
+        'claimed_at',
+        'approved_by',
+        'e_ticket_code',
+        'created_at',
+        'updated_at',
+        'warning_email_sent',
     ];
 
     protected $useTimestamps = false;
@@ -70,9 +85,6 @@ class ReservationModel extends Model
             ->getResultArray();
     }
 
-    /**
-     * Get all user reservation requests (for SK approval)
-     */
     public function getUserRequests()
     {
         return $this->db->table('reservations r')
@@ -96,34 +108,24 @@ class ReservationModel extends Model
 
     /**
      * Check fairness quota for a user.
-     *
-     * Accepts either an integer user ID or an email string.
-     * If an email is passed, it is resolved to an integer user_id first
-     * so that every downstream query uses WHERE user_id = <integer>,
-     * which prevents the PostgreSQL "invalid input syntax for type integer" error.
-     *
-     * @param  int|string $userIdOrEmail  Integer user_id OR email address string
-     * @return array  ['fair' => bool, 'remaining' => int, ...]
+     * Accepts either an integer user_id OR an email string.
+     * Email is resolved to an integer ID before any WHERE user_id query.
      */
     public function checkFairness($userIdOrEmail): array
     {
-        // ── Resolve to an integer user_id ─────────────────────────────────
+        // ── Resolve to integer user_id ────────────────────────────────────
         if (is_string($userIdOrEmail) && !is_numeric($userIdOrEmail)) {
-            // An email string was passed — look up the integer ID
             $userRow = $this->db->table('users')
                 ->select('id')
-                ->where('email', $userIdOrEmail)   // string = string: safe
+                ->where('email', $userIdOrEmail)
                 ->get()
                 ->getRowArray();
 
             if (!$userRow) {
-                // Unknown email — no history, allow the reservation
                 return ['fair' => true, 'remaining' => 3];
             }
-
             $userId = (int) $userRow['id'];
         } else {
-            // Already an integer (or a numeric string) — cast to int
             $userId = (int) $userIdOrEmail;
         }
 
@@ -134,7 +136,6 @@ class ReservationModel extends Model
 
         $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
 
-        // All queries below use the integer $userId — no type mismatch possible
         $block = $this->db->table('user_blocks')
             ->where('user_id', $userId)
             ->where('blocked_until >=', date('Y-m-d'))
@@ -180,7 +181,8 @@ class ReservationModel extends Model
 
     public function getRemainingReservations($userId)
     {
-        $userId = (int) $userId;
+        $userId      = (int) $userId;
+        $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
 
         $block = $this->db->table('user_blocks')
             ->where('user_id', $userId)
@@ -188,7 +190,6 @@ class ReservationModel extends Model
             ->get()
             ->getRowArray();
 
-        $twoWeeksAgo        = date('Y-m-d', strtotime('-2 weeks'));
         $recentReservations = $this->where('user_id', $userId)
             ->where('created_at >=', $twoWeeksAgo)
             ->countAllResults();
