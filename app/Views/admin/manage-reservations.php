@@ -12,6 +12,7 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
     <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <meta name="csrf-name"  content="<?= csrf_token() ?>">
     <style>

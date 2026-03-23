@@ -395,11 +395,14 @@ class AdminController extends Controller
                 log_message('error', 'logActivity failed in logPrint: ' . $e->getMessage());
             }
 
+            // ── FIX: return new CSRF values so JS refreshCsrf() can update
+            // the token after every save — prevents stale token 500 errors
+            // on desktop without requiring a page reload between saves.
             return $this->response->setJSON([
-    'ok'         => true,
-    'csrf_token' => csrf_token(),   // field name  — JS uses this as the form key
-    'csrf_hash'  => csrf_hash(),    // new value   — JS replaces the stale token with this
-]);
+                'ok'         => true,
+                'csrf_token' => csrf_token(),
+                'csrf_hash'  => csrf_hash(),
+            ]);
 
         } catch (\Exception $e) {
             log_message('error', 'logPrint failed: ' . $e->getMessage());
@@ -576,8 +579,6 @@ class AdminController extends Controller
         $userType    = $this->request->getPost('visitor_type');
         $eTicketCode = 'ADMIN' . strtoupper(uniqid());
 
-        // FIX: $data uses only columns that actually exist in the DB.
-        //      Added 'claimed' => false which is required by the DB boolean column.
         $data = [
             'resource_id'      => $this->request->getPost('resource_id'),
             'visitor_name'     => $this->request->getPost('visitor_name'),
@@ -588,7 +589,7 @@ class AdminController extends Controller
             'purpose'          => $this->request->getPost('purpose'),
             'pc_number'        => $this->request->getPost('pc_number') ?: null,
             'status'           => 'approved',
-            'claimed'          => false,    // FIX: required bool column
+            'claimed'          => false,
             'approved_by'      => session()->get('user_id'),
             'e_ticket_code'    => $eTicketCode,
             'created_at'       => date('Y-m-d H:i:s'),
@@ -602,7 +603,6 @@ class AdminController extends Controller
             }
             $data['user_id'] = $userId;
 
-            // Resolve email from DB for any downstream use
             $userRow = $this->db->table('users')
                 ->select('email')
                 ->where('id', $userId)
@@ -1099,17 +1099,6 @@ class AdminController extends Controller
             'page'      => 'setup',
             'userCount' => $this->db->table('users')->countAllResults(),
         ]);
-    }
-
-    public function debugUserIssue()
-    {
-        $allUsers    = $this->db->table('users')->select('id, name, email, role, status')->get()->getResultArray();
-        $validUserId = $this->getValidUserId();
-
-        echo "<h1>Database Users</h1><pre>" . print_r($allUsers, true) . "</pre>";
-        echo "<h1>getValidUserId() returns: " . ($validUserId ?? 'NULL') . "</h1>";
-        echo "<h1>Session Data</h1><pre>" . print_r($_SESSION, true) . "</pre>";
-        exit;
     }
 
     public function extractPdfWithAI()
