@@ -8,132 +8,143 @@
     <meta name="theme-color" content="#16a34a">
     <script src="https://cdn.tailwindcss.com"></script>
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <style>
-        :root { --green:#16a34a; --green-light:#f0fdf4; --green-dark:#14532d; --slate-bg:#f8fafc; }
-        * { box-sizing: border-box; }
-        html { height: 100%; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--slate-bg);
-            color: #1e293b;
-            margin: 0;
-            display: flex !important;
-            height: 100vh !important;
-            overflow: hidden !important;
+            background: #f8fafc; color: #1e293b;
+            display: flex; height: 100vh; overflow: hidden;
         }
 
-        /* ── Sidebar — identical to dashboard ── */
+        /* ── Sidebar — matches user-requests exactly ── */
         .sidebar-card {
             background: white; border-radius: 32px; border: 1px solid #e2e8f0;
             height: calc(100vh - 48px); position: sticky; top: 24px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; overflow: hidden; width: 100%;
+            display: flex; flex-direction: column; overflow: hidden;
         }
-        .sidebar-header { flex-shrink: 0; padding: 16px; border-bottom: 1px solid #e2e8f0; }
-        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px; }
+        .sidebar-header { flex-shrink: 0; padding: 20px 20px 16px; border-bottom: 1px solid #f1f5f9; }
+        .sidebar-nav    { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; }
         .sidebar-nav::-webkit-scrollbar { width: 4px; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
-        .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #e2e8f0; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+        .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #f1f5f9; }
+        .sidebar-item   { transition: all 0.18s; }
+        .sidebar-item.active {
+            background: #16a34a; color: white !important;
+            box-shadow: 0 8px 20px -4px rgba(22,163,74,0.35);
+        }
+        .sidebar-item:not(.active):hover { background: #f0fdf4; color: #16a34a; }
 
-        /* ── Mobile Nav — identical to dashboard ── */
+        /* ── Mobile Nav ── */
         .mobile-nav-pill {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 480px; background: rgba(20,83,45,0.97);
-            backdrop-filter: blur(16px); border-radius: 24px; padding: 6px;
-            z-index: 100; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+            width: 92%; max-width: 600px; background: rgba(20,83,45,0.98);
+            backdrop-filter: blur(12px); border-radius: 24px; padding: 6px;
+            z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
         }
         .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
-        /* ── Content card ── */
-        .dash-card {
-            background: white; border-radius: 28px; border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
-        }
+        /* ── Cards ── */
+        .dash-card { background: white; border-radius: 28px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
 
-        /* ── Desktop Table ── */
+        /* ── Stat cards ── */
+        .stat-card {
+            background: white; border-radius: 20px; padding: 1.1rem 1.25rem;
+            border: 1px solid #e2e8f0; border-left-width: 4px; transition: all 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); }
+
+        /* ── Quick tabs ── */
+        .qtab {
+            display: inline-flex; align-items: center; gap: 6px; padding: 0.45rem 1rem;
+            border-radius: 12px; font-size: 0.8rem; font-weight: 700; transition: all 0.18s;
+            cursor: pointer; border: 1px solid #e2e8f0; white-space: nowrap;
+            color: #64748b; background: white;
+        }
+        .qtab:hover  { border-color: #16a34a; color: #16a34a; }
+        .qtab.active { background: #16a34a; color: white; border-color: #16a34a; box-shadow: 0 4px 12px -2px rgba(22,163,74,0.3); }
+
+        /* ── Table ── */
         .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 660px; }
-        th {
+        table { width: 100%; border-collapse: collapse; min-width: 660px; }
+        thead th {
             background: #f8fafc; font-weight: 800; text-transform: uppercase;
-            font-size: 0.7rem; letter-spacing: 0.1em; color: #64748b;
-            padding: 1.25rem 1rem; border-bottom: 1px solid #e2e8f0; white-space: nowrap;
+            font-size: 0.65rem; letter-spacing: 0.12em; color: #94a3b8;
+            padding: 0.9rem 1rem; border-bottom: 1px solid #e2e8f0; white-space: nowrap;
         }
-        td {
-            padding: 1rem; border-bottom: 1px solid #f1f5f9;
-            font-size: 0.9rem; font-weight: 500; vertical-align: middle;
-        }
-        tr:last-child td { border-bottom: none; }
-        .reservation-row:hover td { background: #fafffe; }
+        td { padding: 0.875rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr { transition: background 0.12s; cursor: pointer; }
+        tbody tr:hover td { background: #f0fdf4; }
         .reservation-row[data-status="declined"] td,
         .reservation-row[data-status="canceled"] td { opacity: 0.6; }
 
         /* ── Mobile cards ── */
         .res-card {
             background: white; border-radius: 20px; border: 1px solid #e2e8f0;
-            padding: 1rem 1.1rem; cursor: pointer; transition: all 0.18s;
-            position: relative; overflow: hidden;
+            padding: 1rem 1.1rem; cursor: pointer; transition: all 0.18s; position: relative; overflow: hidden;
         }
         .res-card:hover { border-color: #bbf7d0; box-shadow: 0 6px 20px -4px rgba(22,163,74,0.15); transform: translateY(-1px); }
         .res-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 0 4px 4px 0; }
-        .res-card[data-status="pending"]::before  { background: #f59e0b; }
-        .res-card[data-status="approved"]::before { background: #22c55e; }
+        .res-card[data-status="pending"]::before   { background: #f59e0b; }
+        .res-card[data-status="approved"]::before  { background: #22c55e; }
+        .res-card[data-status="claimed"]::before   { background: #a855f7; }
         .res-card[data-status="declined"]::before,
-        .res-card[data-status="canceled"]::before { background: #f43f5e; }
+        .res-card[data-status="canceled"]::before  { background: #f43f5e; }
         .res-card[data-status="declined"],
         .res-card[data-status="canceled"] { opacity: 0.7; }
 
-        /* ── Status badges — matching dashboard tags ── */
-        .status-badge {
-            padding: 0.2rem 0.6rem; border-radius: 999px;
-            font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+        /* ── Status badges ── */
+        .badge {
+            display: inline-flex; align-items: center; gap: 4px; padding: 0.2rem 0.6rem;
+            border-radius: 999px; font-size: 0.68rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
         }
-        .status-pending   { background: #fef3c7; color: #92400e; }
-        .status-approved  { background: #dcfce7; color: #166534; }
-        .status-claimed   { background: #f3e8ff; color: #6b21a8; }
-        .status-declined,
-        .status-canceled  { background: #fee2e2; color: #991b1b; }
-        .status-expired   { background: #f1f5f9; color: #475569; }
-        .status-unclaimed { background: #fff7ed; color: #c2410c; border: 1px dashed #fdba74; }
+        .badge-pending   { background: #fef3c7; color: #92400e; }
+        .badge-approved  { background: #dcfce7; color: #166534; }
+        .badge-claimed   { background: #f3e8ff; color: #6b21a8; }
+        .badge-declined,
+        .badge-canceled  { background: #fee2e2; color: #991b1b; }
+        .badge-expired   { background: #f1f5f9; color: #475569; }
+        .badge-unclaimed { background: #fff7ed; color: #c2410c; border: 1px dashed #fdba74; }
 
         /* ── Buttons ── */
         .btn-action {
-            padding: 0.5rem 0.9rem; border-radius: 10px; font-weight: 700; font-size: 0.78rem;
+            padding: 0.45rem 0.85rem; border-radius: 10px; font-weight: 700; font-size: 0.75rem;
             transition: all 0.18s; cursor: pointer; border: 1px solid transparent;
             display: inline-flex; align-items: center; gap: 5px;
             font-family: 'Plus Jakarta Sans', sans-serif; white-space: nowrap;
         }
-        .btn-details { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
-        .btn-details:hover { background: #e8f0fe; color: #1e293b; border-color: #cbd5e1; transform: translateY(-1px); }
+        .btn-view   { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+        .btn-view:hover { background: #e2e8f0; color: #1e293b; transform: translateY(-1px); }
         .btn-cancel { background: #fff1f2; color: #991b1b; border-color: #fecdd3; }
         .btn-cancel:hover { background: #ffe4e6; border-color: #fda4af; transform: translateY(-1px); }
         .btn-cancel:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-        /* ── Inputs ── */
-        input, select {
-            background: #f8fafc; border: 1.5px solid #e2e8f0;
-            padding: 0.75rem 1.25rem; font-size: 0.85rem; border-radius: 16px; width: 100%;
+        /* ── Search input ── */
+        .field {
+            background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px;
+            padding: 0.7rem 1rem 0.7rem 2.5rem; font-size: 0.85rem;
             font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; font-weight: 500;
-            transition: all 0.2s;
+            transition: all 0.2s; width: 100%;
         }
-        input:focus, select:focus { outline: none; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.1); background: white; }
+        .field:focus { outline: none; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.1); background: white; }
 
         /* ── Overlays ── */
         .overlay { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; }
         .overlay.open { display: flex; }
         .overlay-bg { position: absolute; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(6px); }
 
-        /* ── Modal — matching dashboard modal-card ── */
+        /* ── Modal ── */
         .modal-box {
             position: relative; margin: auto; background: white; border-radius: 28px;
             width: 94%; max-width: 560px; max-height: 92vh; overflow-y: auto;
             box-shadow: 0 40px 80px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.06);
-            animation: slideUp 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
-            padding: 2rem;
+            animation: slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1) both; padding: 2rem;
         }
         .modal-box.sm { max-width: 380px; }
         .modal-box::-webkit-scrollbar { width: 4px; }
@@ -142,7 +153,7 @@
 
         @media (max-width: 639px) {
             .overlay#detailsModal .modal-box,
-            .overlay#cancelModal  .modal-box { margin: 0; width: 100%; max-width: 100%; border-radius: 28px 28px 0 0; max-height: 92vh; animation: slideUp 0.28s ease both; }
+            .overlay#cancelModal  .modal-box { margin: 0; width: 100%; max-width: 100%; border-radius: 28px 28px 0 0; max-height: 92vh; }
             .overlay#detailsModal,
             .overlay#cancelModal  { align-items: flex-end; }
             .sheet-handle { display: block; }
@@ -150,6 +161,7 @@
 
         @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
         @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+        @keyframes fadeUp  { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
 
         /* ── Detail rows ── */
         .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 0.65rem 0; border-bottom: 1px solid #f1f5f9; gap: 1rem; }
@@ -161,21 +173,26 @@
         .empty-state { padding: 4rem 2rem; text-align: center; color: #94a3b8; }
         .card-empty  { padding: 3rem 1.5rem; text-align: center; background: white; border-radius: 20px; border: 1px dashed #e2e8f0; }
 
-        /* ── Notification Bell ── */
-        .notif-bell { position: relative; cursor: pointer; transition: transform 0.2s; }
-        .notif-bell:hover { transform: scale(1.08); }
-        .notif-badge {
-            position: absolute; top: -4px; right: -4px;
+        /* ── Notification bell ── */
+        .notif-bell {
+            width: 44px; height: 44px; border-radius: 50%; background: white;
+            border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; position: relative; flex-shrink: 0;
+        }
+        .notif-bell:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); transform: scale(1.05); }
+        .notif-dot {
+            position: absolute; top: -3px; right: -3px;
             background: #ef4444; color: white; font-size: 0.58rem; font-weight: 800;
-            padding: 0.15rem 0.35rem; border-radius: 999px; min-width: 1.1rem;
-            text-align: center; border: 2px solid white; line-height: 1.2;
+            padding: 0.15rem 0.4rem; border-radius: 999px; border: 2px solid white;
+            min-width: 1.1rem; text-align: center;
         }
         .notif-dropdown {
-            position: fixed; top: 72px; right: 20px; width: 340px; background: white;
+            position: fixed; top: 76px; right: 24px; width: 340px; background: white;
             border-radius: 20px; box-shadow: 0 24px 48px -8px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
-            z-index: 200; display: none; overflow: hidden; animation: fadeIn 0.18s ease;
+            z-index: 300; display: none; overflow: hidden;
         }
-        .notif-dropdown.show { display: block; }
+        .notif-dropdown.show { display: block; animation: fadeIn 0.18s ease; }
         .notif-item { padding: 0.875rem 1rem; border-bottom: 1px solid #f1f5f9; transition: background 0.15s; cursor: pointer; }
         .notif-item:hover { background: #f8fafc; }
         .notif-item.unread { background: #f0fdf4; }
@@ -194,15 +211,10 @@
         .toast-message.declined { border-left: 4px solid #ef4444; }
         .toast-message.pending  { border-left: 4px solid #f59e0b; }
 
-        /* ── Quota bar — matching dashboard ── */
-        .fairness-bar { height: 6px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
-        .fairness-fill { height: 100%; border-radius: 999px; background: var(--green); transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1); }
-
-        .fade-in-up { animation: slideUp 0.4s ease both; }
-        .fade-in    { animation: fadeIn 0.4s ease both; }
+        .fade-up { animation: fadeUp 0.35s ease both; }
 
         @media (max-width: 640px) {
-            .notif-dropdown { position: fixed; top: 70px; right: 10px; left: 10px; width: auto; }
+            .notif-dropdown { right: 10px; left: 10px; width: auto; top: 70px; }
         }
     </style>
 </head>
@@ -220,9 +232,11 @@
         ['url' => '/sk/profile',         'icon' => 'fa-regular fa-user', 'label' => 'Profile',          'key' => 'profile'],
     ];
 
-    $remaining = $remainingReservations ?? 3;
-    $maxSlots  = 3;
-    $usedSlots = $maxSlots - $remaining;
+    $myTotal    = count($reservations ?? []);
+    $myPending  = count(array_filter($reservations ?? [], fn($r) => ($r['status'] ?? '') === 'pending'));
+    $myApproved = count(array_filter($reservations ?? [], fn($r) => ($r['status'] ?? '') === 'approved' && empty($r['claimed'])));
+    $myClaimed  = count(array_filter($reservations ?? [], fn($r) => !empty($r['claimed']) && $r['claimed'] == 1));
+    $myDeclined = count(array_filter($reservations ?? [], fn($r) => in_array($r['status'] ?? '', ['declined','canceled'])));
     ?>
 
     <!-- Toast Container -->
@@ -233,11 +247,18 @@
         <div class="overlay-bg" onclick="closeModal('detailsModal')"></div>
         <div class="modal-box">
             <div class="sheet-handle"></div>
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-black text-slate-900">Reservation Details</h3>
-                <span id="modalStatusBadge" class="status-badge"></span>
+            <div class="flex items-center justify-between mb-1">
+                <p id="modalId" class="text-xs font-black text-slate-400 font-mono"></p>
+                <button onclick="closeModal('detailsModal')" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <div id="modalBody" class="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-5 space-y-1"></div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-black text-slate-900">Reservation Details</h3>
+                <span id="modalStatusBadge" class="badge"></span>
+            </div>
+            <div id="modalStatusBar" class="px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold mb-5"></div>
+            <div id="modalBody" class="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-5"></div>
             <div class="bg-white border-2 border-dashed border-green-100 rounded-2xl p-6 flex flex-col items-center mb-5">
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">E-Ticket / Access QR</p>
                 <canvas id="qrCanvas" class="mx-auto rounded-xl"></canvas>
@@ -246,11 +267,13 @@
                     <i class="fa-solid fa-download"></i> Download E-Ticket
                 </button>
             </div>
-            <button onclick="closeModal('detailsModal')" class="w-full py-3.5 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">Close</button>
+            <div id="modalActions" class="flex gap-3">
+                <button onclick="closeModal('detailsModal')" class="flex-1 py-3.5 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">Close</button>
+            </div>
         </div>
     </div>
 
-    <!-- Cancel Confirm Modal -->
+    <!-- Cancel Modal -->
     <div id="cancelModal" class="overlay">
         <div class="overlay-bg" onclick="closeModal('cancelModal')"></div>
         <div class="modal-box sm">
@@ -281,40 +304,24 @@
     <aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6" style="height:100vh;overflow:hidden;">
         <div class="sidebar-card">
             <div class="sidebar-header">
-                <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Resident Portal</span>
-                <h1 class="text-2xl font-extrabold text-slate-800">my<span class="text-green-600">Space.</span></h1>
+                <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Youth Portal</span>
+                <h1 class="text-2xl font-extrabold text-slate-800">SK<span class="text-green-600">.</span></h1>
             </div>
             <nav class="sidebar-nav space-y-1">
                 <?php foreach ($navItems as $item):
-                    $active = ($page == $item['key']) ? 'bg-green-600 text-white shadow-lg shadow-green-200/50' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
+                    $active = ($page == $item['key']) ? 'active' : 'text-slate-500';
                 ?>
-                    <a href="<?= base_url($item['url']) ?>" class="flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all <?= $active ?>">
+                    <a href="<?= base_url($item['url']) ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
                         <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
                         <?= $item['label'] ?>
-                        <?php if ($item['key'] == 'my-reservations' && isset($pendingCount) && $pendingCount > 0): ?>
-                            <span class="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $pendingCount ?></span>
+                        <?php if ($item['key'] == 'my-reservations' && $myPending > 0): ?>
+                            <span class="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $myPending ?></span>
                         <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
             </nav>
-            <?php if (isset($remainingReservations)): ?>
-                <div class="mx-4 mb-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Monthly Quota</span>
-                        <span class="text-xs font-black <?= $remaining===0?'text-red-500':($remaining===1?'text-amber-500':'text-green-600') ?>"><?= $usedSlots ?>/<?= $maxSlots ?></span>
-                    </div>
-                    <div class="fairness-bar">
-                        <div class="fairness-fill" style="width:<?= ($usedSlots/$maxSlots)*100 ?>%;<?= $remaining===0?'background:#ef4444':($remaining===1?'background:#f59e0b':'') ?>"></div>
-                    </div>
-                    <p class="text-[10px] mt-1.5 font-medium <?= $remaining===0?'text-red-500 font-bold':($remaining===1?'text-amber-500 font-semibold':'text-slate-400') ?>">
-                        <?php if ($remaining === 0): ?>⚠ No slots left this month
-                        <?php elseif ($remaining === 1): ?>⚡ Only 1 slot remaining
-                        <?php else: ?><?= $remaining ?> slot<?= $remaining!=1?'s':'' ?> remaining this month<?php endif; ?>
-                    </p>
-                </div>
-            <?php endif; ?>
             <div class="sidebar-footer">
-                <a href="<?= base_url('/logout') ?>" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
+                <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
                     <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
                 </a>
             </div>
@@ -330,12 +337,12 @@
                 <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 <?= $cls ?> relative">
                     <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
                     <span class="text-[9px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
-                    <?php if ($item['key'] == 'my-reservations' && isset($pendingCount) && $pendingCount > 0): ?>
-                        <span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full"><?= $pendingCount ?></span>
+                    <?php if ($item['key'] == 'my-reservations' && $myPending > 0): ?>
+                        <span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full"><?= $myPending ?></span>
                     <?php endif; ?>
                 </a>
             <?php endforeach; ?>
-            <a href="<?= base_url('/logout') ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
+            <a href="/logout" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
                 <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
                 <span class="text-[9px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
             </a>
@@ -345,21 +352,20 @@
     <!-- Main -->
     <main class="flex-1 min-w-0 p-4 lg:p-10 pb-32" style="height:100vh;overflow-y:auto;">
 
-        <!-- Top bar -->
-        <header class="flex items-start justify-between mb-8 gap-4">
-            <div class="fade-in-up">
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 fade-up">
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">SK Portal</p>
                 <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">My Reservations</h2>
-                <p class="text-slate-400 font-medium text-sm mt-1">Track and manage your reservation requests.</p>
+                <p class="text-slate-400 font-medium text-sm mt-0.5">Track and manage your personal reservation requests.</p>
             </div>
             <div class="flex items-center gap-3 flex-shrink-0">
-                <a href="<?= base_url('/sk/new-reservation') ?>" class="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm shadow-green-200">
-                    <i class="fa-solid fa-plus"></i> Reserve
+                <a href="<?= base_url('/sk/new-reservation') ?>" class="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm">
+                    <i class="fa-solid fa-plus"></i> New Reservation
                 </a>
-                <div class="notif-bell" onclick="toggleNotifications()">
-                    <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-200 hover:border-green-300 transition">
-                        <i class="fa-regular fa-bell text-slate-600"></i>
-                    </div>
-                    <span class="notif-badge" id="notificationBadge" style="display:none">0</span>
+                <div class="notif-bell" onclick="toggleNotifications()" id="bellBtn">
+                    <i class="fa-regular fa-bell text-slate-500"></i>
+                    <span id="notificationBadge" class="notif-dot" style="display:none">0</span>
                 </div>
             </div>
         </header>
@@ -373,83 +379,121 @@
             <div id="notificationList" class="max-h-80 overflow-y-auto"></div>
         </div>
 
-        <!-- Flash messages -->
+        <!-- Flash -->
         <?php if (session()->getFlashdata('success')): ?>
-            <div class="mb-6 px-5 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-in">
+            <div class="mb-5 px-5 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-up">
                 <i class="fa-solid fa-circle-check text-green-500"></i><?= session()->getFlashdata('success') ?>
             </div>
         <?php endif; ?>
         <?php if (session()->getFlashdata('error')): ?>
-            <div class="mb-6 px-5 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-in">
+            <div class="mb-5 px-5 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-up">
                 <i class="fa-solid fa-circle-exclamation text-red-500"></i><?= session()->getFlashdata('error') ?>
             </div>
         <?php endif; ?>
 
-        <!-- Status banners -->
-        <?php if (isset($pendingCount) && $pendingCount > 0): ?>
-            <div class="mb-5 px-5 py-4 bg-amber-50 border border-amber-200 text-amber-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-in">
+        <!-- Stat cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <?php foreach ([
+                ['Total',    $myTotal,    'border-slate-400',   'text-slate-700',   'All time'],
+                ['Pending',  $myPending,  'border-amber-400',   'text-amber-600',   'Awaiting review'],
+                ['Approved', $myApproved, 'border-emerald-400', 'text-emerald-600', 'Ready to use'],
+                ['Claimed',  $myClaimed,  'border-purple-400',  'text-purple-600',  'Tickets used'],
+            ] as [$lbl, $val, $border, $color, $sub]): ?>
+                <div class="stat-card <?= $border ?>">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1"><?= $lbl ?></p>
+                    <p class="text-2xl font-black <?= $color ?>"><?= $val ?></p>
+                    <p class="text-[10px] text-slate-400 font-medium mt-0.5"><?= $sub ?></p>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Banners -->
+        <?php if ($myPending > 0): ?>
+            <div class="mb-5 px-5 py-4 bg-amber-50 border border-amber-200 text-amber-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-up">
                 <i class="fa-regular fa-clock text-amber-500"></i>
-                You have <span class="bg-white px-2 py-0.5 rounded-full text-amber-700 mx-1 font-black"><?= $pendingCount ?></span>
-                pending reservation<?= $pendingCount != 1 ? 's' : '' ?> awaiting approval.
+                You have <span class="bg-white border border-amber-200 px-2 py-0.5 rounded-full font-black mx-1"><?= $myPending ?></span>
+                pending reservation<?= $myPending != 1 ? 's' : '' ?> awaiting SK officer approval.
             </div>
         <?php endif; ?>
         <?php if (isset($approvedCount) && $approvedCount > 0): ?>
-            <div class="mb-5 px-5 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-in">
+            <div class="mb-5 px-5 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-up">
                 <i class="fa-solid fa-circle-check text-green-500"></i>
-                You have <span class="bg-white px-2 py-0.5 rounded-full text-green-700 mx-1 font-black"><?= $approvedCount ?></span>
-                approved reservation<?= $approvedCount != 1 ? 's' : '' ?>. Download your e-ticket from the list below.
+                You have <span class="bg-white border border-green-200 px-2 py-0.5 rounded-full font-black mx-1"><?= $approvedCount ?></span>
+                approved reservation<?= $approvedCount != 1 ? 's' : '' ?>. Download your e-ticket below.
             </div>
         <?php endif; ?>
 
         <!-- Filter bar -->
-        <div class="dash-card mb-5">
-            <div class="p-4 lg:p-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-3 items-center justify-between">
-                <div class="flex flex-col sm:flex-row gap-3 flex-1 min-w-0">
+        <div class="dash-card mb-4">
+            <div class="p-4 lg:p-5 border-b border-slate-100 bg-slate-50/50">
+                <div class="flex flex-col sm:flex-row gap-3">
                     <div class="relative flex-1 min-w-0">
-                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
-                        <input type="text" id="searchInput" class="pl-10" placeholder="Search by name, asset, date…" oninput="applyFilters()">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                        <input type="text" id="searchInput" class="field" placeholder="Search by name, asset, date…" oninput="applyFilters()">
                     </div>
-                    <select id="statusFilter" class="sm:w-44 flex-shrink-0" onchange="applyFilters()">
-                        <option value="">All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="declined">Declined</option>
-                        <option value="canceled">Canceled</option>
-                    </select>
+                    <button onclick="clearFilters()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-sm transition flex items-center gap-2 flex-shrink-0">
+                        <i class="fa-solid fa-rotate-left text-xs"></i> Reset
+                    </button>
                 </div>
-                <div class="text-right flex-shrink-0 pl-4">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Showing</p>
-                    <p class="text-xl font-black text-green-600" id="totalCount">0</p>
+                <div class="flex gap-2 mt-3 overflow-x-auto pb-0.5" style="-webkit-overflow-scrolling:touch;">
+                    <button class="qtab active" data-tab="all"     onclick="setTab(this,'all')">
+                        <i class="fa-solid fa-layer-group text-xs"></i> All
+                        <span class="text-[9px] font-black opacity-70"><?= $myTotal ?></span>
+                    </button>
+                    <button class="qtab" data-tab="pending"        onclick="setTab(this,'pending')">
+                        <i class="fa-regular fa-clock text-xs"></i> Pending
+                        <?php if ($myPending > 0): ?>
+                            <span class="bg-amber-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none"><?= $myPending ?></span>
+                        <?php endif; ?>
+                    </button>
+                    <button class="qtab" data-tab="approved"       onclick="setTab(this,'approved')">
+                        <i class="fa-solid fa-circle-check text-xs"></i> Approved
+                    </button>
+                    <button class="qtab" data-tab="claimed"        onclick="setTab(this,'claimed')">
+                        <i class="fa-solid fa-check-double text-xs"></i> Claimed
+                    </button>
+                    <button class="qtab" data-tab="declined"       onclick="setTab(this,'declined')">
+                        <i class="fa-solid fa-xmark text-xs"></i> Declined
+                    </button>
                 </div>
+            </div>
+            <div class="px-5 py-2.5 flex items-center justify-between">
+                <p id="resultCount" class="text-xs font-bold text-slate-400"></p>
+                <p class="text-xs text-slate-300 font-semibold hidden sm:block">Click any row to view details &amp; download e-ticket</p>
             </div>
         </div>
 
         <!-- Desktop Table -->
-        <div id="desktopTableWrap" class="hidden md:block dash-card mb-5">
+        <div id="desktopTableWrap" class="hidden md:block dash-card mb-4">
             <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width:56px">ID</th>
+                            <th style="width:52px">ID</th>
                             <th>Name</th>
                             <th>Asset</th>
                             <th>Schedule</th>
                             <th>Purpose</th>
                             <th>Status</th>
-                            <th class="text-right">Actions</th>
+                            <th class="text-right" style="width:160px">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="reservationTableBody">
                         <?php if (empty($reservations)): ?>
-                            <tr><td colspan="7"><div class="empty-state">
-                                <i class="fa-regular fa-calendar-xmark text-4xl mb-3 block text-slate-300"></i>
-                                <p class="font-bold text-slate-400">No reservations yet.</p>
-                                <a href="<?= base_url('/sk/new-reservation') ?>" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-2xl font-bold text-sm hover:bg-green-700 transition">
-                                    <i class="fa-solid fa-plus"></i> Make one now
-                                </a>
-                            </div></td></tr>
+                            <tr><td colspan="7">
+                                <div class="empty-state">
+                                    <i class="fa-regular fa-calendar-xmark text-5xl text-slate-200 mb-4 block"></i>
+                                    <p class="font-black text-slate-400 text-lg">No reservations yet</p>
+                                    <p class="text-slate-300 text-sm mt-1 mb-4">Make your first reservation to get started.</p>
+                                    <a href="<?= base_url('/sk/new-reservation') ?>" class="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-2xl font-bold text-sm hover:bg-green-700 transition">
+                                        <i class="fa-solid fa-plus"></i> New Reservation
+                                    </a>
+                                </div>
+                            </td></tr>
                         <?php else: ?>
-                            <?php foreach ($reservations as $res):
+                            <?php
+                            $statusIcons = ['pending'=>'fa-clock','approved'=>'fa-circle-check','claimed'=>'fa-check-double','declined'=>'fa-ban','canceled'=>'fa-ban','expired'=>'fa-hourglass-end','unclaimed'=>'fa-ticket'];
+                            foreach ($reservations as $res):
                                 $status    = $res['status'] ?? 'pending';
                                 $isClaimed = !empty($res['claimed']) && $res['claimed'] == 1;
                                 if ($isClaimed) $status = 'claimed';
@@ -463,36 +507,65 @@
                                     $pcNumbers = $res['pc_number'];
                                 }
                                 $displayStatus = $status === 'unclaimed' ? 'No-show' : ucfirst($status);
+                                $rawDate = $res['reservation_date'] ?? '';
+                                $fDate   = $rawDate ? date('M j, Y', strtotime($rawDate)) : '—';
+                                $fStart  = !empty($res['start_time']) ? date('g:i A', strtotime($res['start_time'])) : '—';
+                                $fEnd    = !empty($res['end_time'])   ? date('g:i A', strtotime($res['end_time']))   : '—';
+                                $icon    = $statusIcons[$status] ?? 'fa-circle';
+                                $mdata   = json_encode([
+                                    'id'=>$res['id'],'status'=>$status,'displayStatus'=>$displayStatus,
+                                    'name'=>$name,'email'=>htmlspecialchars($res['visitor_email']??$res['user_email']??''),
+                                    'resource'=>$resource,'pc'=>$pcNumbers,
+                                    'date'=>$fDate,'start'=>$fStart,'end'=>$fEnd,
+                                    'purpose'=>htmlspecialchars($res['purpose']??'—'),
+                                    'code'=>htmlspecialchars($res['e_ticket_code']??'SK-'.$res['id'].'-'.($res['reservation_date']??'')),
+                                ]);
                             ?>
-                                <tr class="reservation-row" data-status="<?= $status ?>" data-id="<?= $res['id'] ?>"
-                                    data-search="<?= strtolower("$name " . ($res['reservation_date'] ?? '') . " $resource") ?>">
-                                    <td><span class="text-slate-400 font-bold">#</span><?= $res['id'] ?></td>
+                                <tr class="reservation-row"
+                                    data-status="<?= $status ?>"
+                                    data-id="<?= $res['id'] ?>"
+                                    data-search="<?= strtolower("$name $resource $rawDate $status") ?>"
+                                    onclick='openDetailModal(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
+
+                                    <td><span class="text-xs font-black text-slate-400 font-mono">#<?= $res['id'] ?></span></td>
                                     <td>
-                                        <div class="font-bold text-slate-800"><?= $name ?></div>
+                                        <p class="font-bold text-sm text-slate-800 leading-tight"><?= $name ?></p>
                                         <?php if (!empty($res['visitor_email']) || !empty($res['user_email'])): ?>
-                                            <div class="text-xs text-slate-400 mt-0.5"><?= htmlspecialchars($res['visitor_email'] ?? $res['user_email']) ?></div>
+                                            <p class="text-[11px] text-slate-400 mt-0.5"><?= htmlspecialchars($res['visitor_email'] ?? $res['user_email']) ?></p>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <div class="font-semibold"><?= $resource ?></div>
+                                        <p class="font-bold text-sm text-slate-700"><?= $resource ?></p>
                                         <?php if ($pcNumbers): ?>
-                                            <div class="text-xs text-green-600 font-bold mt-0.5"><?= htmlspecialchars($pcNumbers) ?></div>
+                                            <div class="flex items-center gap-1 mt-0.5">
+                                                <i class="fa-solid fa-desktop text-[9px] text-slate-400"></i>
+                                                <span class="text-[11px] text-green-600 font-semibold"><?= htmlspecialchars($pcNumbers) ?></span>
+                                            </div>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <div class="text-slate-700 font-semibold"><?= htmlspecialchars($res['reservation_date'] ?? '') ?></div>
-                                        <div class="text-xs text-green-600 font-bold mt-0.5"><?= htmlspecialchars($res['start_time'] ?? '') ?> – <?= htmlspecialchars($res['end_time'] ?? '') ?></div>
+                                        <p class="text-sm font-bold text-slate-700"><?= $fDate ?></p>
+                                        <p class="text-[11px] text-green-500 font-semibold mt-0.5"><?= $fStart ?> – <?= $fEnd ?></p>
                                     </td>
-                                    <td><div class="text-slate-600 max-w-[140px] truncate"><?= htmlspecialchars($res['purpose'] ?: '—') ?></div></td>
-                                    <td><span class="status-badge status-<?= $status ?>"><?= $displayStatus ?></span></td>
-                                    <td class="text-right">
-                                        <div class="flex items-center justify-end gap-1 flex-wrap">
-                                            <button onclick="viewDetails(<?= $res['id'] ?>)" class="btn-action btn-details">
-                                                <i class="fa-solid fa-eye"></i> View
+                                    <td>
+                                        <span class="text-sm text-slate-500 font-medium" style="display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:130px">
+                                            <?= htmlspecialchars($res['purpose'] ?: '—') ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-<?= $status ?>">
+                                            <i class="fa-solid <?= $icon ?> text-[9px]"></i>
+                                            <?= $displayStatus ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-right" onclick="event.stopPropagation()">
+                                        <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                                            <button onclick='openDetailModal(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)' class="btn-action btn-view">
+                                                <i class="fa-solid fa-eye text-[11px]"></i> View
                                             </button>
                                             <?php if ($status === 'pending'): ?>
-                                                <button onclick="handleCancel(<?= $res['id'] ?>)" class="btn-action btn-cancel" id="cancelBtn-<?= $res['id'] ?>">
-                                                    <i class="fa-solid fa-xmark"></i> Cancel
+                                                <button onclick="handleCancel(<?= $res['id'] ?>, '<?= addslashes($name) ?>')" class="btn-action btn-cancel" id="cancelBtn-<?= $res['id'] ?>">
+                                                    <i class="fa-solid fa-xmark text-[11px]"></i> Cancel
                                                 </button>
                                             <?php endif; ?>
                                         </div>
@@ -504,8 +577,11 @@
                 </table>
             </div>
             <div id="noResults" class="hidden empty-state">
-                <i class="fa-solid fa-filter-circle-xmark text-3xl mb-2 block text-slate-300"></i>
+                <i class="fa-solid fa-filter-circle-xmark text-3xl mb-2 block text-slate-200"></i>
                 <p class="font-bold text-slate-400">No reservations match your search.</p>
+            </div>
+            <div class="px-5 py-3 border-t border-slate-100 bg-slate-50/60">
+                <p id="tableFooter" class="text-xs font-bold text-slate-400"></p>
             </div>
         </div>
 
@@ -520,7 +596,9 @@
                     </a>
                 </div>
             <?php else: ?>
-                <?php foreach ($reservations as $res):
+                <?php
+                $statusIcons = ['pending'=>'fa-clock','approved'=>'fa-circle-check','claimed'=>'fa-check-double','declined'=>'fa-ban','canceled'=>'fa-ban','expired'=>'fa-hourglass-end','unclaimed'=>'fa-ticket'];
+                foreach ($reservations as $res):
                     $status    = $res['status'] ?? 'pending';
                     $isClaimed = !empty($res['claimed']) && $res['claimed'] == 1;
                     if ($isClaimed) $status = 'claimed';
@@ -533,8 +611,20 @@
                     } elseif (!empty($res['pc_number'])) {
                         $pcNumbers = $res['pc_number'];
                     }
-                    $email = htmlspecialchars($res['visitor_email'] ?? $res['user_email'] ?? '');
+                    $email         = htmlspecialchars($res['visitor_email'] ?? $res['user_email'] ?? '');
                     $displayStatus = $status === 'unclaimed' ? 'No-show' : ucfirst($status);
+                    $rawDate = $res['reservation_date'] ?? '';
+                    $fDate   = $rawDate ? date('M j, Y', strtotime($rawDate)) : '—';
+                    $fStart  = !empty($res['start_time']) ? date('g:i A', strtotime($res['start_time'])) : '—';
+                    $fEnd    = !empty($res['end_time'])   ? date('g:i A', strtotime($res['end_time']))   : '—';
+                    $icon    = $statusIcons[$status] ?? 'fa-circle';
+                    $mdata   = json_encode([
+                        'id'=>$res['id'],'status'=>$status,'displayStatus'=>$displayStatus,
+                        'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pcNumbers,
+                        'date'=>$fDate,'start'=>$fStart,'end'=>$fEnd,
+                        'purpose'=>htmlspecialchars($res['purpose']??'—'),
+                        'code'=>htmlspecialchars($res['e_ticket_code']??'SK-'.$res['id'].'-'.($res['reservation_date']??'')),
+                    ]);
                     $avatarBg = [
                         'pending'   => 'bg-amber-100 text-amber-700',
                         'approved'  => 'bg-emerald-100 text-emerald-700',
@@ -548,8 +638,8 @@
                     <div class="res-card"
                          data-id="<?= $res['id'] ?>"
                          data-status="<?= $status ?>"
-                         data-search="<?= strtolower("$name " . ($res['reservation_date'] ?? '') . " $resource") ?>"
-                         onclick="viewDetails(<?= $res['id'] ?>)">
+                         data-search="<?= strtolower("$name $resource $rawDate $status") ?>"
+                         onclick='openDetailModal(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
 
                         <div class="flex items-center gap-3 mb-3">
                             <div class="w-10 h-10 rounded-2xl <?= $avatarBg ?> flex items-center justify-center font-black text-sm flex-shrink-0">
@@ -559,7 +649,9 @@
                                 <p class="font-bold text-sm text-slate-800 truncate leading-tight"><?= $name ?></p>
                                 <?php if ($email): ?><p class="text-[11px] text-slate-400 truncate"><?= $email ?></p><?php endif; ?>
                             </div>
-                            <span class="status-badge status-<?= $status ?> flex-shrink-0"><?= $displayStatus ?></span>
+                            <span class="badge badge-<?= $status ?> flex-shrink-0">
+                                <i class="fa-solid <?= $icon ?> text-[9px]"></i><?= $displayStatus ?>
+                            </span>
                         </div>
 
                         <div class="mb-2">
@@ -569,8 +661,8 @@
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <i class="fa-regular fa-calendar text-[10px] text-slate-400 flex-shrink-0"></i>
-                                <p class="text-xs text-slate-500 font-semibold"><?= htmlspecialchars($res['reservation_date'] ?? '—') ?></p>
-                                <span class="text-[10px] text-green-600 font-bold"><?= htmlspecialchars($res['start_time'] ?? '') ?> – <?= htmlspecialchars($res['end_time'] ?? '') ?></span>
+                                <p class="text-xs text-slate-500 font-semibold"><?= $fDate ?></p>
+                                <span class="text-[10px] text-green-600 font-bold"><?= $fStart ?> – <?= $fEnd ?></span>
                             </div>
                         </div>
 
@@ -578,9 +670,20 @@
 
                         <?php if ($status === 'pending'): ?>
                             <div class="flex gap-2 pt-2.5 border-t border-slate-100" onclick="event.stopPropagation()">
-                                <button onclick="handleCancel(<?= $res['id'] ?>)" id="cancelBtn-<?= $res['id'] ?>"
+                                <button onclick='openDetailModal(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'
+                                    class="flex-1 h-9 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-eye text-[10px]"></i> View
+                                </button>
+                                <button onclick="handleCancel(<?= $res['id'] ?>, '<?= addslashes($name) ?>')" id="cancelBtn-<?= $res['id'] ?>"
                                     class="flex-1 h-9 rounded-xl bg-red-50 hover:bg-red-500 hover:text-white text-red-600 border border-red-100 font-bold text-xs transition flex items-center justify-center gap-1.5">
-                                    <i class="fa-solid fa-xmark text-[10px]"></i> Cancel Reservation
+                                    <i class="fa-solid fa-xmark text-[10px]"></i> Cancel
+                                </button>
+                            </div>
+                        <?php elseif ($status === 'approved'): ?>
+                            <div class="flex gap-2 pt-2.5 border-t border-slate-100" onclick="event.stopPropagation()">
+                                <button onclick='openDetailModal(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'
+                                    class="flex-1 h-9 rounded-xl bg-green-50 hover:bg-green-600 hover:text-white text-green-700 border border-green-200 font-bold text-xs transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-download text-[10px]"></i> Get E-Ticket
                                 </button>
                             </div>
                         <?php else: ?>
@@ -593,7 +696,6 @@
             <?php endif; ?>
         </div>
 
-        <!-- Mobile no-results -->
         <div id="mobileEmpty" class="md:hidden card-empty" style="display:none">
             <i class="fa-solid fa-filter-circle-xmark text-4xl text-slate-200 mb-3 block"></i>
             <p class="font-black text-slate-400">No reservations match your search.</p>
@@ -604,61 +706,92 @@
     <script>
     const reservationsData = <?= json_encode($reservations ?? []) ?>;
     let cancelTargetId = null;
+    let curTab = 'all';
 
     const allTableRows = Array.from(document.querySelectorAll('#reservationTableBody .reservation-row'));
     const allCards     = Array.from(document.querySelectorAll('#mobileCardList .res-card'));
 
+    /* ── Tabs ── */
+    function setTab(btn, tab) {
+        document.querySelectorAll('.qtab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        curTab = tab;
+        applyFilters();
+    }
+
     /* ── Filters ── */
     function applyFilters() {
-        const s = document.getElementById('searchInput').value.toLowerCase();
-        const f = document.getElementById('statusFilter').value;
-        let n   = 0;
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        let n = 0;
         const matches = el => {
-            const matchSearch = !s || (el.dataset.search || el.textContent).toLowerCase().includes(s);
-            const matchStatus = !f || el.dataset.status === f;
-            return matchSearch && matchStatus;
+            const st = el.dataset.status;
+            const matchTab = curTab === 'all' ||
+                (curTab === 'declined' && ['declined','canceled'].includes(st)) ||
+                st === curTab;
+            const matchSearch = !q || (el.dataset.search || '').includes(q);
+            return matchTab && matchSearch;
         };
         allTableRows.forEach(row => { const show = matches(row); row.style.display = show ? '' : 'none'; if (show) n++; });
         let cardVisible = 0;
         allCards.forEach(card => { const show = matches(card); card.style.display = show ? '' : 'none'; if (show) cardVisible++; });
-        document.getElementById('totalCount').textContent = n;
+        const total = allTableRows.length;
+        document.getElementById('resultCount').textContent = `Showing ${n} of ${total} reservation${total !== 1 ? 's' : ''}`;
+        const tf = document.getElementById('tableFooter');
+        if (tf) tf.textContent = `${n} result${n !== 1 ? 's' : ''} displayed`;
         const noResults = document.getElementById('noResults');
         if (noResults) noResults.classList.toggle('hidden', n > 0);
         const mobileEmpty = document.getElementById('mobileEmpty');
         if (allCards.length > 0) mobileEmpty.style.display = cardVisible === 0 ? 'block' : 'none';
     }
 
-    /* ── View Details ── */
-    function viewDetails(id) {
-        const res = reservationsData.find(r => r.id == id);
-        if (!res) return;
-        const name = res.visitor_name || res.full_name || 'Guest';
-        const code = res.e_ticket_code || `SK-${res.id}-${res.reservation_date}`;
-        let pcLabel = '—';
-        if (res.pc_numbers) {
-            try { const arr = typeof res.pc_numbers === 'string' ? JSON.parse(res.pc_numbers) : res.pc_numbers; pcLabel = Array.isArray(arr) ? arr.join(', ') : arr; }
-            catch { pcLabel = res.pc_numbers; }
-        } else if (res.pc_number) { pcLabel = res.pc_number; }
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        curTab = 'all';
+        document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'all'));
+        applyFilters();
+    }
 
-        const isClaimed = res.claimed == 1;
-        const displayStatus = isClaimed ? 'claimed' : res.status;
+    /* ── Detail modal ── */
+    const STATUS_META = {
+        pending:   { icon: 'fa-clock',        bg: '#fef3c7', color: '#92400e', label: 'Pending — Awaiting SK officer approval' },
+        approved:  { icon: 'fa-circle-check', bg: '#dcfce7', color: '#166534', label: 'Approved — Download your e-ticket below' },
+        claimed:   { icon: 'fa-check-double', bg: '#f3e8ff', color: '#6b21a8', label: 'Claimed — Ticket was successfully scanned' },
+        unclaimed: { icon: 'fa-ticket',       bg: '#fff7ed', color: '#c2410c', label: 'No-show — Approved slot was not attended' },
+        declined:  { icon: 'fa-ban',          bg: '#fee2e2', color: '#991b1b', label: 'Declined — Try booking a different time' },
+        canceled:  { icon: 'fa-ban',          bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
+        expired:   { icon: 'fa-hourglass-end',bg: '#f1f5f9', color: '#475569', label: 'Expired — Request passed date unapproved' },
+    };
+
+    function openDetailModal(d) {
+        const m = STATUS_META[d.status] || STATUS_META.pending;
+        document.getElementById('modalId').textContent = 'Request #' + d.id;
         const badge = document.getElementById('modalStatusBadge');
-        badge.textContent = displayStatus === 'unclaimed' ? 'No-show' : displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1);
-        badge.className   = `status-badge status-${displayStatus}`;
-
+        badge.textContent = d.displayStatus || d.status;
+        badge.className   = `badge badge-${d.status}`;
+        const bar = document.getElementById('modalStatusBar');
+        bar.style.background = m.bg; bar.style.color = m.color;
+        bar.innerHTML = `<i class="fa-solid ${m.icon} flex-shrink-0"></i><span class="text-sm font-bold">${m.label}</span>`;
         document.getElementById('modalBody').innerHTML = `
-            <div class="detail-row"><span class="detail-label">Reservation #</span><span class="detail-value">#${res.id}</span></div>
-            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${name}</span></div>
-            <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${res.visitor_email || res.user_email || '—'}</span></div>
-            <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value">${res.visitor_type || '—'}</span></div>
-            <div class="detail-row"><span class="detail-label">Asset</span><span class="detail-value">${res.resource_name || res.resource_id || '—'}</span></div>
-            <div class="detail-row"><span class="detail-label">Stations</span><span class="detail-value">${pcLabel}</span></div>
-            <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${res.reservation_date || '—'}</span></div>
-            <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${res.start_time || '—'} – ${res.end_time || '—'}</span></div>
-            <div class="detail-row"><span class="detail-label">Purpose</span><span class="detail-value">${res.purpose || '—'}</span></div>
+            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${d.name}</span></div>
+            ${d.email ? `<div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${d.email}</span></div>` : ''}
+            <div class="detail-row"><span class="detail-label">Asset</span><span class="detail-value">${d.resource}${d.pc ? ' · ' + d.pc : ''}</span></div>
+            <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${d.date}</span></div>
+            <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${d.start} – ${d.end}</span></div>
+            <div class="detail-row"><span class="detail-label">Purpose</span><span class="detail-value">${d.purpose}</span></div>
         `;
-        QRCode.toCanvas(document.getElementById('qrCanvas'), code, { width: 180, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } });
-        document.getElementById('qrCodeText').textContent = code;
+        QRCode.toCanvas(document.getElementById('qrCanvas'), d.code, { width: 180, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } });
+        document.getElementById('qrCodeText').textContent = d.code;
+        const acts = document.getElementById('modalActions');
+        if (d.status === 'pending') {
+            acts.innerHTML = `
+                <button onclick="closeModal('detailsModal');handleCancel(${d.id},'${d.name.replace(/'/g,"\\'")}');"
+                    class="flex-1 py-3.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-xmark"></i> Cancel Reservation
+                </button>
+                <button onclick="closeModal('detailsModal')" class="flex-1 py-3.5 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">Close</button>`;
+        } else {
+            acts.innerHTML = `<button onclick="closeModal('detailsModal')" class="flex-1 py-3.5 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">Close</button>`;
+        }
         openModal('detailsModal');
     }
 
@@ -666,23 +799,18 @@
         const canvas = document.getElementById('qrCanvas');
         const code   = document.getElementById('qrCodeText').textContent;
         const link   = document.createElement('a');
-        link.download = `E-Ticket-${code}.png`;
-        link.href     = canvas.toDataURL('image/png');
-        link.click();
+        link.download = `E-Ticket-${code}.png`; link.href = canvas.toDataURL('image/png'); link.click();
     }
 
     /* ── Cancel ── */
-    function handleCancel(id) {
+    function handleCancel(id, name) {
         cancelTargetId = id;
-        const res  = reservationsData.find(r => r.id == id);
-        const name = res ? (res.visitor_name || res.full_name || 'Guest') : '';
         document.getElementById('cancelConfirmName').textContent = name ? `"${name}"` : '';
         openModal('cancelModal');
     }
     document.getElementById('confirmCancelBtn').addEventListener('click', function () {
         if (!cancelTargetId) return;
-        this.disabled = true;
-        this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Canceling…';
+        this.disabled = true; this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Canceling…';
         document.getElementById('cancelId').value = cancelTargetId;
         document.getElementById('cancelForm').submit();
     });
@@ -694,129 +822,67 @@
 
     /* ── Notifications ── */
     let notifications = [], unreadCount = 0, lastCheckTime = new Date().toISOString();
-
     document.addEventListener('DOMContentLoaded', function () {
         if ('Notification' in window) Notification.requestPermission();
         loadNotifications();
         setInterval(checkForStatusUpdates, 30000);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForStatusUpdates(); });
-        const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get('status'), message = urlParams.get('message');
-        if (status && message) showToast({ title: status === 'approved' ? '✓ Approved!' : '✗ Declined', message: decodeURIComponent(message), status });
+        const p = new URLSearchParams(window.location.search);
+        if (p.get('status') && p.get('message')) showToast({ title: p.get('status') === 'approved' ? '✓ Approved!' : '✗ Declined', message: decodeURIComponent(p.get('message')), status: p.get('status') });
     });
-
     function checkForStatusUpdates() {
         fetch('/sk/check-reservation-updates', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            method:'POST', headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
             body: JSON.stringify({ last_check: lastCheckTime, user_id: <?= $userId ?? 'null' ?> })
-        }).then(r => r.json()).then(data => {
-            (data.updates || []).forEach(update => {
-                const n = {
-                    id: update.id,
-                    title: update.status === 'approved' ? '✓ Reservation Approved!' : '✗ Reservation Declined',
-                    message: `Your reservation for ${update.resource_name} on ${new Date(update.reservation_date).toLocaleDateString()} has been ${update.status}.`,
-                    time: new Date().toISOString(), read: false, status: update.status
-                };
-                addNotification(n); showPushNotification(n); showToast(n);
-                updateTableRow(update.id, update.status);
+        }).then(r=>r.json()).then(data=>{
+            (data.updates||[]).forEach(u=>{
+                const n={id:u.id,title:u.status==='approved'?'✓ Reservation Approved!':'✗ Reservation Declined',
+                    message:`Your reservation for ${u.resource_name} on ${new Date(u.reservation_date).toLocaleDateString()} has been ${u.status}.`,
+                    time:new Date().toISOString(),read:false,status:u.status};
+                addNotification(n); showToast(n);
             });
-            lastCheckTime = new Date().toISOString();
-        }).catch(() => {});
+            lastCheckTime=new Date().toISOString();
+        }).catch(()=>{});
     }
-
-    function addNotification(n) { notifications.unshift(n); unreadCount++; updateNotificationBadge(); renderNotifications(); }
-
-    function showPushNotification(n) {
-        if ('Notification' in window && Notification.permission === 'granted')
-            new Notification(n.title, { body: n.message, icon: '/favicon.ico', tag: 'status-update', renotify: true });
+    function addNotification(n){notifications.unshift(n);unreadCount++;updateNotificationBadge();renderNotifications();}
+    function showToast(n){
+        const wrap=document.getElementById('toastContainer'),id='toast-'+Date.now();
+        let icon='fa-clock',bg='bg-amber-100',fg='text-amber-600';
+        if(n.status==='approved'){icon='fa-circle-check';bg='bg-green-100';fg='text-green-600';}
+        else if(n.status==='declined'){icon='fa-circle-xmark';bg='bg-red-100';fg='text-red-600';}
+        const t=document.createElement('div');t.id=id;t.className=`toast-message ${n.status||'pending'}`;
+        t.innerHTML=`<div class="flex items-start gap-3"><div class="w-8 h-8 ${bg} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid ${icon} ${fg} text-sm"></i></div><div class="flex-1"><p class="font-black text-sm text-slate-800">${n.title}</p><p class="text-xs text-slate-500 mt-0.5">${n.message}</p></div><button onclick="document.getElementById('${id}').remove()" class="text-slate-300 hover:text-slate-500 flex-shrink-0"><i class="fa-solid fa-xmark text-xs"></i></button></div>`;
+        wrap.appendChild(t);setTimeout(()=>{const el=document.getElementById(id);if(el)el.remove();},5000);
     }
-
-    function showToast(n) {
-        const wrap = document.getElementById('toastContainer');
-        const id   = 'toast-' + Date.now();
-        let icon = 'fa-clock', bg = 'bg-amber-100', fg = 'text-amber-600';
-        if (n.status === 'approved') { icon = 'fa-circle-check'; bg = 'bg-green-100'; fg = 'text-green-600'; }
-        else if (n.status === 'declined') { icon = 'fa-circle-xmark'; bg = 'bg-red-100'; fg = 'text-red-600'; }
-        const t = document.createElement('div');
-        t.id = id; t.className = `toast-message ${n.status || 'pending'}`;
-        t.innerHTML = `<div class="flex items-start gap-3">
-            <div class="w-8 h-8 ${bg} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid ${icon} ${fg} text-sm"></i></div>
-            <div class="flex-1"><p class="font-black text-sm text-slate-800">${n.title}</p><p class="text-xs text-slate-500 mt-0.5">${n.message}</p></div>
-            <button onclick="document.getElementById('${id}').remove()" class="text-slate-300 hover:text-slate-500 flex-shrink-0"><i class="fa-solid fa-xmark text-xs"></i></button>
-        </div>`;
-        wrap.appendChild(t);
-        setTimeout(() => { const el = document.getElementById(id); if (el) el.remove(); }, 5000);
-    }
-
-    function loadNotifications() {
-        reservationsData.forEach(res => {
-            if (res.status !== 'approved' && res.status !== 'declined') return;
-            const hoursAgo = (new Date() - new Date(res.updated_at || res.created_at)) / 3600000;
-            if (hoursAgo >= 24) return;
-            notifications.push({
-                id: res.id,
-                title: res.status === 'approved' ? '✓ Reservation Approved!' : '✗ Reservation Declined',
-                message: `Your reservation for ${res.resource_name || 'Resource'} on ${new Date(res.reservation_date).toLocaleDateString()} has been ${res.status}.`,
-                time: res.updated_at || res.created_at, read: false, status: res.status,
-            });
+    function loadNotifications(){
+        reservationsData.forEach(res=>{
+            if(res.status!=='approved'&&res.status!=='declined')return;
+            if((new Date()-new Date(res.updated_at||res.created_at))/3600000>=24)return;
+            notifications.push({id:res.id,title:res.status==='approved'?'✓ Reservation Approved!':'✗ Reservation Declined',
+                message:`Your reservation for ${res.resource_name||'Resource'} on ${new Date(res.reservation_date).toLocaleDateString()} has been ${res.status}.`,
+                time:res.updated_at||res.created_at,read:false,status:res.status});
         });
-        unreadCount = notifications.length;
-        updateNotificationBadge(); renderNotifications();
-        notifications.forEach(n => { if (!n.read) showToast(n); });
+        unreadCount=notifications.length;updateNotificationBadge();renderNotifications();
+        notifications.forEach(n=>{if(!n.read)showToast(n);});
     }
-
-    function toggleNotifications() { document.getElementById('notificationDropdown').classList.toggle('show'); }
-    function markAllAsRead() { notifications.forEach(n => n.read = true); unreadCount = 0; updateNotificationBadge(); renderNotifications(); }
-    function updateNotificationBadge() {
-        const b = document.getElementById('notificationBadge');
-        b.style.display = unreadCount > 0 ? 'block' : 'none';
-        b.textContent   = unreadCount > 9 ? '9+' : unreadCount;
-    }
-    function renderNotifications() {
-        const list = document.getElementById('notificationList');
-        if (!notifications.length) {
-            list.innerHTML = `<div class="p-8 text-center"><i class="fa-regular fa-bell-slash text-3xl text-slate-200 mb-2 block"></i><p class="text-sm text-slate-400 font-medium">All caught up!</p></div>`;
-            return;
-        }
-        const timeAgo = t => { const s = Math.floor((Date.now() - new Date(t)) / 1000); if (s < 60) return 'Just now'; if (s < 3600) return `${Math.floor(s/60)}m ago`; if (s < 86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago`; };
-        list.innerHTML = [...notifications].sort((a,b) => new Date(b.time)-new Date(a.time)).map(n => {
-            let icon = 'fa-clock', bg = 'bg-amber-100', fg = 'text-amber-600';
-            if (n.status === 'approved') { icon = 'fa-circle-check'; bg = 'bg-green-100'; fg = 'text-green-600'; }
-            else if (n.status === 'declined') { icon = 'fa-circle-xmark'; bg = 'bg-red-100'; fg = 'text-red-600'; }
-            return `<div class="notif-item ${!n.read ? 'unread' : ''}" onclick="markAsRead(${n.id})">
-                <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 ${bg} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid ${icon} ${fg} text-xs"></i></div>
-                    <div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800">${n.title}</p><p class="text-xs text-slate-500 truncate mt-0.5">${n.message}</p><p class="text-[10px] text-slate-400 mt-1">${timeAgo(n.time)}</p></div>
-                    ${!n.read ? '<span class="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5"></span>' : ''}
-                </div>
-            </div>`;
+    function toggleNotifications(){document.getElementById('notificationDropdown').classList.toggle('show');}
+    function markAllAsRead(){notifications.forEach(n=>n.read=true);unreadCount=0;updateNotificationBadge();renderNotifications();}
+    function updateNotificationBadge(){const b=document.getElementById('notificationBadge');b.style.display=unreadCount>0?'block':'none';b.textContent=unreadCount>9?'9+':unreadCount;}
+    function renderNotifications(){
+        const list=document.getElementById('notificationList');
+        if(!notifications.length){list.innerHTML=`<div class="p-8 text-center"><i class="fa-regular fa-bell-slash text-3xl text-slate-200 mb-2 block"></i><p class="text-sm text-slate-400 font-medium">All caught up!</p></div>`;return;}
+        const tAgo=t=>{const s=Math.floor((Date.now()-new Date(t))/1000);if(s<60)return'Just now';if(s<3600)return`${Math.floor(s/60)}m ago`;if(s<86400)return`${Math.floor(s/3600)}h ago`;return`${Math.floor(s/86400)}d ago`;};
+        list.innerHTML=[...notifications].sort((a,b)=>new Date(b.time)-new Date(a.time)).map(n=>{
+            let icon='fa-clock',bg='bg-amber-100',fg='text-amber-600';
+            if(n.status==='approved'){icon='fa-circle-check';bg='bg-green-100';fg='text-green-600';}
+            else if(n.status==='declined'){icon='fa-circle-xmark';bg='bg-red-100';fg='text-red-600';}
+            return`<div class="notif-item ${!n.read?'unread':''}" onclick="markAsRead(${n.id})"><div class="flex items-start gap-3"><div class="w-8 h-8 ${bg} rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid ${icon} ${fg} text-xs"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm text-slate-800">${n.title}</p><p class="text-xs text-slate-500 truncate mt-0.5">${n.message}</p><p class="text-[10px] text-slate-400 mt-1">${tAgo(n.time)}</p></div>${!n.read?'<span class="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5"></span>':''}</div></div>`;
         }).join('');
     }
-    function markAsRead(id) {
-        const n = notifications.find(x => x.id === id);
-        if (n && !n.read) { n.read = true; unreadCount = Math.max(0, unreadCount - 1); updateNotificationBadge(); renderNotifications(); }
-    }
-    function updateTableRow(reservationId, newStatus) {
-        const row = document.querySelector(`.reservation-row[data-id="${reservationId}"]`);
-        if (row) {
-            const badge = row.querySelector('.status-badge');
-            if (badge) { badge.className = `status-badge status-${newStatus}`; badge.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1); }
-            row.dataset.status = newStatus;
-            const cancelBtn = row.querySelector('.btn-cancel');
-            if (cancelBtn && newStatus !== 'pending') cancelBtn.style.display = 'none';
-        }
-        const card = document.querySelector(`.res-card[data-id="${reservationId}"]`);
-        if (card) {
-            const badge = card.querySelector('.status-badge');
-            if (badge) { badge.className = `status-badge status-${newStatus} flex-shrink-0`; badge.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1); }
-            card.dataset.status = newStatus;
-        }
-    }
-    document.addEventListener('click', e => {
-        const drop = document.getElementById('notificationDropdown');
-        const bell = document.querySelector('.notif-bell');
-        if (bell && !bell.contains(e.target) && drop && !drop.contains(e.target)) drop.classList.remove('show');
+    function markAsRead(id){const n=notifications.find(x=>x.id===id);if(n&&!n.read){n.read=true;unreadCount=Math.max(0,unreadCount-1);updateNotificationBadge();renderNotifications();}}
+    document.addEventListener('click',e=>{
+        const drop=document.getElementById('notificationDropdown'),bell=document.getElementById('bellBtn');
+        if(bell&&!bell.contains(e.target)&&drop&&!drop.contains(e.target))drop.classList.remove('show');
     });
 
     applyFilters();
