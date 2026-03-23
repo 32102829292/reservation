@@ -1005,6 +1005,146 @@ function closeModal(key) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('detail'); closeModal('approve'); closeModal('decline'); } });
 
 applyFilters();
+
+// ── AUTO-REFRESH ────────────────────────────────────────────────────────────
+// Polls the server every 30s. Skips refresh if a modal is open or user is
+// actively typing in search/date fields. Shows a live countdown indicator.
+const AUTO_REFRESH_INTERVAL = 30; // seconds
+let   autoRefreshTimer  = null;
+let   countdownTimer    = null;
+let   secondsLeft       = AUTO_REFRESH_INTERVAL;
+let   refreshPaused     = false;
+
+const refreshIndicator = document.createElement('div');
+refreshIndicator.id    = 'autoRefreshIndicator';
+refreshIndicator.style.cssText = `
+    position: fixed; bottom: calc(90px + env(safe-area-inset-bottom,16px)); right: 16px;
+    background: rgba(15,23,42,0.82); backdrop-filter: blur(8px);
+    color: white; font-family: inherit; font-size: 0.7rem; font-weight: 700;
+    padding: 6px 12px; border-radius: 999px; z-index: 90;
+    display: flex; align-items: center; gap: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer;
+    transition: opacity 0.2s;
+`;
+refreshIndicator.title = 'Click to refresh now';
+refreshIndicator.innerHTML = `<span id="refreshDot" style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;"></span><span id="refreshCountdown">Refresh in ${AUTO_REFRESH_INTERVAL}s</span>`;
+document.body.appendChild(refreshIndicator);
+
+refreshIndicator.addEventListener('click', () => doAutoRefresh(true));
+
+function updateCountdown() {
+    const el = document.getElementById('refreshCountdown');
+    const dot = document.getElementById('refreshDot');
+    if (!el) return;
+    if (refreshPaused) {
+        el.textContent = 'Refresh paused';
+        dot.style.background = '#f59e0b';
+    } else {
+        el.textContent = `Refresh in ${secondsLeft}s`;
+        dot.style.background = '#22c55e';
+    }
+}
+
+function startCountdown() {
+    clearInterval(countdownTimer);
+    secondsLeft = AUTO_REFRESH_INTERVAL;
+    updateCountdown();
+    countdownTimer = setInterval(() => {
+        if (!refreshPaused) {
+            secondsLeft--;
+            if (secondsLeft <= 0) secondsLeft = AUTO_REFRESH_INTERVAL;
+        }
+        updateCountdown();
+    }, 1000);
+}
+
+async function doAutoRefresh(force = false) {
+    // Don't refresh if any modal is open (user is working)
+    const anyOpen = document.querySelector('.overlay.open');
+    if (anyOpen && !force) return;
+
+    // Don't refresh if user is typing in search/date
+    const search = document.getElementById('searchInput');
+    const date   = document.getElementById('dateInput');
+    if (!force && (document.activeElement === search || document.activeElement === date)) return;
+
+    try {
+        const dot = document.getElementById('refreshDot');
+        if (dot) { dot.style.background = '#3b82f6'; }
+        const el = document.getElementById('refreshCountdown');
+        if (el) el.textContent = 'Refreshing…';
+
+        const response = await fetch(window.location.href, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const html = await response.text();
+
+        const parser  = new DOMParser();
+        const newDoc  = parser.parseFromString(html, 'text/html');
+
+        // ── Swap table body ──
+        const newTbody = newDoc.querySelector('#tableBody');
+        const oldTbody = document.querySelector('#tableBody');
+        if (newTbody && oldTbody) oldTbody.innerHTML = newTbody.innerHTML;
+
+        // ── Swap mobile card list ──
+        const newCards = newDoc.querySelector('#mobileCardList');
+        const oldCards = document.querySelector('#mobileCardList');
+        if (newCards && oldCards) oldCards.innerHTML = newCards.innerHTML;
+
+        // ── Update stat card numbers ──
+        newDoc.querySelectorAll('.stat-card').forEach((nc, i) => {
+            const oc = document.querySelectorAll('.stat-card')[i];
+            if (oc) oc.querySelector('p:last-child').textContent = nc.querySelector('p:last-child').textContent;
+        });
+
+        // ── Update pending badge in sidebar ──
+        const newBadge = newDoc.querySelector('.sidebar-item.active .ml-auto');
+        const oldBadge = document.querySelector('.sidebar-item.active .ml-auto');
+        if (newBadge && oldBadge) oldBadge.textContent = newBadge.textContent;
+
+        // ── Re-register row references so filters/print log still work ──
+        allTableRows.length = 0;
+        document.querySelectorAll('#tableBody .res-row').forEach(r => allTableRows.push(r));
+        allCards.length = 0;
+        document.querySelectorAll('#mobileCardList .res-card').forEach(c => allCards.push(c));
+
+        // ── Re-apply current filter so view stays consistent ──
+        applyFilters();
+
+        secondsLeft = AUTO_REFRESH_INTERVAL;
+        updateCountdown();
+        if (dot) dot.style.background = '#22c55e';
+
+    } catch (err) {
+        console.warn('Auto-refresh failed:', err.message);
+        const dot = document.getElementById('refreshDot');
+        if (dot) dot.style.background = '#ef4444';
+        setTimeout(() => { if (dot) dot.style.background = '#22c55e'; }, 3000);
+    }
+}
+
+// Pause auto-refresh while any modal is open
+const observer = new MutationObserver(() => {
+    refreshPaused = !!document.querySelector('.overlay.open');
+    updateCountdown();
+});
+document.querySelectorAll('.overlay').forEach(el => observer.observe(el, { attributes: true, attributeFilter: ['class'] }));
+
+// Pause while typing in search/date
+['searchInput','dateInput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('focus', () => { refreshPaused = true; updateCountdown(); });
+    el.addEventListener('blur',  () => { refreshPaused = !!document.querySelector('.overlay.open'); updateCountdown(); });
+});
+
+// Kick everything off
+autoRefreshTimer = setInterval(() => doAutoRefresh(), AUTO_REFRESH_INTERVAL * 1000);
+startCountdown();
 </script>
 </body>
 </html>
