@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#16a34a">
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SK Reserve">

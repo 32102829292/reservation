@@ -6,6 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#16a34a">
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
 </head>
 <body>
 <div class="container mt-5">
