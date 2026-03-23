@@ -343,13 +343,9 @@ class AdminController extends Controller
                 ->setJSON(['ok' => false, 'error' => 'Unauthorized']);
         }
 
-        $post  = $this->request->getPost();
-        $json  = $this->request->getJSON(true) ?? [];
-        $input = !empty($post) ? $post : $json;
-
-        $reservationId = (int)($input['reservation_id'] ?? 0);
-        $printed       = isset($input['printed']) ? ($input['printed'] == '1' || $input['printed'] === true) : false;
-        $pages         = (int)($input['pages'] ?? 0);
+        $reservationId = (int)$this->request->getPost('reservation_id');
+        $printed       = ($this->request->getPost('printed') == '1');
+        $pages         = (int)$this->request->getPost('pages');
 
         if (!$reservationId) {
             return $this->response->setJSON(['ok' => false, 'error' => 'Missing reservation_id']);
@@ -387,27 +383,23 @@ class AdminController extends Controller
                     'e_ticket_code'  => $res['e_ticket_code'] ?? null,
                 ]));
             }
-
-            try {
-                $this->logActivity('print', $reservationId,
-                    "Print log saved for reservation #{$reservationId} — printed: " . ($printed ? 'true' : 'false') . ", pages: {$pages}");
-            } catch (\Exception $e) {
-                log_message('error', 'logActivity failed in logPrint: ' . $e->getMessage());
-            }
-
-            // ── FIX: return new CSRF values so JS refreshCsrf() can update
-            // the token after every save — prevents stale token 500 errors
-            // on desktop without requiring a page reload between saves.
-            return $this->response->setJSON([
-                'ok'         => true,
-                'csrf_token' => csrf_token(),
-                'csrf_hash'  => csrf_hash(),
-            ]);
-
         } catch (\Exception $e) {
-            log_message('error', 'logPrint failed: ' . $e->getMessage());
-            return $this->response->setJSON(['ok' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+            log_message('error', 'Admin logPrint — print_logs failed: ' . $e->getMessage());
+            return $this->response->setJSON(['ok' => false, 'error' => 'DB error: ' . $e->getMessage()]);
         }
+
+        try {
+            $this->db->table('activity_logs')->insert([
+                'user_id'        => session()->get('user_id'),
+                'action'         => 'print',
+                'reservation_id' => $reservationId,
+                'created_at'     => date('Y-m-d H:i:s'),
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Admin logPrint — activity_logs failed: ' . $e->getMessage());
+        }
+
+        return $this->response->setJSON(['ok' => true]);
     }
 
     public function manageSK()
