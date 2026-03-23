@@ -609,4 +609,3 @@ $nextColors = [
 <?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 </body>
 </html>
-PHPEOF
