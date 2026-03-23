@@ -210,11 +210,14 @@
 
     <?php
     $navItems = [
-        ['url' => '/dashboard',        'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
-        ['url' => '/reservation',      'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'reservation'],
-        ['url' => '/reservation-list', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'reservation-list'],
-        ['url' => '/books',            'icon' => 'fa-book-open',       'label' => 'Library',         'key' => 'books'],
-        ['url' => '/profile',          'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+        ['url' => '/sk/dashboard',       'icon' => 'fa-house',           'label' => 'Dashboard',        'key' => 'dashboard'],
+        ['url' => '/sk/reservations',    'icon' => 'fa-calendar-alt',    'label' => 'All Reservations', 'key' => 'reservations'],
+        ['url' => '/sk/new-reservation', 'icon' => 'fa-plus',            'label' => 'New Reservation',  'key' => 'new-reservation'],
+        ['url' => '/sk/user-requests',   'icon' => 'fa-users',           'label' => 'User Requests',    'key' => 'user-requests'],
+        ['url' => '/sk/my-reservations', 'icon' => 'fa-calendar',        'label' => 'My Reservations',  'key' => 'my-reservations'],
+        ['url' => '/sk/books',           'icon' => 'fa-book-open',       'label' => 'Library',          'key' => 'books'],
+        ['url' => '/sk/scanner',         'icon' => 'fa-qrcode',          'label' => 'Scanner',          'key' => 'scanner'],
+        ['url' => '/sk/profile',         'icon' => 'fa-regular fa-user', 'label' => 'Profile',          'key' => 'profile'],
     ];
 
     $remaining = $remainingReservations ?? 3;
@@ -288,7 +291,7 @@
                     <a href="<?= base_url($item['url']) ?>" class="flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all <?= $active ?>">
                         <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
                         <?= $item['label'] ?>
-                        <?php if ($item['key'] == 'reservation-list' && isset($pendingCount) && $pendingCount > 0): ?>
+                        <?php if ($item['key'] == 'my-reservations' && isset($pendingCount) && $pendingCount > 0): ?>
                             <span class="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $pendingCount ?></span>
                         <?php endif; ?>
                     </a>
@@ -327,7 +330,7 @@
                 <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[72px] rounded-xl transition flex-shrink-0 <?= $cls ?> relative">
                     <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
                     <span class="text-[9px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
-                    <?php if ($item['key'] == 'reservation-list' && isset($pendingCount) && $pendingCount > 0): ?>
+                    <?php if ($item['key'] == 'my-reservations' && isset($pendingCount) && $pendingCount > 0): ?>
                         <span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full"><?= $pendingCount ?></span>
                     <?php endif; ?>
                 </a>
@@ -349,7 +352,7 @@
                 <p class="text-slate-400 font-medium text-sm mt-1">Track and manage your reservation requests.</p>
             </div>
             <div class="flex items-center gap-3 flex-shrink-0">
-                <a href="<?= base_url('/reservation') ?>" class="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm shadow-green-200">
+                <a href="<?= base_url('/sk/new-reservation') ?>" class="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm shadow-green-200">
                     <i class="fa-solid fa-plus"></i> Reserve
                 </a>
                 <div class="notif-bell" onclick="toggleNotifications()">
@@ -441,7 +444,7 @@
                             <tr><td colspan="7"><div class="empty-state">
                                 <i class="fa-regular fa-calendar-xmark text-4xl mb-3 block text-slate-300"></i>
                                 <p class="font-bold text-slate-400">No reservations yet.</p>
-                                <a href="<?= base_url('/reservation') ?>" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-2xl font-bold text-sm hover:bg-green-700 transition">
+                                <a href="<?= base_url('/sk/new-reservation') ?>" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-2xl font-bold text-sm hover:bg-green-700 transition">
                                     <i class="fa-solid fa-plus"></i> Make one now
                                 </a>
                             </div></td></tr>
@@ -512,7 +515,7 @@
                 <div class="card-empty">
                     <i class="fa-regular fa-calendar-xmark text-4xl text-slate-200 mb-3 block"></i>
                     <p class="font-black text-slate-400">No reservations yet</p>
-                    <a href="<?= base_url('/reservation') ?>" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-2xl font-bold text-sm hover:bg-green-700 transition">
+                    <a href="<?= base_url('/sk/new-reservation') ?>" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-2xl font-bold text-sm hover:bg-green-700 transition">
                         <i class="fa-solid fa-plus"></i> Make one now
                     </a>
                 </div>
