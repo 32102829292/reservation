@@ -10,13 +10,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#16a34a">
+    <meta name="theme-color" content="#2563eb">
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SK Reserve">
-    <link rel="apple-touch-icon" href="/assets/img/icon-192.png">
-    <!-- ════════════════════════════════════════════════════════ -->
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -63,10 +58,6 @@
             border-radius: 3px;
         }
 
-        .sidebar-nav::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
         .sidebar-footer {
             flex-shrink: 0;
             padding: 16px;
@@ -78,9 +69,9 @@
         }
 
         .sidebar-item.active {
-            background: #16a34a;
+            background: #2563eb;
             color: white;
-            box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.3);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, .3);
         }
 
         .mobile-nav-pill {
@@ -90,7 +81,7 @@
             transform: translateX(-50%);
             width: 92%;
             max-width: 600px;
-            background: rgba(20, 83, 45, 0.98);
+            background: rgba(30, 58, 138, 0.97);
             backdrop-filter: blur(12px);
             border-radius: 24px;
             padding: 6px;
@@ -141,9 +132,9 @@
         select:focus,
         textarea:focus {
             outline: none;
-            border-color: #16a34a;
+            border-color: #2563eb;
             background: white;
-            box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.08);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
         }
 
         input[readonly] {
@@ -153,7 +144,7 @@
         }
 
         .btn-primary {
-            background: #16a34a;
+            background: #2563eb;
             color: white;
             border: none;
             padding: 1rem 2rem;
@@ -170,9 +161,9 @@
         }
 
         .btn-primary:hover {
-            background: #15803d;
+            background: #1d4ed8;
             transform: translateY(-2px);
-            box-shadow: 0 12px 20px -5px rgba(22, 163, 74, 0.35);
+            box-shadow: 0 12px 20px -5px rgba(37, 99, 235, 0.35);
         }
 
         .modal-backdrop {
@@ -267,40 +258,18 @@
         }
 
         .pc-section {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
             border-radius: 20px;
             padding: 1.5rem;
         }
 
-        .availability-indicator {
-            font-size: 0.7rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 999px;
-        }
-
-        .available {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .limited {
-            background: #fef9c3;
-            color: #854d0e;
-        }
-
-        .unavailable {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
         .pc-btn.selected-pc {
-            background: #16a34a !important;
+            background: #2563eb !important;
             color: white !important;
-            border-color: #16a34a !important;
+            border-color: #2563eb !important;
         }
 
-        /* Notification Styles */
         .notification-bell {
             position: fixed;
             top: 24px;
@@ -321,7 +290,6 @@
 
         .notification-bell:hover {
             transform: scale(1.1);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         .notification-badge {
@@ -336,20 +304,7 @@
             border-radius: 999px;
             min-width: 1.2rem;
             text-align: center;
-            animation: pulse 2s infinite;
             border: 2px solid white;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
         }
 
         .notification-dropdown {
@@ -409,8 +364,8 @@
         }
 
         .notification-item.unread {
-            background: #f0fdf4;
-            border-left: 3px solid #16a34a;
+            background: #eff6ff;
+            border-left: 3px solid #2563eb;
         }
 
         .notification-item:last-child {
@@ -429,19 +384,10 @@
             color: #94a3b8;
         }
 
-        .notification-empty i {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #cbd5e1;
-        }
-
-        /* Mobile-optimized notifications */
         @media (max-width: 640px) {
             .notification-bell {
                 top: 16px;
                 right: 16px;
-                width: 44px;
-                height: 44px;
             }
 
             .notification-dropdown {
@@ -450,7 +396,6 @@
                 right: 10px;
                 left: 10px;
                 width: auto;
-                max-width: none;
             }
         }
 
@@ -496,64 +441,62 @@
                 opacity: 1;
             }
         }
+
+        .availability-indicator {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+        }
+
+        .available {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .unavailable {
+            background: #fee2e2;
+            color: #991b1b;
+        }
     </style>
 </head>
 
 <body class="flex">
-
     <?php
     $navItems = [
-    ['url' => '/dashboard',        'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
-    ['url' => '/reservation',      'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'reservation'],
-    ['url' => '/reservation-list', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'reservation-list'],
-    ['url' => '/books',            'icon' => 'fa-book-open',       'label' => 'Library',         'key' => 'books'],
-    ['url' => '/profile',          'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
-];
+        ['url' => '/dashboard',        'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
+        ['url' => '/reservation',      'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'reservation'],
+        ['url' => '/reservation-list', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'reservation-list'],
+        ['url' => '/books',            'icon' => 'fa-book-open',       'label' => 'Library',         'key' => 'books'],
+        ['url' => '/profile',          'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+    ];
     ?>
-
-    <!-- Notification Bell -->
     <div class="notification-bell" onclick="toggleNotifications()">
         <i class="fa-regular fa-bell text-xl text-slate-600"></i>
         <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
     </div>
-
-    <!-- Notification Dropdown -->
     <div id="notificationDropdown" class="notification-dropdown">
         <div class="notification-header">
             <span>Notifications</span>
-            <button onclick="markAllAsRead()" class="text-xs bg-green-50 hover:bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-bold transition">
-                Mark all read
-            </button>
+            <button onclick="markAllAsRead()" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-bold transition">Mark all read</button>
         </div>
-        <div id="notificationList" class="notification-list">
-            <!-- Notifications will be populated here -->
-        </div>
+        <div id="notificationList" class="notification-list"></div>
     </div>
-
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container">
-        <!-- Toasts will appear here -->
-    </div>
-
-    <!-- Sidebar -->
+    <div id="toastContainer" class="toast-container"></div>
     <aside class="hidden lg:flex flex-col w-80 p-6">
         <div class="sidebar-card">
             <div class="sidebar-header">
-                <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">Resident Portal</span>
-                <h1 class="text-2xl font-extrabold text-slate-800">my<span class="text-green-600">Space.</span></h1>
+                <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Resident Portal</span>
+                <h1 class="text-2xl font-extrabold text-slate-800">my<span class="text-blue-600">Space.</span></h1>
             </div>
-
             <nav class="sidebar-nav space-y-1">
                 <?php foreach ($navItems as $item):
-                    $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-green-600';
+                    $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600';
                 ?>
                     <a href="<?= base_url($item['url']) ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
-                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
-                        <?= $item['label'] ?>
+                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i><?= $item['label'] ?>
                     </a>
                 <?php endforeach; ?>
             </nav>
-
             <div class="sidebar-footer">
                 <a href="<?= base_url('/logout') ?>" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
                     <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
@@ -561,15 +504,12 @@
             </div>
         </div>
     </aside>
-
-    <!-- Mobile Nav -->
     <nav class="lg:hidden mobile-nav-pill">
         <div class="mobile-scroll-container text-white px-2">
             <?php foreach ($navItems as $item):
-                $isActive = ($page == $item['key']);
-                $btnClass = $isActive ? 'bg-green-700 font-semibold' : 'hover:bg-green-500/30';
+                $cls = ($page == $item['key']) ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
             ?>
-                <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $btnClass ?>">
+                <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
                     <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
                     <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
                 </a>
@@ -580,8 +520,6 @@
             </a>
         </div>
     </nav>
-
-    <!-- Main Content -->
     <main class="flex-1 p-6 lg:p-12 pb-32">
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>
@@ -592,156 +530,82 @@
                 <i class="fa-solid fa-chevron-left text-sm"></i> My Reservations
             </a>
         </header>
-
         <?php if (session()->getFlashdata('error')): ?>
             <div class="mb-6 px-6 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3">
-                <i class="fa-solid fa-circle-exclamation"></i>
-                <?= session()->getFlashdata('error') ?>
+                <i class="fa-solid fa-circle-exclamation"></i><?= session()->getFlashdata('error') ?>
             </div>
         <?php endif; ?>
-
         <?php if (session()->getFlashdata('success')): ?>
-            <div class="mb-6 px-6 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3">
-                <i class="fa-solid fa-circle-check"></i>
-                <?= session()->getFlashdata('success') ?>
+            <div class="mb-6 px-6 py-4 bg-blue-50 border border-blue-200 text-blue-700 font-bold rounded-2xl flex items-center gap-3">
+                <i class="fa-solid fa-circle-check"></i><?= session()->getFlashdata('success') ?>
             </div>
         <?php endif; ?>
-
-        <!-- Fairness Warning -->
         <?php if (isset($remainingReservations) && $remainingReservations > 0): ?>
             <div class="mb-6 px-6 py-4 bg-blue-50 border border-blue-200 text-blue-700 font-bold rounded-2xl flex items-center gap-3">
                 <i class="fa-solid fa-info-circle"></i>
                 You have <?= $remainingReservations ?> reservation<?= $remainingReservations != 1 ? 's' : '' ?> remaining this period (max 3 per 2 weeks).
             </div>
         <?php endif; ?>
-
         <?php if (isset($isBlocked) && $isBlocked): ?>
             <div class="mb-6 px-6 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3">
                 <i class="fa-solid fa-ban"></i>
                 You are temporarily blocked from making reservations until <?= date('F j, Y', strtotime($isBlocked['blocked_until'])) ?>.
             </div>
         <?php endif; ?>
-
         <div class="form-card max-w-3xl mx-auto p-8 lg:p-10">
             <form id="reservationForm" method="POST" action="<?= base_url('reservation/create') ?>">
                 <?= csrf_field() ?>
-
-                <!-- Hidden fields - auto-filled with current user -->
                 <input type="hidden" name="user_id" id="finalUserId" value="<?= $user['id'] ?? '' ?>">
                 <input type="hidden" name="visitor_name" id="finalVisitorName" value="<?= esc($user['name'] ?? '') ?>">
                 <input type="hidden" name="user_email" id="finalUserEmail" value="<?= esc($user['email'] ?? '') ?>">
                 <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
                 <input type="hidden" name="purpose" id="finalPurpose">
                 <input type="hidden" name="pcs" id="finalPcs" value="">
-
-                <!-- Personal Details - Pre-filled with logged-in user -->
                 <div class="mb-8">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="w-9 h-9 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-sm">
-                            <i class="fa-solid fa-user-circle"></i>
-                        </div>
+                        <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid fa-user-circle"></i></div>
                         <h3 class="font-extrabold text-slate-800 tracking-tight">Your Details</h3>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="field-label">Full Name</label>
-                            <input type="text" value="<?= esc($user['name'] ?? '') ?>" readonly class="bg-slate-50">
-                        </div>
-                        <div>
-                            <label class="field-label">Email Address</label>
-                            <input type="email" value="<?= esc($user['email'] ?? '') ?>" readonly class="bg-slate-50">
-                        </div>
+                        <div><label class="field-label">Full Name</label><input type="text" value="<?= esc($user['name'] ?? '') ?>" readonly class="bg-slate-50"></div>
+                        <div><label class="field-label">Email Address</label><input type="email" value="<?= esc($user['email'] ?? '') ?>" readonly class="bg-slate-50"></div>
                     </div>
-                    <p class="text-xs text-green-600 mt-2 flex items-center gap-1">
-                        <i class="fa-solid fa-check-circle"></i>
-                        Booking as yourself
-                    </p>
+                    <p class="text-xs text-blue-600 mt-2 flex items-center gap-1"><i class="fa-solid fa-check-circle"></i> Booking as yourself</p>
                 </div>
-
                 <hr class="section-divider">
-
-                <!-- Resource & Schedule -->
                 <div class="mb-8">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="w-9 h-9 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-sm">
-                            <i class="fa-solid fa-calendar-days"></i>
-                        </div>
+                        <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid fa-calendar-days"></i></div>
                         <h3 class="font-extrabold text-slate-800 tracking-tight">Resource & Schedule</h3>
                     </div>
-
-                    <!-- Resource picker from database -->
                     <div class="mb-5">
                         <label class="field-label">Select Resource</label>
                         <select id="resourceSelect" name="resource_id" required>
                             <option value="">— Choose a resource —</option>
                             <?php foreach ($resources as $res): ?>
-                                <option value="<?= $res['id'] ?>"
-                                    data-name="<?= esc($res['name']) ?>"
-                                    data-type="<?= $res['type'] ?? '' ?>"
-                                    data-has-pcs="<?= (strpos(strtolower($res['name']), 'computer') !== false ||
-                                                        strpos(strtolower($res['name']), 'pc') !== false ||
-                                                        strpos(strtolower($res['name']), 'lab') !== false) ? '1' : '0' ?>">
-                                    <?= esc($res['name']) ?>
-                                    <?php if (!empty($res['capacity'])): ?>
-                                        (Capacity: <?= $res['capacity'] ?>)
-                                    <?php endif; ?>
+                                <option value="<?= $res['id'] ?>" data-name="<?= esc($res['name']) ?>" data-type="<?= $res['type'] ?? '' ?>" data-has-pcs="<?= (strpos(strtolower($res['name']), 'computer') !== false || strpos(strtolower($res['name']), 'pc') !== false || strpos(strtolower($res['name']), 'lab') !== false) ? '1' : '0' ?>">
+                                    <?= esc($res['name']) ?><?php if (!empty($res['capacity'])): ?> (Capacity: <?= $res['capacity'] ?>)<?php endif; ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-
-                    <!-- PC multi-select (shown for computer resources) -->
                     <div id="pcSection" class="hidden pc-section mb-5">
-                        <label class="field-label text-green-700 mb-3 block">Select Workstation(s)</label>
+                        <label class="field-label text-blue-700 mb-3 block">Select Workstation(s)</label>
                         <div id="pcGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                            <?php foreach ($pcs ?? [] as $pc): ?>
-                                <?php $num = esc($pc['pc_number'] ?? $pc['name'] ?? ''); ?>
-                                <?php if (!empty($num)): ?>
-                                    <button type="button"
-                                        onclick="togglePc('<?= $num ?>', this)"
-                                        data-pc="<?= $num ?>"
-                                        class="pc-btn py-2.5 px-3 rounded-xl text-xs font-bold border border-green-200 bg-white text-slate-600 hover:border-green-400 hover:text-green-700 transition">
-                                        <?= $num ?>
-                                    </button>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
+                            <?php foreach ($pcs ?? [] as $pc): $num = esc($pc['pc_number'] ?? $pc['name'] ?? '');
+                                if (!empty($num)): ?>
+                                    <button type="button" onclick="togglePc('<?= $num ?>',this)" data-pc="<?= $num ?>" class="pc-btn py-2.5 px-3 rounded-xl text-xs font-bold border border-blue-200 bg-white text-slate-600 hover:border-blue-400 hover:text-blue-700 transition"><?= $num ?></button>
+                            <?php endif;
+                            endforeach; ?>
                         </div>
-                        <p class="text-[10px] text-green-700 font-semibold mt-3">
-                            <i class="fa-solid fa-circle-info mr-1"></i>
-                            Selected: <span id="pcSelectedLabel">None</span>
-                        </p>
+                        <p class="text-[10px] text-blue-700 font-semibold mt-3"><i class="fa-solid fa-circle-info mr-1"></i>Selected: <span id="pcSelectedLabel">None</span></p>
                     </div>
-
-                    <!-- Date & Time with availability check -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                        <div>
-                            <label class="field-label">Date</label>
-                            <input type="date" name="reservation_date" id="resDate"
-                                value="<?= date('Y-m-d') ?>"
-                                min="<?= date('Y-m-d') ?>"
-                                onchange="checkAvailability()"
-                                required>
-                        </div>
-                        <div>
-                            <label class="field-label">Start Time</label>
-                            <input type="time" name="start_time" id="startTime"
-                                onchange="checkAvailability()"
-                                required>
-                        </div>
-                        <div>
-                            <label class="field-label">End Time</label>
-                            <input type="time" name="end_time" id="endTime"
-                                onchange="checkAvailability()"
-                                required>
-                        </div>
+                        <div><label class="field-label">Date</label><input type="date" name="reservation_date" id="resDate" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>" onchange="checkAvailability()" required></div>
+                        <div><label class="field-label">Start Time</label><input type="time" name="start_time" id="startTime" onchange="checkAvailability()" required></div>
+                        <div><label class="field-label">End Time</label><input type="time" name="end_time" id="endTime" onchange="checkAvailability()" required></div>
                     </div>
-
-                    <!-- Availability indicator -->
-                    <div id="availabilityMsg" class="hidden mb-4 p-3 rounded-xl text-sm font-medium">
-                    </div>
-
-                    <!-- Purpose from database -->
+                    <div id="availabilityMsg" class="hidden mb-4 p-3 rounded-xl text-sm font-medium"></div>
                     <div>
                         <label class="field-label">Purpose of Visit</label>
                         <select id="purposeSelect" name="purpose" required>
@@ -756,437 +620,275 @@
                         <input type="text" id="purposeOther" placeholder="Describe your purpose...">
                     </div>
                 </div>
-
                 <div class="flex justify-end pt-2">
-                    <button type="button" onclick="previewReservation()" class="btn-primary w-full md:w-auto">
-                        <i class="fa-solid fa-eye"></i> Preview & Confirm
-                    </button>
+                    <button type="button" onclick="previewReservation()" class="btn-primary w-full md:w-auto"><i class="fa-solid fa-eye"></i> Preview & Confirm</button>
                 </div>
             </form>
         </div>
     </main>
-
-    <!-- Confirmation Modal -->
     <div id="confirmModal" class="modal-backdrop" onclick="handleBackdrop(event)">
         <div class="modal-box">
             <div class="text-center mb-6">
-                <div class="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-xl shadow-lg shadow-amber-200">
-                    <i class="fa-solid fa-clock"></i>
-                </div>
+                <div class="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-xl shadow-lg shadow-amber-200"><i class="fa-solid fa-clock"></i></div>
                 <h3 class="text-xl font-black text-slate-900">Confirm Reservation</h3>
                 <p class="text-slate-400 text-sm font-medium mt-1">Review your booking details</p>
                 <p class="text-xs text-amber-600 font-bold mt-2">Your reservation will be pending approval</p>
             </div>
-
             <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-5">
-                <div class="mrow"><span class="mrow-label">Name</span> <span class="mrow-value" id="mName"><?= esc($user['name'] ?? '') ?></span></div>
-                <div class="mrow"><span class="mrow-label">Email</span> <span class="mrow-value" id="mEmail"><?= esc($user['email'] ?? '') ?></span></div>
+                <div class="mrow"><span class="mrow-label">Name</span><span class="mrow-value" id="mName"><?= esc($user['name'] ?? '') ?></span></div>
+                <div class="mrow"><span class="mrow-label">Email</span><span class="mrow-value" id="mEmail"><?= esc($user['email'] ?? '') ?></span></div>
                 <div class="mrow"><span class="mrow-label">Resource</span><span class="mrow-value" id="mAsset"></span></div>
                 <div class="mrow"><span class="mrow-label">Workstation</span><span class="mrow-value" id="mStation"></span></div>
-                <div class="mrow"><span class="mrow-label">Date</span> <span class="mrow-value" id="mDate"></span></div>
-                <div class="mrow"><span class="mrow-label">Time</span> <span class="mrow-value" id="mTime"></span></div>
-                <div class="mrow"><span class="mrow-label">Purpose</span> <span class="mrow-value" id="mPurpose"></span></div>
+                <div class="mrow"><span class="mrow-label">Date</span><span class="mrow-value" id="mDate"></span></div>
+                <div class="mrow"><span class="mrow-label">Time</span><span class="mrow-value" id="mTime"></span></div>
+                <div class="mrow"><span class="mrow-label">Purpose</span><span class="mrow-value" id="mPurpose"></span></div>
             </div>
-
-            <!-- Note about approval -->
             <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-5 text-center">
                 <i class="fa-regular fa-bell text-blue-500 mb-2 text-xl"></i>
-                <p class="text-xs text-blue-700 font-medium">
-                    You will receive a notification on this device once your reservation is approved.
-                </p>
+                <p class="text-xs text-blue-700 font-medium">You will receive a notification on this device once your reservation is approved.</p>
             </div>
-
             <div class="flex gap-3">
-                <button type="button" onclick="closeModal()" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">
-                    Cancel
-                </button>
-                <button type="button" id="confirmBtn" onclick="submitReservation()" class="flex-1 py-4 bg-green-600 text-white rounded-2xl font-bold hover:bg-green-700 transition text-sm flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-check"></i> Submit Request
-                </button>
+                <button type="button" onclick="closeModal()" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">Cancel</button>
+                <button type="button" id="confirmBtn" onclick="submitReservation()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-check"></i> Submit Request</button>
             </div>
         </div>
     </div>
-
     <script>
-        // User data from session
         const currentUser = {
             id: <?= $user['id'] ?? 'null' ?>,
             name: "<?= esc($user['name'] ?? '', 'js') ?>",
             email: "<?= esc($user['email'] ?? '', 'js') ?>"
         };
-
-        let selectedPcs = [];
-        let selectedResource = null;
-
-        // Notification System
-        let notifications = [
-            <?php if (!empty($recentApprovals)): ?>
-                <?php foreach ($recentApprovals as $approval): ?> {
-                        id: <?= $approval['id'] ?>,
-                        title: 'Reservation Approved! 🎉',
-                        message: 'Your reservation for <?= esc($approval['resource_name']) ?> on <?= date('M j, Y', strtotime($approval['reservation_date'])) ?> has been approved.',
-                        time: '<?= $approval['approved_at'] ?? date('Y-m-d H:i:s') ?>',
-                        read: false,
-                        resource: '<?= esc($approval['resource_name']) ?>',
-                        date: '<?= $approval['reservation_date'] ?>'
-                    },
-                <?php endforeach; ?>
-            <?php endif; ?>
-        ];
-
-        let unreadCount = notifications.filter(n => !n.read).length;
-        let checkInterval;
-        let lastCheckTime = new Date().toISOString();
-
-        // Request notification permission on page load
+        let selectedPcs = [],
+            selectedResource = null;
+        let notifications = [<?php if (!empty($recentApprovals)): ?><?php foreach ($recentApprovals as $approval): ?> {
+            id: <?= $approval['id'] ?>,
+            title: 'Reservation Approved! 🎉',
+            message: 'Your reservation for <?= esc($approval['resource_name']) ?> on <?= date('M j, Y', strtotime($approval['reservation_date'])) ?> has been approved.',
+            time: '<?= $approval['approved_at'] ?? date('Y-m-d H:i:s') ?>',
+            read: false
+        }, <?php endforeach; ?><?php endif; ?>];
+        let unreadCount = notifications.filter(n => !n.read).length,
+            checkInterval, lastCheckTime = new Date().toISOString();
         document.addEventListener('DOMContentLoaded', function() {
-            if ('Notification' in window) {
-                Notification.requestPermission();
-            }
-
-            // Load notifications
+            if ('Notification' in window) Notification.requestPermission();
             renderNotifications();
             updateNotificationBadge();
-
-            // Check for new approvals every 30 seconds
             checkInterval = setInterval(checkForNewApprovals, 30000);
-
-            // Set up event listener for when user returns to tab
             document.addEventListener('visibilitychange', function() {
-                if (!document.hidden) {
-                    checkForNewApprovals();
-                }
+                if (!document.hidden) checkForNewApprovals();
             });
-
-            // Show toast for unread notifications
-            notifications.forEach(notif => {
-                if (!notif.read) {
-                    showToast(notif);
-                }
+            notifications.forEach(n => {
+                if (!n.read) showToast(n);
             });
         });
 
-        // Check for new approvals
         function checkForNewApprovals() {
             fetch('<?= base_url("reservation/check-new-approvals") ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        user_id: currentUser.id,
-                        last_check: lastCheckTime
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    user_id: currentUser.id,
+                    last_check: lastCheckTime
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.new_approvals && data.new_approvals.length > 0) {
-                        data.new_approvals.forEach(approval => {
-                            const notification = {
-                                id: approval.id,
-                                title: 'Reservation Approved! 🎉',
-                                message: `Your reservation for ${approval.resource_name} on ${new Date(approval.date).toLocaleDateString()} has been approved.`,
-                                time: new Date().toISOString(),
-                                read: false,
-                                resource: approval.resource_name,
-                                date: approval.date
-                            };
-
-                            addNotification(notification);
-                            showPushNotification(notification);
-                            showToast(notification);
-                        });
-
-                        lastCheckTime = new Date().toISOString();
-                    }
-                })
-                .catch(error => console.error('Error checking approvals:', error));
+            }).then(r => r.json()).then(data => {
+                if (data.new_approvals && data.new_approvals.length > 0) {
+                    data.new_approvals.forEach(a => {
+                        const n = {
+                            id: a.id,
+                            title: 'Reservation Approved! 🎉',
+                            message: `Your reservation for ${a.resource_name} on ${new Date(a.date).toLocaleDateString()} has been approved.`,
+                            time: new Date().toISOString(),
+                            read: false
+                        };
+                        addNotification(n);
+                        showPushNotification(n);
+                        showToast(n);
+                    });
+                    lastCheckTime = new Date().toISOString();
+                }
+            }).catch(e => console.error(e));
         }
 
-        // Add notification to list
-        function addNotification(notification) {
-            notifications.unshift(notification);
+        function addNotification(n) {
+            notifications.unshift(n);
             unreadCount++;
             updateNotificationBadge();
             renderNotifications();
         }
 
-        // Show push notification
-        function showPushNotification(notification) {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification(notification.title, {
-                    body: notification.message,
-                    icon: '/favicon.ico',
-                    badge: '/favicon.ico',
-                    tag: 'reservation-approval',
-                    renotify: true,
-                    vibrate: [200, 100, 200] // Vibration pattern for mobile
-                });
-            }
+        function showPushNotification(n) {
+            if ('Notification' in window && Notification.permission === 'granted') new Notification(n.title, {
+                body: n.message,
+                icon: '/favicon.ico'
+            });
         }
 
-        // Show toast notification
-        function showToast(notification) {
-            const toastContainer = document.getElementById('toastContainer');
-            const toastId = 'toast-' + Date.now() + Math.random();
-
-            const toast = document.createElement('div');
-            toast.id = toastId;
-            toast.className = 'toast-message';
-            toast.innerHTML = `
-                <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-check text-green-600"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-bold text-sm text-slate-800">${notification.title}</p>
-                        <p class="text-xs text-slate-600 mt-1">${notification.message}</p>
-                        <p class="text-[10px] text-slate-400 mt-1">Just now</p>
-                    </div>
-                    <button onclick="document.getElementById('${toastId}').remove()" class="text-slate-400 hover:text-slate-600">
-                        <i class="fa-solid fa-times"></i>
-                    </button>
-                </div>
-            `;
-
-            toastContainer.appendChild(toast);
-
-            // Auto-remove after 5 seconds
+        function showToast(n) {
+            const c = document.getElementById('toastContainer'),
+                tid = 'toast-' + Date.now() + Math.random(),
+                t = document.createElement('div');
+            t.id = tid;
+            t.className = 'toast-message';
+            t.innerHTML = `<div class="flex items-start gap-3"><div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-check text-blue-600"></i></div><div class="flex-1"><p class="font-bold text-sm text-slate-800">${n.title}</p><p class="text-xs text-slate-600 mt-1">${n.message}</p></div><button onclick="document.getElementById('${tid}').remove()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-times"></i></button></div>`;
+            c.appendChild(t);
             setTimeout(() => {
-                const toastEl = document.getElementById(toastId);
-                if (toastEl) {
-                    toastEl.remove();
-                }
+                const el = document.getElementById(tid);
+                if (el) el.remove();
             }, 5000);
         }
 
-        // Toggle notification dropdown
         function toggleNotifications() {
-            const dropdown = document.getElementById('notificationDropdown');
-            dropdown.classList.toggle('show');
+            document.getElementById('notificationDropdown').classList.toggle('show');
         }
 
-        // Mark all notifications as read
         function markAllAsRead() {
-            notifications.forEach(notif => notif.read = true);
+            notifications.forEach(n => n.read = true);
             unreadCount = 0;
             updateNotificationBadge();
             renderNotifications();
         }
 
-        // Mark single notification as read
         function markAsRead(id) {
-            const notif = notifications.find(n => n.id === id);
-            if (notif && !notif.read) {
-                notif.read = true;
+            const n = notifications.find(n => n.id === id);
+            if (n && !n.read) {
+                n.read = true;
                 unreadCount = Math.max(0, unreadCount - 1);
                 updateNotificationBadge();
                 renderNotifications();
             }
         }
 
-        // Update notification badge
         function updateNotificationBadge() {
-            const badge = document.getElementById('notificationBadge');
+            const b = document.getElementById('notificationBadge');
             if (unreadCount > 0) {
-                badge.style.display = 'block';
-                badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
-            } else {
-                badge.style.display = 'none';
-            }
+                b.style.display = 'block';
+                b.textContent = unreadCount > 9 ? '9+' : unreadCount;
+            } else b.style.display = 'none';
         }
 
-        // Render notifications in dropdown
         function renderNotifications() {
-            const list = document.getElementById('notificationList');
-
-            if (notifications.length === 0) {
-                list.innerHTML = `
-                    <div class="notification-empty">
-                        <i class="fa-regular fa-bell-slash"></i>
-                        <p class="text-sm">No notifications</p>
-                    </div>
-                `;
+            const l = document.getElementById('notificationList');
+            if (!notifications.length) {
+                l.innerHTML = '<div class="notification-empty"><i class="fa-regular fa-bell-slash"></i><p class="text-sm">No notifications</p></div>';
                 return;
             }
-
-            list.innerHTML = notifications
-                .sort((a, b) => new Date(b.time) - new Date(a.time))
-                .map(notif => `
-                    <div class="notification-item ${!notif.read ? 'unread' : ''}" onclick="markAsRead(${notif.id})">
-                        <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <i class="fa-solid fa-check text-green-600 text-xs"></i>
-                            </div>
-                            <div class="flex-1">
-                                <p class="font-bold text-sm text-slate-800">${notif.title}</p>
-                                <p class="text-xs text-slate-600 mt-1">${notif.message}</p>
-                                <p class="notification-time">${formatTimeAgo(notif.time)}</p>
-                            </div>
-                            ${!notif.read ? '<span class="w-2 h-2 bg-green-500 rounded-full mt-1"></span>' : ''}
-                        </div>
-                    </div>
-                `).join('');
+            l.innerHTML = notifications.sort((a, b) => new Date(b.time) - new Date(a.time)).map(n => `<div class="notification-item ${!n.read?'unread':''}" onclick="markAsRead(${n.id})"><div class="flex items-start gap-3"><div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-check text-blue-600 text-xs"></i></div><div class="flex-1"><p class="font-bold text-sm text-slate-800">${n.title}</p><p class="text-xs text-slate-600">${n.message}</p><p class="notification-time">${formatTimeAgo(n.time)}</p></div>${!n.read?'<span class="w-2 h-2 bg-blue-500 rounded-full mt-1"></span>':''}</div></div>`).join('');
         }
 
-        // Format time ago
-        function formatTimeAgo(time) {
-            const seconds = Math.floor((new Date() - new Date(time)) / 1000);
-
-            if (seconds < 60) return 'Just now';
-            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-            return `${Math.floor(seconds / 86400)} days ago`;
+        function formatTimeAgo(t) {
+            const s = Math.floor((new Date() - new Date(t)) / 1000);
+            if (s < 60) return 'Just now';
+            if (s < 3600) return `${Math.floor(s/60)} minutes ago`;
+            if (s < 86400) return `${Math.floor(s/3600)} hours ago`;
+            return `${Math.floor(s/86400)} days ago`;
         }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('notificationDropdown');
-            const bell = document.querySelector('.notification-bell');
-
-            if (!bell.contains(event.target) && !dropdown.contains(event.target)) {
-                dropdown.classList.remove('show');
-            }
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('notificationDropdown'),
+                bell = document.querySelector('.notification-bell');
+            if (!bell.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('show');
         });
-
-        // Auto-fill hidden fields on load
         document.getElementById('finalUserId').value = currentUser.id;
         document.getElementById('finalVisitorName').value = currentUser.name;
         document.getElementById('finalUserEmail').value = currentUser.email;
-
-        // Resource change handler
         document.getElementById('resourceSelect').addEventListener('change', function() {
-            const option = this.options[this.selectedIndex];
-            const hasPcs = option.dataset.hasPcs === '1';
-            const resourceName = option.dataset.name || '';
-
+            const o = this.options[this.selectedIndex];
+            const hasPcs = o.dataset.hasPcs === '1';
             selectedResource = {
                 id: this.value,
-                name: resourceName,
-                hasPcs: hasPcs
+                name: o.dataset.name || '',
+                hasPcs
             };
-
             document.getElementById('pcSection').classList.toggle('hidden', !hasPcs);
-
-            // Reset PC selections
             selectedPcs = [];
             updatePcHidden();
-            document.querySelectorAll('.pc-btn').forEach(btn => {
-                btn.classList.remove('bg-green-600', 'text-white', 'border-green-600');
-                btn.classList.add('bg-white', 'text-slate-600', 'border-green-200');
+            document.querySelectorAll('.pc-btn').forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                b.classList.add('bg-white', 'text-slate-600', 'border-blue-200');
             });
-
             checkAvailability();
         });
 
-        // PC multi-select
         function togglePc(num, btn) {
-            const idx = selectedPcs.indexOf(num);
-            if (idx === -1) {
+            const i = selectedPcs.indexOf(num);
+            if (i === -1) {
                 selectedPcs.push(num);
-                btn.classList.add('bg-green-600', 'text-white', 'border-green-600');
-                btn.classList.remove('bg-white', 'text-slate-600', 'border-green-200');
+                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                btn.classList.remove('bg-white', 'text-slate-600', 'border-blue-200');
             } else {
-                selectedPcs.splice(idx, 1);
-                btn.classList.remove('bg-green-600', 'text-white', 'border-green-600');
-                btn.classList.add('bg-white', 'text-slate-600', 'border-green-200');
+                selectedPcs.splice(i, 1);
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                btn.classList.add('bg-white', 'text-slate-600', 'border-blue-200');
             }
             updatePcHidden();
         }
 
         function updatePcHidden() {
-            // Join selected PCs with comma for storage in pc_number field
             document.getElementById('finalPcs').value = selectedPcs.join(', ');
-            document.getElementById('pcSelectedLabel').textContent =
-                selectedPcs.length ? selectedPcs.join(', ') : 'None';
+            document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
         }
-
-        // Purpose "Others" handler
         document.getElementById('purposeSelect').addEventListener('change', function() {
-            const isOther = this.value === 'Others';
-            document.getElementById('purposeOtherWrap').classList.toggle('hidden', !isOther);
-            if (!isOther) {
-                document.getElementById('purposeOther').value = '';
-            }
+            const isO = this.value === 'Others';
+            document.getElementById('purposeOtherWrap').classList.toggle('hidden', !isO);
+            if (!isO) document.getElementById('purposeOther').value = '';
         });
 
-        // Check availability via AJAX
         function checkAvailability() {
-            const resourceId = document.getElementById('resourceSelect').value;
-            const date = document.getElementById('resDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-
-            if (!resourceId || !date || !startTime || !endTime) {
+            const rid = document.getElementById('resourceSelect').value,
+                date = document.getElementById('resDate').value,
+                st = document.getElementById('startTime').value,
+                et = document.getElementById('endTime').value;
+            if (!rid || !date || !st || !et) {
                 document.getElementById('availabilityMsg').classList.add('hidden');
                 return;
             }
-
-            const msgEl = document.getElementById('availabilityMsg');
-            msgEl.classList.remove('hidden', 'available', 'unavailable');
-            msgEl.textContent = 'Checking availability...';
-            msgEl.classList.add('bg-slate-100', 'text-slate-600');
-
-            // Get CSRF token
-            const csrfName = '<?= csrf_token() ?>';
-            const csrfHash = '<?= csrf_hash() ?>';
-
+            const m = document.getElementById('availabilityMsg');
+            m.classList.remove('hidden', 'available', 'unavailable');
+            m.textContent = 'Checking availability...';
+            m.classList.add('bg-slate-100', 'text-slate-600');
             fetch('<?= base_url("reservation/check-availability") ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: new URLSearchParams({
-                        resource_id: resourceId,
-                        date: date,
-                        start_time: startTime,
-                        end_time: endTime,
-                        [csrfName]: csrfHash
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({
+                    resource_id: rid,
+                    date,
+                    start_time: st,
+                    end_time: et,
+                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
                 })
-                .then(response => response.json())
-                .then(data => {
-                    msgEl.classList.remove('bg-slate-100', 'text-slate-600');
-
-                    if (data.available) {
-                        msgEl.textContent = data.message;
-                        msgEl.classList.add('available');
-                    } else {
-                        msgEl.textContent = data.message;
-                        msgEl.classList.add('unavailable');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    msgEl.classList.remove('bg-slate-100', 'text-slate-600');
-                    msgEl.textContent = 'Error checking availability';
-                    msgEl.classList.add('unavailable');
-                });
+            }).then(r => r.json()).then(data => {
+                m.classList.remove('bg-slate-100', 'text-slate-600');
+                m.textContent = data.message;
+                m.classList.add(data.available ? 'available' : 'unavailable');
+            }).catch(() => {
+                m.classList.remove('bg-slate-100', 'text-slate-600');
+                m.textContent = 'Error checking availability';
+                m.classList.add('unavailable');
+            });
         }
 
-        // Preview reservation
         function previewReservation() {
-            const resourceEl = document.getElementById('resourceSelect');
-            const resourceId = resourceEl.value;
-            const resourceName = resourceEl.options[resourceEl.selectedIndex]?.text || '—';
-            const date = document.getElementById('resDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const purposeVal = document.getElementById('purposeSelect').value;
-            const purposeOther = document.getElementById('purposeOther').value.trim();
-            const purposeFinal = purposeVal === 'Others' && purposeOther ?
-                `Others - ${purposeOther}` :
-                purposeVal;
-            const hasPcSection = !document.getElementById('pcSection').classList.contains('hidden');
-
-            // Validation
-            if (!resourceId) {
+            const re = document.getElementById('resourceSelect'),
+                rid = re.value,
+                rn = re.options[re.selectedIndex]?.text || '—',
+                date = document.getElementById('resDate').value,
+                st = document.getElementById('startTime').value,
+                et = document.getElementById('endTime').value,
+                pv = document.getElementById('purposeSelect').value,
+                po = document.getElementById('purposeOther').value.trim(),
+                pf = pv === 'Others' && po ? `Others - ${po}` : pv,
+                hasPc = !document.getElementById('pcSection').classList.contains('hidden');
+            if (!rid) {
                 alert('Please select a resource');
                 return;
             }
-            if (hasPcSection && selectedPcs.length === 0) {
+            if (hasPc && selectedPcs.length === 0) {
                 alert('Please select at least one workstation');
                 return;
             }
@@ -1194,35 +896,29 @@
                 alert('Please select a date');
                 return;
             }
-            if (!startTime) {
+            if (!st) {
                 alert('Please enter start time');
                 return;
             }
-            if (!endTime) {
+            if (!et) {
                 alert('Please enter end time');
                 return;
             }
-            if (!purposeVal) {
+            if (!pv) {
                 alert('Please select a purpose');
                 return;
             }
-
-            // Set final values
-            document.getElementById('finalPurpose').value = purposeFinal;
-
-            // Update modal
+            document.getElementById('finalPurpose').value = pf;
             document.getElementById('mName').textContent = currentUser.name;
             document.getElementById('mEmail').textContent = currentUser.email;
-            document.getElementById('mAsset').textContent = resourceName;
+            document.getElementById('mAsset').textContent = rn;
             document.getElementById('mStation').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
             document.getElementById('mDate').textContent = date;
-            document.getElementById('mTime').textContent = `${startTime} – ${endTime}`;
-            document.getElementById('mPurpose').textContent = purposeFinal;
-
+            document.getElementById('mTime').textContent = `${st} – ${et}`;
+            document.getElementById('mPurpose').textContent = pf;
             openModal();
         }
 
-        // Submit reservation
         function submitReservation() {
             const btn = document.getElementById('confirmBtn');
             btn.disabled = true;
@@ -1230,7 +926,6 @@
             document.getElementById('reservationForm').submit();
         }
 
-        // Modal functions
         function openModal() {
             document.getElementById('confirmModal').classList.add('show');
             document.body.style.overflow = 'hidden';
@@ -1247,225 +942,14 @@
         function handleBackdrop(e) {
             if (e.target === document.getElementById('confirmModal')) closeModal();
         }
-
-        // Keyboard shortcuts
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeModal();
         });
-
-        // Set minimum date to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('resDate').setAttribute('min', today);
-
-        // Clean up interval on page unload
+        document.getElementById('resDate').setAttribute('min', new Date().toISOString().split('T')[0]);
         window.addEventListener('beforeunload', function() {
-            if (checkInterval) {
-                clearInterval(checkInterval);
-            }
+            if (checkInterval) clearInterval(checkInterval);
         });
     </script>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         PWA — Service Worker · Offline/Online banners · Background sync · Install
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <script>
-    // 1 ── Register Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js', { scope: '/' })
-                .then(reg => {
-                    // Show "Update available" banner when a new SW version is found
-                    reg.addEventListener('updatefound', () => {
-                        const newWorker = reg.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                showPwaBanner(
-                                    'pwa-update-banner',
-                                    `<i class="fa-solid fa-rotate" style="color:#fff"></i>
-                                     New version available &nbsp;
-                                     <button onclick="applyPwaUpdate()"
-                                       style="background:white;color:#2563eb;border:none;padding:3px 12px;
-                                              border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;
-                                              font-family:inherit;">Update now</button>`,
-                                    '#2563eb'
-                                );
-                            }
-                        });
-                    });
-                })
-                .catch(err => console.warn('[PWA] SW registration failed:', err));
-
-            // Handle messages FROM the service worker
-            navigator.serviceWorker.addEventListener('message', event => {
-                if (!event.data) return;
-
-                switch (event.data.type) {
-                    // SW intercepted a POST while offline → save it for later
-                    case 'SAVE_PENDING_RESERVATION': {
-                        const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
-                        pending.push(event.data.payload);
-                        localStorage.setItem('pending_reservations', JSON.stringify(pending));
-                        // Reuse the existing showToast() already defined on this page
-                        showToast({
-                            title: 'Saved offline 💾',
-                            message: "Your reservation will sync automatically when you're back online."
-                        });
-                        break;
-                    }
-                    // SW background-sync fired → flush the queue
-                    case 'FLUSH_PENDING_RESERVATIONS':
-                        flushPendingReservations();
-                        break;
-                }
-            });
-        });
-    }
-
-    // 2 ── Flush saved reservations to the server
-    async function flushPendingReservations() {
-        const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
-        if (!pending.length) return;
-
-        const remaining = [];
-        for (const item of pending) {
-            try {
-                const fd = new FormData();
-                Object.entries(item.data).forEach(([k, v]) => fd.append(k, v));
-                const response = await fetch(item.url, { method: 'POST', body: fd });
-                if (!response.ok) remaining.push(item);
-            } catch {
-                remaining.push(item); // Still offline
-            }
-        }
-
-        localStorage.setItem('pending_reservations', JSON.stringify(remaining));
-
-        if (navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({ type: 'RESERVATIONS_SYNCED' });
-        }
-
-        const synced = pending.length - remaining.length;
-        if (synced > 0) {
-            showToast({
-                title: `${synced} reservation${synced > 1 ? 's' : ''} synced! ✓`,
-                message: 'Your pending reservations were submitted successfully.'
-            });
-        }
-    }
-
-    // 3 ── Online → hide offline banner + trigger sync
-    window.addEventListener('online', async () => {
-        removePwaBanner('pwa-offline-banner');
-        showPwaBanner('pwa-online-banner',
-            `<i class="fa-solid fa-circle-check" style="color:#fff"></i> Back online!`,
-            '#16a34a');
-        setTimeout(() => removePwaBanner('pwa-online-banner'), 3000);
-
-        if ('serviceWorker' in navigator && 'SyncManager' in window) {
-            try {
-                const reg = await navigator.serviceWorker.ready;
-                await reg.sync.register('sync-reservations');
-            } catch {
-                flushPendingReservations();
-            }
-        } else {
-            flushPendingReservations();
-        }
-    });
-
-    // 4 ── Offline → show banner
-    window.addEventListener('offline', () => {
-        showPwaBanner(
-            'pwa-offline-banner',
-            `<i class="fa-solid fa-wifi" style="color:#fff;opacity:0.7"></i>
-             You're offline — cached pages still work`,
-            '#1e293b'
-        );
-    });
-
-    // 5 ── Banner helpers
-    function showPwaBanner(id, html, bg) {
-        if (document.getElementById(id)) return;
-        const el = document.createElement('div');
-        el.id = id;
-        el.style.cssText = `
-            position:fixed;top:0;left:0;right:0;z-index:9999;
-            padding:10px 20px;text-align:center;
-            font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;
-            background:${bg};color:#fff;
-            transform:translateY(-100%);transition:transform 0.3s ease;
-            display:flex;align-items:center;justify-content:center;gap:8px;
-        `;
-        el.innerHTML = html;
-        document.body.prepend(el);
-        requestAnimationFrame(() => { el.style.transform = 'translateY(0)'; });
-    }
-
-    function removePwaBanner(id) {
-        const el = document.getElementById(id);
-        if (el) { el.style.transform = 'translateY(-100%)'; setTimeout(() => el.remove(), 350); }
-    }
-
-    function applyPwaUpdate() {
-        if (navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-        }
-        location.reload();
-    }
-
-    // 6 ── Add-to-Home-Screen install chip (appears after 10s if not already installed)
-    let deferredPrompt = null;
-
-    window.addEventListener('beforeinstallprompt', e => {
-        e.preventDefault();
-        deferredPrompt = e;
-        setTimeout(() => {
-            if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
-                showInstallChip();
-            }
-        }, 10000);
-    });
-
-    function showInstallChip() {
-        if (document.getElementById('pwa-install-chip')) return;
-        const chip = document.createElement('div');
-        chip.id = 'pwa-install-chip';
-        chip.style.cssText = `
-            position:fixed;bottom:90px;right:16px;z-index:999;
-            background:white;border:1px solid #e2e8f0;border-radius:20px;
-            padding:10px 16px;display:flex;align-items:center;gap:10px;
-            box-shadow:0 10px 25px rgba(0,0,0,0.12);
-            font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;
-        `;
-        chip.innerHTML = `
-            <div style="width:32px;height:32px;background:#f0fdf4;border-radius:10px;
-                        display:flex;align-items:center;justify-content:center;">
-                <i class="fa-solid fa-download" style="color:#16a34a;font-size:14px;"></i>
-            </div>
-            <div>
-                <p style="font-weight:800;font-size:13px;color:#1e293b;margin:0;">Install SK Reserve</p>
-                <p style="font-size:11px;color:#94a3b8;margin:0;">Works offline · no App Store needed</p>
-            </div>
-            <button onclick="event.stopPropagation();document.getElementById('pwa-install-chip').remove()"
-                style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:14px;margin-left:4px;">✕</button>
-        `;
-        chip.addEventListener('click', async e => {
-            if (e.target.tagName === 'BUTTON') return;
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                chip.remove();
-            }
-        });
-        document.body.appendChild(chip);
-        setTimeout(() => { const c = document.getElementById('pwa-install-chip'); if (c) c.remove(); }, 12000);
-    }
-
-    window.addEventListener('appinstalled', () => { deferredPrompt = null; });
-    </script>
-    <!-- ══════════════════════════════ END PWA ══════════════════════════════ -->
-
 </body>
 
 </html>

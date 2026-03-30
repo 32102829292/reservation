@@ -1,7 +1,7 @@
 <?php
 $currentRole = $role ?? session()->get('role') ?? 'user';
 $userName    = session()->get('name') ?? 'there';
-$accent      = match($currentRole) { 'chairman' => '#2563eb', 'sk' => '#16a34a', default => '#16a34a' };
+$accent      = match($currentRole) { 'chairman' => '#2563eb', 'sk' => '#2563eb', default => '#2563eb' };
 $roleLabel   = match($currentRole) { 'chairman' => 'Chairman', 'sk' => 'SK Officer', default => 'Resident' };
 $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-shield', default => 'fa-user' };
 ?>
