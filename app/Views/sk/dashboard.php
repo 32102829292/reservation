@@ -1,482 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <title>Dashboard | SK Officer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#16a34a">
-    <meta name="csrf-token" content="<?= csrf_token() ?>">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="csrf-token" content="<?= csrf_hash() ?>">
+    <meta name="csrf-name"  content="<?= csrf_token() ?>">
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <style>
-        :root {
-            --green:       #16a34a;
-            --green-dark:  #14532d;
-            --green-light: #f0fdf4;
-            --green-mid:   #dcfce7;
-            --green-border:#bbf7d0;
-            --slate-bg:    #f8fafc;
-            --card-border: #e2e8f0;
-            --text-main:   #1e293b;
-            --text-muted:  #64748b;
-            --text-faint:  #94a3b8;
-        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { height: 100%; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--slate-bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-
-        /* ── Sidebar ── */
-        .sidebar-card { background: white; border-radius: 32px; border: 1px solid var(--card-border); height: calc(100vh - 48px); position: sticky; top: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,.05); display: flex; flex-direction: column; overflow: hidden; width: 100%; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; }
+        :root { --blue: #2563eb; --blue-light: #eff6ff; --blue-border: #bfdbfe; --blue-dark: #1e3a8a; }
+        .sidebar-card { background: white; border-radius: 32px; border: 1px solid #e2e8f0;
+            height: calc(100vh - 48px); position: sticky; top: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; overflow: hidden; width: 100%; }
         .sidebar-header { flex-shrink: 0; padding: 20px 20px 16px; border-bottom: 1px solid #f1f5f9; }
-        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; scrollbar-width: thin; scrollbar-color: var(--card-border) transparent; }
+        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; }
         .sidebar-nav::-webkit-scrollbar { width: 4px; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
         .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #f1f5f9; }
-        .sidebar-item { transition: all .18s; display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-radius: 16px; font-weight: 600; font-size: .875rem; text-decoration: none; color: var(--text-muted); }
-        .sidebar-item:hover { background: var(--green-light); color: var(--green); }
-        .sidebar-item.active { background: var(--green); color: white; box-shadow: 0 8px 20px -4px rgba(22,163,74,.35); }
+        .sidebar-item { transition: all 0.18s; display: flex; align-items: center; gap: 14px;
+            padding: 12px 18px; border-radius: 16px; font-weight: 600; font-size: .875rem;
+            text-decoration: none; color: #64748b; }
+        .sidebar-item:hover { background: #eff6ff; color: #2563eb; }
+        .sidebar-item.active { background: #2563eb; color: white;
+            box-shadow: 0 8px 20px -4px rgba(37,99,235,0.35); }
         .sidebar-item i { width: 20px; text-align: center; font-size: 1rem; flex-shrink: 0; }
-
-        /* ── Mobile Nav ── */
-        .mobile-nav-pill { position: fixed; bottom: calc(12px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%); width: 94%; max-width: 600px; background: rgba(15,23,42,.97); backdrop-filter: blur(12px); border-radius: 22px; padding: 5px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,.3); }
-        .mobile-scroll-container { display: flex; gap: 3px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .mobile-nav-pill { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom,0px));
+            left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px;
+            background: rgba(30,58,138,0.97); backdrop-filter: blur(12px);
+            border-radius: 24px; padding: 6px; z-index: 100;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
+        .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .mobile-scroll-container::-webkit-scrollbar { display: none; }
-        .mobile-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 7px 8px; min-width: 60px; border-radius: 14px; transition: background .15s; flex-shrink: 0; text-decoration: none; }
-
-        /* ── Cards ── */
-        .dash-card { background: white; border-radius: 20px; border: 1px solid var(--card-border); box-shadow: 0 1px 3px rgba(0,0,0,.04); }
-        @media (min-width:640px) { .dash-card { border-radius: 24px; } }
-        .stat-card { background: white; border-radius: 16px; padding: .9rem; border: 1px solid var(--card-border); transition: all .2s; position: relative; overflow: hidden; }
-        @media (min-width:640px) { .stat-card { border-radius: 20px; padding: 1.25rem; } }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0,0,0,.1); }
-        .kpi-card { background: white; border-radius: 16px; padding: .875rem 1rem; border: 1px solid var(--card-border); border-left-width: 4px; transition: all .2s; }
-        @media (min-width:640px) { .kpi-card { border-radius: 20px; padding: 1.1rem 1.25rem; } }
-        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,.08); }
-
-        /* ── Prog bars ── */
-        .prog-bar  { height: 5px; border-radius: 999px; background: var(--card-border); overflow: hidden; }
-        .prog-fill { height: 100%; border-radius: 999px; transition: width .8s cubic-bezier(.34,1.56,.64,1); }
-
-        /* ── Charts ── */
-        .chart-wrap { position: relative; height: 170px; width: 100%; }
-        @media (min-width:640px) { .chart-wrap { height: 220px; } }
-
-        /* Donut chart + legend — stack on mobile */
-        .resource-chart-wrap { display: flex; align-items: center; gap: 16px; margin-top: .875rem; flex-wrap: wrap; }
-        .resource-chart-canvas { width: 130px !important; height: 130px !important; flex-shrink: 0; }
-        @media (min-width:400px) { .resource-chart-canvas { width: 150px !important; height: 150px !important; } }
-        @media (min-width:640px) { .resource-chart-canvas { width: 160px !important; height: 160px !important; } }
-
-        /* ── Calendar ── */
-        #calendar { font-size: .72rem; }
-        @media (min-width:640px) { #calendar { font-size: .78rem; } }
-        .fc .fc-toolbar { flex-wrap: wrap; gap: .5rem; }
-        .fc-toolbar-title { font-size: .82rem !important; font-weight: 800 !important; color: var(--text-main) !important; }
-        @media (min-width:640px) { .fc-toolbar-title { font-size: .9rem !important; } }
-        .fc-button-primary { background: var(--green) !important; border-color: var(--green) !important; border-radius: 10px !important; font-family: 'Plus Jakarta Sans',sans-serif !important; font-weight: 700 !important; font-size: .72rem !important; padding: .28rem .6rem !important; }
-        .fc-button-primary:hover { background: var(--green-dark) !important; }
-        .fc-daygrid-event { border-radius: 5px !important; font-size: .62rem !important; font-weight: 700 !important; padding: 1px 3px !important; border: none !important; cursor: pointer !important; }
-        .fc-daygrid-day:hover { background: var(--green-light) !important; cursor: pointer; }
-        .fc-day-today { background: var(--green-light) !important; }
-        .fc-day-today .fc-daygrid-day-number { color: var(--green) !important; font-weight: 800 !important; }
-        .fc-daygrid-day-number { font-size: .7rem; font-weight: 600; }
-
-        /* ── Avail pills ── */
-        .avail-pill { font-size: .63rem; font-weight: 800; padding: .16rem .5rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
-        .avail-on  { background: #dcfce7; color: #166634; }
-        .avail-off { background: #fee2e2; color: #991b1b; }
-        .avail-low { background: #fef3c7; color: #92400e; }
-
-        /* ── Timer banner ── */
-        .timer-banner { border-radius: 16px; padding: .875rem 1rem; border: 1px solid; }
-        @media (min-width:640px) { .timer-banner { border-radius: 20px; padding: 1rem 1.25rem; } }
-        .timer-banner.active   { background: #f0fdf4; border-color: #86efac; }
-        .timer-banner.upcoming { background: #eff6ff; border-color: #bfdbfe; }
-        .timer-pulse { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
-        .timer-pulse.pulse { animation: livePulse 1.5s infinite; }
-        @keyframes livePulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.4);opacity:.6;} }
-
-        /* ── Date modal — bottom sheet on mobile ── */
-        #dateModal { display: none; position: fixed; inset: 0; z-index: 200; align-items: flex-end; justify-content: center; }
-        #dateModal.open { display: flex; }
-        @media (min-width:480px) { #dateModal { align-items: center; padding: 12px; } }
-        .modal-backdrop-layer { position: absolute; inset: 0; background: rgba(15,23,42,.55); backdrop-filter: blur(6px); }
-        .modal-box { position: relative; background: white; border-radius: 28px 28px 0 0; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,.35); animation: slideUp .22s cubic-bezier(.34,1.56,.64,1) both; padding-bottom: env(safe-area-inset-bottom,0px); }
-        @media (min-width:480px) { .modal-box { border-radius: 32px; animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both; padding-bottom: 0; } }
-        @keyframes popIn   { from { opacity:0; transform: scale(.92) translateY(16px); } to { opacity:1; transform:none; } }
-        @keyframes slideUp { from { opacity:0; transform: translateY(40px); } to { opacity:1; transform:none; } }
-        .modal-box::-webkit-scrollbar { width: 4px; }
-        .modal-box::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
-        .date-row { display: flex; align-items: center; gap: 12px; padding: .75rem 1rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background .15s; border-radius: 12px; }
-        .date-row:hover { background: var(--slate-bg); }
-        .date-row:last-child { border-bottom: none; }
-        .sheet-handle { width: 40px; height: 4px; background: var(--card-border); border-radius: 999px; margin: 10px auto 0; }
-        @media (min-width:480px) { .sheet-handle { display: none; } }
-
-        /* ── Notif dropdown — full-width on mobile ── */
-        .notif-dropdown { position: fixed; top: 68px; left: 12px; right: 12px; width: auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px -8px rgba(0,0,0,.2); border: 1px solid var(--card-border); z-index: 300; display: none; }
-        @media (min-width:480px) { .notif-dropdown { top: 76px; left: auto; right: 24px; width: 340px; border-radius: 24px; } }
-        .notif-dropdown.open { display: block; animation: slideDown .2s ease; }
-        @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
-        .notif-list { max-height: 280px; overflow-y: auto; }
-        @media (min-width:480px) { .notif-list { max-height: 340px; } }
-        .notif-item { padding: .85rem 1.25rem; border-bottom: 1px solid #f1f5f9; transition: background .15s; cursor: pointer; }
-        .notif-item:hover { background: var(--slate-bg); }
-        .notif-item.unread { background: var(--green-light); border-left: 3px solid var(--green); }
-        .notif-item:last-child { border-bottom: none; }
-
-        /* ── Toast ── */
-        #tl-toast-container { position: fixed; bottom: calc(80px + env(safe-area-inset-bottom,0px)); right: 10px; z-index: 9000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; width: calc(100vw - 20px); max-width: 340px; }
-        @media (min-width:480px) { #tl-toast-container { right: 20px; width: auto; } }
-        .tl-toast { background: #1e293b; color: white; border-radius: 16px; padding: .875rem 1.1rem; box-shadow: 0 12px 28px -4px rgba(0,0,0,.35); display: flex; align-items: flex-start; gap: 10px; pointer-events: auto; animation: toastIn .3s cubic-bezier(.34,1.56,.64,1) both; }
-        .tl-toast.dismissing { animation: toastOut .2s ease forwards; }
-        @keyframes toastIn  { from { opacity:0; transform: translateX(20px) scale(.95); } to { opacity:1; transform:none; } }
-        @keyframes toastOut { to   { opacity:0; transform: translateX(24px) scale(.95); } }
-        .tl-toast-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .85rem; }
-        .tl-toast-warning .tl-toast-icon { background: #f59e0b22; color: #f59e0b; }
-        .tl-toast-expired .tl-toast-icon { background: #ef444422; color: #ef4444; }
-        .tl-toast-title { font-size: .78rem; font-weight: 800; color: white; line-height: 1.3; }
-        .tl-toast-sub   { font-size: .7rem; color: #94a3b8; margin-top: 2px; line-height: 1.4; }
-
-        /* ── Live sessions panel ── */
-        .tl-panel { background: white; border-radius: 20px; border: 1px solid var(--card-border); padding: 1rem; }
-        @media (min-width:640px) { .tl-panel { border-radius: 24px; padding: 1.25rem; } }
-        .tl-session-card { background: var(--slate-bg); border-radius: 14px; border: 1px solid var(--card-border); padding: .75rem .875rem; border-left-width: 4px; transition: all .2s; }
-        @media (min-width:640px) { .tl-session-card { border-radius: 16px; padding: .875rem 1rem; } }
-        .tl-session-card:hover { box-shadow: 0 4px 12px -2px rgba(0,0,0,.08); }
-        .tl-session-card.tl-ok       { border-left-color: #10b981; }
-        .tl-session-card.tl-warning  { border-left-color: #f59e0b; }
-        .tl-session-card.tl-critical { border-left-color: #ef4444; }
-        .tl-session-card.tl-ended    { border-left-color: #94a3b8; opacity: .65; }
-        .tl-countdown { display: inline-flex; align-items: center; gap: 5px; padding: .25rem .65rem; border-radius: 999px; font-size: .72rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
-        .tl-ok       .tl-countdown { background: #dcfce7; color: #166634; }
-        .tl-warning  .tl-countdown { background: #fef3c7; color: #92400e; }
-        .tl-critical .tl-countdown { background: #fee2e2; color: #991b1b; }
-        .tl-ended    .tl-countdown { background: #f1f5f9; color: var(--text-muted); }
-        .tl-prog-track { height: 4px; border-radius: 999px; background: var(--card-border); overflow: hidden; margin-top: .5rem; }
-        .tl-prog-fill  { height: 100%; border-radius: 999px; transition: width 1s linear; }
-        .tl-ok       .tl-prog-fill { background: #10b981; }
-        .tl-warning  .tl-prog-fill { background: #f59e0b; }
-        .tl-critical .tl-prog-fill { background: #ef4444; }
-        .tl-ended    .tl-prog-fill { background: #94a3b8; }
-
-        /* ── Login toast ── */
-        #loginToast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 8999; background: #1e293b; color: white; border-radius: 20px; padding: .875rem 1.5rem; box-shadow: 0 16px 40px -8px rgba(0,0,0,.4); display: flex; align-items: center; gap: 12px; white-space: nowrap; animation: toastRise .4s cubic-bezier(.34,1.56,.64,1) both; }
-        @keyframes toastRise { from{opacity:0;transform:translateX(-50%) translateY(20px) scale(.94);}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1);} }
-
-        /* ── Library ── */
-        .library-banner { border-radius: 16px; padding: 1rem; position: relative; overflow: hidden; background: linear-gradient(135deg,#052e16 0%,#15803d 55%,#16a34a 100%); border: 1px solid #22c55e; }
-        @media (min-width:640px) { .library-banner { border-radius: 20px; padding: 1.25rem 1.5rem; } }
-        .library-banner::before { content:'📚'; position:absolute; right:-10px; top:-10px; font-size:6.5rem; opacity:.07; transform:rotate(14deg); pointer-events:none; line-height:1; }
-        .book-row { display: flex; align-items: center; gap: 8px; padding: .5rem .6rem; border-radius: 12px; transition: all .18s; text-decoration: none; color: inherit; border: 1px solid transparent; }
-        @media (min-width:640px) { .book-row { gap: 10px; padding: .6rem .75rem; border-radius: 14px; } }
-        .book-row:hover { background: var(--green-light); border-color: var(--green-border); }
-        .book-spine { width: 3px; border-radius: 4px; align-self: stretch; flex-shrink: 0; min-height: 28px; }
-
-        /* ── AI finder ── */
-        .ai-shimmer { background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
-        @keyframes shimmer { 0%{background-position:200% 0;}100%{background-position:-200% 0;} }
-
-        /* ── Action buttons ── */
-        .action-btn { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: .75rem .5rem; border-radius: 14px; background: var(--green-light); border: 1px solid var(--green-border); transition: all .2s; text-decoration: none; color: var(--green); }
-        @media (min-width:640px) { .action-btn { padding: .875rem .5rem; border-radius: 16px; gap: 8px; } }
-        .action-btn:hover { background: var(--green-mid); border-color: #86efac; transform: translateY(-2px); box-shadow: 0 8px 20px -4px rgba(22,163,74,.2); }
-
-        /* ── Booking rows ── */
-        .booking-row { display: flex; align-items: center; gap: 10px; padding: .65rem .75rem; border-radius: 14px; transition: background .15s; }
-        .booking-row:hover { background: var(--green-light); }
-        .booking-row.expired { opacity: .55; }
-
-        /* ── Heatmap cells ── */
-        .ins-heatmap-cell { height: 26px; border-radius: 5px; cursor: default; transition: transform .15s; position: relative; }
-        @media (min-width:640px) { .ins-heatmap-cell { height: 32px; border-radius: 6px; } }
-        .ins-heatmap-cell:hover { transform: scaleY(1.1); }
-
-        /* ── Section divider ── */
-        .section-divider { display: flex; align-items: center; gap: 10px; margin: 1.75rem 0 1rem; }
-        @media (min-width:640px) { .section-divider { gap: 12px; margin: 2.25rem 0 1.25rem; } }
-        .section-divider > * { flex-shrink: 0; }
-        .section-divider-line { flex: 1 1 auto; height: 1px; background: var(--card-border); }
-
-        .section-label { display: inline-flex; align-items: center; gap: 8px; font-size: .65rem; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; color: var(--text-faint); margin-bottom: .875rem; }
-        .section-label::before { content: ''; display: inline-block; width: 3px; height: 14px; border-radius: 2px; background: var(--green); flex-shrink: 0; }
-
-        @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
+        /* Badges */
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: .2rem .6rem;
+            border-radius: 999px; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+        .badge-pending   { background: #fef3c7; color: #92400e; }
+        .badge-approved  { background: #dcfce7; color: #166534; }
+        .badge-declined, .badge-canceled { background: #fee2e2; color: #991b1b; }
+        .badge-claimed   { background: #f3e8ff; color: #6b21a8; }
+        .badge-expired   { background: #f1f5f9; color: #475569; }
+        .badge-unclaimed { background: #fff7ed; color: #c2410c; border: 1px dashed #fdba74; }
+        .badge-active    { background: #dbeafe; color: #1e40af; }
+        .badge-inactive  { background: #fee2e2; color: #991b1b; }
+        .badge-rag-yes   { background: #dbeafe; color: #1e40af; }
+        .badge-rag-no    { background: #f1f5f9; color: #64748b; }
+        /* Form inputs */
+        .form-input { width: 100%; padding: .625rem .875rem; background: #f8fafc;
+            border: 1.5px solid #e2e8f0; border-radius: 14px; font-family: 'Plus Jakarta Sans',sans-serif;
+            font-size: .875rem; color: #1e293b; outline: none; transition: border-color .2s,box-shadow .2s; }
+        .form-input:focus { border-color: #2563eb; background: white; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        /* Modals */
+        .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(15,23,42,.55);
+            backdrop-filter:blur(6px); z-index:300; padding:1.25rem; overflow-y:auto;
+            align-items:center; justify-content:center; }
+        .modal-backdrop.open { display:flex; animation:fadeIn .15s ease; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        .modal-box { position:relative; margin:auto; background:white; border-radius:32px;
+            width:94%; max-width:560px; max-height:90vh; overflow-y:auto;
+            box-shadow:0 25px 50px -12px rgba(0,0,0,.35);
+            animation:popIn .22s cubic-bezier(.34,1.56,.64,1) both; }
+        @keyframes popIn { from{opacity:0;transform:scale(.92) translateY(16px)} to{opacity:1;transform:none} }
+        /* Animations */
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
         .fade-up { animation: fadeUp .35s ease both; }
-
-        /* ── Page layout ── */
-        .page-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
-        .sidebar-col  { width: 280px; flex-shrink: 0; padding: 24px; display: none; height: 100vh; overflow: hidden; }
-        @media (min-width: 1024px) { .sidebar-col { display: block; } }
-        .main-col { flex: 1; min-width: 0; height: 100vh; overflow-y: auto; }
-        .dash-main { padding-bottom: calc(90px + env(safe-area-inset-bottom,16px)); }
-
-        /* ── Sync badge ── */
-        .sync-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .62rem; font-weight: 800; padding: .2rem .55rem; border-radius: 999px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; white-space: nowrap; }
     </style>
 </head>
-<body>
-
+<body class="flex min-h-screen">
+ 
 <?php
-/* ═══════════════════════════════════════════════════
-   PHP DATA PREPARATION
-   SYNC FIX: Use $allReservations (system-wide) for
-   stats, live sessions, and calendar so numbers match
-   what the admin sees.
-═══════════════════════════════════════════════════ */
-$page     = $page ?? 'dashboard';
 $navItems = [
-    ['url'=>'/sk/dashboard',            'icon'=>'fa-house',           'label'=>'Dashboard',        'key'=>'dashboard'],
-    ['url'=>'/sk/reservations',         'icon'=>'fa-calendar-alt',    'label'=>'All Reservations', 'key'=>'reservations'],
-    ['url'=>'/sk/new-reservation',      'icon'=>'fa-plus',            'label'=>'New Reservation',  'key'=>'new-reservation'],
-    ['url'=>'/sk/user-requests',        'icon'=>'fa-users',           'label'=>'User Requests',    'key'=>'user-requests'],
-    ['url'=>'/sk/my-reservations',      'icon'=>'fa-calendar',        'label'=>'My Reservations',  'key'=>'my-reservations'],
-    ['url'=>'/sk/scanner',              'icon'=>'fa-qrcode',          'label'=>'Scanner',          'key'=>'scanner'],
-    ['url'=>'/sk/profile',              'icon'=>'fa-regular fa-user', 'label'=>'Profile',          'key'=>'profile'],
+    ['url'=>'/sk/dashboard',       'icon'=>'fa-house',           'label'=>'Dashboard',        'key'=>'dashboard'],
+    ['url'=>'/sk/reservations',    'icon'=>'fa-calendar-alt',    'label'=>'All Reservations', 'key'=>'reservations'],
+    ['url'=>'/sk/new-reservation', 'icon'=>'fa-plus',            'label'=>'New Reservation',  'key'=>'new-reservation'],
+    ['url'=>'/sk/user-requests',   'icon'=>'fa-users',           'label'=>'User Requests',    'key'=>'user-requests'],
+    ['url'=>'/sk/my-reservations', 'icon'=>'fa-calendar',        'label'=>'My Reservations',  'key'=>'my-reservations'],
+    ['url'=>'/sk/books',           'icon'=>'fa-book-open',       'label'=>'Library',          'key'=>'books'],
+    ['url'=>'/sk/scanner',         'icon'=>'fa-qrcode',          'label'=>'Scanner',          'key'=>'scanner'],
+    ['url'=>'/sk/profile',         'icon'=>'fa-regular fa-user', 'label'=>'Profile',          'key'=>'profile'],
 ];
-
-$myRes  = $reservations    ?? [];
-$sysRes = $allReservations ?? [];
-
-$sysTotal    = count($sysRes);
-$sysPending  = count(array_filter($sysRes, fn($r) => ($r['status']??'') === 'pending'));
-$sysApproved = count(array_filter($sysRes, fn($r) => ($r['status']??'') === 'approved'));
-$sysDeclined = count(array_filter($sysRes, fn($r) => in_array($r['status']??'', ['declined','canceled'])));
-$sysClaimed  = count(array_filter($sysRes, fn($r) => in_array($r['claimed']??false, [true,1,'t','true','1'], true)));
-
-$sysToday    = date('Y-m-d');
-$sysTodayAll = array_filter($sysRes, fn($r) => ($r['reservation_date']??'') === $sysToday);
-$sysTodayTotal    = count($sysTodayAll);
-$sysTodayApproved = count(array_filter($sysTodayAll, fn($r) => ($r['status']??'') === 'approved'));
-$sysTodayPending  = count(array_filter($sysTodayAll, fn($r) => ($r['status']??'') === 'pending'));
-$sysTodayClaimed  = count(array_filter($sysTodayAll, fn($r) => in_array($r['claimed']??false, [true,1,'t','true','1'], true)));
-
-$sysApprovalRate    = $sysTotal    > 0 ? round($sysApproved / $sysTotal    * 100) : 0;
-$sysUtilizationRate = $sysApproved > 0 ? round($sysClaimed  / $sysApproved * 100) : 0;
-
-$thirtyDaysAgo   = date('Y-m-d', strtotime('-30 days'));
-$sysMonthlyTotal = count(array_filter($sysRes, fn($r) => ($r['reservation_date']??'') >= $thirtyDaysAgo));
-
-$remainingReservations = $remainingReservations ?? 0;
-$pendingUserCount      = $pendingUserCount      ?? 0;
-$dashBooks             = $dashBooks             ?? [];
-$featuredBooks         = $featuredBooks         ?? [];
-$myBorrowings          = $myBorrowings          ?? [];
-$availableCount        = $availableCount        ?? 0;
-$totalBooks            = $totalBooks            ?? 0;
-
-$usedSlots = (int)($usedThisMonth   ?? 0);
-$maxSlots  = (int)($maxMonthlySlots ?? 3);
-$maxSlots  = max(1, $maxSlots);
-$quotaPct  = min(100, round($usedSlots / $maxSlots * 100));
-
-$insHourArr = array_fill(0,24,0);
-$insDowArr  = array_fill(0,7,0);
-$insMonArr  = array_fill(0,12,0);
-$insResMap  = [];
-$insDateVol = [];
-$ins7 = 0; $insPrev7 = 0;
-
-foreach ($sysRes as $r) {
-    if (!empty($r['start_time']))       $insHourArr[(int)date('G', strtotime($r['start_time']))]++;
-    if (!empty($r['reservation_date'])) {
-        $insDowArr[(int)date('w', strtotime($r['reservation_date']))]++;
-        $insMonArr[(int)date('n', strtotime($r['reservation_date']))-1]++;
-        $insDateVol[$r['reservation_date']] = ($insDateVol[$r['reservation_date']] ?? 0) + 1;
-        $d = (int)floor((time()-strtotime($r['reservation_date']))/86400);
-        if ($d>=0&&$d<7) $ins7++; if ($d>=7&&$d<14) $insPrev7++;
-    }
-    $rname = $r['resource_name'] ?? $r['full_name'] ?? 'Unknown';
-    $insResMap[$rname] = ($insResMap[$rname] ?? 0) + 1;
-}
-$insPH  = array_search(max($insHourArr), $insHourArr);
-$insPD  = array_search(max($insDowArr),  $insDowArr);
-$insPM  = array_search(max($insMonArr),  $insMonArr);
-$f12    = fn($h)=>(($h%12)?:12).' '.($h<12?'AM':'PM');
-$insPHL = $f12($insPH).'–'.$f12($insPH+1);
-$insPDL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][$insPD]??'—';
-$insPML = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][$insPM]??'—';
-arsort($insResMap);
-$insTopRes    = (string)(array_key_first($insResMap)??'N/A');
-$insTopResCnt = (int)(reset($insResMap)?:0);
-arsort($insDateVol);
-$insBD  = array_key_first($insDateVol)??null;
-$insBDC = (int)(reset($insDateVol)?:0);
-$insBDL = $insBD ? date('M j, Y', strtotime($insBD)) : 'N/A';
-$insTrP = $insPrev7>0 ? round((($ins7-$insPrev7)/$insPrev7)*100) : ($ins7>0?100:0);
-$insTrD = $insTrP>=0?'up':'down';
-$insTrC = $insTrD==='up'?'#10b981':'#ef4444';
-$insNS  = $sysApproved > 0 ? round((($sysApproved - $sysClaimed) / $sysApproved) * 100) : 0;
-$insDR  = $sysTotal    > 0 ? round(($sysDeclined / $sysTotal) * 100) : 0;
-
-$chartLabels = []; $chartData = [];
-for ($i = 6; $i >= 0; $i--) {
-    $d = date('Y-m-d', strtotime("-$i days"));
-    $chartLabels[] = date('D', strtotime($d));
-    $chartData[]   = count(array_filter($sysRes, fn($r) => ($r['reservation_date']??'') === $d));
-}
-
-$resourceLabels = []; $resourceData = []; $topResources = []; $resCount = [];
-foreach ($sysRes as $r) { $rn = $r['resource_name'] ?? 'Unknown'; $resCount[$rn] = ($resCount[$rn] ?? 0) + 1; }
-arsort($resCount);
-foreach (array_slice($resCount, 0, 5, true) as $rname => $cnt) { $resourceLabels[] = $rname; $resourceData[] = (int)$cnt; $topResources[] = ['name' => $rname, 'count' => $cnt]; }
-if (empty($resourceLabels)) { $resourceLabels = ['No Data']; $resourceData = [1]; }
 ?>
-
-<div class="page-wrapper">
-
+ 
+ 
 <!-- ════════ SIDEBAR ════════ -->
-<aside class="sidebar-col">
+<aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
     <div class="sidebar-card">
         <div class="sidebar-header">
-            <span class="text-xs font-black tracking-[0.2em] text-green-600 uppercase">SK Officer</span>
-            <h1 class="text-2xl font-extrabold text-slate-800 mt-0.5">Portal<span class="text-green-600">.</span></h1>
+            <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">SK Portal</span>
+            <h1 class="text-2xl font-extrabold text-slate-800 mt-0.5">Portal<span class="text-blue-600">.</span></h1>
         </div>
         <nav class="sidebar-nav space-y-1">
-            <?php foreach ($navItems as $item): $a=($page==$item['key'])?'active':''; ?>
-                <a href="<?= $item['url'] ?>" class="sidebar-item <?= $a ?>">
+            <?php foreach ($navItems as $item):
+                $active = ($page == $item['key']) ? 'active' : '';
+            ?>
+                <a href="<?= $item['url'] ?>" class="sidebar-item <?= $active ?>">
                     <i class="fa-solid <?= $item['icon'] ?>"></i>
                     <?= $item['label'] ?>
-                    <?php if ($item['key']==='user-requests' && ($pendingUserCount??0)>0): ?>
-                        <span class="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $pendingUserCount ?></span>
-                    <?php endif; ?>
                 </a>
             <?php endforeach; ?>
         </nav>
         <div class="sidebar-footer">
-            <div class="bg-slate-50 rounded-2xl p-3 mb-3 border border-slate-100">
-                <div class="flex items-center justify-between mb-1.5">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">My Monthly Quota</p>
-                    <span class="text-[10px] font-black text-green-600"><?= $usedSlots ?>/<?= $maxSlots ?></span>
-                </div>
-                <div class="prog-bar"><div class="prog-fill <?= $quotaPct >= 100 ? 'bg-red-500' : ($quotaPct >= 66 ? 'bg-amber-500' : 'bg-green-500') ?>" style="width:<?= $quotaPct ?>%"></div></div>
-                <p class="text-[10px] text-slate-400 font-medium mt-1"><?= $remainingReservations ?> slot<?= $remainingReservations != 1 ? 's' : '' ?> remaining</p>
-            </div>
             <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all text-sm">
                 <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
             </a>
         </div>
     </div>
 </aside>
-
+ 
 <!-- ════════ MOBILE NAV ════════ -->
 <nav class="lg:hidden mobile-nav-pill">
-    <div class="mobile-scroll-container text-white px-1">
-        <?php foreach ($navItems as $item): $cls=($page==$item['key'])?'bg-green-700':'hover:bg-green-500/30'; ?>
-            <a href="<?= $item['url'] ?>" class="mobile-nav-item <?= $cls ?>">
-                <i class="fa-solid <?= $item['icon'] ?> text-base"></i>
-                <span class="text-[9px] mt-0.5 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+    <div class="mobile-scroll-container text-white px-2">
+        <?php foreach ($navItems as $item):
+            $cls = ($page == $item['key']) ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
+        ?>
+            <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
+                <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
+                <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
             </a>
         <?php endforeach; ?>
-        <a href="/logout" class="mobile-nav-item hover:bg-red-500/30 text-red-400">
-            <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
-            <span class="text-[9px] mt-0.5 text-center leading-tight whitespace-nowrap">Logout</span>
+        <a href="/logout" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
+            <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
+            <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
         </a>
     </div>
 </nav>
-
-<!-- ════════ MODALS ════════ -->
-<div id="dateModal" role="dialog" aria-modal="true">
-    <div class="modal-backdrop-layer" onclick="closeDateModal()"></div>
-    <div class="modal-box">
-        <div class="sheet-handle"></div>
-        <div class="flex items-center justify-between px-5 sm:px-7 pt-4 sm:pt-7 pb-4 border-b border-slate-100">
-            <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Schedule</p>
-                <h3 id="modalDateTitle" class="text-base sm:text-lg font-black text-slate-900"></h3>
-            </div>
-            <button onclick="closeDateModal()" class="w-9 h-9 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+ 
+<main class="flex-1 min-w-0 p-4 lg:p-10 pb-32">
+    <header class="flex items-start justify-between mb-8 gap-4">
+        <div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">SK Portal</p>
+            <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight"><?= htmlspecialchars($page_title ?? ucfirst(str_replace('-',' ','dashboard'))) ?></h2>
+            <p class="text-slate-400 font-medium text-sm mt-0.5"><?= date('l, F j, Y') ?></p>
         </div>
-        <div id="modalList" class="px-4 py-3 space-y-1"></div>
-        <div class="px-5 sm:px-7 pb-5 sm:pb-7 pt-2">
-            <button onclick="closeDateModal()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 rounded-2xl font-bold text-slate-600 text-sm transition">Close</button>
-        </div>
-    </div>
-</div>
-
-<div id="notifDropdown" class="notif-dropdown">
-    <div class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100">
-        <p class="font-black text-slate-800 text-sm">Notifications</p>
-        <button onclick="markAllRead()" class="text-xs bg-green-50 hover:bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-bold transition">Mark all read</button>
-    </div>
-    <div id="notifList" class="notif-list">
-        <div class="p-6 text-center text-slate-400"><i class="fa-regular fa-bell-slash text-3xl mb-2 block text-slate-200"></i><p class="text-sm font-bold">No notifications</p></div>
-    </div>
-</div>
-
-<div id="tl-toast-container"></div>
-
-<div id="loginToast" style="display:none">
-    <div class="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hand-wave text-white"></i></div>
-    <div><p class="font-black text-sm">Welcome back, <?= htmlspecialchars($user_name ?? 'Officer') ?>!</p><p class="text-[11px] text-slate-400 mt-0.5"><?= date('l, F j') ?></p></div>
-</div>
-
-<!-- ════════ MAIN ════════ -->
-<div class="main-col">
-<main class="w-full max-w-screen-xl mx-auto px-4 lg:px-8 pt-5 lg:pt-6 dash-main">
-
-    <!-- HEADER -->
-    <header class="flex items-start justify-between mb-5 gap-3 fade-up flex-wrap">
-        <div class="min-w-0">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                <?php $hh=(int)date('H'); echo $hh<12?'Good morning':($hh<17?'Good afternoon':'Good evening'); ?>, <?= htmlspecialchars($user_name ?? 'Officer') ?>
-            </p>
-            <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight">SK Dashboard</h2>
-            <p class="text-slate-400 font-medium text-xs sm:text-sm mt-0.5 flex items-center gap-2 flex-wrap">
-                <span><?= date('l, F j, Y') ?></span>
-                <span class="sync-badge"><i class="fa-solid fa-rotate text-[9px]"></i> Synced with Admin</span>
-            </p>
-        </div>
-        <div class="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
-            <?php if (($pendingUserCount??0)>0): ?>
-                <a href="/sk/user-requests" class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-2 rounded-2xl font-bold text-xs hover:bg-amber-100 transition">
-                    <i class="fa-solid fa-clock text-xs"></i>
-                    <span class="hidden sm:inline"><?= $pendingUserCount ?> pending</span>
-                    <span class="sm:hidden"><?= $pendingUserCount ?></span>
-                </a>
-            <?php endif; ?>
-            <div class="relative">
-                <button id="bellBtn" onclick="toggleNotif()" class="w-9 h-9 sm:w-10 sm:h-10 bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm hover:border-green-300 transition text-slate-500"><i class="fa-regular fa-bell text-sm"></i></button>
-                <span id="notifBadge" style="display:none" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white leading-none">0</span>
-            </div>
-            <a href="/sk/new-reservation" class="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-2xl font-bold text-xs transition shadow-lg shadow-green-200">
-                <i class="fa-solid fa-plus text-xs"></i>
-                <span class="hidden sm:inline">Reserve</span>
-            </a>
-        </div>
+        <a href="/sk/new-reservation" class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-sm transition shadow-sm shadow-blue-200">
+            <i class="fa-solid fa-plus"></i> Reserve
+        </a>
     </header>
-
-    <!-- Timer banner -->
-    <?php
-    $activeBanner = null; $upcomingBanner = null; $now = time();
-    foreach ($myRes as $r) {
-        if (empty($r['reservation_date'])||empty($r['start_time'])||empty($r['end_time'])) continue;
-        if (($r['status']??'')==='approved' && !($r['claimed']??false)) {
-            $s=strtotime($r['reservation_date'].'T'.$r['start_time']);
-            $e=strtotime($r['reservation_date'].'T'.$r['end_time']);
-            if ($s<=$now&&$e>=$now) { $activeBanner=$r; break; }
-            if ($s>$now&&$s<=$now+3600) { $upcomingBanner=$r; }
-        }
-    }
-    if ($activeBanner||$upcomingBanner): $b=$activeBanner??$upcomingBanner; $isActive=!!$activeBanner;
-    ?>
-    <div class="timer-banner <?= $isActive?'active':'upcoming' ?> mb-4 flex items-center gap-3 fade-up" id="timerBanner"
-         data-start="<?= strtotime($b['reservation_date'].'T'.$b['start_time']) ?>"
-         data-end="<?= strtotime($b['reservation_date'].'T'.$b['end_time']) ?>"
-         data-active="<?= $isActive?'1':'0' ?>">
-        <div class="timer-pulse <?= $isActive?'pulse':'' ?>"></div>
-        <div class="flex-1 min-w-0">
-            <p class="text-xs font-black <?= $isActive?'text-green-800':'text-blue-800' ?> truncate"><?= $isActive?'My session in progress':'My session starting soon' ?> · <?= htmlspecialchars($b['resource_name']??'Resource') ?></p>
-            <p class="text-[11px] <?= $isActive?'text-green-600':'text-blue-500' ?> font-medium"><?= date('g:i A', strtotime($b['start_time'])) ?> – <?= date('g:i A', strtotime($b['end_time'])) ?></p>
+ 
+    <?php if(session()->getFlashdata('success')): ?>
+        <div class="mb-6 px-5 py-4 bg-blue-50 border border-blue-200 text-blue-700 font-bold rounded-2xl flex items-center gap-3 text-sm">
+            <i class="fa-solid fa-circle-check text-blue-500"></i><?= session()->getFlashdata('success') ?>
         </div>
-        <span id="timerDisplay" class="text-sm font-black <?= $isActive?'text-green-700':'text-blue-700' ?> font-variant-numeric tabular-nums flex-shrink-0">—</span>
-    </div>
     <?php endif; ?>
+ 
 
     <!-- SECTION 1 — LIVE SESSIONS -->
     <p class="section-label">Live Monitor <span class="sync-badge ml-2">All Users</span></p>
