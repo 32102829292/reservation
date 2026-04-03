@@ -2010,6 +2010,46 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
             touch-action: manipulation;
         }
 
+        @media(max-width:639px) {
+            .lib-banner {
+                padding: 16px 16px 14px;
+            }
+
+            .lib-stats {
+                gap: 5px;
+                margin-top: 12px;
+            }
+
+            .lib-stat {
+                padding: 6px 6px;
+                gap: 4px;
+                border-radius: 8px;
+            }
+
+            .lib-stat-icon {
+                display: none;
+                /* ← hide icon on mobile to save space */
+            }
+
+            .lib-stat-lbl {
+                font-size: .48rem;
+                letter-spacing: .04em;
+            }
+
+            .lib-stat-val {
+                font-size: .82rem;
+            }
+
+            .lib-title {
+                font-size: 1.3rem;
+            }
+
+            .lib-browse {
+                padding: 8px 12px;
+                font-size: .72rem;
+            }
+        }
+
         @media(min-width:1024px) {
             .login-toast {
                 bottom: 24px;
