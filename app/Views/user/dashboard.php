@@ -2193,7 +2193,6 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
             .card-p-lg {
                 padding: 16px;
             }
-        }
 
         body.dark {
             --bg: #060e1e;
