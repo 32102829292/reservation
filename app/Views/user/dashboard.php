@@ -2909,7 +2909,7 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
                         </div>
                         <a href="<?= base_url('/books') ?>" class="lib-browse"><?= icon('book-open', 14, 'white') ?> Browse All</a>
                     </div>
-                    <div class="lib-stats" style="position:relative;z-index:1;">
+                    <div class="lib-stats" style="position:relative;z-index:1;display:flex;flex-direction:row;flex-wrap:nowrap;">
                         <div class="lib-stat">
                             <div class="lib-stat-icon"><?= icon('bookmark', 14, '#a5b4fc') ?></div>
                             <div>
