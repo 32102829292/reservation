@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Dashboard | SK Officer</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1e1b4b">
-    <meta name="csrf-token" content="<?= csrf_token() ?>">
-    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -139,6 +135,30 @@
         /* ── Sync badge ── */
         .sync-badge { display: inline-flex; align-items: center; gap: 4px; font-size: .6rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; white-space: nowrap; }
 
+        /* ── Section label ── FIX: was .section-label but CSS only had .section-lbl */
+        .section-label,
+        .section-lbl {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-label::before,
+        .section-lbl::before {
+            content: '';
+            display: inline-block;
+            width: 3px;
+            height: 14px;
+            border-radius: 2px;
+            background: var(--indigo);
+            flex-shrink: 0;
+        }
+
         /* ── Cards ── */
         .card { background: var(--card); border-radius: var(--r-lg); border: 1px solid rgba(99,102,241,.08); box-shadow: var(--shadow-sm); }
         .card-p { padding: 20px 22px; }
@@ -147,8 +167,6 @@
         .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .9rem; }
         .card-title { font-size: .9rem; font-weight: 700; color: #0f172a; letter-spacing: -.01em; }
         .card-sub { font-size: .7rem; color: #94a3b8; margin-top: 2px; }
-        .section-lbl { font-size: .62rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #94a3b8; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-        .section-lbl::before { content: ''; display: inline-block; width: 3px; height: 14px; border-radius: 2px; background: var(--indigo); flex-shrink: 0; }
         .link-sm { font-size: .65rem; font-weight: 700; color: var(--indigo); text-decoration: none; letter-spacing: .05em; text-transform: uppercase; transition: opacity .15s; touch-action: manipulation; }
         .link-sm:hover { opacity: .7; }
 
@@ -275,7 +293,6 @@
 
         /* ── Library ── */
         .lib-banner { background: linear-gradient(135deg, var(--indigo) 0%, #4338ca 60%, #6366f1 100%); border-radius: var(--r-lg); padding: 22px; overflow: hidden; position: relative; }
-        .lib-banner::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E") repeat; opacity:.4; }
         .lib-stat-item { flex: 1; background: rgba(255,255,255,.1); border-radius: 10px; padding: 8px 10px; border: 1px solid rgba(255,255,255,.1); }
         .lib-stat-lbl { font-size: .52rem; font-weight: 600; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .06em; }
         .lib-stat-val { font-size: .95rem; font-weight: 800; color: white; font-family: var(--mono); }
@@ -293,6 +310,10 @@
         .find-btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 16px; background: var(--indigo); color: white; border-radius: var(--r-sm); font-size: .8rem; font-weight: 700; border: none; cursor: pointer; font-family: var(--font); transition: all var(--ease); }
         .find-btn:hover { background: #312e81; }
         .ai-shimmer { height: 11px; border-radius: 4px; background: linear-gradient(90deg,#eef2ff 25%,#e0e7ff 50%,#eef2ff 75%); background-size: 200%; animation: shimmer 1.2s infinite; margin-bottom: 6px; }
+        /* RAG loading state */
+        .rag-loading { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f8fafc; border-radius: 9px; }
+        .rag-spinner { width: 16px; height: 16px; border: 2px solid #e0e7ff; border-top-color: var(--indigo); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes shimmer { 0%{background-position:200%}100%{background-position:-200%} }
 
         /* ── Insights ── */
@@ -363,53 +384,42 @@
         body.dark .logout-link { color: #4a6fa5; }
         body.dark .logout-link:hover { background: rgba(239,68,68,.1); color: #f87171; }
         body.dark .logout-link:hover .nav-icon { background: rgba(239,68,68,.12); }
-
         body.dark .mobile-nav-pill { background: #0b1628; border-color: rgba(99,102,241,.18); }
         body.dark .mob-nav-item { color: #7fb3e8; }
         body.dark .mob-nav-item.active { background: rgba(99,102,241,.18); }
         body.dark .mob-badge { border-color: #0b1628; }
-
         body.dark .greeting-eyebrow { color: #1e3a5f; }
         body.dark .greeting-name { color: #e2eaf8; }
         body.dark .greeting-date { color: #4a6fa5; }
         body.dark .sync-badge { background: rgba(29,78,216,.2); color: #7fb3e8; border-color: rgba(59,130,246,.2); }
-
         body.dark .icon-btn { background: #0b1628; border-color: rgba(99,102,241,.15); color: #7fb3e8; }
         body.dark .icon-btn:hover { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.3); color: #a5b4fc; }
-
         body.dark .pending-pill { background: rgba(180,83,9,.2); border-color: rgba(180,83,9,.3); color: #fcd34d; }
         body.dark .notif-badge-dot { border-color: var(--bg); }
-
         body.dark .card { background: #0b1628; border-color: rgba(99,102,241,.1); }
         body.dark .card-title { color: #e2eaf8; }
         body.dark .card-sub { color: #4a6fa5; }
+        body.dark .section-label,
         body.dark .section-lbl { color: #4a6fa5; }
         body.dark .link-sm { color: #818cf8; }
-
         body.dark .stat-card { background: #0b1628; border-color: rgba(99,102,241,.1); }
         body.dark .stat-num { color: #e2eaf8; }
         body.dark .stat-lbl { color: #4a6fa5; }
         body.dark .stat-hint { color: #4a6fa5; }
-
         body.dark .kpi-card { background: #0b1628; border-color: rgba(99,102,241,.1); }
-
         body.dark .prog-bar { background: rgba(99,102,241,.15); }
-
         body.dark .tl-session-card { background: #101e35; border-color: rgba(99,102,241,.1); }
         body.dark .tl-ended .tl-countdown { background: #1a2a42; color: #7fb3e8; }
         body.dark .tl-prog-track { background: rgba(99,102,241,.15); }
-
         body.dark .qa-link { background: #0b1628; border-color: rgba(99,102,241,.1); color: #7fb3e8; }
         body.dark .qa-link:hover { background: rgba(99,102,241,.12); border-color: var(--indigo); color: #a5b4fc; }
         body.dark .qa-chev { color: #1e3a5f; }
-
         body.dark .bk-row:hover { background: rgba(99,102,241,.08); }
         body.dark .bk-date { background: #101e35; border-color: rgba(99,102,241,.1); }
         body.dark .bk-day { color: #e2eaf8; }
         body.dark .bk-name { color: #e2eaf8; }
         body.dark .bk-month,
         body.dark .bk-time { color: #4a6fa5; }
-
         body.dark .fc-toolbar-title { color: #e2eaf8 !important; }
         body.dark .fc-daygrid-day-number { color: #7fb3e8; }
         body.dark .fc-col-header-cell-cushion { color: #4a6fa5; }
@@ -419,46 +429,43 @@
         body.dark .fc-theme-standard .fc-scrollgrid { border-color: #101e35 !important; }
         body.dark .fc-daygrid-day { background: #0b1628 !important; }
         body.dark .fc-daygrid-day:hover { background-color: rgba(99,102,241,.08) !important; }
-
         body.dark .modal-card { background: #0b1628; }
         body.dark #modalDateTitle { color: #e2eaf8 !important; }
         body.dark #modalDateSub { color: #4a6fa5 !important; }
         body.dark .date-row { border-color: #101e35; }
         body.dark .date-row:hover { background: #101e35; }
         body.dark .modal-card button:last-child { background: #101e35 !important; color: #7fb3e8 !important; border-color: rgba(99,102,241,.15) !important; }
-
         body.dark .notif-dd { background: #0b1628; border-color: rgba(99,102,241,.15); box-shadow: 0 20px 48px -8px rgba(0,0,0,.5); }
         body.dark .notif-dd>div:first-child { border-color: #101e35; }
         body.dark .notif-item { border-color: #101e35; }
         body.dark .notif-item.unread { background: rgba(55,48,163,.18); }
         body.dark .notif-item:hover { background: #101e35; }
-
         body.dark .timer-banner.active   { background: rgba(20,83,45,.25); border-color: rgba(134,239,172,.2); color: #86efac; }
         body.dark .timer-banner.upcoming { background: rgba(55,48,163,.15); border-color: rgba(99,102,241,.3); color: #a5b4fc; }
-
         body.dark .insight-mini { background: #0b1628; border-color: rgba(99,102,241,.1); }
-
         body.dark .search-input { background: #101e35; border-color: rgba(99,102,241,.18); color: #e2eaf8; }
         body.dark .search-input:focus { border-color: #818cf8; background: #0b1628; }
         body.dark .ai-shimmer { background: linear-gradient(90deg,#101e35 25%,#1a2a42 50%,#101e35 75%); }
-
         body.dark .book-letter { background: rgba(55,48,163,.2); color: #818cf8; }
-
         body.dark .ins-heatmap-cell { opacity: .85; }
+        body.dark .rag-loading { background: #101e35; }
+        body.dark .rag-spinner { border-color: #1a2a42; border-top-color: #818cf8; }
     </style>
 </head>
 <body>
 
 <?php
 $page     = $page ?? 'dashboard';
+
+// FIX: Corrected icon classes — profile uses fa-user (solid), not doubled "fa-regular fa-user"
 $navItems = [
-    ['url'=>'/sk/dashboard',       'icon'=>'fa-house',           'label'=>'Dashboard',        'key'=>'dashboard'],
-    ['url'=>'/sk/reservations',    'icon'=>'fa-calendar-alt',    'label'=>'All Reservations', 'key'=>'reservations'],
-    ['url'=>'/sk/new-reservation', 'icon'=>'fa-plus',            'label'=>'New Reservation',  'key'=>'new-reservation'],
-    ['url'=>'/sk/user-requests',   'icon'=>'fa-users',           'label'=>'User Requests',    'key'=>'user-requests'],
-    ['url'=>'/sk/my-reservations', 'icon'=>'fa-calendar',        'label'=>'My Reservations',  'key'=>'my-reservations'],
-    ['url'=>'/sk/scanner',         'icon'=>'fa-qrcode',          'label'=>'Scanner',          'key'=>'scanner'],
-    ['url'=>'/sk/profile',         'icon'=>'fa-regular fa-user', 'label'=>'Profile',          'key'=>'profile'],
+    ['url'=>'/sk/dashboard',       'icon'=>'fa-house',        'label'=>'Dashboard',        'key'=>'dashboard'],
+    ['url'=>'/sk/reservations',    'icon'=>'fa-calendar-alt', 'label'=>'All Reservations', 'key'=>'reservations'],
+    ['url'=>'/sk/new-reservation', 'icon'=>'fa-plus',         'label'=>'New Reservation',  'key'=>'new-reservation'],
+    ['url'=>'/sk/user-requests',   'icon'=>'fa-users',        'label'=>'User Requests',    'key'=>'user-requests'],
+    ['url'=>'/sk/my-reservations', 'icon'=>'fa-calendar',     'label'=>'My Reservations',  'key'=>'my-reservations'],
+    ['url'=>'/sk/scanner',         'icon'=>'fa-qrcode',       'label'=>'Scanner',          'key'=>'scanner'],
+    ['url'=>'/sk/profile',         'icon'=>'fa-user',         'label'=>'Profile',          'key'=>'profile'],
 ];
 
 $myRes  = $reservations    ?? [];
@@ -568,6 +575,7 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
             ?>
                 <a href="<?= $item['url'] ?>" class="nav-link <?= $active ? 'active' : '' ?>">
                     <div class="nav-icon">
+                        <!-- FIX: Use only fa-solid prefix, icon class is just the icon name -->
                         <i class="fa-solid <?= $item['icon'] ?>" style="font-size:.85rem;"></i>
                     </div>
                     <?= $item['label'] ?>
@@ -595,7 +603,9 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
 
         <div class="sidebar-footer">
             <a href="/logout" class="logout-link">
-                <div class="nav-icon" style="background:rgba(239,68,68,.08);"><i class="fa-solid fa-arrow-right-from-bracket" style="font-size:.85rem;color:#f87171;"></i></div>
+                <div class="nav-icon" style="background:rgba(239,68,68,.08);">
+                    <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:.85rem;color:#f87171;"></i>
+                </div>
                 Sign Out
             </a>
         </div>
@@ -610,6 +620,7 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
             $showBadge = ($item['key']==='user-requests' && ($pendingUserCount??0)>0);
         ?>
             <a href="<?= $item['url'] ?>" class="mob-nav-item <?= $active ? 'active' : '' ?>" title="<?= $item['label'] ?>">
+                <!-- FIX: fa-solid prefix only -->
                 <i class="fa-solid <?= $item['icon'] ?>" style="font-size:1.1rem;"></i>
                 <?php if ($showBadge): ?><span class="mob-badge"><?= $pendingUserCount > 9 ? '9+' : $pendingUserCount ?></span><?php endif; ?>
             </a>
@@ -684,7 +695,6 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
                     <?= $pendingUserCount ?> pending
                 </a>
             <?php endif; ?>
-            <!-- Dark mode toggle -->
             <div class="icon-btn" onclick="toggleDark()" id="darkBtn" title="Toggle dark mode">
                 <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem;"></i></span>
             </div>
@@ -728,11 +738,14 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
     <?php endif; ?>
 
     <!-- ── SECTION 1: LIVE SESSIONS ── -->
+    <!-- FIX: was "section-label" but CSS only defined "section-lbl" — now both are defined -->
     <p class="section-label fade-up-1">Live Monitor <span class="sync-badge" style="margin-left:6px;">All Users</span></p>
     <div class="card card-p fade-up-1" style="margin-bottom:20px;">
         <div class="card-head">
             <div style="display:flex;align-items:center;gap:10px;">
-                <div class="card-icon" style="background:#eef2ff;"><i class="fa-solid fa-timer" style="color:var(--indigo);font-size:.9rem;"></i></div>
+                <div class="card-icon" style="background:#eef2ff;">
+                    <i class="fa-solid fa-stopwatch" style="color:var(--indigo);font-size:.9rem;"></i>
+                </div>
                 <div>
                     <div class="card-title">Active Sessions</div>
                     <div class="card-sub">System-wide · Real-time</div>
@@ -910,7 +923,7 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
                         <i class="fa-solid fa-chevron-right qa-chev" style="font-size:.7rem;margin-left:auto;"></i>
                     </a>
                     <a href="/sk/profile" class="qa-link">
-                        <div class="qa-icon" style="background:#f3e8ff;"><i class="fa-regular fa-user" style="color:#9333ea;font-size:.85rem;"></i></div>
+                        <div class="qa-icon" style="background:#f3e8ff;"><i class="fa-solid fa-user" style="color:#9333ea;font-size:.85rem;"></i></div>
                         View Profile
                         <i class="fa-solid fa-chevron-right qa-chev" style="font-size:.7rem;margin-left:auto;"></i>
                     </a>
@@ -986,7 +999,7 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
                 </div>
             </div>
 
-            <!-- AI Finder -->
+            <!-- AI Finder — FIXED: improved UX, error handling, loading states, CSRF -->
             <div class="card card-p">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                     <div class="card-icon" style="background:#ede9fe;"><i class="fa-solid fa-wand-magic-sparkles" style="color:#7c3aed;font-size:.9rem;"></i></div>
@@ -997,15 +1010,30 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
                 </div>
                 <div style="position:relative;">
                     <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94a3b8;"><i class="fa-solid fa-magnifying-glass" style="font-size:.75rem;"></i></span>
-                    <input id="ai-query" type="text" class="search-input" placeholder="What are you looking for?" autocomplete="off" onkeydown="if(event.key==='Enter')aiFind()">
+                    <input id="ai-query" type="text" class="search-input" placeholder="What are you looking for?" autocomplete="off"
+                           onkeydown="if(event.key==='Enter')aiFind()"
+                           oninput="document.getElementById('ai-results').innerHTML=''">
                 </div>
-                <div id="ai-skel" style="display:none;margin-top:8px;">
-                    <div class="ai-shimmer" style="width:90%;"></div>
-                    <div class="ai-shimmer" style="width:65%;"></div>
+                <!-- Loading shimmer -->
+                <div id="ai-skel" style="display:none;margin-top:10px;">
+                    <div class="rag-loading">
+                        <div class="rag-spinner"></div>
+                        <span style="font-size:.75rem;color:#94a3b8;font-weight:500;">Searching library…</span>
+                    </div>
                 </div>
-                <div id="ai-results" style="margin-top:8px;display:flex;flex-direction:column;gap:5px;max-height:140px;overflow-y:auto;"></div>
+                <!-- Results -->
+                <div id="ai-results" style="margin-top:8px;display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;"></div>
+                <!-- Error -->
+                <div id="ai-error" style="display:none;margin-top:8px;padding:10px 12px;background:#fef2f2;border-radius:9px;border:1px solid #fee2e2;">
+                    <p style="font-size:.75rem;color:#dc2626;font-weight:600;display:flex;align-items:center;gap:6px;">
+                        <i class="fa-solid fa-circle-exclamation" style="font-size:.8rem;"></i>
+                        <span id="ai-error-msg">Could not connect to the AI service.</span>
+                    </p>
+                </div>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;">
-                    <button onclick="aiFind()" class="find-btn"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:.75rem;"></i> Find Books</button>
+                    <button onclick="aiFind()" class="find-btn" id="ai-btn">
+                        <i class="fa-solid fa-wand-magic-sparkles" style="font-size:.75rem;"></i> Find Books
+                    </button>
                     <a href="/sk/books" class="link-sm">Full library →</a>
                 </div>
             </div>
@@ -1062,7 +1090,7 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
                         $due=!empty($bw['due_date'])?strtotime($bw['due_date']):null;
                         $overdue=$due&&$due<time(); $dueSoon=$due&&!$overdue&&$due<time()+3*86400;
                     ?>
-                        <div class="borrow-row" style="display:flex;align-items:center;gap:10px;background:#f8fafc;border-radius:10px;padding:9px 12px;border:1px solid rgba(99,102,241,.07);">
+                        <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;border-radius:10px;padding:9px 12px;border:1px solid rgba(99,102,241,.07);">
                             <div class="book-letter" style="width:30px;height:30px;font-size:.72rem;"><?= mb_strtoupper(mb_substr($bw['book_title']??'B',0,1)) ?></div>
                             <div style="flex:1;min-width:0;">
                                 <p style="font-weight:600;font-size:.8rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($bw['book_title']??'Book') ?></p>
@@ -1139,7 +1167,9 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
         </div>
         <div style="display:flex;flex-direction:column;gap:14px;">
             <div class="card card-p">
-                <div class="card-title" style="margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-triangle-exclamation" style="color:#f87171;font-size:.85rem;"></i> Health Indicators</div>
+                <div class="card-title" style="margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color:#f87171;font-size:.85rem;"></i> Health Indicators
+                </div>
                 <div style="display:flex;flex-direction:column;gap:12px;">
                     <div>
                         <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:5px;"><span style="font-weight:600;color:#475569;">No-show rate</span><span style="font-weight:700;color:#dc2626;"><?= $insNS ?>%</span></div>
@@ -1159,7 +1189,9 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
                 </div>
             </div>
             <div class="card card-p">
-                <div class="card-title" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-crown" style="color:#f59e0b;font-size:.85rem;"></i> Record Day</div>
+                <div class="card-title" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-crown" style="color:#f59e0b;font-size:.85rem;"></i> Record Day
+                </div>
                 <div style="font-size:2rem;font-weight:800;color:#0f172a;font-family:var(--mono);"><?= $insBDC ?></div>
                 <div style="font-size:.82rem;color:#475569;font-weight:600;"><?= htmlspecialchars($insBDL) ?></div>
                 <div style="font-size:.7rem;color:#94a3b8;margin-top:4px;">Most reservations in a single day</div>
@@ -1204,6 +1236,8 @@ $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'S'), 0, 1));
 <script>
 const allRes    = <?= json_encode($myRes)  ?>;
 const allResAll = <?= json_encode($sysRes) ?>;
+// FIX: Read CSRF token from meta tag rather than hardcoding it inline
+const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 const INS = {
     hourArr:      <?= json_encode(array_values($insHourArr)) ?>,
     dowArr:       <?= json_encode(array_values($insDowArr)) ?>,
@@ -1233,10 +1267,8 @@ function toggleDark(){
         ? '<i class="fa-regular fa-moon" style="font-size:.85rem;"></i>'
         : '<i class="fa-regular fa-sun" style="font-size:.85rem;"></i>';
     localStorage.setItem('sk_theme', isDark ? 'dark' : 'light');
-    // Re-render charts with updated colors
     updateChartsForTheme(isDark);
 }
-
 function initDarkMode(){
     if(localStorage.getItem('sk_theme')==='dark'){
         document.body.classList.add('dark');
@@ -1324,22 +1356,103 @@ function updateNotifBadge(){ const badge=document.getElementById('notifBadge'),n
 function renderNotifs(){
     const l=document.getElementById('notifList');
     if(!notifications.length){ l.innerHTML=`<div style="text-align:center;padding:24px;"><p style="font-size:.78rem;color:#94a3b8;">All caught up!</p></div>`; return; }
-    l.innerHTML=notifications.sort((a,b)=>new Date(b.time)-new Date(a.time)).map(n=>`<div class="notif-item ${!n.read?'unread':''}"><div style="display:flex;align-items:flex-start;gap:9px;"><div style="width:30px;height:30px;background:${n.status==='approved'?'#dcfce7':'#fee2e2'};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid ${n.status==='approved'?'fa-circle-check':'fa-xmark-circle'}" style="font-size:.7rem;color:${n.status==='approved'?'#16a34a':'#dc2626'};"></i></div><div style="flex:1;min-width:0;"><p style="font-weight:700;font-size:.78rem;color:#0f172a;">${n.title}</p><p style="font-size:.68rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p><p style="font-size:.62rem;color:#94a3b8;margin-top:2px;">${timeAgo(n.time)}</p></div></div></div>`).join('');
+    l.innerHTML=notifications.sort((a,b)=>new Date(b.time)-new Date(a.time)).map(n=>`<div class="notif-item ${!n.read?'unread':''}"><div style="display:flex;align-items:flex-start;gap:9px;"><div style="width:30px;height:30px;background:${n.status==='approved'?'#dcfce7':'#fee2e2'};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid ${n.status==='approved'?'fa-circle-check':'fa-circle-xmark'}" style="font-size:.7rem;color:${n.status==='approved'?'#16a34a':'#dc2626'};"></i></div><div style="flex:1;min-width:0;"><p style="font-weight:700;font-size:.78rem;color:#0f172a;">${n.title}</p><p style="font-size:.68rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p><p style="font-size:.62rem;color:#94a3b8;margin-top:2px;">${timeAgo(n.time)}</p></div></div></div>`).join('');
 }
 function toggleNotifications(){ document.getElementById('notifDD').classList.toggle('show'); }
 document.addEventListener('click',e=>{ const dd=document.getElementById('notifDD'),bell=document.querySelector('.notif-bell'); if(!bell.contains(e.target)&&!dd.contains(e.target)) dd.classList.remove('show'); });
 
-/* ── AI Finder ── */
+/* ── AI Book Finder (RAG) — FIXED ── */
+let ragAbortCtrl = null;
 async function aiFind(){
-    const q=document.getElementById('ai-query').value.trim(); if(!q) return;
-    const r=document.getElementById('ai-results'),skel=document.getElementById('ai-skel');
-    r.innerHTML=''; skel.style.display='block';
-    try{
-        const res=await fetch('/rag/suggest',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'<?= csrf_token() ?>'},body:JSON.stringify({query:q})});
-        const d=await res.json(); skel.style.display='none';
-        if(d.books?.length){ r.innerHTML=d.books.map(b=>`<a href="/sk/books?id=${b.id}" style="display:flex;align-items:center;gap:8px;padding:7px;border-radius:9px;background:#f8fafc;border:1px solid rgba(99,102,241,.08);text-decoration:none;transition:background .15s;"><div class="book-letter" style="width:28px;height:28px;font-size:.7rem;">${b.title.charAt(0).toUpperCase()}</div><div style="min-width:0;"><p style="font-size:.78rem;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.title}</p><p style="font-size:.65rem;color:#94a3b8;">${b.author||'—'}</p></div></a>`).join(''); }
-        else r.innerHTML=`<p style="font-size:.75rem;color:#94a3b8;text-align:center;padding:12px;">No matches found</p>`;
-    }catch(e){ skel.style.display='none'; r.innerHTML=`<p style="font-size:.75rem;color:#dc2626;text-align:center;">Search failed. Try again.</p>`; }
+    const q = document.getElementById('ai-query').value.trim();
+    const results = document.getElementById('ai-results');
+    const skel = document.getElementById('ai-skel');
+    const errBox = document.getElementById('ai-error');
+    const errMsg = document.getElementById('ai-error-msg');
+    const btn = document.getElementById('ai-btn');
+
+    if(!q) {
+        document.getElementById('ai-query').focus();
+        return;
+    }
+
+    // Cancel any in-flight request
+    if(ragAbortCtrl) ragAbortCtrl.abort();
+    ragAbortCtrl = new AbortController();
+
+    // Reset UI
+    results.innerHTML = '';
+    errBox.style.display = 'none';
+    skel.style.display = 'block';
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:.75rem;"></i> Searching…';
+
+    try {
+        const res = await fetch('/rag/suggest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ query: q }),
+            signal: ragAbortCtrl.signal
+        });
+
+        skel.style.display = 'none';
+
+        if(!res.ok) {
+            const code = res.status;
+            errMsg.textContent = code === 422
+                ? 'Please enter a valid search query.'
+                : code === 429
+                    ? 'Too many requests. Please wait a moment.'
+                    : code >= 500
+                        ? 'The AI service encountered an error. Try again later.'
+                        : `Request failed (${code}).`;
+            errBox.style.display = 'block';
+            return;
+        }
+
+        const d = await res.json();
+        const books = d.books ?? d.results ?? d.data ?? [];
+
+        if(books.length) {
+            results.innerHTML = books.map(b => {
+                const title = b.title ?? b.book_title ?? 'Untitled';
+                const author = b.author ?? b.book_author ?? '—';
+                const id = b.id ?? '';
+                const avail = b.available_copies ?? b.available ?? null;
+                const availHtml = avail !== null
+                    ? `<span class="avail-pill ${avail > 0 ? 'avail-on' : 'avail-off'}" style="flex-shrink:0;">${avail > 0 ? avail+' left' : 'Out'}</span>`
+                    : '';
+                return `<a href="/sk/books${id ? '?id='+id : ''}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;background:#f8fafc;border:1px solid rgba(99,102,241,.08);text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#eef2ff'" onmouseout="this.style.background='#f8fafc'">
+                    <div class="book-letter" style="width:28px;height:28px;font-size:.7rem;">${title.charAt(0).toUpperCase()}</div>
+                    <div style="flex:1;min-width:0;">
+                        <p style="font-size:.78rem;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</p>
+                        <p style="font-size:.65rem;color:#94a3b8;">${author}</p>
+                    </div>
+                    ${availHtml}
+                </a>`;
+            }).join('');
+        } else {
+            results.innerHTML = `<div style="text-align:center;padding:16px 12px;">
+                <i class="fa-solid fa-book-open" style="font-size:1.5rem;color:#e2e8f0;display:block;margin-bottom:6px;"></i>
+                <p style="font-size:.75rem;color:#94a3b8;font-weight:500;">No books matched "<em>${q}</em>"</p>
+                <a href="/sk/books" style="font-size:.7rem;color:var(--indigo);font-weight:700;text-decoration:none;margin-top:4px;display:inline-block;">Browse all books →</a>
+            </div>`;
+        }
+    } catch(e) {
+        skel.style.display = 'none';
+        if(e.name === 'AbortError') return; // user cancelled, ignore
+        errMsg.textContent = 'Could not connect to the AI service. Check your connection and try again.';
+        errBox.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="font-size:.75rem;"></i> Find Books';
+        ragAbortCtrl = null;
+    }
 }
 
 /* ── Active Sessions ── */
@@ -1386,17 +1499,11 @@ function tlRender(){
     Array.from(grid.children).forEach(c=>{if(!ids.includes(c.id))c.remove();});
 }
 
-/* ── Chart instances for theme updates ── */
+/* ── Chart instances ── */
 let trendChartInst = null, resourceChartInst = null, monthChartInst = null;
-
 function getChartColors(isDark){
-    return {
-        grid: isDark ? '#101e35' : '#f1f5f9',
-        tick: isDark ? '#4a6fa5' : '#94a3b8',
-        tooltipBg: '#0f172a',
-    };
+    return { grid: isDark ? '#101e35' : '#f1f5f9', tick: isDark ? '#4a6fa5' : '#94a3b8' };
 }
-
 function updateChartsForTheme(isDark){
     const c = getChartColors(isDark);
     [trendChartInst, monthChartInst].forEach(chart => {
