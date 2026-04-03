@@ -2314,6 +2314,93 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
             background: rgba(99, 102, 241, .08);
         }
 
+        /* Calendar dark mode */
+        body.dark .fc-list-day-cushion {
+            background: #101e35 !important;
+        }
+
+        body.dark .fc-list-event:hover td {
+            background: #101e35 !important;
+        }
+
+        body.dark td.fc-list-day-cushion {
+            background: #101e35 !important;
+        }
+
+        body.dark .fc-list-table td {
+            background: #0b1628 !important;
+            border-color: #101e35 !important;
+            color: #7fb3e8 !important;
+        }
+
+        body.dark .fc-list-table th {
+            background: #101e35 !important;
+            border-color: #101e35 !important;
+            color: #4a6fa5 !important;
+        }
+
+        body.dark .fc-list-event-title a {
+            color: #e2eaf8 !important;
+        }
+
+        body.dark .fc-list-event-time {
+            color: #4a6fa5 !important;
+        }
+
+        body.dark .fc-scrollgrid {
+            border-color: #101e35 !important;
+        }
+
+        body.dark .fc-scrollgrid td,
+        body.dark .fc-scrollgrid th {
+            border-color: #101e35 !important;
+        }
+
+        body.dark .fc-daygrid-day {
+            background: #0b1628 !important;
+        }
+
+        body.dark .fc-list-sticky .fc-list-day>* {
+            background: #101e35 !important;
+        }
+
+        /* Date modal dark mode */
+        body.dark .modal-card {
+            background: #0b1628 !important;
+            color: #e2eaf8;
+        }
+
+        body.dark .modal-card h3 {
+            color: #e2eaf8 !important;
+        }
+
+        body.dark .modal-card p {
+            color: #7fb3e8 !important;
+        }
+
+        body.dark .modal-card button {
+            background: #101e35 !important;
+            color: #7fb3e8 !important;
+            border-color: rgba(99, 102, 241, .15) !important;
+        }
+
+        body.dark .date-row {
+            border-color: #101e35 !important;
+        }
+
+        body.dark .date-row p[style*="color:#0f172a"] {
+            color: #e2eaf8 !important;
+        }
+
+        body.dark .date-row p[style*="color:#94a3b8"] {
+            color: #4a6fa5 !important;
+        }
+
+        body.dark .date-row>div[style*="background:#f8fafc"] {
+            background: #101e35 !important;
+            border-color: rgba(99, 102, 241, .15) !important;
+        }
+
         body.dark .qa-link {
             background: #0b1628;
             border-color: rgba(99, 102, 241, .1);
