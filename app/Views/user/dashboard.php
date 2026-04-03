@@ -130,8 +130,9 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         --r-sm:10px;--r-md:14px;--r-lg:20px;--r-xl:24px;
         --sidebar-w:268px;
         --ease:.18s cubic-bezier(.4,0,.2,1);
+        --mob-nav-h:60px;
     }
-    html{height:100%;font-size:16px} /* ← base 16px so rem values are readable */
+    html{height:100%;font-size:16px}
     body{
         font-family:var(--font);
         background:var(--bg);
@@ -139,7 +140,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         display:flex;
         height:100vh;
         overflow:hidden;
-        font-size:1rem;    /* 16px */
+        font-size:1rem;
         line-height:1.6;
         -webkit-font-smoothing:antialiased;
         -moz-osx-font-smoothing:grayscale;
@@ -172,13 +173,11 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .brand-name em{font-style:normal;color:var(--indigo);}
     .brand-sub{font-size:.7rem;color:#94a3b8;margin-top:3px;letter-spacing:.01em;}
 
-    /* User card inside sidebar */
     .user-card{margin:12px 12px 0;background:var(--indigo-light);border-radius:var(--r-md);padding:12px 14px;border:1px solid var(--indigo-border);}
     .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--indigo);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0;box-shadow:0 2px 8px rgba(55,48,163,.3);}
     .user-name-txt{font-size:.8rem;font-weight:700;color:#0f172a;letter-spacing:-.01em;}
     .user-role-txt{font-size:.68rem;color:#6366f1;font-weight:500;margin-top:1px;}
 
-    /* Nav */
     .sidebar-nav{flex:1;overflow-y:auto;padding:10px 10px;display:flex;flex-direction:column;gap:3px;}
     .sidebar-nav::-webkit-scrollbar{width:2px;}
     .sidebar-nav::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:2px;}
@@ -199,7 +198,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .nav-badge{margin-left:auto;background:rgba(239,68,68,.15);color:#dc2626;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:999px;}
     .nav-link.active .nav-badge{background:rgba(255,255,255,.22);color:#fff;}
 
-    /* Quota */
     .quota-wrap{margin:8px 12px;background:#f8fafc;border-radius:var(--r-sm);padding:12px 14px;border:1px solid rgba(99,102,241,.09);}
     .quota-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
     .quota-lbl{font-size:.7rem;font-weight:600;color:#64748b;}
@@ -210,21 +208,23 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .quota-note.warn{color:#d97706;font-weight:600;}
     .quota-note.err{color:#dc2626;font-weight:700;}
 
-    /* Sidebar footer */
     .sidebar-footer{padding:10px 10px 12px;border-top:1px solid rgba(99,102,241,.07);}
     .logout-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:#94a3b8;text-decoration:none;transition:all var(--ease);}
     .logout-link:hover{background:#fef2f2;color:#dc2626;}
     .logout-link:hover .nav-icon{background:#fee2e2;}
 
     /* ═══════════════════════════════════════════════════
-       MOBILE NAV — full-width bar at bottom
+       MOBILE NAV — icon-only, no labels
     ═══════════════════════════════════════════════════ */
     .mobile-nav-pill{
         display:none;
-        position:fixed;bottom:0;left:0;right:0;
+        position:fixed;
+        bottom:0;left:0;right:0;
         background:white;
         border-top:1px solid rgba(99,102,241,.1);
-        padding:6px 4px env(safe-area-inset-bottom,6px);
+        /* fixed height — no label row */
+        height:var(--mob-nav-h);
+        padding-bottom:env(safe-area-inset-bottom,0px);
         z-index:200;
         box-shadow:0 -4px 20px rgba(55,48,163,.1);
     }
@@ -232,32 +232,60 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         display:flex;
         justify-content:space-around;
         align-items:center;
-        gap:2px;
-        overflow-x:auto;
-        -webkit-overflow-scrolling:touch;
+        height:100%;
+        padding:0 6px;
     }
-    .mobile-scroll-container::-webkit-scrollbar{display:none;}
+    /* Each tap target */
     .mob-nav-item{
-        display:flex;flex-direction:column;align-items:center;justify-content:center;
-        padding:7px 8px;min-width:56px;max-width:80px;flex:1;
-        border-radius:12px;gap:4px;
-        cursor:pointer;text-decoration:none;
-        transition:all .15s;color:#64748b;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        /* round pill when active, plain circle otherwise */
+        width:44px;height:44px;
+        border-radius:14px;
+        cursor:pointer;
+        text-decoration:none;
+        color:#64748b;
+        position:relative;
+        transition:background .15s, color .15s;
+        flex-shrink:0;
     }
     .mob-nav-item:hover{background:var(--indigo-light);color:var(--indigo);}
     .mob-nav-item.active{background:var(--indigo-light);color:var(--indigo);}
     .mob-nav-item.active svg{stroke:var(--indigo);}
-    .mob-nav-lbl{font-size:.6rem;font-weight:700;white-space:nowrap;letter-spacing:.01em;}
+    /* active indicator dot */
+    .mob-nav-item.active::after{
+        content:'';
+        position:absolute;
+        bottom:-2px;left:50%;
+        transform:translateX(-50%);
+        width:4px;height:4px;
+        background:var(--indigo);
+        border-radius:50%;
+    }
     .mob-logout{color:#f87171;}
     .mob-logout:hover{background:#fef2f2;color:#dc2626;}
+    /* pending badge on mobile */
+    .mob-badge{
+        position:absolute;top:6px;right:6px;
+        background:#ef4444;color:white;
+        font-size:.5rem;font-weight:700;
+        width:14px;height:14px;
+        border-radius:50%;
+        display:flex;align-items:center;justify-content:center;
+        border:2px solid white;
+    }
 
     /* ═══════════════════════════════════════════════════
        RESPONSIVE BREAKPOINTS
     ═══════════════════════════════════════════════════ */
     @media(max-width:1023px){
         .sidebar{display:none!important;}
-        .mobile-nav-pill{display:block;}
-        .main-area{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));}
+        .mobile-nav-pill{display:flex!important;}
+        /* push content above the fixed 60px bar */
+        .main-area{
+            padding-bottom:calc(var(--mob-nav-h) + env(safe-area-inset-bottom,0px) + 12px) !important;
+        }
     }
     @media(min-width:1024px){
         .sidebar{display:flex!important;}
@@ -352,9 +380,14 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .up-btn:hover{background:var(--indigo);color:white;box-shadow:0 2px 8px rgba(55,48,163,.22);}
 
     /* ═══════════════════════════════════════════════════
-       STAT CARDS
+       STAT CARDS — responsive grid
     ═══════════════════════════════════════════════════ */
-    .stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px;}
+    .stats-grid{
+        display:grid;
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:14px;
+        margin-bottom:20px;
+    }
     .stat-card{background:var(--card);border:1px solid rgba(99,102,241,.08);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow-sm);transition:transform var(--ease),box-shadow var(--ease);}
     .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
     .stat-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
@@ -363,14 +396,31 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .stat-num{font-size:2rem;font-weight:800;color:#0f172a;line-height:1;letter-spacing:-.04em;font-family:var(--mono);}
     .stat-hint{font-size:.72rem;color:#94a3b8;margin-top:4px;}
 
+    /* ── Mobile: 2×2 stat grid ── */
+    @media(max-width:639px){
+        .stats-grid{
+            grid-template-columns:repeat(2,minmax(0,1fr));
+            gap:10px;
+        }
+        .stat-card{padding:14px 16px;}
+        .stat-num{font-size:1.6rem;}
+    }
+
     /* ═══════════════════════════════════════════════════
-       MAIN 2-COL GRID
+       MAIN 2-COL GRID — responsive
     ═══════════════════════════════════════════════════ */
     .grid-main{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:16px;margin-bottom:18px;}
     .side-col{display:flex;flex-direction:column;gap:14px;}
 
+    /* Stack to single column on tablet/mobile */
+    @media(max-width:900px){
+        .grid-main{
+            grid-template-columns:1fr;
+        }
+    }
+
     /* ═══════════════════════════════════════════════════
-       FULLCALENDAR
+       FULLCALENDAR — mobile tweaks
     ═══════════════════════════════════════════════════ */
     #calendar{font-size:.8rem;font-family:var(--font);}
     .fc .fc-toolbar{flex-wrap:wrap;gap:.5rem;}
@@ -384,10 +434,28 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .fc-day-today .fc-daygrid-day-number{color:var(--indigo)!important;font-weight:800!important;}
     .fc-daygrid-day-number{font-size:.72rem;font-weight:600;font-family:var(--font);}
     .fc-col-header-cell-cushion{font-family:var(--font);font-size:.72rem;font-weight:700;letter-spacing:.04em;}
+
+    /* Hide legend labels on very small screens */
+    @media(max-width:479px){
+        .cal-legend{gap:8px;}
+        .leg-lbl{display:none;}
+        .leg-dot{width:9px;height:9px;}
+    }
+
     .cal-legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
     .leg-item{display:flex;align-items:center;gap:5px;}
     .leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
     .leg-lbl{font-size:.68rem;font-weight:600;color:#94a3b8;}
+
+    /* Tighter calendar on mobile */
+    @media(max-width:639px){
+        #calendar{font-size:.7rem;}
+        .fc .fc-toolbar{gap:.25rem;}
+        .fc-toolbar-title{font-size:.82rem!important;}
+        .fc-button-primary{font-size:.65rem!important;padding:.25rem .5rem!important;}
+        /* reduce calendar height */
+        .fc .fc-daygrid-body{min-height:auto!important;}
+    }
 
     /* ── Quick actions ── */
     .qa-link{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:var(--r-sm);border:1px solid rgba(99,102,241,.09);background:white;text-decoration:none;color:#475569;font-size:.83rem;font-weight:600;transition:all var(--ease);}
@@ -423,6 +491,11 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .notif-item.unread{background:var(--indigo-light);}
     .notif-item:last-child{border-bottom:none;}
 
+    /* Mobile: full-width notification dropdown */
+    @media(max-width:479px){
+        .notif-dd{left:12px;right:12px;width:auto;top:60px;}
+    }
+
     /* ── Modal ── */
     .modal-back{display:none;position:fixed;inset:0;background:rgba(15,23,42,.52);backdrop-filter:blur(6px);z-index:300;padding:1.5rem;overflow-y:auto;align-items:center;justify-content:center;}
     .modal-back.show{display:flex;animation:fadeIn .15s ease;}
@@ -431,6 +504,97 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .date-row{display:flex;align-items:center;gap:11px;padding:.75rem;border-bottom:1px solid #f8fafc;border-radius:10px;transition:background .15s;}
     .date-row:hover{background:#f8fafc;}
     .date-row:last-child{border-bottom:none;}
+
+    /* Mobile: modal nearly full-screen */
+    @media(max-width:479px){
+        .modal-back{padding:.75rem;}
+        .modal-card{padding:18px 16px;border-radius:var(--r-lg);}
+    }
+
+    /* ── How-it-works / status guide ── */
+    .how-step{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(99,102,241,.07);}
+    .how-step:last-child{border-bottom:none;}
+    .step-num{width:24px;height:24px;border-radius:50%;background:var(--indigo);color:white;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+    .status-guide-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(99,102,241,.07);}
+    .status-guide-row:last-child{border-bottom:none;}
+
+    /* ── Library section ── */
+    .grid-lib{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px;}
+    @media(max-width:900px){.grid-lib{grid-template-columns:1fr;}}
+
+    .lib-banner{background:linear-gradient(135deg,var(--indigo) 0%,#4338ca 60%,#6366f1 100%);border-radius:var(--r-lg);padding:22px 22px 18px;overflow:hidden;position:relative;}
+    .lib-banner::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E") repeat;opacity:.4;}
+    .lib-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;}
+    .lib-title{font-size:1.6rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;}
+    .lib-sub{font-size:.75rem;color:rgba(255,255,255,.55);margin-top:4px;}
+    .lib-browse{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;background:rgba(255,255,255,.18);color:white;border-radius:9px;font-size:.78rem;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.2);transition:all var(--ease);backdrop-filter:blur(4px);}
+    .lib-browse:hover{background:rgba(255,255,255,.28);}
+    .lib-stats{display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;}
+    .lib-stat{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;border:1px solid rgba(255,255,255,.1);flex:1;min-width:80px;}
+    .lib-stat-icon{width:28px;height:28px;background:rgba(255,255,255,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .lib-stat-lbl{font-size:.62rem;font-weight:600;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.1em;}
+    .lib-stat-val{font-size:1rem;font-weight:800;color:white;font-family:var(--mono);line-height:1.2;}
+
+    .book-letter{width:34px;height:34px;border-radius:9px;background:var(--indigo-light);color:var(--indigo);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;flex-shrink:0;letter-spacing:-.02em;}
+    .book-title{font-size:.82rem;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .book-author{font-size:.7rem;color:#94a3b8;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .avail-dot{width:8px;height:8px;border-radius:50%;}
+    .avail-dot.on{background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.15);}
+    .avail-dot.off{background:#e2e8f0;}
+    .avail-num{font-size:.68rem;color:#94a3b8;font-family:var(--mono);}
+
+    .borrow-row{display:flex;align-items:center;gap:9px;background:#f8fafc;border-radius:10px;padding:9px 12px;border:1px solid rgba(99,102,241,.07);}
+
+    /* ── AI Finder ── */
+    .rag-wrap{position:relative;margin-top:12px;}
+    .rag-icon-pos{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;}
+    .search-input{width:100%;padding:9px 12px 9px 34px;border-radius:var(--r-sm);border:1px solid rgba(99,102,241,.15);font-size:.83rem;font-family:var(--font);background:#f8fafc;color:#0f172a;transition:all var(--ease);outline:none;}
+    .search-input:focus{border-color:#818cf8;background:white;box-shadow:0 0 0 3px rgba(99,102,241,.08);}
+    .ai-result-box{display:none;margin-top:.75rem;background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:var(--r-sm);padding:12px 14px;}
+    .ai-result-box.show{display:block;animation:slideUp .3s ease;}
+    .find-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-size:.8rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font);transition:all var(--ease);}
+    .find-btn:hover{background:#312e81;}
+    .find-btn:disabled{opacity:.6;cursor:not-allowed;}
+    .shimmer{height:12px;border-radius:4px;background:linear-gradient(90deg,#eef2ff 25%,#e0e7ff 50%,#eef2ff 75%);background-size:200%;animation:shimmer 1.2s infinite;}
+    .shimmer+.shimmer{margin-top:6px;}
+    @keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+
+    /* ── Login toast ── */
+    .login-toast{
+        position:fixed;bottom:80px;right:16px;z-index:400;
+        max-width:280px;background:#0f172a;
+        border-radius:14px;padding:12px 14px;
+        display:flex;align-items:flex-start;gap:10px;
+        box-shadow:0 8px 32px rgba(0,0,0,.3);
+        transform:translateY(8px);opacity:0;
+        pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    .login-toast.show{transform:none;opacity:1;pointer-events:auto;}
+    .toast-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .toast-close{background:rgba(255,255,255,.08);border:none;border-radius:6px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px;}
+    @media(max-width:479px){.login-toast{bottom:72px;left:12px;right:12px;max-width:none;}}
+
+    /* Animations */
+    @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .fade-up{animation:slideUp .4s ease both}
+    .fade-up-1{animation:slideUp .45s .05s ease both}
+    .fade-up-2{animation:slideUp .45s .1s ease both}
+    .fade-up-3{animation:slideUp .45s .15s ease both}
+    .fade-up-4{animation:slideUp .45s .2s ease both}
+
+    /* ── Topbar responsive ── */
+    @media(max-width:639px){
+        .main-area{padding:14px 14px 0;}
+        .topbar{margin-bottom:14px;}
+        .greeting-name{font-size:1.35rem;}
+        .greeting-date{font-size:.72rem;}
+        .btn-text{display:none;}
+        .reserve-btn{padding:10px;}
+    }
+    @media(max-width:479px){
+        .upcoming-pill{flex-wrap:wrap;gap:10px;}
+        .up-btn{margin-left:0;width:100%;text-align:center;justify-content:center;}
+    }
 
     /* ── DARK MODE ── */
     body.dark{
@@ -483,7 +647,8 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     body.dark .next-msg{color:#7fb3e8;}
     body.dark .mobile-nav-pill{background:#0b1628;border-color:rgba(99,102,241,.18);}
     body.dark .mob-nav-item{color:#7fb3e8;}
-    body.dark .mob-nav-item.active{background:var(--indigo);}
+    body.dark .mob-nav-item.active{background:rgba(99,102,241,.18);}
+    body.dark .mob-badge{border-color:#0b1628;}
     body.dark .timer-banner.safe{background:rgba(55,48,163,.15);border-color:rgba(55,48,163,.3);color:#a5b4fc;}
     body.dark .timer-banner.warning{background:rgba(180,83,9,.2);border-color:rgba(180,83,9,.35);color:#fcd34d;}
     body.dark .timer-banner.urgent{background:rgba(154,52,18,.2);border-color:rgba(154,52,18,.35);color:#fb923c;}
@@ -493,10 +658,10 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     body.dark .fc-daygrid-day-number{color:#7fb3e8;}
     body.dark .fc-col-header-cell-cushion{color:#7fb3e8;}
     body.dark .fc-day-today{background:rgba(55,48,163,.15)!important;}
-    body.dark .tgl{background:rgba(99,102,241,.2);}
     body.dark .step-num{background:#4338ca;}
     body.dark .bk-time{color:#4a6fa5;}
-    body.dark .how-step .card-title,.dark .how-step p:first-child{color:#e2eaf8;}
+    body.dark .book-author{color:#4a6fa5;}
+    body.dark .avail-num{color:#4a6fa5;}
     </style>
 </head>
 <body>
@@ -508,12 +673,11 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         ['url'=>'/books',            'icon'=>'book-open',  'label'=>'Library',         'key'=>'books'],
         ['url'=>'/profile',          'icon'=>'user',       'label'=>'Profile',         'key'=>'profile'],
     ];
-    $ICON_NAV  = 16; // sidebar nav icons
-    $ICON_MOB  = 20; // mobile nav icons (bigger tap target feel)
-    $ICON_CARD = 16; // card header icons
-    $ICON_STAT = 16; // stat card icons
-    $ICON_BTN  = 16; // topbar button icons
-    // First letter of user name for avatar
+    $ICON_NAV  = 16;
+    $ICON_MOB  = 22; // slightly bigger for icon-only nav
+    $ICON_CARD = 16;
+    $ICON_STAT = 16;
+    $ICON_BTN  = 16;
     $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'U'), 0, 1));
     ?>
 
@@ -526,7 +690,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 <div class="brand-sub">Community Management</div>
             </div>
 
-            <!-- User card -->
             <div class="user-card" style="display:flex;align-items:center;gap:9px;">
                 <div class="user-avatar"><?= $avatarLetter ?></div>
                 <div style="min-width:0;">
@@ -581,20 +744,24 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         </div>
     </aside>
 
-    <!-- MOBILE NAV -->
+    <!-- MOBILE NAV — icons only, no labels -->
     <nav class="mobile-nav-pill">
         <div class="mobile-scroll-container">
             <?php foreach ($navItems as $item):
                 $active = ($page == $item['key']);
+                $showBadge = ($item['key'] === 'reservation-list' && $pending > 0);
             ?>
-            <a href="<?= base_url($item['url']) ?>" class="mob-nav-item <?= $active ? 'active' : '' ?>">
+            <a href="<?= base_url($item['url']) ?>"
+               class="mob-nav-item <?= $active ? 'active' : '' ?>"
+               title="<?= esc($item['label']) ?>">
                 <?= icon($item['icon'], $ICON_MOB, $active ? 'var(--indigo)' : '#64748b') ?>
-                <span class="mob-nav-lbl"><?= $item['label'] ?></span>
+                <?php if ($showBadge): ?>
+                <span class="mob-badge"><?= $pending > 9 ? '9+' : $pending ?></span>
+                <?php endif; ?>
             </a>
             <?php endforeach; ?>
-            <a href="<?= base_url('/logout') ?>" class="mob-nav-item mob-logout">
+            <a href="<?= base_url('/logout') ?>" class="mob-nav-item mob-logout" title="Sign Out">
                 <?= icon('logout', $ICON_MOB, '#f87171') ?>
-                <span class="mob-nav-lbl">Logout</span>
             </a>
         </div>
     </nav>
@@ -604,7 +771,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         <div class="modal-card">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
                 <div>
-                    <h3 style="font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-.2px;color:#0f172a;" id="modalDateTitle"></h3>
+                    <h3 style="font-family:var(--font);font-size:16px;font-weight:700;letter-spacing:-.2px;color:#0f172a;" id="modalDateTitle"></h3>
                     <p style="font-size:11px;color:#94a3b8;margin-top:2px;" id="modalDateSub"></p>
                 </div>
                 <button onclick="closeDateModal()" style="width:32px;height:32px;border-radius:9px;background:#f1f5f9;border:none;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -616,7 +783,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 <div style="display:flex;justify-content:center;margin-bottom:8px;color:#cbd5e1;"><?= icon('calendar-x', 26, '#cbd5e1') ?></div>
                 <p style="font-size:12px;color:#94a3b8;">No reservations for this date.</p>
             </div>
-            <button onclick="closeDateModal()" style="margin-top:16px;width:100%;padding:10px;background:#f8fafc;border-radius:var(--radius-sm);font-weight:600;color:#475569;border:1px solid rgba(99,102,241,.1);cursor:pointer;font-size:.82rem;font-family:var(--font);">Close</button>
+            <button onclick="closeDateModal()" style="margin-top:16px;width:100%;padding:10px;background:#f8fafc;border-radius:var(--r-sm);font-weight:600;color:#475569;border:1px solid rgba(99,102,241,.1);cursor:pointer;font-size:.82rem;font-family:var(--font);">Close</button>
         </div>
     </div>
 
@@ -624,7 +791,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     <div id="loginToast" class="login-toast">
         <div class="toast-icon" id="toastIcon"></div>
         <div style="flex:1;min-width:0;">
-            <p style="font-weight:700;font-size:12px;line-height:1.3;" id="toastTitle"></p>
+            <p style="font-weight:700;font-size:12px;line-height:1.3;color:white;" id="toastTitle"></p>
             <p style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;" id="toastBody"></p>
         </div>
         <button class="toast-close" onclick="dismissToast()"><?= icon('x', 10, 'white') ?></button>
@@ -642,7 +809,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
             <div class="topbar-right">
                 <div id="tgl-row" style="display:none;">
-                    <div style="width:36px;height:36px;background:var(--card);border:1px solid rgba(99,102,241,.12);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow-sm);" onclick="toggleDark()" id="darkBtn">
+                    <div class="icon-btn" onclick="toggleDark()" id="darkBtn">
                         <span id="dark-icon"><?= icon('sun', 14, '#94a3b8') ?></span>
                     </div>
                 </div>
@@ -650,7 +817,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 <a href="<?= base_url('/reservation') ?>" class="reserve-btn" id="reserveBtn" style="display:none;">
                     <?= icon('plus', $ICON_BTN, 'white') ?> <span class="btn-text">Reserve</span>
                 </a>
-                <script>if(window.innerWidth>=640)document.getElementById('reserveBtn').style.display='flex';</script>
+                <script>if(window.innerWidth>=480)document.getElementById('reserveBtn').style.display='flex';</script>
                 <div class="notif-bell" onclick="toggleNotifications()">
                     <div class="icon-btn"><?= icon('bell', $ICON_BTN, '#64748b') ?></div>
                     <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
@@ -661,7 +828,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         <!-- Notification dropdown -->
         <div id="notifDD" class="notif-dd">
             <div style="padding:11px 13px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-family:var(--font-display);font-weight:700;font-size:13px;color:#0f172a;">Notifications</span>
+                <span style="font-weight:700;font-size:13px;color:#0f172a;">Notifications</span>
                 <button onclick="markAllRead()" style="font-size:11px;color:var(--indigo);font-weight:600;background:none;border:none;cursor:pointer;">Mark all read</button>
             </div>
             <div id="notifList" style="max-height:280px;overflow-y:auto;"></div>
@@ -698,7 +865,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     <?= icon('hourglass', $ICON_CARD, 'currentColor') ?>
                 </div>
                 <div style="flex:1;min-width:0;">
-                    <p style="font-weight:700;font-size:.9rem;font-weight:700;line-height:1.3;" id="timerTitle">Your reservation ends soon</p>
+                    <p style="font-weight:700;font-size:.9rem;line-height:1.3;" id="timerTitle">Your reservation ends soon</p>
                     <p style="font-size:.76rem;opacity:.7;margin-top:2px;" id="timerSub"></p>
                 </div>
                 <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
@@ -786,12 +953,12 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         <!-- Calendar + Side -->
         <div class="grid-main fade-up-3">
             <div class="card card-p-lg">
-                <div class="card-head">
+                <div class="card-head" style="flex-wrap:wrap;gap:10px;">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <div class="card-icon" style="background:#eef2ff;"><?= icon('calendar-days', $ICON_CARD, 'var(--indigo)') ?></div>
                         <div>
                             <div class="card-title">Community Schedule</div>
-                            <div class="card-sub">Click any date to see reservations</div>
+                            <div class="card-sub">Tap any date to see reservations</div>
                         </div>
                     </div>
                     <div class="cal-legend">
@@ -873,7 +1040,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
         </div>
 
-        <!-- How it works + Status guide (shown when relevant) -->
+        <!-- How it works + Status guide -->
         <?php if (empty($reservations) || $unclaimedCount > 0 || $pending > 0): ?>
         <div class="grid-main" style="margin-bottom:16px;">
             <div class="card card-p">
@@ -930,7 +1097,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         <!-- Library section -->
         <div class="grid-lib fade-up-4">
             <div style="display:flex;flex-direction:column;gap:14px;">
-                <!-- Library banner -->
                 <div class="lib-banner">
                     <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
                         <div>
@@ -1070,7 +1236,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     const approvedRes  = reservations.filter(r => r.status === 'approved' && !r.claimed);
     let notifications  = [];
 
-    // ── Notification helpers ──
     const getSeenIds = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch(e) { return []; } };
     const saveSeenIds = ids => localStorage.setItem(NOTIF_KEY, JSON.stringify(ids));
 
@@ -1150,7 +1315,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         return `${Math.floor(s/86400)}d ago`;
     };
 
-    // ── Date Modal ──
     function openDateModal(date, items) {
         const d = new Date(date + 'T00:00:00');
         document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
@@ -1175,7 +1339,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     </div>
                     <div style="flex:1;min-width:0;">
                         <p style="font-weight:600;font-size:13px;color:#0f172a;">${r.resource_name || 'Reserved'}</p>
-                        <p style="font-size:10px;color:#94a3b8;margin-top:1px;font-family:'DM Mono',monospace;">${t1}${t2}</p>
+                        <p style="font-size:10px;color:#94a3b8;margin-top:1px;font-family:var(--mono);">${t1}${t2}</p>
                     </div>
                     <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
                 list.appendChild(row);
@@ -1194,7 +1358,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     function handleModalBack(e) { if (e.target.classList.contains('modal-back')) closeDateModal(); }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
 
-    // ── Dark mode ──
     function toggleDark() {
         const isDark = document.body.classList.toggle('dark');
         const icon   = document.getElementById('dark-icon');
@@ -1204,7 +1367,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
-    // ── Timer countdown ──
     function initTimer() {
         const banner = document.getElementById('timerBanner'),
               titleEl = document.getElementById('timerTitle'),
@@ -1274,7 +1436,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         setInterval(tick, 1000);
     }
 
-    // ── Login toast ──
     function showLoginToast() {
         const key = 'toast_<?= session()->get('user_id') ?>_' + new Date().toDateString();
         if (sessionStorage.getItem(key)) return;
@@ -1309,7 +1470,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
 
     function dismissToast() { document.getElementById('loginToast').classList.remove('show'); }
 
-    // ── AI RAG search ──
     async function doRagSearch() {
         const query = document.getElementById('ragInput').value.trim();
         if (query.length < 2) return;
@@ -1339,7 +1499,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 const avail = (b.available_copies || 0) > 0;
                 const chip = document.createElement('a');
                 chip.href = '/books';
-                chip.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:600;border:1px solid;transition:all .15s;text-decoration:none;font-family:'DM Sans',sans-serif;${avail?'background:white;border-color:#c7d2fe;color:#3730a3;':'background:#f8fafc;border-color:#e2e8f0;color:#94a3b8;'}`;
+                chip.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:600;border:1px solid;transition:all .15s;text-decoration:none;font-family:var(--font);${avail?'background:white;border-color:#c7d2fe;color:#3730a3;':'background:#f8fafc;border-color:#e2e8f0;color:#94a3b8;'}`;
                 chip.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round"/></svg>${b.title}${!avail?' <span style="font-size:8px;">(out)</span>':''}`;
                 booksRow.appendChild(chip);
             });
@@ -1352,9 +1512,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         }
     }
 
-    // ── Init ──
     document.addEventListener('DOMContentLoaded', () => {
-        // Restore theme
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark');
             const icon = document.getElementById('dark-icon');
@@ -1366,7 +1524,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         initTimer();
         showLoginToast();
 
-        // Build date → reservations map
         const byDate = {};
         allResData.forEach(r => {
             if (!r.reservation_date) return;
@@ -1391,11 +1548,14 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             };
         });
 
+        // Responsive calendar height
+        const calHeight = window.innerWidth < 640 ? 'auto' : 360;
+
         const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
             initialView: 'dayGridMonth',
             headerToolbar: {left:'prev,next', center:'title', right:'today'},
             events,
-            height: 360,
+            height: calHeight,
             eventDisplay: 'block',
             eventMaxStack: 2,
             dateClick: info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
@@ -1408,7 +1568,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 const items = byDate[d];
                 if (items && items.length) {
                     const badge = document.createElement('div');
-                    badge.style.cssText = 'font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;margin-bottom:1px;font-family:DM Mono,monospace;';
+                    badge.style.cssText = 'font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;margin-bottom:1px;font-family:var(--mono);';
                     badge.textContent = items.length;
                     info.el.querySelector('.fc-daygrid-day-top')?.appendChild(badge);
                 }
