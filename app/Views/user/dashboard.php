@@ -1,5 +1,4 @@
 <?php
-// ★ Pre-process reservations once for accurate status counts
 $unclaimedCount = 0;
 $claimedCount   = 0;
 $processedRecent = [];
@@ -93,7 +92,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         'eye'           => '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
         'trending-up'   => '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
     ];
-    $d = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
+    $d  = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
     $sw = in_array($name, ['calendar','calendar-days','calendar-x','bar-chart','bookmark','robot']) ? '1.5' : '1.8';
     return '<svg xmlns="http://www.w3.org/2000/svg" width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" stroke="'.$stroke.'" stroke-width="'.$sw.'" '.$extra.'>'.$d.'</svg>';
 }
@@ -110,20 +109,14 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- ── DARK MODE: apply before paint to prevent flash ── -->
     <script>
         (function(){
             if(localStorage.getItem('theme')==='dark') document.documentElement.classList.add('dark-pre');
         })();
     </script>
     <style>
-    /* ═══════════════════════════════════════════════════
-       RESET & TOKENS
-    ═══════════════════════════════════════════════════ */
     *,*::before,*::after{
         box-sizing:border-box;margin:0;padding:0;
-        /* FIX #7: kill Android blue tap flash */
         -webkit-tap-highlight-color:transparent;
     }
     :root{
@@ -141,84 +134,35 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         --r-sm:10px;--r-md:14px;--r-lg:20px;--r-xl:24px;
         --sidebar-w:268px;
         --ease:.18s cubic-bezier(.4,0,.2,1);
-
-        /* FIX #1: mob nav height separate from safe area */
         --mob-nav-h:60px;
         --mob-nav-total:calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px));
     }
-
-    html{
-        height:100%;
-        /* FIX #2: use dvh so iOS browser chrome is excluded */
-        height:100dvh;
-        font-size:16px;
-    }
+    html{height:100%;height:100dvh;font-size:16px;}
     body{
-        font-family:var(--font);
-        background:var(--bg);
-        color:#0f172a;
-        display:flex;
-        height:100vh;       /* fallback */
-        height:100dvh;      /* FIX #2 */
-        overflow:hidden;
-        font-size:1rem;
-        line-height:1.6;
-        -webkit-font-smoothing:antialiased;
-        -moz-osx-font-smoothing:grayscale;
-        overflow-x:hidden;  /* FIX #14: prevent horizontal bleed */
+        font-family:var(--font);background:var(--bg);color:#0f172a;
+        display:flex;height:100vh;height:100dvh;overflow:hidden;
+        font-size:1rem;line-height:1.6;
+        -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+        overflow-x:hidden;
     }
-    /* FIX #11: pre-apply dark before JS runs */
-    html.dark-pre body,
-    html.dark-pre .sidebar-inner,
-    html.dark-pre .mobile-nav-pill{
-        background:#060e1e;
-    }
+    html.dark-pre body,html.dark-pre .sidebar-inner,html.dark-pre .mobile-nav-pill{background:#060e1e;}
 
-    /* ═══════════════════════════════════════════════════
-       SIDEBAR
-    ═══════════════════════════════════════════════════ */
-    .sidebar{
-        width:var(--sidebar-w);
-        flex-shrink:0;
-        padding:18px 14px;
-        height:100vh;height:100dvh;
-        display:flex;
-        flex-direction:column;
-    }
-    .sidebar-inner{
-        background:var(--card);
-        border-radius:var(--r-xl);
-        border:1px solid rgba(99,102,241,.1);
-        height:100%;
-        display:flex;
-        flex-direction:column;
-        overflow:hidden;
-        box-shadow:var(--shadow-md);
-    }
+    .sidebar{width:var(--sidebar-w);flex-shrink:0;padding:18px 14px;height:100vh;height:100dvh;display:flex;flex-direction:column;}
+    .sidebar-inner{background:var(--card);border-radius:var(--r-xl);border:1px solid rgba(99,102,241,.1);height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-md);}
     .sidebar-top{padding:22px 18px 16px;border-bottom:1px solid rgba(99,102,241,.07);}
     .brand-tag{font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#94a3b8;margin-bottom:5px;}
     .brand-name{font-size:1.35rem;font-weight:800;color:#0f172a;letter-spacing:-.03em;line-height:1.1;}
     .brand-name em{font-style:normal;color:var(--indigo);}
     .brand-sub{font-size:.7rem;color:#94a3b8;margin-top:3px;letter-spacing:.01em;}
-
     .user-card{margin:12px 12px 0;background:var(--indigo-light);border-radius:var(--r-md);padding:12px 14px;border:1px solid var(--indigo-border);}
     .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--indigo);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0;box-shadow:0 2px 8px rgba(55,48,163,.3);}
     .user-name-txt{font-size:.8rem;font-weight:700;color:#0f172a;letter-spacing:-.01em;}
     .user-role-txt{font-size:.68rem;color:#6366f1;font-weight:500;margin-top:1px;}
-
     .sidebar-nav{flex:1;overflow-y:auto;padding:10px 10px;display:flex;flex-direction:column;gap:3px;}
     .sidebar-nav::-webkit-scrollbar{width:2px;}
     .sidebar-nav::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:2px;}
     .nav-section-lbl{font-size:.6rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#cbd5e1;padding:10px 10px 5px;margin-top:2px;}
-    .nav-link{
-        display:flex;align-items:center;gap:10px;
-        padding:10px 12px;border-radius:var(--r-sm);
-        font-size:.85rem;font-weight:600;
-        color:#64748b;text-decoration:none;
-        transition:all var(--ease);
-        /* FIX #13: prevent double-tap zoom on nav links */
-        touch-action:manipulation;
-    }
+    .nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:#64748b;text-decoration:none;transition:all var(--ease);touch-action:manipulation;}
     .nav-link:hover{background:var(--indigo-light);color:var(--indigo);}
     .nav-link.active{background:var(--indigo);color:#fff;box-shadow:0 4px 14px rgba(55,48,163,.32);}
     .nav-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -227,7 +171,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .nav-link:hover:not(.active) .nav-icon{background:#e0e7ff;}
     .nav-badge{margin-left:auto;background:rgba(239,68,68,.15);color:#dc2626;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:999px;}
     .nav-link.active .nav-badge{background:rgba(255,255,255,.22);color:#fff;}
-
     .quota-wrap{margin:8px 12px;background:#f8fafc;border-radius:var(--r-sm);padding:12px 14px;border:1px solid rgba(99,102,241,.09);}
     .quota-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
     .quota-lbl{font-size:.7rem;font-weight:600;color:#64748b;}
@@ -237,161 +180,49 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .quota-note{font-size:.7rem;color:#94a3b8;margin-top:5px;}
     .quota-note.warn{color:#d97706;font-weight:600;}
     .quota-note.err{color:#dc2626;font-weight:700;}
-
     .sidebar-footer{padding:10px 10px 12px;border-top:1px solid rgba(99,102,241,.07);}
-    .logout-link{
-        display:flex;align-items:center;gap:10px;padding:10px 12px;
-        border-radius:var(--r-sm);font-size:.85rem;font-weight:600;
-        color:#94a3b8;text-decoration:none;transition:all var(--ease);
-        touch-action:manipulation; /* FIX #13 */
-    }
+    .logout-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:#94a3b8;text-decoration:none;transition:all var(--ease);touch-action:manipulation;}
     .logout-link:hover{background:#fef2f2;color:#dc2626;}
     .logout-link:hover .nav-icon{background:#fee2e2;}
 
-    /* ═══════════════════════════════════════════════════
-       MOBILE NAV
-    ═══════════════════════════════════════════════════ */
-    .mobile-nav-pill{
-        display:none;
-        position:fixed;
-        bottom:0;left:0;right:0;
-        background:white;
-        border-top:1px solid rgba(99,102,241,.1);
-        /* FIX #1: height grows to include safe area on iPhone X+ */
-        height:var(--mob-nav-total);
-        z-index:200;
-        box-shadow:0 -4px 20px rgba(55,48,163,.1);
-    }
-    .mobile-scroll-container{
-        display:flex;
-        justify-content:space-around;
-        align-items:center;
-        /* FIX #1: only the icon area is --mob-nav-h tall; safe area pads below */
-        height:var(--mob-nav-h);
-        padding:0 6px;
-    }
-    .mob-nav-item{
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        width:48px;height:48px;  /* FIX #9: larger touch target (was 44px) */
-        border-radius:14px;
-        cursor:pointer;
-        text-decoration:none;
-        color:#64748b;
-        position:relative;
-        transition:background .15s, color .15s;
-        flex-shrink:0;
-        touch-action:manipulation; /* FIX #13 */
-    }
+    .mobile-nav-pill{display:none;position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid rgba(99,102,241,.1);height:var(--mob-nav-total);z-index:200;box-shadow:0 -4px 20px rgba(55,48,163,.1);}
+    .mobile-scroll-container{display:flex;justify-content:space-around;align-items:center;height:var(--mob-nav-h);padding:0 6px;}
+    .mob-nav-item{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:14px;cursor:pointer;text-decoration:none;color:#64748b;position:relative;transition:background .15s, color .15s;flex-shrink:0;touch-action:manipulation;}
     .mob-nav-item:hover{background:var(--indigo-light);color:var(--indigo);}
     .mob-nav-item.active{background:var(--indigo-light);color:var(--indigo);}
     .mob-nav-item.active svg{stroke:var(--indigo);}
-    .mob-nav-item.active::after{
-        content:'';
-        position:absolute;
-        bottom:-2px;left:50%;
-        transform:translateX(-50%);
-        width:4px;height:4px;
-        background:var(--indigo);
-        border-radius:50%;
-    }
+    .mob-nav-item.active::after{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:var(--indigo);border-radius:50%;}
     .mob-logout{color:#f87171;}
     .mob-logout:hover{background:#fef2f2;color:#dc2626;}
-    .mob-badge{
-        position:absolute;top:6px;right:6px;
-        background:#ef4444;color:white;
-        font-size:.5rem;font-weight:700;
-        width:14px;height:14px;
-        border-radius:50%;
-        display:flex;align-items:center;justify-content:center;
-        border:2px solid white;
-        pointer-events:none;
-    }
+    .mob-badge{position:absolute;top:6px;right:6px;background:#ef4444;color:white;font-size:.5rem;font-weight:700;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white;pointer-events:none;}
 
-    /* ═══════════════════════════════════════════════════
-       RESPONSIVE BREAKPOINTS
-    ═══════════════════════════════════════════════════ */
     @media(max-width:1023px){
         .sidebar{display:none!important;}
         .mobile-nav-pill{display:flex!important;}
-        /* FIX #1 + #5: push content above fixed nav including safe area */
-        .main-area{
-            padding-bottom:calc(var(--mob-nav-total) + 16px) !important;
-        }
+        .main-area{padding-bottom:calc(var(--mob-nav-total) + 16px) !important;}
     }
     @media(min-width:1024px){
         .sidebar{display:flex!important;}
         .mobile-nav-pill{display:none!important;}
     }
 
-    /* ═══════════════════════════════════════════════════
-       MAIN CONTENT AREA
-    ═══════════════════════════════════════════════════ */
-    .main-area{
-        flex:1;min-width:0;
-        padding:24px 28px 40px;
-        height:100vh;height:100dvh; /* FIX #2 */
-        overflow-y:auto;
-        overflow-x:hidden; /* FIX #14 */
-        -webkit-overflow-scrolling:touch; /* FIX: smooth momentum scroll on iOS */
-        overscroll-behavior-y:contain;    /* prevent pull-to-refresh fighting */
-    }
-    /* FIX #9: hide scrollbar on mobile (it flickers) */
-    @media(max-width:1023px){
-        .main-area::-webkit-scrollbar{display:none;}
-        .main-area{scrollbar-width:none;}
-    }
-    @media(min-width:1024px){
-        .main-area::-webkit-scrollbar{width:4px;}
-        .main-area::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
-    }
+    .main-area{flex:1;min-width:0;padding:24px 28px 40px;height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;}
+    @media(max-width:1023px){.main-area::-webkit-scrollbar{display:none;}.main-area{scrollbar-width:none;}}
+    @media(min-width:1024px){.main-area::-webkit-scrollbar{width:4px;}.main-area::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}}
 
-    /* ── Topbar ── */
     .topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;}
     .greeting-eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;}
     .greeting-name{font-size:1.75rem;font-weight:800;color:#0f172a;letter-spacing:-.04em;line-height:1.1;}
     .greeting-date{font-size:.78rem;color:#94a3b8;margin-top:4px;font-weight:500;}
     .topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-top:4px;}
-    .reserve-btn{
-        display:none; /* FIX #6: CSS-controlled; JS no longer needed for this */
-        align-items:center;gap:7px;
-        padding:10px 18px;background:var(--indigo);color:#fff;
-        border-radius:var(--r-sm);font-size:.85rem;font-weight:700;
-        border:none;cursor:pointer;font-family:var(--font);
-        letter-spacing:-.01em;transition:all var(--ease);
-        text-decoration:none;box-shadow:0 4px 12px rgba(55,48,163,.28);
-        touch-action:manipulation; /* FIX #13 */
-    }
-    /* FIX #6: show reserve btn via CSS, not JS */
-    @media(min-width:480px){
-        .reserve-btn{display:flex;}
-    }
+    .reserve-btn{display:none;align-items:center;gap:7px;padding:10px 18px;background:var(--indigo);color:#fff;border-radius:var(--r-sm);font-size:.85rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font);letter-spacing:-.01em;transition:all var(--ease);text-decoration:none;box-shadow:0 4px 12px rgba(55,48,163,.28);touch-action:manipulation;}
+    @media(min-width:480px){.reserve-btn{display:flex;}}
     .reserve-btn:hover{background:#312e81;transform:translateY(-1px);box-shadow:0 6px 18px rgba(55,48,163,.35);}
-    .icon-btn{
-        width:44px;height:44px; /* FIX: minimum 44px touch target */
-        background:white;
-        border:1px solid rgba(99,102,241,.12);border-radius:var(--r-sm);
-        display:flex;align-items:center;justify-content:center;
-        color:#64748b;cursor:pointer;transition:all var(--ease);
-        box-shadow:var(--shadow-sm);
-        touch-action:manipulation; /* FIX #13 */
-    }
+    .icon-btn{width:44px;height:44px;background:white;border:1px solid rgba(99,102,241,.12);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:#64748b;cursor:pointer;transition:all var(--ease);box-shadow:var(--shadow-sm);touch-action:manipulation;}
     .icon-btn:hover{background:var(--indigo-light);border-color:var(--indigo-border);color:var(--indigo);}
     .notif-bell{position:relative;}
-    .notif-badge{
-        position:absolute;top:-5px;right:-5px;
-        background:#ef4444;color:white;
-        font-size:.55rem;font-weight:700;
-        padding:2px 5px;border-radius:999px;
-        min-width:17px;text-align:center;
-        border:2px solid var(--bg);line-height:1.3;
-        pointer-events:none;
-    }
+    .notif-badge{position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;font-size:.55rem;font-weight:700;padding:2px 5px;border-radius:999px;min-width:17px;text-align:center;border:2px solid var(--bg);line-height:1.3;pointer-events:none;}
 
-    /* ═══════════════════════════════════════════════════
-       CARDS
-    ═══════════════════════════════════════════════════ */
     .card{background:var(--card);border-radius:var(--r-lg);border:1px solid rgba(99,102,241,.08);box-shadow:var(--shadow-sm);}
     .card-p{padding:20px 22px;}
     .card-p-lg{padding:22px 24px;}
@@ -400,101 +231,43 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .card-title{font-size:.9rem;font-weight:700;color:#0f172a;letter-spacing:-.01em;}
     .card-sub{font-size:.7rem;color:#94a3b8;margin-top:2px;}
     .section-lbl{font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#94a3b8;margin-bottom:14px;}
-    .link-sm{
-        font-size:.65rem;font-weight:700;color:var(--indigo);text-decoration:none;
-        letter-spacing:.05em;text-transform:uppercase;transition:opacity .15s;
-        touch-action:manipulation; /* FIX #13 */
-    }
+    .link-sm{font-size:.65rem;font-weight:700;color:var(--indigo);text-decoration:none;letter-spacing:.05em;text-transform:uppercase;transition:opacity .15s;touch-action:manipulation;}
     .link-sm:hover{opacity:.7;}
 
-    /* ── Flash ── */
     .flash-ok{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:13px 18px;background:var(--indigo-light);border:1px solid var(--indigo-border);color:var(--indigo);font-weight:600;border-radius:var(--r-md);font-size:.9rem;animation:slideUp .4s ease both;}
 
-    /* ── Next-action banner ── */
     .next-card{display:flex;align-items:flex-start;gap:14px;border-radius:var(--r-md);padding:16px 18px;border:1px solid;margin-bottom:20px;animation:slideUp .4s ease both;}
     .next-icon-wrap{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .next-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px;}
     .next-msg{font-size:.83rem;color:#475569;line-height:1.6;}
-    .next-cta{
-        display:inline-flex;align-items:center;gap:6px;margin-top:10px;
-        padding:9px 16px; /* FIX: taller tap target on mobile */
-        border-radius:9px;font-size:.75rem;font-weight:700;color:#fff;
-        text-decoration:none;font-family:var(--font);transition:opacity var(--ease);
-        touch-action:manipulation; /* FIX #13 */
-    }
+    .next-cta{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:9px 16px;border-radius:9px;font-size:.75rem;font-weight:700;color:#fff;text-decoration:none;font-family:var(--font);transition:opacity var(--ease);touch-action:manipulation;}
     .next-cta:hover{opacity:.85;}
 
-    /* ── Timer banner ── */
-    .timer-banner{
-        display:none;border-radius:var(--r-md);
-        padding:14px 18px;margin-bottom:18px;
-        border:1px solid;animation:slideDown .35s cubic-bezier(.34,1.56,.64,1) both;
-    }
+    .timer-banner{display:none;border-radius:var(--r-md);padding:14px 18px;margin-bottom:18px;border:1px solid;animation:slideDown .35s cubic-bezier(.34,1.56,.64,1) both;}
     .timer-banner.urgent{background:#fff7ed;border-color:#fed7aa;color:#9a3412;}
     .timer-banner.warning{background:#fefce8;border-color:#fde68a;color:#854d0e;}
     .timer-banner.safe{background:var(--indigo-light);border-color:var(--indigo-border);color:#312e81;}
     @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-
-    /* FIX #3: timer inner row — allow wrapping on narrow phones */
-    .timer-inner{
-        display:flex;
-        align-items:center;
-        gap:11px;
-        flex-wrap:wrap; /* FIX #3 */
-    }
+    .timer-inner{display:flex;align-items:center;gap:11px;flex-wrap:wrap;}
     .timer-text-col{flex:1;min-width:140px;}
-
-    .timer-digit{
-        display:inline-flex;flex-direction:column;align-items:center;
-        background:rgba(0,0,0,.07);border-radius:8px;
-        padding:.2rem .5rem;min-width:2.6rem;
-        font-variant-numeric:tabular-nums;font-weight:700;
-        font-size:1.1rem;line-height:1;font-family:var(--mono);
-    }
+    .timer-digit{display:inline-flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.07);border-radius:8px;padding:.2rem .5rem;min-width:2.6rem;font-variant-numeric:tabular-nums;font-weight:700;font-size:1.1rem;line-height:1;font-family:var(--mono);}
     .timer-digit span{font-size:.5rem;font-weight:500;opacity:.6;text-transform:uppercase;letter-spacing:.07em;margin-top:3px;font-family:var(--font);}
     .timer-pulse{animation:pulse .9s ease-in-out infinite;}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
     .timer-progress-wrap{height:3px;border-radius:999px;background:rgba(0,0,0,.08);overflow:hidden;margin-top:10px;}
     .timer-progress-fill{height:100%;border-radius:999px;background:currentColor;opacity:.4;transition:width 1s linear;}
+    @media(max-width:400px){.timer-digit{min-width:2.1rem;padding:.15rem .35rem;font-size:.95rem;}.timer-inner{gap:8px;}}
 
-    /* FIX #3: compact timer digits on very small phones */
-    @media(max-width:400px){
-        .timer-digit{min-width:2.1rem;padding:.15rem .35rem;font-size:.95rem;}
-        .timer-inner{gap:8px;}
-    }
-
-    /* ── Upcoming pill ── */
     .upcoming-pill{background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:var(--r-md);padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:20px;animation:slideUp .4s ease both;flex-wrap:wrap;}
     .up-icon{width:38px;height:38px;background:var(--indigo);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(55,48,163,.28);}
     .up-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--indigo);margin-bottom:2px;}
-    .up-name{font-size:.88rem;font-weight:700;color:#0f172a;
-        /* FIX #10: prevent overflow on 320px phones */
-        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;
-    }
+    .up-name{font-size:.88rem;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;}
     .up-time{font-size:.72rem;color:#4338ca;font-family:var(--mono);margin-top:1px;}
-    .up-btn{
-        margin-left:auto;font-size:.72rem;font-weight:700;color:var(--indigo);
-        background:white;border:1px solid var(--indigo-border);border-radius:8px;
-        padding:8px 14px; /* FIX: taller touch target */
-        text-decoration:none;white-space:nowrap;transition:all var(--ease);
-        touch-action:manipulation; /* FIX #13 */
-    }
+    .up-btn{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--indigo);background:white;border:1px solid var(--indigo-border);border-radius:8px;padding:8px 14px;text-decoration:none;white-space:nowrap;transition:all var(--ease);touch-action:manipulation;}
     .up-btn:hover{background:var(--indigo);color:white;box-shadow:0 2px 8px rgba(55,48,163,.22);}
-    /* FIX #10: full-width button on tiny screens */
-    @media(max-width:479px){
-        .up-name{max-width:100%;}
-        .up-btn{margin-left:0;width:100%;text-align:center;justify-content:center;display:block;}
-    }
+    @media(max-width:479px){.up-name{max-width:100%;}.up-btn{margin-left:0;width:100%;text-align:center;justify-content:center;display:block;}}
 
-    /* ═══════════════════════════════════════════════════
-       STAT CARDS
-    ═══════════════════════════════════════════════════ */
-    .stats-grid{
-        display:grid;
-        grid-template-columns:repeat(4,minmax(0,1fr));
-        gap:14px;
-        margin-bottom:20px;
-    }
+    .stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px;}
     .stat-card{background:var(--card);border:1px solid rgba(99,102,241,.08);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow-sm);transition:transform var(--ease),box-shadow var(--ease);}
     .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
     .stat-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
@@ -502,32 +275,13 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .stat-lbl{font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#94a3b8;}
     .stat-num{font-size:2rem;font-weight:800;color:#0f172a;line-height:1;letter-spacing:-.04em;font-family:var(--mono);}
     .stat-hint{font-size:.72rem;color:#94a3b8;margin-top:4px;}
+    @media(max-width:639px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.stat-card{padding:14px 16px;}.stat-num{font-size:1.6rem;}.stat-card-top{margin-bottom:10px;}}
+    @media(max-width:360px){.stats-grid{gap:8px;}.stat-card{padding:12px 14px;}.stat-num{font-size:1.4rem;}.stat-icon{width:30px;height:30px;}}
 
-    /* FIX: 2×2 on mobile */
-    @media(max-width:639px){
-        .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-        .stat-card{padding:14px 16px;}
-        .stat-num{font-size:1.6rem;}
-        .stat-card-top{margin-bottom:10px;}
-    }
-    /* Extra compact on very small phones */
-    @media(max-width:360px){
-        .stats-grid{gap:8px;}
-        .stat-card{padding:12px 14px;}
-        .stat-num{font-size:1.4rem;}
-        .stat-icon{width:30px;height:30px;}
-    }
-
-    /* ═══════════════════════════════════════════════════
-       MAIN 2-COL GRID
-    ═══════════════════════════════════════════════════ */
     .grid-main{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:16px;margin-bottom:18px;}
     .side-col{display:flex;flex-direction:column;gap:14px;}
     @media(max-width:900px){.grid-main{grid-template-columns:1fr;}}
 
-    /* ═══════════════════════════════════════════════════
-       FULLCALENDAR
-    ═══════════════════════════════════════════════════ */
     #calendar{font-size:.8rem;font-family:var(--font);}
     .fc .fc-toolbar{flex-wrap:wrap;gap:.5rem;}
     .fc-toolbar-title{font-size:.95rem!important;font-weight:800!important;color:#0f172a!important;font-family:var(--font)!important;letter-spacing:-.02em!important;}
@@ -540,55 +294,29 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .fc-day-today .fc-daygrid-day-number{color:var(--indigo)!important;font-weight:800!important;}
     .fc-daygrid-day-number{font-size:.72rem;font-weight:600;font-family:var(--font);}
     .fc-col-header-cell-cushion{font-family:var(--font);font-size:.72rem;font-weight:700;letter-spacing:.04em;}
-
-    /* FIX #4: calendar on tiny phones — stack toolbar vertically */
     @media(max-width:479px){
-        .fc .fc-toolbar{
-            display:grid;
-            grid-template-columns:auto 1fr auto;
-            align-items:center;
-            gap:6px;
-        }
+        .fc .fc-toolbar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;}
         .fc-toolbar-chunk:nth-child(2){text-align:center;}
         .fc-toolbar-title{font-size:.8rem!important;}
         .fc-button-primary{font-size:.65rem!important;padding:.25rem .5rem!important;}
         #calendar{font-size:.7rem;}
         .fc .fc-daygrid-body{min-height:auto!important;}
     }
-    @media(max-width:360px){
-        .fc-toolbar-title{font-size:.72rem!important;}
-        .fc-daygrid-day-number{font-size:.6rem;}
-    }
+    @media(max-width:360px){.fc-toolbar-title{font-size:.72rem!important;}.fc-daygrid-day-number{font-size:.6rem;}}
 
-    /* Hide legend labels on very small screens */
     .cal-legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
     .leg-item{display:flex;align-items:center;gap:5px;}
     .leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
     .leg-lbl{font-size:.68rem;font-weight:600;color:#94a3b8;}
-    @media(max-width:479px){
-        .cal-legend{gap:8px;}
-        .leg-lbl{display:none;}
-        .leg-dot{width:9px;height:9px;}
-    }
+    @media(max-width:479px){.cal-legend{gap:8px;}.leg-lbl{display:none;}.leg-dot{width:9px;height:9px;}}
 
-    /* ── Quick actions ── */
-    .qa-link{
-        display:flex;align-items:center;gap:11px;padding:12px 12px; /* FIX: taller tap target */
-        border-radius:var(--r-sm);border:1px solid rgba(99,102,241,.09);
-        background:white;text-decoration:none;color:#475569;
-        font-size:.83rem;font-weight:600;transition:all var(--ease);
-        touch-action:manipulation; /* FIX #13 */
-    }
+    .qa-link{display:flex;align-items:center;gap:11px;padding:12px 12px;border-radius:var(--r-sm);border:1px solid rgba(99,102,241,.09);background:white;text-decoration:none;color:#475569;font-size:.83rem;font-weight:600;transition:all var(--ease);touch-action:manipulation;}
     .qa-link:hover{border-color:var(--indigo);background:var(--indigo-light);color:var(--indigo);}
-    /* FIX #14: no translateX on touch devices (doesn't feel right) */
-    @media(pointer:fine){
-        .qa-link:hover{transform:translateX(3px);}
-    }
+    @media(pointer:fine){.qa-link:hover{transform:translateX(3px);}}
     .qa-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .qa-chev{margin-left:auto;color:#cbd5e1;transition:color var(--ease);}
     .qa-link:hover .qa-chev{color:var(--indigo);}
 
-    /* ── Booking rows ── */
     .bk-row{display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:11px;text-decoration:none;color:inherit;transition:background var(--ease);touch-action:manipulation;}
     .bk-row:hover{background:var(--indigo-light);}
     .bk-date{width:38px;height:38px;background:#f8fafc;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(99,102,241,.09);}
@@ -597,7 +325,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .bk-name{font-size:.82rem;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .bk-time{font-size:.68rem;color:#94a3b8;margin-top:1px;font-family:var(--mono);}
 
-    /* ── Status tags ── */
     .tag{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:999px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;}
     .tag-pending{background:#fef3c7;color:#92400e;}
     .tag-approved{background:#dcfce7;color:#166534;}
@@ -606,30 +333,15 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .tag-unclaimed{background:#fff7ed;color:#c2410c;border:1px dashed #fdba74;}
     .tag-expired{background:#f1f5f9;color:#475569;}
 
-    /* ── Notification dropdown ── */
-    /* FIX #12: use top based on topbar height, not hardcoded 68px */
-    .notif-dd{
-        position:fixed;
-        top:80px; /* FIX #12: was 68px, topbar is taller */
-        right:20px;
-        width:320px;
-        background:white;
-        border-radius:var(--r-xl);
-        box-shadow:var(--shadow-lg),0 0 0 1px rgba(99,102,241,.09);
-        z-index:200;display:none;overflow:hidden;animation:dropIn .15s ease;
-    }
+    .notif-dd{position:fixed;top:80px;right:20px;width:320px;background:white;border-radius:var(--r-xl);box-shadow:var(--shadow-lg),0 0 0 1px rgba(99,102,241,.09);z-index:200;display:none;overflow:hidden;animation:dropIn .15s ease;}
     @keyframes dropIn{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
     .notif-dd.show{display:block;}
     .notif-item{padding:.85rem 1.1rem;border-bottom:1px solid #f8fafc;transition:background .15s;cursor:pointer;touch-action:manipulation;}
     .notif-item:hover{background:#f8fafc;}
     .notif-item.unread{background:var(--indigo-light);}
     .notif-item:last-child{border-bottom:none;}
-    /* FIX #12: full-width on mobile */
-    @media(max-width:479px){
-        .notif-dd{left:12px;right:12px;width:auto;top:72px;}
-    }
+    @media(max-width:479px){.notif-dd{left:12px;right:12px;width:auto;top:72px;}}
 
-    /* ── Modal ── */
     .modal-back{display:none;position:fixed;inset:0;background:rgba(15,23,42,.52);backdrop-filter:blur(6px);z-index:300;padding:1.5rem;overflow-y:auto;align-items:center;justify-content:center;}
     .modal-back.show{display:flex;animation:fadeIn .15s ease;}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -637,19 +349,14 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .date-row{display:flex;align-items:center;gap:11px;padding:.75rem;border-bottom:1px solid #f8fafc;border-radius:10px;transition:background .15s;}
     .date-row:hover{background:#f8fafc;}
     .date-row:last-child{border-bottom:none;}
-    @media(max-width:479px){
-        .modal-back{padding:.75rem;}
-        .modal-card{padding:18px 16px;border-radius:var(--r-lg);}
-    }
+    @media(max-width:479px){.modal-back{padding:.75rem;}.modal-card{padding:18px 16px;border-radius:var(--r-lg);}}
 
-    /* ── How-it-works / status guide ── */
     .how-step{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(99,102,241,.07);}
     .how-step:last-child{border-bottom:none;}
     .step-num{width:24px;height:24px;border-radius:50%;background:var(--indigo);color:white;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
     .status-guide-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(99,102,241,.07);}
     .status-guide-row:last-child{border-bottom:none;}
 
-    /* ── Library section ── */
     .grid-lib{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px;}
     @media(max-width:900px){.grid-lib{grid-template-columns:1fr;}}
 
@@ -658,13 +365,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .lib-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;}
     .lib-title{font-size:1.6rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;}
     .lib-sub{font-size:.75rem;color:rgba(255,255,255,.55);margin-top:4px;}
-    .lib-browse{
-        display:inline-flex;align-items:center;gap:7px;padding:10px 16px;
-        background:rgba(255,255,255,.18);color:white;border-radius:9px;
-        font-size:.78rem;font-weight:700;text-decoration:none;
-        border:1px solid rgba(255,255,255,.2);transition:all var(--ease);
-        backdrop-filter:blur(4px);touch-action:manipulation;
-    }
+    .lib-browse{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;background:rgba(255,255,255,.18);color:white;border-radius:9px;font-size:.78rem;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.2);transition:all var(--ease);backdrop-filter:blur(4px);touch-action:manipulation;}
     .lib-browse:hover{background:rgba(255,255,255,.28);}
     .lib-stats{display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;}
     .lib-stat{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;border:1px solid rgba(255,255,255,.1);flex:1;min-width:80px;}
@@ -679,69 +380,30 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .avail-dot.on{background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.15);}
     .avail-dot.off{background:#e2e8f0;}
     .avail-num{font-size:.68rem;color:#94a3b8;font-family:var(--mono);}
-
     .borrow-row{display:flex;align-items:center;gap:9px;background:#f8fafc;border-radius:10px;padding:9px 12px;border:1px solid rgba(99,102,241,.07);}
 
-    /* ── AI Finder ── */
     .rag-wrap{position:relative;margin-top:12px;}
     .rag-icon-pos{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;}
-    /* FIX #8: font-size must be >=16px to prevent iOS auto-zoom on focus */
-    .search-input{
-        width:100%;padding:11px 12px 11px 34px;
-        border-radius:var(--r-sm);border:1px solid rgba(99,102,241,.15);
-        font-size:1rem; /* FIX #8: was .83rem (13.3px), below iOS zoom threshold */
-        font-family:var(--font);background:#f8fafc;color:#0f172a;
-        transition:all var(--ease);outline:none;
-        -webkit-appearance:none; /* FIX: remove iOS inner shadow */
-    }
+    .search-input{width:100%;padding:11px 12px 11px 34px;border-radius:var(--r-sm);border:1px solid rgba(99,102,241,.15);font-size:1rem;font-family:var(--font);background:#f8fafc;color:#0f172a;transition:all var(--ease);outline:none;-webkit-appearance:none;}
     .search-input:focus{border-color:#818cf8;background:white;box-shadow:0 0 0 3px rgba(99,102,241,.08);}
     .ai-result-box{display:none;margin-top:.75rem;background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:var(--r-sm);padding:12px 14px;overflow:hidden;}
     .ai-result-box.show{display:block;animation:slideUp .3s ease;}
-
-    /* FIX #15: book chips wrap and don't overflow */
     #ragBooks{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px;overflow:hidden;}
-    #ragBooks a{
-        max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    }
-
-    .find-btn{
-        display:inline-flex;align-items:center;gap:7px;padding:10px 16px;
-        background:var(--indigo);color:white;border-radius:var(--r-sm);
-        font-size:.8rem;font-weight:700;border:none;cursor:pointer;
-        font-family:var(--font);transition:all var(--ease);
-        touch-action:manipulation; /* FIX #13 */
-    }
+    #ragBooks a{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .find-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-size:.8rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font);transition:all var(--ease);touch-action:manipulation;}
     .find-btn:hover{background:#312e81;}
     .find-btn:disabled{opacity:.6;cursor:not-allowed;}
     .shimmer{height:12px;border-radius:4px;background:linear-gradient(90deg,#eef2ff 25%,#e0e7ff 50%,#eef2ff 75%);background-size:200%;animation:shimmer 1.2s infinite;}
     .shimmer+.shimmer{margin-top:6px;}
     @keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
 
-    /* ── Login toast ── */
-    .login-toast{
-        position:fixed;
-        /* FIX #1: account for safe area + mobile nav */
-        bottom:calc(var(--mob-nav-total) + 8px);
-        right:16px;z-index:400;
-        max-width:280px;background:#0f172a;
-        border-radius:14px;padding:12px 14px;
-        display:flex;align-items:flex-start;gap:10px;
-        box-shadow:0 8px 32px rgba(0,0,0,.3);
-        transform:translateY(8px);opacity:0;
-        pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);
-    }
+    .login-toast{position:fixed;bottom:calc(var(--mob-nav-total) + 8px);right:16px;z-index:400;max-width:280px;background:#0f172a;border-radius:14px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.3);transform:translateY(8px);opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);}
     .login-toast.show{transform:none;opacity:1;pointer-events:auto;}
     .toast-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .toast-close{background:rgba(255,255,255,.08);border:none;border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px;touch-action:manipulation;}
-    @media(min-width:1024px){
-        /* On desktop, toast sits above viewport bottom */
-        .login-toast{bottom:24px;}
-    }
-    @media(max-width:479px){
-        .login-toast{bottom:calc(var(--mob-nav-total) + 6px);left:12px;right:12px;max-width:none;}
-    }
+    @media(min-width:1024px){.login-toast{bottom:24px;}}
+    @media(max-width:479px){.login-toast{bottom:calc(var(--mob-nav-total) + 6px);left:12px;right:12px;max-width:none;}}
 
-    /* Animations */
     @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
     .fade-up{animation:slideUp .4s ease both}
     .fade-up-1{animation:slideUp .45s .05s ease both}
@@ -749,28 +411,17 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .fade-up-3{animation:slideUp .45s .15s ease both}
     .fade-up-4{animation:slideUp .45s .2s ease both}
 
-    /* ── Topbar responsive ── */
     @media(max-width:639px){
         .main-area{padding:14px 14px 0;}
         .topbar{margin-bottom:14px;}
         .greeting-name{font-size:1.35rem;}
         .greeting-date{font-size:.72rem;}
         .btn-text{display:none;}
-    }
-    /* FIX: show card padding on mobile */
-    @media(max-width:639px){
         .card-p{padding:16px;}
         .card-p-lg{padding:16px;}
     }
 
-    /* ── DARK MODE ── */
-    body.dark{
-        --bg:#060e1e;
-        --card:#0b1628;
-        --indigo-light:rgba(55,48,163,.12);
-        --indigo-border:rgba(99,102,241,.25);
-        color:#e2eaf8;
-    }
+    body.dark{--bg:#060e1e;--card:#0b1628;--indigo-light:rgba(55,48,163,.12);--indigo-border:rgba(99,102,241,.25);color:#e2eaf8;}
     body.dark .sidebar-inner{background:#0b1628;border-color:rgba(99,102,241,.12);}
     body.dark .sidebar-top{border-color:rgba(99,102,241,.1);}
     body.dark .sidebar-footer{border-color:rgba(99,102,241,.1);}
@@ -849,7 +500,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'U'), 0, 1));
     ?>
 
-    <!-- DESKTOP SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-inner">
             <div class="sidebar-top">
@@ -869,7 +519,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             <nav class="sidebar-nav">
                 <div class="nav-section-lbl">Menu</div>
                 <?php foreach ($navItems as $item):
-                    $active = ($page == $item['key']);
+                    $active    = ($page == $item['key']);
                     $showBadge = ($item['key'] === 'reservation-list' && $pending > 0);
                 ?>
                 <a href="<?= base_url($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
@@ -912,11 +562,10 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         </div>
     </aside>
 
-    <!-- MOBILE NAV — icons only -->
     <nav class="mobile-nav-pill">
         <div class="mobile-scroll-container">
             <?php foreach ($navItems as $item):
-                $active = ($page == $item['key']);
+                $active    = ($page == $item['key']);
                 $showBadge = ($item['key'] === 'reservation-list' && $pending > 0);
             ?>
             <a href="<?= base_url($item['url']) ?>"
@@ -934,7 +583,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         </div>
     </nav>
 
-    <!-- DATE MODAL -->
     <div id="dateModal" class="modal-back" onclick="handleModalBack(event)">
         <div class="modal-card">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
@@ -955,7 +603,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         </div>
     </div>
 
-    <!-- LOGIN TOAST -->
     <div id="loginToast" class="login-toast">
         <div class="toast-icon" id="toastIcon"></div>
         <div style="flex:1;min-width:0;">
@@ -965,10 +612,8 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         <button class="toast-close" onclick="dismissToast()"><?= icon('x', 10, 'white') ?></button>
     </div>
 
-    <!-- MAIN -->
     <main class="main-area">
 
-        <!-- Topbar -->
         <div class="topbar fade-up">
             <div>
                 <div class="greeting-eyebrow"><?php $h=(int)date('H');echo $h<12?'Good morning':($h<17?'Good afternoon':'Good evening');?></div>
@@ -976,11 +621,9 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 <div class="greeting-date"><?= date('l, F j, Y') ?></div>
             </div>
             <div class="topbar-right">
-                <!-- FIX #11: dark mode button always in DOM, JS toggles icon; no layout flash -->
                 <div class="icon-btn" onclick="toggleDark()" id="darkBtn" style="display:flex;">
                     <span id="dark-icon"><?= icon('sun', 14, '#94a3b8') ?></span>
                 </div>
-                <!-- FIX #6: reserve btn shown via CSS media query, no JS width check -->
                 <a href="<?= base_url('/reservation') ?>" class="reserve-btn">
                     <?= icon('plus', $ICON_BTN, 'white') ?> <span class="btn-text">Reserve</span>
                 </a>
@@ -991,7 +634,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
         </div>
 
-        <!-- Notification dropdown -->
         <div id="notifDD" class="notif-dd">
             <div style="padding:11px 13px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
                 <span style="font-weight:700;font-size:13px;color:#0f172a;">Notifications</span>
@@ -1000,7 +642,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             <div id="notifList" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
         </div>
 
-        <!-- Flash -->
         <?php if (session()->getFlashdata('success')): ?>
         <div class="flash-ok fade-up">
             <?= icon('check-circle', 14, 'var(--indigo)') ?>
@@ -1008,7 +649,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         </div>
         <?php endif; ?>
 
-        <!-- Next action -->
         <?php if ($nextAction): $nc = $nextColors[$nextAction['color']]; ?>
         <div class="next-card fade-up" style="background:<?= $nc['bg'] ?>;border-color:<?= $nc['border'] ?>;">
             <div class="next-icon-wrap" style="background:<?= $nc['icon_bg'] ?>;color:<?= $nc['icon_fg'] ?>;">
@@ -1024,7 +664,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         </div>
         <?php endif; ?>
 
-        <!-- Timer banner — FIX #3: inner div now uses .timer-inner for flex-wrap -->
         <div id="timerBanner" class="timer-banner">
             <div class="timer-inner">
                 <div id="timerIconWrap" style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.07);flex-shrink:0;">
@@ -1047,7 +686,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
         </div>
 
-        <!-- Upcoming reservation -->
         <?php if ($upcoming): ?>
         <div class="upcoming-pill fade-up-1">
             <div class="up-icon"><?= icon('ticket', 16, 'white') ?></div>
@@ -1060,7 +698,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         </div>
         <?php endif; ?>
 
-        <!-- Stat cards -->
         <div class="stats-grid fade-up-2">
             <div class="stat-card">
                 <div class="stat-card-top">
@@ -1116,7 +753,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             <?php endif; ?>
         </div>
 
-        <!-- Calendar + Side -->
         <div class="grid-main fade-up-3">
             <div class="card card-p-lg">
                 <div class="card-head" style="flex-wrap:wrap;gap:10px;">
@@ -1137,7 +773,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
 
             <div class="side-col">
-                <!-- Quick actions -->
                 <div class="card card-p">
                     <div class="section-lbl">Quick Actions</div>
                     <div style="display:flex;flex-direction:column;gap:5px;">
@@ -1168,7 +803,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     </div>
                 </div>
 
-                <!-- Recent bookings -->
                 <div class="card card-p" style="flex:1;">
                     <div class="card-head">
                         <div class="section-lbl" style="margin-bottom:0;">Recent Bookings</div>
@@ -1177,7 +811,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     <?php if (!empty($processedRecent)): ?>
                     <div>
                         <?php foreach (array_slice($processedRecent, 0, 5) as $res):
-                            $s = $res['_status'];
+                            $s  = $res['_status'];
                             $dt = new DateTime($res['reservation_date']);
                         ?>
                         <a href="<?= base_url('/reservation-list') ?>" class="bk-row">
@@ -1206,7 +840,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
         </div>
 
-        <!-- How it works + Status guide -->
         <?php if (empty($reservations) || $unclaimedCount > 0 || $pending > 0): ?>
         <div class="grid-main" style="margin-bottom:16px;">
             <div class="card card-p">
@@ -1260,7 +893,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         </div>
         <?php endif; ?>
 
-        <!-- Library section -->
         <div class="grid-lib fade-up-4">
             <div style="display:flex;flex-direction:column;gap:14px;">
                 <div class="lib-banner">
@@ -1288,7 +920,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     </div>
                 </div>
 
-                <!-- AI Book Finder -->
                 <div class="card card-p">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', $ICON_CARD, '#7c3aed') ?></div>
@@ -1299,7 +930,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     </div>
                     <div class="rag-wrap">
                         <span class="rag-icon-pos"><?= icon('search', 13, '#94a3b8') ?></span>
-                        <!-- FIX #8: font-size 1rem prevents iOS auto-zoom -->
                         <input type="text" id="ragInput" class="search-input"
                                placeholder="e.g. Filipino history, funny stories…"
                                autocomplete="off" autocorrect="off" spellcheck="false"
@@ -1316,7 +946,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                             <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
                         </div>
                         <p style="font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
-                        <!-- FIX #15: overflow hidden, chips wrap properly -->
                         <div id="ragBooks"></div>
                     </div>
                     <div id="ragErr" style="display:none;margin-top:5px;font-size:11px;color:#dc2626;font-weight:500;"></div>
@@ -1330,7 +959,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:14px;">
-                <!-- Available books -->
                 <div class="card card-p">
                     <div class="card-head">
                         <div class="section-lbl" style="margin-bottom:0;">Available Now</div>
@@ -1364,7 +992,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     <?php endif; ?>
                 </div>
 
-                <!-- My borrows -->
                 <div class="card card-p">
                     <div class="card-head">
                         <div class="section-lbl" style="margin-bottom:0;">My Borrows</div>
@@ -1407,17 +1034,17 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     const approvedRes  = reservations.filter(r => r.status === 'approved' && !r.claimed);
     let notifications  = [];
 
-    const getSeenIds = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch(e) { return []; } };
+    const getSeenIds  = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch(e) { return []; } };
     const saveSeenIds = ids => localStorage.setItem(NOTIF_KEY, JSON.stringify(ids));
 
     function loadNotifications() {
         const seen = getSeenIds();
         notifications = reservations.filter(r => r.status === 'approved').map(r => ({
-            id: parseInt(r.id),
+            id:    parseInt(r.id),
             title: 'Reservation Approved',
-            msg: `${r.resource_name || 'Resource'} · ${new Date(r.reservation_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`,
-            time: r.updated_at || r.created_at || new Date().toISOString(),
-            read: seen.includes(parseInt(r.id))
+            msg:   `${r.resource_name || 'Resource'} · ${new Date(r.reservation_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`,
+            time:  r.updated_at || r.created_at || new Date().toISOString(),
+            read:  seen.includes(parseInt(r.id))
         }));
         updateBadge();
         renderNotifs();
@@ -1438,10 +1065,10 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     }
 
     function updateBadge() {
-        const badge = document.getElementById('notifBadge');
+        const badge  = document.getElementById('notifBadge');
         const unread = notifications.filter(n => !n.read).length;
         badge.style.display = unread > 0 ? 'block' : 'none';
-        badge.textContent = unread > 9 ? '9+' : unread;
+        badge.textContent   = unread > 9 ? '9+' : unread;
     }
 
     function renderNotifs() {
@@ -1480,8 +1107,8 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
 
     const timeAgo = t => {
         const s = Math.floor((Date.now() - new Date(t)) / 1000);
-        if (s < 60) return 'Just now';
-        if (s < 3600) return `${Math.floor(s/60)}m ago`;
+        if (s < 60)    return 'Just now';
+        if (s < 3600)  return `${Math.floor(s/60)}m ago`;
         if (s < 86400) return `${Math.floor(s/3600)}h ago`;
         return `${Math.floor(s/86400)}d ago`;
     };
@@ -1489,7 +1116,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     function openDateModal(date, items) {
         const d = new Date(date + 'T00:00:00');
         document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-        document.getElementById('modalDateSub').textContent = items.length ? `${items.length} reservation${items.length>1?'s':''}` : '';
+        document.getElementById('modalDateSub').textContent   = items.length ? `${items.length} reservation${items.length>1?'s':''}` : '';
         const list  = document.getElementById('modalList');
         const empty = document.getElementById('modalEmpty');
         list.innerHTML = '';
@@ -1501,7 +1128,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 const cmap = {approved:'#dcfce7|#166534', pending:'#fef3c7|#92400e', declined:'#fee2e2|#991b1b', canceled:'#fee2e2|#991b1b', claimed:'#ede9fe|#5b21b6'};
                 const [cbg, cfg] = (cmap[s] || '#f1f5f9|#475569').split('|');
                 const t1 = r.start_time ? r.start_time.substring(0,5) : 'All day';
-                const t2 = r.end_time ? ` – ${r.end_time.substring(0,5)}` : '';
+                const t2 = r.end_time   ? ` – ${r.end_time.substring(0,5)}` : '';
                 const row = document.createElement('div');
                 row.className = 'date-row';
                 row.innerHTML = `
@@ -1529,7 +1156,6 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     function handleModalBack(e) { if (e.target.classList.contains('modal-back')) closeDateModal(); }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
 
-    // FIX #11: toggleDark just toggles class; dark state is already applied before paint
     function toggleDark() {
         const isDark = document.body.classList.toggle('dark');
         const icon   = document.getElementById('dark-icon');
@@ -1543,9 +1169,9 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         const banner  = document.getElementById('timerBanner'),
               titleEl = document.getElementById('timerTitle'),
               subEl   = document.getElementById('timerSub'),
-              hEl = document.getElementById('tdH'),
-              mEl = document.getElementById('tdM'),
-              sEl = document.getElementById('tdS'),
+              hEl     = document.getElementById('tdH'),
+              mEl     = document.getElementById('tdM'),
+              sEl     = document.getElementById('tdS'),
               iconW   = document.getElementById('timerIconWrap'),
               pw      = document.getElementById('timerPW'),
               pf      = document.getElementById('timerPF');
@@ -1561,8 +1187,8 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             let active = null, upcoming = null;
             approvedRes.forEach(r => {
                 if (!r.reservation_date || !r.start_time || !r.end_time) return;
-                const start = new Date(r.reservation_date + 'T' + r.start_time).getTime();
-                const end   = new Date(r.reservation_date + 'T' + r.end_time).getTime();
+                const start       = new Date(r.reservation_date + 'T' + r.start_time).getTime();
+                const end         = new Date(r.reservation_date + 'T' + r.end_time).getTime();
                 const minsToStart = (start - now) / 60000;
                 const minsToEnd   = (end - now) / 60000;
                 if (now >= start && now < end && !active)
@@ -1616,8 +1242,8 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         let td = null;
         approvedRes.forEach(r => {
             if (!r.reservation_date || !r.start_time || !r.end_time) return;
-            const start = new Date(r.reservation_date + 'T' + r.start_time).getTime();
-            const end   = new Date(r.reservation_date + 'T' + r.end_time).getTime();
+            const start       = new Date(r.reservation_date + 'T' + r.start_time).getTime();
+            const end         = new Date(r.reservation_date + 'T' + r.end_time).getTime();
             const minsToStart = (start - now) / 60000;
             const today  = new Date().toDateString();
             const resDay = new Date(r.reservation_date + 'T00:00:00').toDateString();
@@ -1632,10 +1258,10 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         });
         if (!td) return;
         const toast = document.getElementById('loginToast');
-        document.getElementById('toastIcon').innerHTML = td.icon;
+        document.getElementById('toastIcon').innerHTML        = td.icon;
         document.getElementById('toastIcon').style.background = td.bg;
-        document.getElementById('toastTitle').textContent = td.title;
-        document.getElementById('toastBody').textContent  = td.body;
+        document.getElementById('toastTitle').textContent     = td.title;
+        document.getElementById('toastBody').textContent      = td.body;
         setTimeout(() => toast.classList.add('show'), 900);
         setTimeout(() => toast.classList.remove('show'), 7500);
     }
@@ -1650,9 +1276,9 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
               err  = document.getElementById('ragErr'),
               btn  = document.getElementById('ragBtn');
         res.classList.remove('show');
-        err.style.display = 'none';
+        err.style.display  = 'none';
         skel.style.display = 'block';
-        btn.disabled = true;
+        btn.disabled       = true;
         try {
             const r = await fetch('/rag/suggest', {
                 method: 'POST',
@@ -1661,21 +1287,20 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             });
             const d = await r.json();
             skel.style.display = 'none';
-            btn.disabled = false;
+            btn.disabled       = false;
             if (d.message && !d.suggestion) { err.textContent = d.message; err.style.display = 'block'; return; }
             if (d.error   && !d.books)      { err.textContent = d.error;   err.style.display = 'block'; return; }
             document.getElementById('ragText').textContent = d.suggestion || '';
             const booksRow = document.getElementById('ragBooks');
             booksRow.innerHTML = '';
-            // FIX #15: chips use max-width and text-overflow for long titles
             (d.books || []).slice(0,4).forEach(b => {
                 const avail = (b.available_copies || 0) > 0;
-                const chip = document.createElement('a');
-                chip.href = '/books';
+                const chip  = document.createElement('a');
+                chip.href   = '/books';
                 chip.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:8px;font-size:10px;font-weight:600;border:1px solid;transition:all .15s;text-decoration:none;font-family:var(--font);max-width:100%;overflow:hidden;${avail?'background:white;border-color:#c7d2fe;color:#3730a3;':'background:#f8fafc;border-color:#e2e8f0;color:#94a3b8;'}`;
                 const titleSpan = document.createElement('span');
                 titleSpan.style.cssText = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-                titleSpan.textContent = b.title + (!avail ? ' (out)' : '');
+                titleSpan.textContent   = b.title + (!avail ? ' (out)' : '');
                 chip.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="flex-shrink:0;"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round"/></svg>`;
                 chip.appendChild(titleSpan);
                 booksRow.appendChild(chip);
@@ -1683,14 +1308,13 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             res.classList.add('show');
         } catch(e) {
             skel.style.display = 'none';
-            btn.disabled = false;
-            err.textContent = 'Network error. Try again.';
-            err.style.display = 'block';
+            btn.disabled       = false;
+            err.textContent    = 'Network error. Try again.';
+            err.style.display  = 'block';
         }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        // FIX #11: apply dark class properly (html.dark-pre → body.dark, remove pre-class)
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark');
             const icon = document.getElementById('dark-icon');
@@ -1711,49 +1335,45 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         });
 
         const colorMap = {approved:'#10b981', pending:'#fbbf24', declined:'#f87171', canceled:'#f87171', claimed:'#a855f7'};
-        const events = allResData.filter(r => r.reservation_date).map(r => {
+        const events   = allResData.filter(r => r.reservation_date).map(r => {
             const isClaimed = r.claimed == 1;
             const s = isClaimed ? 'claimed' : (r.status || 'pending').toLowerCase();
             const d = r.reservation_date.trim();
             return {
-                title: r.resource_name || 'Reservation',
-                start: d + (r.start_time ? 'T' + r.start_time.substring(0,8) : ''),
-                end:   d + (r.end_time   ? 'T' + r.end_time.substring(0,8)   : ''),
-                allDay: !r.start_time,
+                title:           r.resource_name || 'Reservation',
+                start:           d + (r.start_time ? 'T' + r.start_time.substring(0,8) : ''),
+                end:             d + (r.end_time   ? 'T' + r.end_time.substring(0,8)   : ''),
+                allDay:          !r.start_time,
                 backgroundColor: colorMap[s] || '#94a3b8',
-                borderColor: 'transparent',
-                textColor: '#fff',
-                extendedProps: {status: s}
+                borderColor:     'transparent',
+                textColor:       '#fff',
+                extendedProps:   {status: s}
             };
         });
 
-        // FIX #4: on very small screens, use list view for calendar
-        const w = window.innerWidth;
+        const w       = window.innerWidth;
         const calView   = w < 480 ? 'listWeek' : 'dayGridMonth';
         const calHeight = w < 640 ? 'auto' : 360;
 
         const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
             initialView: calView,
-            headerToolbar: w < 480
-                ? {left:'prev,next', center:'title', right:'today'}
-                : {left:'prev,next', center:'title', right:'today'},
+            headerToolbar: {left:'prev,next', center:'title', right:'today'},
             events,
-            height: calHeight,
+            height:       calHeight,
             eventDisplay: 'block',
             eventMaxStack: 2,
-            // FIX #4: on list view, clicking event opens modal with that date
-            dateClick: info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
+            dateClick:  info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
             eventClick: info => {
                 const d = info.event.startStr.split('T')[0];
                 openDateModal(d, byDate[d] || []);
             },
             dayCellDidMount: info => {
-                const d = info.date.toISOString().split('T')[0];
+                const d     = info.date.toISOString().split('T')[0];
                 const items = byDate[d];
                 if (items && items.length) {
                     const badge = document.createElement('div');
                     badge.style.cssText = 'font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;margin-bottom:1px;font-family:var(--mono);';
-                    badge.textContent = items.length;
+                    badge.textContent   = items.length;
                     info.el.querySelector('.fc-daygrid-day-top')?.appendChild(badge);
                 }
             }
