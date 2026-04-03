@@ -2356,6 +2356,31 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
             border-color: #101e35 !important;
         }
 
+        body.dark .fc-scrollgrid,
+        body.dark .fc-scrollgrid-section>td,
+        body.dark .fc-scrollgrid-section>th,
+        body.dark .fc-list,
+        body.dark .fc-list-table,
+        body.dark .fc-list-table td,
+        body.dark .fc-list-table th,
+        body.dark table.fc-list-table {
+            border-color: #101e35 !important;
+        }
+
+        body.dark .fc-theme-standard td,
+        body.dark .fc-theme-standard th,
+        body.dark .fc-theme-standard .fc-scrollgrid {
+            border-color: #101e35 !important;
+        }
+
+        body.dark .fc-list-empty {
+            background: #0b1628 !important;
+        }
+
+        body.dark .fc-list-empty-cushion {
+            color: #4a6fa5 !important;
+        }
+
         body.dark .fc-daygrid-day {
             background: #0b1628 !important;
         }
