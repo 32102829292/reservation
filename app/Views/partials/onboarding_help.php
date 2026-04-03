@@ -7,7 +7,8 @@ $roleLabel   = match($currentRole) { 'chairman' => 'Chairman', 'sk' => 'SK Offic
 $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-shield', default => 'fa-user' };
 ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <style>
 /* ═══════════════════════════════════════════════════
@@ -20,8 +21,8 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
   --a-glow: rgba(<?= $accentRgb ?>,.35);
   --card-bg: #07090f;
   --card-border: rgba(255,255,255,.07);
-  --font-display: 'Syne', system-ui, sans-serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Roboto', system-ui, sans-serif;
+  --font-body: 'Roboto', system-ui, sans-serif;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -239,7 +240,7 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
 .ob-title {
   font-family: var(--font-display);
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 900;
   color: #f8fafc;
   letter-spacing: -.02em;
   line-height: 1.2;
@@ -535,7 +536,7 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
 .help-hdr-title {
   font-family: var(--font-display);
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 900;
   color: #0f172a;
   margin: 0;
   letter-spacing: -.02em;
@@ -658,7 +659,7 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
   justify-content: center;
   font-family: var(--font-display);
   font-size: .72rem;
-  font-weight: 800;
+  font-weight: 900;
   color: white;
   background: var(--a);
 }
@@ -1151,7 +1152,6 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
   const panels = [...obEl.querySelectorAll('.ob-panel')];
   const TOTAL  = panels.length;
   let step = 0;
-  let goingBack = false;
 
   /* Build pips */
   const pipsEl = document.getElementById('ob-pips');
@@ -1163,7 +1163,6 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
 
   /* Update UI for current step */
   function upd(n, reverse) {
-    /* Animate out current panel */
     panels.forEach((p, i) => {
       if (p.classList.contains('on')) {
         p.classList.remove('on');
@@ -1187,36 +1186,29 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
       });
     }, 120);
 
-    /* Pips */
     [...pipsEl.children].forEach((p, i) => {
       p.classList.remove('active', 'done');
       if (i < n)       p.classList.add('done');
       else if (i === n) p.classList.add('active');
     });
 
-    /* Progress bar */
     const pct = TOTAL <= 1 ? 100 : Math.round(n / (TOTAL - 1) * 100);
     document.getElementById('ob-prog').style.width = pct + '%';
 
-    /* Label */
     const lblMap = { 0: 'Welcome', [TOTAL - 1]: 'All done!' };
     document.getElementById('ob-lbl').textContent = lblMap[n] ?? `Step ${n} of ${TOTAL - 1}`;
 
-    /* Button */
     const isLast = n === TOTAL - 1;
     document.getElementById('ob-btn-lbl').textContent =
       isLast ? 'Start Exploring' : (n === 0 ? 'Show Me Around' : 'Next');
     document.getElementById('ob-btn-ico').className =
       'fa-solid ' + (isLast ? 'fa-rocket' : 'fa-arrow-right');
 
-    /* Back button */
     document.getElementById('ob-prev-btn').style.display = n > 0 ? 'flex' : 'none';
 
-    /* Confetti on last step */
     if (isLast) spawnConfetti();
   }
 
-  /* Confetti burst */
   function spawnConfetti() {
     const wrap = document.getElementById('ob-confetti');
     wrap.innerHTML = '';
@@ -1241,7 +1233,6 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
     setTimeout(() => { wrap.classList.remove('burst'); wrap.innerHTML = ''; }, 1800);
   }
 
-  /* Expose globals */
   window.obClose = () => {
     localStorage.setItem(KEY, '1');
     obEl.classList.remove('open');
@@ -1264,7 +1255,6 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
     if (step > 0) { upd(--step, true); }
   };
 
-  /* Init */
   upd(0, false);
   if (!localStorage.getItem(KEY)) {
     setTimeout(() => {
@@ -1273,7 +1263,6 @@ $roleIcon    = match($currentRole) { 'chairman' => 'fa-crown', 'sk' => 'fa-user-
     }, 900);
   }
 
-  /* ── HELP ── */
   window.helpOpen = () => {
     document.getElementById('help-over').classList.add('open');
     document.body.style.overflow = 'hidden';
