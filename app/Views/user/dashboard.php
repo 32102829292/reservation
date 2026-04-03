@@ -2119,15 +2119,22 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         font-size: 1.25rem;
     }
 
-    .lib-stats {
+     .lib-stats {
+        display: flex;
+        flex-direction: row;  /* ← force row */
+        flex-wrap: nowrap;
         gap: 5px;
         margin-top: 10px;
     }
 
     .lib-stat {
+        flex: 1;
+        min-width: 0;
         padding: 6px;
         gap: 4px;
         border-radius: 8px;
+        flex-direction: column;  /* ← stack icon+text vertically */
+        align-items: flex-start;
     }
 
     .lib-stat-icon {
@@ -2137,10 +2144,12 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
     .lib-stat-lbl {
         font-size: .48rem;
         letter-spacing: .04em;
+        white-space: nowrap;
     }
 
     .lib-stat-val {
-        font-size: .82rem;
+        font-size: .88rem;
+        line-height: 1;
     }
 
     /* Book rows */
