@@ -2099,109 +2099,111 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
 
         @media(max-width:639px) {
             .lib-banner {
-        padding: 16px 16px 14px;
-    }
-
-    .lib-banner > div[style] {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 10px !important;
-    }
-
-    .lib-browse {
-        width: 100%;
-        justify-content: center;
-        padding: 9px 12px;
-        font-size: .75rem;
-    }
-
-    .lib-title {
-        font-size: 1.25rem;
-    }
-
-     .lib-stats {
-        display: flex;
-        flex-direction: row;  /* ← force row */
-        flex-wrap: nowrap;
-        gap: 5px;
-        margin-top: 10px;
-    }
-
-    .lib-stat {
-        flex: 1;
-        min-width: 0;
-        padding: 6px;
-        gap: 4px;
-        border-radius: 8px;
-        flex-direction: column;  /* ← stack icon+text vertically */
-        align-items: flex-start;
-    }
-
-    .lib-stat-icon {
-        display: none;
-    }
-
-    .lib-stat-lbl {
-        font-size: .48rem;
-        letter-spacing: .04em;
-        white-space: nowrap;
-    }
-
-    .lib-stat-val {
-        font-size: .88rem;
-        line-height: 1;
-    }
-
-    /* Book rows */
-    .book-title {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 140px;
-    }
-
-    .book-author {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 140px;
-    }
-
-    /* AI Book finder row */
-    .find-btn + .link-sm {
-        display: none;
-    }
-
-    /* Main area padding */
-    .main-area {
-        padding: 14px 12px 0;
-    }
-}
-
-
-            .topbar {
-                margin-bottom: 14px;
+                padding: 16px 16px 14px;
             }
 
-            .greeting-name {
-                font-size: 1.35rem;
+            .lib-banner>div[style] {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 10px !important;
             }
 
-            .greeting-date {
-                font-size: .72rem;
+            .lib-browse {
+                width: 100%;
+                justify-content: center;
+                padding: 9px 12px;
+                font-size: .75rem;
             }
 
-            .btn-text {
+            .lib-title {
+                font-size: 1.25rem;
+            }
+
+            .lib-stats {
+                display: flex;
+                flex-direction: row;
+                /* ← force row */
+                flex-wrap: nowrap;
+                gap: 5px;
+                margin-top: 10px;
+            }
+
+            .lib-stat {
+                flex: 1;
+                min-width: 0;
+                padding: 6px;
+                gap: 4px;
+                border-radius: 8px;
+                flex-direction: column;
+                /* ← stack icon+text vertically */
+                align-items: flex-start;
+            }
+
+            .lib-stat-icon {
                 display: none;
             }
 
-            .card-p {
-                padding: 16px;
+            .lib-stat-lbl {
+                font-size: .48rem;
+                letter-spacing: .04em;
+                white-space: nowrap;
             }
 
-            .card-p-lg {
-                padding: 16px;
+            .lib-stat-val {
+                font-size: .88rem;
+                line-height: 1;
             }
+
+            /* Book rows */
+            .book-title {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 140px;
+            }
+
+            .book-author {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 140px;
+            }
+
+            /* AI Book finder row */
+            .find-btn+.link-sm {
+                display: none;
+            }
+
+            /* Main area padding */
+            .main-area {
+                padding: 14px 12px 0;
+            }
+        }
+
+
+        .topbar {
+            margin-bottom: 14px;
+        }
+
+        .greeting-name {
+            font-size: 1.35rem;
+        }
+
+        .greeting-date {
+            font-size: .72rem;
+        }
+
+        .btn-text {
+            display: none;
+        }
+
+        .card-p {
+            padding: 16px;
+        }
+
+        .card-p-lg {
+            padding: 16px;
+        }
 
         body.dark {
             --bg: #060e1e;
@@ -2373,6 +2375,33 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
 
         body.dark .notif-item:hover {
             background: #101e35;
+        }
+
+        /* notification text colors in dark mode */
+        body.dark #notifList p[style*="color:#0f172a"] {
+            color: #e2eaf8 !important;
+        }
+
+        body.dark #notifList p[style*="color:#64748b"] {
+            color: #7fb3e8 !important;
+        }
+
+        body.dark #notifList p[style*="color:#94a3b8"] {
+            color: #4a6fa5 !important;
+        }
+
+        /* notification header */
+        body.dark .notif-dd>div:first-child {
+            border-color: #101e35;
+        }
+
+        body.dark .notif-dd span[style*="color:#0f172a"] {
+            color: #e2eaf8 !important;
+        }
+
+        /* notification icon background */
+        body.dark .notif-dd div[style*="background:#eef2ff"] {
+            background: rgba(55, 48, 163, .25) !important;
         }
 
         body.dark .modal-card {
