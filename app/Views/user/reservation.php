@@ -3,218 +3,695 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>New Reservation | <?= esc($user_name ?? 'User') ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#3730a3">
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .sidebar-card {
-            background: white;
-            border-radius: 32px;
-            border: 1px solid #e2e8f0;
-            height: calc(100vh - 48px);
+        :root {
+            --indigo: #3730a3;
+            --indigo-mid: #4338ca;
+            --indigo-light: #eef2ff;
+            --indigo-border: #c7d2fe;
+            --bg: #f0f2f9;
+            --card: #ffffff;
+            --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+            --shadow-sm: 0 1px 4px rgba(15, 23, 42, .07), 0 1px 2px rgba(15, 23, 42, .04);
+            --shadow-md: 0 4px 16px rgba(15, 23, 42, .09), 0 2px 4px rgba(15, 23, 42, .04);
+            --shadow-lg: 0 12px 40px rgba(15, 23, 42, .12), 0 4px 8px rgba(15, 23, 42, .06);
+            --r-sm: 10px;
+            --r-md: 14px;
+            --r-lg: 20px;
+            --r-xl: 24px;
+            --ease: .18s cubic-bezier(.4, 0, .2, 1);
+            --mob-nav-h: 60px;
+            --mob-nav-total: calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px));
+        }
+
+        html {
+            height: 100%;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: #0f172a;
+            display: flex;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 268px;
+            flex-shrink: 0;
+            padding: 18px 14px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
             position: sticky;
-            top: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            top: 0;
+        }
+
+        .sidebar-inner {
+            background: var(--card);
+            border-radius: var(--r-xl);
+            border: 1px solid rgba(99, 102, 241, .1);
+            height: 100%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-shadow: var(--shadow-md);
         }
 
-        .sidebar-header {
-            flex-shrink: 0;
-            padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
+        .sidebar-top {
+            padding: 22px 18px 16px;
+            border-bottom: 1px solid rgba(99, 102, 241, .07);
+        }
+
+        .brand-tag {
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+
+        .brand-name {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -.03em;
+            line-height: 1.1;
+        }
+
+        .brand-name em {
+            font-style: normal;
+            color: var(--indigo);
+        }
+
+        .brand-sub {
+            font-size: .7rem;
+            color: #94a3b8;
+            margin-top: 3px;
         }
 
         .sidebar-nav {
             flex: 1;
             overflow-y: auto;
-            overflow-x: hidden;
-            padding: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
         }
 
         .sidebar-nav::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar-nav::-webkit-scrollbar-track {
-            background: transparent;
+            width: 2px;
         }
 
         .sidebar-nav::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
+            background: #e2e8f0;
+            border-radius: 2px;
+        }
+
+        .nav-lbl {
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: #cbd5e1;
+            padding: 10px 10px 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--r-sm);
+            font-size: .85rem;
+            font-weight: 600;
+            color: #64748b;
+            text-decoration: none;
+            transition: all var(--ease);
+        }
+
+        .nav-link:hover {
+            background: var(--indigo-light);
+            color: var(--indigo);
+        }
+
+        .nav-link.active {
+            background: var(--indigo);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(55, 48, 163, .32);
+        }
+
+        .nav-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: #f1f5f9;
+        }
+
+        .nav-link.active .nav-icon {
+            background: rgba(255, 255, 255, .15);
+        }
+
+        .nav-link:hover:not(.active) .nav-icon {
+            background: #e0e7ff;
         }
 
         .sidebar-footer {
-            flex-shrink: 0;
-            padding: 16px;
-            border-top: 1px solid #e2e8f0;
+            padding: 10px 10px 12px;
+            border-top: 1px solid rgba(99, 102, 241, .07);
         }
 
-        .sidebar-item {
-            transition: all 0.2s;
+        .logout-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--r-sm);
+            font-size: .85rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all var(--ease);
         }
 
-        .sidebar-item.active {
-            background: #2563eb;
-            color: white;
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, .3);
+        .logout-link:hover {
+            background: #fef2f2;
+            color: #dc2626;
         }
 
+        /* Mobile Nav */
         .mobile-nav-pill {
+            display: none;
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 92%;
-            max-width: 600px;
-            background: rgba(30, 58, 138, 0.97);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            padding: 6px;
-            z-index: 100;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background: white;
+            border-top: 1px solid rgba(99, 102, 241, .1);
+            height: var(--mob-nav-total);
+            z-index: 200;
+            box-shadow: 0 -4px 20px rgba(55, 48, 163, .1);
         }
 
         .mobile-scroll-container {
             display: flex;
-            gap: 4px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
+            justify-content: space-evenly;
+            align-items: center;
+            height: var(--mob-nav-h);
+            width: 100%;
         }
 
-        .mobile-scroll-container::-webkit-scrollbar {
-            display: none;
+        .mob-nav-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            border-radius: 14px;
+            text-decoration: none;
+            color: #64748b;
+            position: relative;
+            transition: background .15s, color .15s;
         }
 
+        .mob-nav-item:hover,
+        .mob-nav-item.active {
+            background: var(--indigo-light);
+            color: var(--indigo);
+        }
+
+        .mob-nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--indigo);
+            border-radius: 50%;
+        }
+
+        .mob-logout {
+            color: #94a3b8;
+        }
+
+        .mob-logout:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        @media(max-width:1023px) {
+            .sidebar {
+                display: none !important;
+            }
+
+            .mobile-nav-pill {
+                display: flex !important;
+            }
+
+            .main-area {
+                padding-bottom: calc(var(--mob-nav-total) + 16px) !important;
+            }
+        }
+
+        @media(min-width:1024px) {
+            .sidebar {
+                display: flex !important;
+            }
+
+            .mobile-nav-pill {
+                display: none !important;
+            }
+        }
+
+        /* Main */
+        .main-area {
+            flex: 1;
+            min-width: 0;
+            padding: 28px 28px 40px;
+            overflow-x: hidden;
+        }
+
+        @media(max-width:639px) {
+            .main-area {
+                padding: 16px 14px 0;
+            }
+        }
+
+        /* Page header */
+        .page-eyebrow {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -.04em;
+            line-height: 1.1;
+        }
+
+        .page-sub {
+            font-size: .8rem;
+            color: #94a3b8;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 16px;
+            background: var(--card);
+            border: 1px solid rgba(99, 102, 241, .12);
+            border-radius: var(--r-sm);
+            font-size: .8rem;
+            font-weight: 700;
+            color: #64748b;
+            text-decoration: none;
+            transition: all var(--ease);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .back-btn:hover {
+            background: var(--indigo-light);
+            border-color: var(--indigo-border);
+            color: var(--indigo);
+        }
+
+        /* Flash */
+        .flash {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 13px 18px;
+            font-weight: 600;
+            border-radius: var(--r-md);
+            font-size: .88rem;
+            border: 1px solid;
+        }
+
+        .flash-ok {
+            background: var(--indigo-light);
+            border-color: var(--indigo-border);
+            color: var(--indigo);
+        }
+
+        .flash-err {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        .flash-info {
+            background: #fef3c7;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+
+        /* Form card */
         .form-card {
-            background: white;
-            border-radius: 28px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02);
+            background: var(--card);
+            border-radius: var(--r-xl);
+            border: 1px solid rgba(99, 102, 241, .08);
+            box-shadow: var(--shadow-sm);
+            padding: 28px;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        @media(max-width:639px) {
+            .form-card {
+                padding: 18px 16px;
+                border-radius: var(--r-lg);
+            }
+        }
+
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: var(--indigo-light);
+            color: var(--indigo);
+        }
+
+        .section-title {
+            font-size: .95rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -.01em;
         }
 
         .section-divider {
             border: none;
-            border-top: 1px solid #f1f5f9;
-            margin: 2rem 0;
+            border-top: 1px solid rgba(99, 102, 241, .08);
+            margin: 1.75rem 0;
+        }
+
+        .field-label {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 6px;
         }
 
         input,
         select,
         textarea {
             width: 100%;
-            padding: 0.875rem 1rem;
-            border: 1px solid #e2e8f0;
-            font-size: 0.92rem;
-            transition: all 0.2s;
-            background: #fcfdfe;
-            border-radius: 12px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #1e293b;
+            padding: .75rem 1rem;
+            border: 1px solid rgba(99, 102, 241, .15);
+            font-size: .88rem;
+            transition: all var(--ease);
+            background: #f8fafc;
+            border-radius: var(--r-sm);
+            font-family: var(--font);
+            color: #0f172a;
+            outline: none;
+            -webkit-appearance: none;
         }
 
         input:focus,
         select:focus,
         textarea:focus {
-            outline: none;
-            border-color: #2563eb;
+            border-color: #818cf8;
             background: white;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
         }
 
         input[readonly] {
             background: #f1f5f9;
-            color: #64748b;
+            color: #94a3b8;
             cursor: not-allowed;
         }
 
+        .pc-section {
+            background: var(--indigo-light);
+            border: 1px solid var(--indigo-border);
+            border-radius: var(--r-md);
+            padding: 1.25rem;
+        }
+
+        .pc-btn {
+            padding: .6rem .75rem;
+            border-radius: 9px;
+            font-size: .75rem;
+            font-weight: 700;
+            border: 1px solid var(--indigo-border);
+            background: white;
+            color: #64748b;
+            transition: all var(--ease);
+            cursor: pointer;
+            font-family: var(--font);
+        }
+
+        .pc-btn:hover {
+            border-color: var(--indigo);
+            color: var(--indigo);
+        }
+
+        .pc-btn.selected-pc {
+            background: var(--indigo) !important;
+            color: white !important;
+            border-color: var(--indigo) !important;
+            box-shadow: 0 4px 10px rgba(55, 48, 163, .3);
+        }
+
+        .available {
+            background: #dcfce7;
+            color: #166534;
+            padding: .3rem .75rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .unavailable {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: .3rem .75rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
         .btn-primary {
-            background: #2563eb;
+            background: var(--indigo);
             color: white;
             border: none;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
+            padding: .85rem 1.75rem;
+            border-radius: var(--r-md);
+            font-weight: 700;
+            font-size: .88rem;
             cursor: pointer;
-            transition: all 0.25s;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all var(--ease);
+            font-family: var(--font);
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 4px 12px rgba(55, 48, 163, .28);
+            touch-action: manipulation;
         }
 
         .btn-primary:hover {
-            background: #1d4ed8;
-            transform: translateY(-2px);
-            box-shadow: 0 12px 20px -5px rgba(37, 99, 235, 0.35);
+            background: #312e81;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(55, 48, 163, .35);
         }
 
-        .modal-backdrop {
+        /* Notification */
+        .notif-btn {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 150;
+            width: 44px;
+            height: 44px;
+            background: white;
+            border: 1px solid rgba(99, 102, 241, .12);
+            border-radius: var(--r-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--ease);
+        }
+
+        .notif-btn:hover {
+            background: var(--indigo-light);
+            border-color: var(--indigo-border);
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: .55rem;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 999px;
+            min-width: 17px;
+            text-align: center;
+            border: 2px solid var(--bg);
+            line-height: 1.3;
+        }
+
+        .notif-dd {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 320px;
+            background: white;
+            border-radius: var(--r-xl);
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99, 102, 241, .09);
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
+
+        .notif-dd.show {
+            display: block;
+            animation: dropIn .15s ease;
+        }
+
+        @keyframes dropIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px) scale(.98)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        .notif-item {
+            padding: .85rem 1.1rem;
+            border-bottom: 1px solid #f8fafc;
+            transition: background .15s;
+            cursor: pointer;
+        }
+
+        .notif-item:hover {
+            background: #f8fafc;
+        }
+
+        .notif-item.unread {
+            background: var(--indigo-light);
+        }
+
+        @media(max-width:479px) {
+            .notif-btn {
+                top: 16px;
+                right: 16px;
+            }
+
+            .notif-dd {
+                left: 12px;
+                right: 12px;
+                width: auto;
+                top: 72px;
+            }
+        }
+
+        /* Modal */
+        .modal-back {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.65);
+            background: rgba(15, 23, 42, .52);
             backdrop-filter: blur(6px);
-            z-index: 200;
+            z-index: 300;
             padding: 1.5rem;
             overflow-y: auto;
             align-items: center;
             justify-content: center;
         }
 
-        .modal-backdrop.show {
+        .modal-back.show {
             display: flex;
-            animation: fadeIn 0.15s ease;
+            animation: fadeIn .15s ease;
         }
 
         @keyframes fadeIn {
             from {
-                opacity: 0;
+                opacity: 0
             }
 
             to {
-                opacity: 1;
+                opacity: 1
             }
         }
 
         .modal-box {
             background: white;
-            border-radius: 32px;
+            border-radius: var(--r-xl);
             width: 100%;
             max-width: 460px;
-            padding: 2.5rem;
+            padding: 28px;
             margin: auto;
-            animation: slideUp 0.2s ease;
-            max-height: 90vh;
+            animation: slideUp .2s ease;
+            max-height: calc(100dvh - 3rem);
             overflow-y: auto;
+            box-shadow: var(--shadow-lg);
         }
 
         @keyframes slideUp {
             from {
-                transform: translateY(16px);
                 opacity: 0;
+                transform: translateY(10px)
             }
 
             to {
-                transform: translateY(0);
                 opacity: 1;
+                transform: none
             }
         }
 
@@ -222,8 +699,8 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid #f1f5f9;
+            padding: .55rem 0;
+            border-bottom: 1px solid rgba(99, 102, 241, .07);
             gap: 1rem;
         }
 
@@ -232,174 +709,23 @@
         }
 
         .mrow-label {
-            font-size: 0.68rem;
-            font-weight: 800;
+            font-size: .6rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: .12em;
             color: #94a3b8;
             flex-shrink: 0;
         }
 
         .mrow-value {
-            font-weight: 700;
-            color: #1e293b;
-            font-size: 0.85rem;
+            font-weight: 600;
+            color: #0f172a;
+            font-size: .84rem;
             text-align: right;
         }
 
-        .field-label {
-            font-size: 0.68rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #94a3b8;
-            display: block;
-            margin-bottom: 0.4rem;
-        }
-
-        .pc-section {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 20px;
-            padding: 1.5rem;
-        }
-
-        .pc-btn.selected-pc {
-            background: #2563eb !important;
-            color: white !important;
-            border-color: #2563eb !important;
-        }
-
-        .notification-bell {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 150;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            background: white;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-        }
-
-        .notification-bell:hover {
-            transform: scale(1.1);
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #ef4444;
-            color: white;
-            font-size: 0.6rem;
-            font-weight: 700;
-            padding: 0.2rem 0.4rem;
-            border-radius: 999px;
-            min-width: 1.2rem;
-            text-align: center;
-            border: 2px solid white;
-        }
-
-        .notification-dropdown {
-            position: fixed;
-            top: 80px;
-            right: 24px;
-            width: 360px;
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-            border: 1px solid #e2e8f0;
-            z-index: 1000;
-            display: none;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .notification-dropdown.show {
-            display: block;
-        }
-
-        .notification-header {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            font-weight: 800;
-            color: #1e293b;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notification-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .notification-item {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #f1f5f9;
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-
-        .notification-item:hover {
-            background: #f8fafc;
-        }
-
-        .notification-item.unread {
-            background: #eff6ff;
-            border-left: 3px solid #2563eb;
-        }
-
-        .notification-item:last-child {
-            border-bottom: none;
-        }
-
-        .notification-time {
-            font-size: 0.65rem;
-            color: #94a3b8;
-            margin-top: 0.25rem;
-        }
-
-        .notification-empty {
-            padding: 3rem 2rem;
-            text-align: center;
-            color: #94a3b8;
-        }
-
-        @media (max-width: 640px) {
-            .notification-bell {
-                top: 16px;
-                right: 16px;
-            }
-
-            .notification-dropdown {
-                position: fixed;
-                top: 70px;
-                right: 10px;
-                left: 10px;
-                width: auto;
-            }
-        }
-
-        .toast-container {
+        /* Toast */
+        .toast-wrap {
             position: fixed;
             top: 80px;
             right: 24px;
@@ -411,148 +737,148 @@
             align-items: flex-end;
         }
 
-        @media (min-width: 640px) {
-            .toast-container {
+        @media(min-width:640px) {
+            .toast-wrap {
                 left: auto;
-                width: 380px;
+                width: 320px;
             }
         }
 
-        .toast-message {
-            background: white;
-            border-radius: 16px;
-            padding: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #10b981;
-            margin-bottom: 0.75rem;
+        .toast {
+            background: #0f172a;
+            border-radius: 14px;
+            padding: 12px 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
+            margin-bottom: .65rem;
             pointer-events: auto;
             width: 100%;
-            animation: slideInRight 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: slideUp .3s ease;
         }
 
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media(max-width:639px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
             }
 
-            to {
-                transform: translateX(0);
-                opacity: 1;
+            .grid-3 {
+                grid-template-columns: 1fr;
             }
-        }
-
-        .availability-indicator {
-            font-size: 0.7rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 999px;
-        }
-
-        .available {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .unavailable {
-            background: #fee2e2;
-            color: #991b1b;
         }
     </style>
 </head>
 
-<body class="flex">
+<body>
     <?php
     $navItems = [
-        ['url' => '/dashboard',        'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
-        ['url' => '/reservation',      'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'reservation'],
-        ['url' => '/reservation-list', 'icon' => 'fa-calendar',        'label' => 'My Reservations', 'key' => 'reservation-list'],
-        ['url' => '/books',            'icon' => 'fa-book-open',       'label' => 'Library',         'key' => 'books'],
-        ['url' => '/profile',          'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+        ['url' => '/dashboard',        'icon' => 'fa-house',      'label' => 'Dashboard',       'key' => 'dashboard'],
+        ['url' => '/reservation',      'icon' => 'fa-plus',       'label' => 'New Reservation', 'key' => 'reservation'],
+        ['url' => '/reservation-list', 'icon' => 'fa-calendar',   'label' => 'My Reservations', 'key' => 'reservation-list'],
+        ['url' => '/books',            'icon' => 'fa-book-open',  'label' => 'Library',         'key' => 'books'],
+        ['url' => '/profile',          'icon' => 'fa-user',       'label' => 'Profile',         'key' => 'profile'],
     ];
+    $avatarLetter = strtoupper(mb_substr(trim($user['name'] ?? 'U'), 0, 1));
     ?>
-    <div class="notification-bell" onclick="toggleNotifications()">
-        <i class="fa-regular fa-bell text-xl text-slate-600"></i>
-        <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
-    </div>
-    <div id="notificationDropdown" class="notification-dropdown">
-        <div class="notification-header">
-            <span>Notifications</span>
-            <button onclick="markAllAsRead()" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-bold transition">Mark all read</button>
-        </div>
-        <div id="notificationList" class="notification-list"></div>
-    </div>
-    <div id="toastContainer" class="toast-container"></div>
-    <aside class="hidden lg:flex flex-col w-80 p-6">
-        <div class="sidebar-card">
-            <div class="sidebar-header">
-                <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Resident Portal</span>
-                <h1 class="text-2xl font-extrabold text-slate-800">my<span class="text-blue-600">Space.</span></h1>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-inner">
+            <div class="sidebar-top">
+                <div class="brand-tag">Resident Portal</div>
+                <div class="brand-name">my<em>Space.</em></div>
+                <div class="brand-sub">Community Management</div>
             </div>
-            <nav class="sidebar-nav space-y-1">
-                <?php foreach ($navItems as $item):
-                    $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600';
-                ?>
-                    <a href="<?= base_url($item['url']) ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
-                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i><?= $item['label'] ?>
+            <nav class="sidebar-nav">
+                <div class="nav-lbl">Menu</div>
+                <?php foreach ($navItems as $item): $active = ($page == $item['key']); ?>
+                    <a href="<?= base_url($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
+                        <div class="nav-icon"><i class="fa-solid <?= $item['icon'] ?>" style="font-size:14px;color:<?= $active ? 'white' : '#64748b' ?>;"></i></div>
+                        <?= $item['label'] ?>
                     </a>
                 <?php endforeach; ?>
             </nav>
             <div class="sidebar-footer">
-                <a href="<?= base_url('/logout') ?>" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
-                    <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
+                <a href="<?= base_url('/logout') ?>" class="logout-link">
+                    <div class="nav-icon" style="background:rgba(239,68,68,.08);"><i class="fa-solid fa-arrow-right-from-bracket" style="font-size:14px;color:#f87171;"></i></div>
+                    Sign Out
                 </a>
             </div>
         </div>
     </aside>
-    <nav class="lg:hidden mobile-nav-pill">
-        <div class="mobile-scroll-container text-white px-2">
-            <?php foreach ($navItems as $item):
-                $cls = ($page == $item['key']) ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
-            ?>
-                <a href="<?= base_url($item['url']) ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $cls ?>">
-                    <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
-                    <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+
+    <!-- Mobile Nav -->
+    <nav class="mobile-nav-pill">
+        <div class="mobile-scroll-container">
+            <?php foreach ($navItems as $item): $active = ($page == $item['key']); ?>
+                <a href="<?= base_url($item['url']) ?>" class="mob-nav-item <?= $active ? 'active' : '' ?>" title="<?= esc($item['label']) ?>">
+                    <i class="fa-solid <?= $item['icon'] ?>" style="font-size:20px;"></i>
                 </a>
             <?php endforeach; ?>
-            <a href="<?= base_url('/logout') ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
-                <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
-                <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
+            <a href="<?= base_url('/logout') ?>" class="mob-nav-item mob-logout" title="Sign Out">
+                <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:20px;color:currentColor;"></i>
             </a>
         </div>
     </nav>
-    <main class="flex-1 p-6 lg:p-12 pb-32">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+
+    <!-- Notification -->
+    <div class="notif-btn" onclick="toggleNotifications()" style="position:relative;">
+        <i class="fa-regular fa-bell" style="font-size:16px;color:#64748b;"></i>
+        <span class="notif-badge" id="notificationBadge" style="display:none;">0</span>
+    </div>
+    <div id="notificationDropdown" class="notif-dd">
+        <div style="padding:.9rem 1.1rem;border-bottom:1px solid rgba(99,102,241,.07);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:.88rem;color:#0f172a;">Notifications</span>
+            <button onclick="markAllAsRead()" style="font-size:.72rem;color:var(--indigo);font-weight:700;background:none;border:none;cursor:pointer;">Mark all read</button>
+        </div>
+        <div id="notificationList" style="max-height:280px;overflow-y:auto;"></div>
+    </div>
+    <div id="toastContainer" class="toast-wrap"></div>
+
+    <main class="main-area">
+        <!-- Topbar -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap;">
             <div>
-                <h2 class="text-3xl font-black text-slate-900 tracking-tight">New Reservation</h2>
-                <p class="text-slate-500 font-medium">Book a resource for your upcoming visit.</p>
+                <div class="page-eyebrow">New Booking</div>
+                <div class="page-title">New Reservation</div>
+                <div class="page-sub">Book a resource for your upcoming visit.</div>
             </div>
-            <a href="<?= base_url('/reservation-list') ?>" class="px-6 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
-                <i class="fa-solid fa-chevron-left text-sm"></i> My Reservations
+            <a href="<?= base_url('/reservation-list') ?>" class="back-btn" style="margin-top:4px;">
+                <i class="fa-solid fa-chevron-left" style="font-size:11px;"></i> My Reservations
             </a>
-        </header>
+        </div>
+
         <?php if (session()->getFlashdata('error')): ?>
-            <div class="mb-6 px-6 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3">
-                <i class="fa-solid fa-circle-exclamation"></i><?= session()->getFlashdata('error') ?>
-            </div>
+            <div class="flash flash-err"><i class="fa-solid fa-circle-exclamation"></i><?= session()->getFlashdata('error') ?></div>
         <?php endif; ?>
         <?php if (session()->getFlashdata('success')): ?>
-            <div class="mb-6 px-6 py-4 bg-blue-50 border border-blue-200 text-blue-700 font-bold rounded-2xl flex items-center gap-3">
-                <i class="fa-solid fa-circle-check"></i><?= session()->getFlashdata('success') ?>
-            </div>
+            <div class="flash flash-ok"><i class="fa-solid fa-circle-check"></i><?= session()->getFlashdata('success') ?></div>
         <?php endif; ?>
         <?php if (isset($remainingReservations) && $remainingReservations > 0): ?>
-            <div class="mb-6 px-6 py-4 bg-blue-50 border border-blue-200 text-blue-700 font-bold rounded-2xl flex items-center gap-3">
-                <i class="fa-solid fa-info-circle"></i>
+            <div class="flash flash-info"><i class="fa-solid fa-info-circle"></i>
                 You have <?= $remainingReservations ?> reservation<?= $remainingReservations != 1 ? 's' : '' ?> remaining this period (max 3 per 2 weeks).
             </div>
         <?php endif; ?>
         <?php if (isset($isBlocked) && $isBlocked): ?>
-            <div class="mb-6 px-6 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3">
-                <i class="fa-solid fa-ban"></i>
+            <div class="flash flash-err"><i class="fa-solid fa-ban"></i>
                 You are temporarily blocked from making reservations until <?= date('F j, Y', strtotime($isBlocked['blocked_until'])) ?>.
             </div>
         <?php endif; ?>
-        <div class="form-card max-w-3xl mx-auto p-8 lg:p-10">
+
+        <div class="form-card">
             <form id="reservationForm" method="POST" action="<?= base_url('reservation/create') ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="user_id" id="finalUserId" value="<?= $user['id'] ?? '' ?>">
@@ -561,52 +887,90 @@
                 <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
                 <input type="hidden" name="purpose" id="finalPurpose">
                 <input type="hidden" name="pcs" id="finalPcs" value="">
-                <div class="mb-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid fa-user-circle"></i></div>
-                        <h3 class="font-extrabold text-slate-800 tracking-tight">Your Details</h3>
+
+                <!-- Your Details -->
+                <div style="margin-bottom:24px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+                        <div class="section-icon"><i class="fa-solid fa-user" style="font-size:14px;"></i></div>
+                        <div>
+                            <div class="section-title">Your Details</div>
+                            <div style="font-size:.7rem;color:#94a3b8;margin-top:2px;">Auto-filled from your account</div>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div><label class="field-label">Full Name</label><input type="text" value="<?= esc($user['name'] ?? '') ?>" readonly class="bg-slate-50"></div>
-                        <div><label class="field-label">Email Address</label><input type="email" value="<?= esc($user['email'] ?? '') ?>" readonly class="bg-slate-50"></div>
+                    <div class="grid-2">
+                        <div>
+                            <label class="field-label">Full Name</label>
+                            <input type="text" value="<?= esc($user['name'] ?? '') ?>" readonly>
+                        </div>
+                        <div>
+                            <label class="field-label">Email Address</label>
+                            <input type="email" value="<?= esc($user['email'] ?? '') ?>" readonly>
+                        </div>
                     </div>
-                    <p class="text-xs text-blue-600 mt-2 flex items-center gap-1"><i class="fa-solid fa-check-circle"></i> Booking as yourself</p>
+                    <p style="font-size:.72rem;color:var(--indigo);margin-top:8px;display:flex;align-items:center;gap:5px;font-weight:600;">
+                        <i class="fa-solid fa-circle-check"></i> Booking as yourself
+                    </p>
                 </div>
+
                 <hr class="section-divider">
-                <div class="mb-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid fa-calendar-days"></i></div>
-                        <h3 class="font-extrabold text-slate-800 tracking-tight">Resource & Schedule</h3>
+
+                <!-- Resource & Schedule -->
+                <div style="margin-bottom:24px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+                        <div class="section-icon"><i class="fa-solid fa-calendar-days" style="font-size:14px;"></i></div>
+                        <div>
+                            <div class="section-title">Resource & Schedule</div>
+                            <div style="font-size:.7rem;color:#94a3b8;margin-top:2px;">Choose your resource, date and time</div>
+                        </div>
                     </div>
-                    <div class="mb-5">
+
+                    <div style="margin-bottom:16px;">
                         <label class="field-label">Select Resource</label>
                         <select id="resourceSelect" name="resource_id" required>
                             <option value="">— Choose a resource —</option>
                             <?php foreach ($resources as $res): ?>
-                                <option value="<?= $res['id'] ?>" data-name="<?= esc($res['name']) ?>" data-type="<?= $res['type'] ?? '' ?>" data-has-pcs="<?= (strpos(strtolower($res['name']), 'computer') !== false || strpos(strtolower($res['name']), 'pc') !== false || strpos(strtolower($res['name']), 'lab') !== false) ? '1' : '0' ?>">
+                                <option value="<?= $res['id'] ?>"
+                                    data-name="<?= esc($res['name']) ?>"
+                                    data-type="<?= $res['type'] ?? '' ?>"
+                                    data-has-pcs="<?= (strpos(strtolower($res['name']), 'computer') !== false || strpos(strtolower($res['name']), 'pc') !== false || strpos(strtolower($res['name']), 'lab') !== false) ? '1' : '0' ?>">
                                     <?= esc($res['name']) ?><?php if (!empty($res['capacity'])): ?> (Capacity: <?= $res['capacity'] ?>)<?php endif; ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div id="pcSection" class="hidden pc-section mb-5">
-                        <label class="field-label text-blue-700 mb-3 block">Select Workstation(s)</label>
-                        <div id="pcGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+
+                    <div id="pcSection" class="hidden pc-section" style="margin-bottom:16px;">
+                        <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block;">Select Workstation(s)</label>
+                        <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;">
                             <?php foreach ($pcs ?? [] as $pc): $num = esc($pc['pc_number'] ?? $pc['name'] ?? '');
                                 if (!empty($num)): ?>
-                                    <button type="button" onclick="togglePc('<?= $num ?>',this)" data-pc="<?= $num ?>" class="pc-btn py-2.5 px-3 rounded-xl text-xs font-bold border border-blue-200 bg-white text-slate-600 hover:border-blue-400 hover:text-blue-700 transition"><?= $num ?></button>
+                                    <button type="button" onclick="togglePc('<?= $num ?>',this)" data-pc="<?= $num ?>" class="pc-btn"><?= $num ?></button>
                             <?php endif;
                             endforeach; ?>
                         </div>
-                        <p class="text-[10px] text-blue-700 font-semibold mt-3"><i class="fa-solid fa-circle-info mr-1"></i>Selected: <span id="pcSelectedLabel">None</span></p>
+                        <p style="font-size:.68rem;color:var(--indigo);font-weight:600;margin-top:10px;">
+                            <i class="fa-solid fa-circle-info" style="margin-right:3px;"></i>Selected: <span id="pcSelectedLabel">None</span>
+                        </p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                        <div><label class="field-label">Date</label><input type="date" name="reservation_date" id="resDate" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>" onchange="checkAvailability()" required></div>
-                        <div><label class="field-label">Start Time</label><input type="time" name="start_time" id="startTime" onchange="checkAvailability()" required></div>
-                        <div><label class="field-label">End Time</label><input type="time" name="end_time" id="endTime" onchange="checkAvailability()" required></div>
+
+                    <div class="grid-3" style="margin-bottom:16px;">
+                        <div>
+                            <label class="field-label">Date</label>
+                            <input type="date" name="reservation_date" id="resDate" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>" onchange="checkAvailability()" required>
+                        </div>
+                        <div>
+                            <label class="field-label">Start Time</label>
+                            <input type="time" name="start_time" id="startTime" onchange="checkAvailability()" required>
+                        </div>
+                        <div>
+                            <label class="field-label">End Time</label>
+                            <input type="time" name="end_time" id="endTime" onchange="checkAvailability()" required>
+                        </div>
                     </div>
-                    <div id="availabilityMsg" class="hidden mb-4 p-3 rounded-xl text-sm font-medium"></div>
-                    <div>
+
+                    <div id="availabilityMsg" class="hidden" style="margin-bottom:14px;padding:10px 14px;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;"></div>
+
+                    <div style="margin-bottom:16px;">
                         <label class="field-label">Purpose of Visit</label>
                         <select id="purposeSelect" name="purpose" required>
                             <option value="">— Select purpose —</option>
@@ -615,26 +979,33 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div id="purposeOtherWrap" class="hidden mt-3">
+                    <div id="purposeOtherWrap" class="hidden">
                         <label class="field-label">Please Specify</label>
                         <input type="text" id="purposeOther" placeholder="Describe your purpose...">
                     </div>
                 </div>
-                <div class="flex justify-end pt-2">
-                    <button type="button" onclick="previewReservation()" class="btn-primary w-full md:w-auto"><i class="fa-solid fa-eye"></i> Preview & Confirm</button>
+
+                <div style="display:flex;justify-content:flex-end;padding-top:8px;">
+                    <button type="button" onclick="previewReservation()" class="btn-primary" style="width:100%;">
+                        <i class="fa-solid fa-eye"></i> Preview & Confirm
+                    </button>
                 </div>
             </form>
         </div>
     </main>
-    <div id="confirmModal" class="modal-backdrop" onclick="handleBackdrop(event)">
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal-back" onclick="handleBackdrop(event)">
         <div class="modal-box">
-            <div class="text-center mb-6">
-                <div class="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-xl shadow-lg shadow-amber-200"><i class="fa-solid fa-clock"></i></div>
-                <h3 class="text-xl font-black text-slate-900">Confirm Reservation</h3>
-                <p class="text-slate-400 text-sm font-medium mt-1">Review your booking details</p>
-                <p class="text-xs text-amber-600 font-bold mt-2">Your reservation will be pending approval</p>
+            <div style="text-align:center;margin-bottom:20px;">
+                <div style="width:52px;height:52px;background:#fef3c7;border:2px solid #fde68a;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                    <i class="fa-solid fa-clock" style="color:#d97706;font-size:1.1rem;"></i>
+                </div>
+                <h3 style="font-size:1.1rem;font-weight:800;color:#0f172a;letter-spacing:-.02em;">Confirm Reservation</h3>
+                <p style="font-size:.78rem;color:#94a3b8;margin-top:4px;">Review your booking details</p>
+                <p style="font-size:.72rem;color:#d97706;font-weight:700;margin-top:6px;">Your reservation will be pending approval</p>
             </div>
-            <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-5">
+            <div style="background:#f8fafc;border-radius:var(--r-md);padding:16px;border:1px solid rgba(99,102,241,.08);margin-bottom:16px;">
                 <div class="mrow"><span class="mrow-label">Name</span><span class="mrow-value" id="mName"><?= esc($user['name'] ?? '') ?></span></div>
                 <div class="mrow"><span class="mrow-label">Email</span><span class="mrow-value" id="mEmail"><?= esc($user['email'] ?? '') ?></span></div>
                 <div class="mrow"><span class="mrow-label">Resource</span><span class="mrow-value" id="mAsset"></span></div>
@@ -643,16 +1014,19 @@
                 <div class="mrow"><span class="mrow-label">Time</span><span class="mrow-value" id="mTime"></span></div>
                 <div class="mrow"><span class="mrow-label">Purpose</span><span class="mrow-value" id="mPurpose"></span></div>
             </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-5 text-center">
-                <i class="fa-regular fa-bell text-blue-500 mb-2 text-xl"></i>
-                <p class="text-xs text-blue-700 font-medium">You will receive a notification on this device once your reservation is approved.</p>
+            <div style="background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;text-align:center;">
+                <i class="fa-regular fa-bell" style="color:var(--indigo);margin-bottom:6px;font-size:1rem;display:block;"></i>
+                <p style="font-size:.75rem;color:#3730a3;font-weight:500;">You'll receive a notification once your reservation is approved.</p>
             </div>
-            <div class="flex gap-3">
-                <button type="button" onclick="closeModal()" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">Cancel</button>
-                <button type="button" id="confirmBtn" onclick="submitReservation()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-check"></i> Submit Request</button>
+            <div style="display:flex;gap:10px;">
+                <button type="button" onclick="closeModal()" style="flex:1;padding:.75rem;background:#f1f5f9;border-radius:var(--r-sm);font-weight:700;color:#64748b;border:none;cursor:pointer;font-family:var(--font);font-size:.85rem;transition:background .15s;">Cancel</button>
+                <button type="button" id="confirmBtn" onclick="submitReservation()" class="btn-primary" style="flex:2;">
+                    <i class="fa-solid fa-check"></i> Submit Request
+                </button>
             </div>
         </div>
     </div>
+
     <script>
         const currentUser = {
             id: <?= $user['id'] ?? 'null' ?>,
@@ -663,17 +1037,18 @@
             selectedResource = null;
         let notifications = [<?php if (!empty($recentApprovals)): ?><?php foreach ($recentApprovals as $approval): ?> {
             id: <?= $approval['id'] ?>,
-            title: 'Reservation Approved! 🎉',
+            title: 'Reservation Approved!',
             message: 'Your reservation for <?= esc($approval['resource_name']) ?> on <?= date('M j, Y', strtotime($approval['reservation_date'])) ?> has been approved.',
             time: '<?= $approval['approved_at'] ?? date('Y-m-d H:i:s') ?>',
             read: false
         }, <?php endforeach; ?><?php endif; ?>];
         let unreadCount = notifications.filter(n => !n.read).length,
             checkInterval, lastCheckTime = new Date().toISOString();
+
         document.addEventListener('DOMContentLoaded', function() {
             if ('Notification' in window) Notification.requestPermission();
             renderNotifications();
-            updateNotificationBadge();
+            updateBadge();
             checkInterval = setInterval(checkForNewApprovals, 30000);
             document.addEventListener('visibilitychange', function() {
                 if (!document.hidden) checkForNewApprovals();
@@ -695,17 +1070,20 @@
                     last_check: lastCheckTime
                 })
             }).then(r => r.json()).then(data => {
-                if (data.new_approvals && data.new_approvals.length > 0) {
+                if (data.new_approvals?.length) {
                     data.new_approvals.forEach(a => {
                         const n = {
                             id: a.id,
-                            title: 'Reservation Approved! 🎉',
+                            title: 'Reservation Approved!',
                             message: `Your reservation for ${a.resource_name} on ${new Date(a.date).toLocaleDateString()} has been approved.`,
                             time: new Date().toISOString(),
                             read: false
                         };
-                        addNotification(n);
-                        showPushNotification(n);
+                        notifications.unshift(n);
+                        unreadCount++;
+                        updateBadge();
+                        renderNotifications();
+                        showPush(n);
                         showToast(n);
                     });
                     lastCheckTime = new Date().toISOString();
@@ -713,14 +1091,7 @@
             }).catch(e => console.error(e));
         }
 
-        function addNotification(n) {
-            notifications.unshift(n);
-            unreadCount++;
-            updateNotificationBadge();
-            renderNotifications();
-        }
-
-        function showPushNotification(n) {
+        function showPush(n) {
             if ('Notification' in window && Notification.permission === 'granted') new Notification(n.title, {
                 body: n.message,
                 icon: '/favicon.ico'
@@ -729,11 +1100,11 @@
 
         function showToast(n) {
             const c = document.getElementById('toastContainer'),
-                tid = 'toast-' + Date.now() + Math.random(),
+                tid = 't' + Date.now(),
                 t = document.createElement('div');
             t.id = tid;
-            t.className = 'toast-message';
-            t.innerHTML = `<div class="flex items-start gap-3"><div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-check text-blue-600"></i></div><div class="flex-1"><p class="font-bold text-sm text-slate-800">${n.title}</p><p class="text-xs text-slate-600 mt-1">${n.message}</p></div><button onclick="document.getElementById('${tid}').remove()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-times"></i></button></div>`;
+            t.className = 'toast';
+            t.innerHTML = `<div style="width:28px;height:28px;background:rgba(99,102,241,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-check" style="color:#818cf8;font-size:11px;"></i></div><div style="flex:1;min-width:0;"><p style="font-weight:700;font-size:.78rem;color:white;">${n.title}</p><p style="font-size:.68rem;color:rgba(255,255,255,.6);margin-top:2px;">${n.message}</p></div><button onclick="document.getElementById('${tid}').remove()" style="background:rgba(255,255,255,.08);border:none;border-radius:6px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:rgba(255,255,255,.6);"><i class="fa-solid fa-xmark" style="font-size:9px;"></i></button>`;
             c.appendChild(t);
             setTimeout(() => {
                 const el = document.getElementById(tid);
@@ -748,7 +1119,7 @@
         function markAllAsRead() {
             notifications.forEach(n => n.read = true);
             unreadCount = 0;
-            updateNotificationBadge();
+            updateBadge();
             renderNotifications();
         }
 
@@ -757,12 +1128,12 @@
             if (n && !n.read) {
                 n.read = true;
                 unreadCount = Math.max(0, unreadCount - 1);
-                updateNotificationBadge();
+                updateBadge();
                 renderNotifications();
             }
         }
 
-        function updateNotificationBadge() {
+        function updateBadge() {
             const b = document.getElementById('notificationBadge');
             if (unreadCount > 0) {
                 b.style.display = 'block';
@@ -773,30 +1144,46 @@
         function renderNotifications() {
             const l = document.getElementById('notificationList');
             if (!notifications.length) {
-                l.innerHTML = '<div class="notification-empty"><i class="fa-regular fa-bell-slash"></i><p class="text-sm">No notifications</p></div>';
+                l.innerHTML = '<div style="text-align:center;padding:24px;font-size:.8rem;color:#94a3b8;">All caught up!</div>';
                 return;
             }
-            l.innerHTML = notifications.sort((a, b) => new Date(b.time) - new Date(a.time)).map(n => `<div class="notification-item ${!n.read?'unread':''}" onclick="markAsRead(${n.id})"><div class="flex items-start gap-3"><div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-check text-blue-600 text-xs"></i></div><div class="flex-1"><p class="font-bold text-sm text-slate-800">${n.title}</p><p class="text-xs text-slate-600">${n.message}</p><p class="notification-time">${formatTimeAgo(n.time)}</p></div>${!n.read?'<span class="w-2 h-2 bg-blue-500 rounded-full mt-1"></span>':''}</div></div>`).join('');
+            l.innerHTML = notifications.sort((a, b) => new Date(b.time) - new Date(a.time)).map(n => `
+        <div class="notif-item ${!n.read?'unread':''}" onclick="markAsRead(${n.id})">
+            <div style="display:flex;align-items:flex-start;gap:9px;">
+                <div style="width:28px;height:28px;background:var(--indigo-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-check" style="color:var(--indigo);font-size:10px;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <p style="font-weight:700;font-size:.8rem;color:#0f172a;">${n.title}</p>
+                    <p style="font-size:.7rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.message}</p>
+                    <p style="font-size:.62rem;color:#94a3b8;margin-top:2px;">${timeAgo(n.time)}</p>
+                </div>
+                ${!n.read?'<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>':''}
+            </div>
+        </div>`).join('');
         }
 
-        function formatTimeAgo(t) {
-            const s = Math.floor((new Date() - new Date(t)) / 1000);
+        const timeAgo = t => {
+            const s = Math.floor((Date.now() - new Date(t)) / 1000);
             if (s < 60) return 'Just now';
-            if (s < 3600) return `${Math.floor(s/60)} minutes ago`;
-            if (s < 86400) return `${Math.floor(s/3600)} hours ago`;
-            return `${Math.floor(s/86400)} days ago`;
-        }
+            if (s < 3600) return `${Math.floor(s/60)}m ago`;
+            if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+            return `${Math.floor(s/86400)}d ago`;
+        };
+
         document.addEventListener('click', e => {
             const dd = document.getElementById('notificationDropdown'),
-                bell = document.querySelector('.notification-bell');
+                bell = document.querySelector('.notif-btn');
             if (!bell.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('show');
         });
+
         document.getElementById('finalUserId').value = currentUser.id;
         document.getElementById('finalVisitorName').value = currentUser.name;
         document.getElementById('finalUserEmail').value = currentUser.email;
+
         document.getElementById('resourceSelect').addEventListener('change', function() {
-            const o = this.options[this.selectedIndex];
-            const hasPcs = o.dataset.hasPcs === '1';
+            const o = this.options[this.selectedIndex],
+                hasPcs = o.dataset.hasPcs === '1';
             selectedResource = {
                 id: this.value,
                 name: o.dataset.name || '',
@@ -805,10 +1192,7 @@
             document.getElementById('pcSection').classList.toggle('hidden', !hasPcs);
             selectedPcs = [];
             updatePcHidden();
-            document.querySelectorAll('.pc-btn').forEach(b => {
-                b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-                b.classList.add('bg-white', 'text-slate-600', 'border-blue-200');
-            });
+            document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected-pc'));
             checkAvailability();
         });
 
@@ -816,12 +1200,10 @@
             const i = selectedPcs.indexOf(num);
             if (i === -1) {
                 selectedPcs.push(num);
-                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-                btn.classList.remove('bg-white', 'text-slate-600', 'border-blue-200');
+                btn.classList.add('selected-pc');
             } else {
                 selectedPcs.splice(i, 1);
-                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-                btn.classList.add('bg-white', 'text-slate-600', 'border-blue-200');
+                btn.classList.remove('selected-pc');
             }
             updatePcHidden();
         }
@@ -830,6 +1212,7 @@
             document.getElementById('finalPcs').value = selectedPcs.join(', ');
             document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
         }
+
         document.getElementById('purposeSelect').addEventListener('change', function() {
             const isO = this.value === 'Others';
             document.getElementById('purposeOtherWrap').classList.toggle('hidden', !isO);
@@ -848,7 +1231,8 @@
             const m = document.getElementById('availabilityMsg');
             m.classList.remove('hidden', 'available', 'unavailable');
             m.textContent = 'Checking availability...';
-            m.classList.add('bg-slate-100', 'text-slate-600');
+            m.style.background = '#f1f5f9';
+            m.style.color = '#64748b';
             fetch('<?= base_url("reservation/check-availability") ?>', {
                 method: 'POST',
                 headers: {
@@ -863,11 +1247,11 @@
                     '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
                 })
             }).then(r => r.json()).then(data => {
-                m.classList.remove('bg-slate-100', 'text-slate-600');
+                m.style.background = '';
+                m.style.color = '';
                 m.textContent = data.message;
                 m.classList.add(data.available ? 'available' : 'unavailable');
             }).catch(() => {
-                m.classList.remove('bg-slate-100', 'text-slate-600');
                 m.textContent = 'Error checking availability';
                 m.classList.add('unavailable');
             });
@@ -946,7 +1330,7 @@
             if (e.key === 'Escape') closeModal();
         });
         document.getElementById('resDate').setAttribute('min', new Date().toISOString().split('T')[0]);
-        window.addEventListener('beforeunload', function() {
+        window.addEventListener('beforeunload', () => {
             if (checkInterval) clearInterval(checkInterval);
         });
     </script>
