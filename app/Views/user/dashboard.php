@@ -107,33 +107,31 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     <link rel="manifest" href="/manifest.json">
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <meta name="theme-color" content="#1e1b4b">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+    /* ═══════════════════════════════════════════════════
+       RESET & TOKENS
+    ═══════════════════════════════════════════════════ */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
         --indigo:#3730a3;
         --indigo-mid:#4338ca;
         --indigo-light:#eef2ff;
         --indigo-border:#c7d2fe;
-        --violet:#6d28d9;
-        --bg:#f4f6fb;
+        --bg:#f0f2f9;
         --card:#ffffff;
-        --font:'DM Sans',sans-serif;
-        --font-display:'Syne',sans-serif;
-        --mono:'DM Mono',monospace;
-        --shadow-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
-        --shadow-md:0 4px 12px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.04);
-        --shadow-lg:0 12px 32px rgba(15,23,42,.1),0 4px 8px rgba(15,23,42,.05);
-        --radius-sm:10px;
-        --radius-md:14px;
-        --radius-lg:18px;
-        --radius-xl:22px;
-        --sidebar-w:240px;
-        --transition:.18s cubic-bezier(.4,0,.2,1);
+        --font:'Plus Jakarta Sans',system-ui,sans-serif;
+        --mono:'JetBrains Mono',monospace;
+        --shadow-sm:0 1px 4px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);
+        --shadow-md:0 4px 16px rgba(15,23,42,.09),0 2px 4px rgba(15,23,42,.04);
+        --shadow-lg:0 12px 40px rgba(15,23,42,.12),0 4px 8px rgba(15,23,42,.06);
+        --r-sm:10px;--r-md:14px;--r-lg:20px;--r-xl:24px;
+        --sidebar-w:268px;
+        --ease:.18s cubic-bezier(.4,0,.2,1);
     }
-    html{height:100%}
+    html{height:100%;font-size:16px} /* ← base 16px so rem values are readable */
     body{
         font-family:var(--font);
         background:var(--bg);
@@ -141,25 +139,26 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         display:flex;
         height:100vh;
         overflow:hidden;
-        font-size:14px;
-        line-height:1.5;
+        font-size:1rem;    /* 16px */
+        line-height:1.6;
         -webkit-font-smoothing:antialiased;
+        -moz-osx-font-smoothing:grayscale;
     }
 
-    /* ── Sidebar ── */
+    /* ═══════════════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════════════ */
     .sidebar{
         width:var(--sidebar-w);
         flex-shrink:0;
-        padding:16px;
+        padding:18px 14px;
         height:100vh;
         display:flex;
         flex-direction:column;
-        position:relative;
-        z-index:10;
     }
     .sidebar-inner{
         background:var(--card);
-        border-radius:var(--radius-xl);
+        border-radius:var(--r-xl);
         border:1px solid rgba(99,102,241,.1);
         height:100%;
         display:flex;
@@ -167,118 +166,131 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         overflow:hidden;
         box-shadow:var(--shadow-md);
     }
-    .sidebar-top{
-        padding:20px 16px 14px;
-        border-bottom:1px solid rgba(99,102,241,.07);
-    }
-    .brand-tag{font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#94a3b8;margin-bottom:5px;}
-    .brand-name{font-family:var(--font-display);font-size:20px;font-weight:700;color:#0f172a;letter-spacing:-.3px;line-height:1.1;}
+    .sidebar-top{padding:22px 18px 16px;border-bottom:1px solid rgba(99,102,241,.07);}
+    .brand-tag{font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#94a3b8;margin-bottom:5px;}
+    .brand-name{font-size:1.35rem;font-weight:800;color:#0f172a;letter-spacing:-.03em;line-height:1.1;}
     .brand-name em{font-style:normal;color:var(--indigo);}
-    .brand-sub{font-size:10px;color:#94a3b8;margin-top:2px;}
+    .brand-sub{font-size:.7rem;color:#94a3b8;margin-top:3px;letter-spacing:.01em;}
 
-    /* User card */
-    .user-card{margin:10px 10px 0;background:var(--indigo-light);border-radius:var(--radius-md);padding:10px 12px;border:1px solid var(--indigo-border);}
-    .user-avatar{width:30px;height:30px;border-radius:50%;background:var(--indigo);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:12px;flex-shrink:0;}
-    .user-name-txt{font-size:12px;font-weight:600;color:#0f172a;letter-spacing:-.1px;}
-    .user-role-txt{font-size:10px;color:#64748b;}
+    /* User card inside sidebar */
+    .user-card{margin:12px 12px 0;background:var(--indigo-light);border-radius:var(--r-md);padding:12px 14px;border:1px solid var(--indigo-border);}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--indigo);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0;box-shadow:0 2px 8px rgba(55,48,163,.3);}
+    .user-name-txt{font-size:.8rem;font-weight:700;color:#0f172a;letter-spacing:-.01em;}
+    .user-role-txt{font-size:.68rem;color:#6366f1;font-weight:500;margin-top:1px;}
 
     /* Nav */
-    .sidebar-nav{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:2px;}
+    .sidebar-nav{flex:1;overflow-y:auto;padding:10px 10px;display:flex;flex-direction:column;gap:3px;}
     .sidebar-nav::-webkit-scrollbar{width:2px;}
     .sidebar-nav::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:2px;}
-    .nav-section-lbl{font-size:9px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#cbd5e1;padding:8px 8px 4px;margin-top:4px;}
+    .nav-section-lbl{font-size:.6rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#cbd5e1;padding:10px 10px 5px;margin-top:2px;}
     .nav-link{
-        display:flex;align-items:center;gap:9px;
-        padding:8px 10px;border-radius:var(--radius-sm);
-        font-size:12.5px;font-weight:500;
+        display:flex;align-items:center;gap:10px;
+        padding:10px 12px;border-radius:var(--r-sm);
+        font-size:.85rem;font-weight:600;
         color:#64748b;text-decoration:none;
-        transition:all var(--transition);
-        position:relative;
+        transition:all var(--ease);
     }
     .nav-link:hover{background:var(--indigo-light);color:var(--indigo);}
-    .nav-link.active{background:var(--indigo);color:#fff;box-shadow:0 4px 12px rgba(55,48,163,.3);}
-    .nav-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .nav-link.active{background:var(--indigo);color:#fff;box-shadow:0 4px 14px rgba(55,48,163,.32);}
+    .nav-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .nav-link.active .nav-icon{background:rgba(255,255,255,.15);}
     .nav-link:not(.active) .nav-icon{background:#f1f5f9;}
     .nav-link:hover:not(.active) .nav-icon{background:#e0e7ff;}
-    .nav-badge{margin-left:auto;background:rgba(239,68,68,.15);color:#dc2626;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;}
-    .nav-link.active .nav-badge{background:rgba(255,255,255,.2);color:#fff;}
+    .nav-badge{margin-left:auto;background:rgba(239,68,68,.15);color:#dc2626;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:999px;}
+    .nav-link.active .nav-badge{background:rgba(255,255,255,.22);color:#fff;}
 
     /* Quota */
-    .quota-wrap{margin:8px 10px;background:#f8fafc;border-radius:var(--radius-sm);padding:10px 12px;border:1px solid rgba(99,102,241,.08);}
-    .quota-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
-    .quota-lbl{font-size:10px;font-weight:600;color:#64748b;}
-    .quota-val{font-size:10px;font-weight:700;color:var(--indigo);font-family:var(--mono);}
+    .quota-wrap{margin:8px 12px;background:#f8fafc;border-radius:var(--r-sm);padding:12px 14px;border:1px solid rgba(99,102,241,.09);}
+    .quota-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    .quota-lbl{font-size:.7rem;font-weight:600;color:#64748b;}
+    .quota-val{font-size:.7rem;font-weight:700;color:var(--indigo);font-family:var(--mono);}
     .quota-track{height:5px;border-radius:999px;background:#e2e8f0;overflow:hidden;}
     .quota-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--indigo),#818cf8);transition:width .6s cubic-bezier(.34,1.56,.64,1);}
-    .quota-note{font-size:10px;color:#94a3b8;margin-top:5px;}
+    .quota-note{font-size:.7rem;color:#94a3b8;margin-top:5px;}
     .quota-note.warn{color:#d97706;font-weight:600;}
     .quota-note.err{color:#dc2626;font-weight:700;}
 
     /* Sidebar footer */
-    .sidebar-footer{padding:10px;border-top:1px solid rgba(99,102,241,.07);}
-    .logout-link{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);font-size:12.5px;font-weight:500;color:#94a3b8;text-decoration:none;transition:all var(--transition);}
+    .sidebar-footer{padding:10px 10px 12px;border-top:1px solid rgba(99,102,241,.07);}
+    .logout-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:#94a3b8;text-decoration:none;transition:all var(--ease);}
     .logout-link:hover{background:#fef2f2;color:#dc2626;}
     .logout-link:hover .nav-icon{background:#fee2e2;}
 
-    /* ── Mobile nav ── */
+    /* ═══════════════════════════════════════════════════
+       MOBILE NAV — full-width bar at bottom
+    ═══════════════════════════════════════════════════ */
     .mobile-nav-pill{
-        display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
-        width:calc(100% - 32px);max-width:480px;
-        background:white;border:1px solid rgba(99,102,241,.12);
-        border-radius:20px;padding:5px 6px;z-index:100;
-        box-shadow:0 8px 32px rgba(55,48,163,.16),0 2px 8px rgba(0,0,0,.08);
+        display:none;
+        position:fixed;bottom:0;left:0;right:0;
+        background:white;
+        border-top:1px solid rgba(99,102,241,.1);
+        padding:6px 4px env(safe-area-inset-bottom,6px);
+        z-index:200;
+        box-shadow:0 -4px 20px rgba(55,48,163,.1);
     }
-    .mobile-scroll-container{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    .mobile-scroll-container{
+        display:flex;
+        justify-content:space-around;
+        align-items:center;
+        gap:2px;
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+    }
     .mobile-scroll-container::-webkit-scrollbar{display:none;}
     .mob-nav-item{
         display:flex;flex-direction:column;align-items:center;justify-content:center;
-        padding:6px 10px;min-width:58px;border-radius:14px;
-        gap:3px;cursor:pointer;text-decoration:none;
-        transition:all .15s;flex-shrink:0;color:#64748b;
+        padding:7px 8px;min-width:56px;max-width:80px;flex:1;
+        border-radius:12px;gap:4px;
+        cursor:pointer;text-decoration:none;
+        transition:all .15s;color:#64748b;
     }
     .mob-nav-item:hover{background:var(--indigo-light);color:var(--indigo);}
-    .mob-nav-item.active{background:var(--indigo);color:#fff;}
-    .mob-nav-lbl{font-size:9px;font-weight:600;white-space:nowrap;}
+    .mob-nav-item.active{background:var(--indigo-light);color:var(--indigo);}
+    .mob-nav-item.active svg{stroke:var(--indigo);}
+    .mob-nav-lbl{font-size:.6rem;font-weight:700;white-space:nowrap;letter-spacing:.01em;}
     .mob-logout{color:#f87171;}
     .mob-logout:hover{background:#fef2f2;color:#dc2626;}
 
-    /* ── Responsive ── */
+    /* ═══════════════════════════════════════════════════
+       RESPONSIVE BREAKPOINTS
+    ═══════════════════════════════════════════════════ */
     @media(max-width:1023px){
         .sidebar{display:none!important;}
         .mobile-nav-pill{display:block;}
-        .main-area{padding-bottom:88px;}
+        .main-area{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));}
     }
     @media(min-width:1024px){
         .sidebar{display:flex!important;}
         .mobile-nav-pill{display:none!important;}
     }
 
-    /* ── Main ── */
-    .main-area{flex:1;min-width:0;padding:16px 20px 32px;height:100vh;overflow-y:auto;}
+    /* ═══════════════════════════════════════════════════
+       MAIN CONTENT AREA
+    ═══════════════════════════════════════════════════ */
+    .main-area{flex:1;min-width:0;padding:24px 28px 40px;height:100vh;overflow-y:auto;}
     .main-area::-webkit-scrollbar{width:4px;}
-    .main-area::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:4px;}
+    .main-area::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
 
     /* ── Topbar ── */
-    .topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;}
-    .greeting-eyebrow{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#94a3b8;margin-bottom:3px;}
-    .greeting-name{font-family:var(--font-display);font-size:22px;font-weight:700;color:#0f172a;letter-spacing:-.4px;line-height:1.1;}
-    .greeting-date{font-size:11px;color:#94a3b8;margin-top:3px;}
-    .topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-top:2px;}
+    .topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;}
+    .greeting-eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;}
+    .greeting-name{font-size:1.75rem;font-weight:800;color:#0f172a;letter-spacing:-.04em;line-height:1.1;}
+    .greeting-date{font-size:.78rem;color:#94a3b8;margin-top:4px;font-weight:500;}
+    .topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-top:4px;}
     .reserve-btn{
-        display:flex;align-items:center;gap:6px;
-        padding:8px 15px;background:var(--indigo);color:#fff;
-        border-radius:var(--radius-sm);font-size:12px;font-weight:600;
+        display:flex;align-items:center;gap:7px;
+        padding:10px 18px;background:var(--indigo);color:#fff;
+        border-radius:var(--r-sm);font-size:.85rem;font-weight:700;
         border:none;cursor:pointer;font-family:var(--font);
-        letter-spacing:-.1px;transition:all var(--transition);
-        text-decoration:none;box-shadow:0 4px 10px rgba(55,48,163,.25);
+        letter-spacing:-.01em;transition:all var(--ease);
+        text-decoration:none;box-shadow:0 4px 12px rgba(55,48,163,.28);
     }
-    .reserve-btn:hover{background:#312e81;transform:translateY(-1px);box-shadow:0 6px 16px rgba(55,48,163,.3);}
+    .reserve-btn:hover{background:#312e81;transform:translateY(-1px);box-shadow:0 6px 18px rgba(55,48,163,.35);}
     .icon-btn{
-        width:36px;height:36px;background:white;
-        border:1px solid rgba(99,102,241,.12);border-radius:var(--radius-sm);
+        width:40px;height:40px;background:white;
+        border:1px solid rgba(99,102,241,.12);border-radius:var(--r-sm);
         display:flex;align-items:center;justify-content:center;
-        color:#64748b;cursor:pointer;transition:all var(--transition);
+        color:#64748b;cursor:pointer;transition:all var(--ease);
         box-shadow:var(--shadow-sm);
     }
     .icon-btn:hover{background:var(--indigo-light);border-color:var(--indigo-border);color:var(--indigo);}
@@ -286,160 +298,115 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .notif-badge{
         position:absolute;top:-5px;right:-5px;
         background:#ef4444;color:white;
-        font-size:9px;font-weight:700;
-        padding:1px 4px;border-radius:999px;
-        min-width:16px;text-align:center;
+        font-size:.55rem;font-weight:700;
+        padding:2px 5px;border-radius:999px;
+        min-width:17px;text-align:center;
         border:2px solid var(--bg);line-height:1.3;
     }
 
-    /* ── Dark toggle ── */
-    .tgl-wrap{display:flex;align-items:center;gap:6px;}
-    .tgl{
-        width:38px;height:20px;background:#e2e8f0;
-        border-radius:999px;border:1px solid rgba(55,48,163,.15);
-        cursor:pointer;position:relative;transition:background .25s;flex-shrink:0;
-    }
-    .tgl.on{background:var(--indigo);}
-    .tgl::after{
-        content:'';position:absolute;top:2px;left:2px;
-        width:14px;height:14px;background:white;
-        border-radius:50%;transition:transform .25s;
-        box-shadow:0 1px 3px rgba(0,0,0,.2);
-    }
-    .tgl.on::after{transform:translateX(18px);}
-
-    /* ── Cards ── */
-    .card{
-        background:var(--card);border-radius:var(--radius-lg);
-        border:1px solid rgba(99,102,241,.08);
-        box-shadow:var(--shadow-sm);
-    }
-    .card-p{padding:16px 18px;}
-    .card-p-lg{padding:18px 20px;}
-    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-    .card-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .card-title{font-size:13px;font-weight:600;color:#0f172a;letter-spacing:-.1px;}
-    .card-sub{font-size:10px;color:#94a3b8;margin-top:1px;}
-    .section-lbl{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#94a3b8;margin-bottom:12px;}
-    .link-sm{font-size:10px;font-weight:700;color:var(--indigo);text-decoration:none;letter-spacing:.04em;text-transform:uppercase;transition:opacity .15s;}
+    /* ═══════════════════════════════════════════════════
+       CARDS
+    ═══════════════════════════════════════════════════ */
+    .card{background:var(--card);border-radius:var(--r-lg);border:1px solid rgba(99,102,241,.08);box-shadow:var(--shadow-sm);}
+    .card-p{padding:20px 22px;}
+    .card-p-lg{padding:22px 24px;}
+    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .card-title{font-size:.9rem;font-weight:700;color:#0f172a;letter-spacing:-.01em;}
+    .card-sub{font-size:.7rem;color:#94a3b8;margin-top:2px;}
+    .section-lbl{font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#94a3b8;margin-bottom:14px;}
+    .link-sm{font-size:.65rem;font-weight:700;color:var(--indigo);text-decoration:none;letter-spacing:.05em;text-transform:uppercase;transition:opacity .15s;}
     .link-sm:hover{opacity:.7;}
 
     /* ── Flash ── */
-    .flash-ok{
-        display:flex;align-items:center;gap:10px;
-        margin-bottom:14px;padding:11px 15px;
-        background:var(--indigo-light);border:1px solid var(--indigo-border);
-        color:var(--indigo);font-weight:600;border-radius:var(--radius-md);
-        font-size:13px;animation:slideUp .4s ease both;
-    }
+    .flash-ok{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:13px 18px;background:var(--indigo-light);border:1px solid var(--indigo-border);color:var(--indigo);font-weight:600;border-radius:var(--r-md);font-size:.9rem;animation:slideUp .4s ease both;}
 
     /* ── Next-action banner ── */
-    .next-card{
-        display:flex;align-items:flex-start;gap:12px;
-        border-radius:var(--radius-md);padding:13px 15px;
-        border:1px solid;margin-bottom:16px;
-        animation:slideUp .4s ease both;
-    }
-    .next-icon-wrap{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .next-eyebrow{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px;}
-    .next-msg{font-size:12px;color:#475569;line-height:1.55;}
-    .next-cta{
-        display:inline-flex;align-items:center;gap:5px;margin-top:9px;
-        padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600;
-        color:#fff;text-decoration:none;font-family:var(--font);
-        transition:opacity var(--transition);
-    }
+    .next-card{display:flex;align-items:flex-start;gap:14px;border-radius:var(--r-md);padding:16px 18px;border:1px solid;margin-bottom:20px;animation:slideUp .4s ease both;}
+    .next-icon-wrap{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .next-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px;}
+    .next-msg{font-size:.83rem;color:#475569;line-height:1.6;}
+    .next-cta{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 14px;border-radius:9px;font-size:.75rem;font-weight:700;color:#fff;text-decoration:none;font-family:var(--font);transition:opacity var(--ease);}
     .next-cta:hover{opacity:.85;}
 
     /* ── Timer banner ── */
-    .timer-banner{display:none;border-radius:var(--radius-md);padding:12px 15px;margin-bottom:16px;border:1px solid;animation:slideDown .35s cubic-bezier(.34,1.56,.64,1) both;}
+    .timer-banner{display:none;border-radius:var(--r-md);padding:14px 18px;margin-bottom:18px;border:1px solid;animation:slideDown .35s cubic-bezier(.34,1.56,.64,1) both;}
     .timer-banner.urgent{background:#fff7ed;border-color:#fed7aa;color:#9a3412;}
     .timer-banner.warning{background:#fefce8;border-color:#fde68a;color:#854d0e;}
     .timer-banner.safe{background:var(--indigo-light);border-color:var(--indigo-border);color:#312e81;}
     @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-    .timer-digit{
-        display:inline-flex;flex-direction:column;align-items:center;
-        background:rgba(0,0,0,.07);border-radius:7px;
-        padding:.15rem .4rem;min-width:2.2rem;
-        font-variant-numeric:tabular-nums;font-weight:700;font-size:.95rem;
-        line-height:1;font-family:var(--mono);
-    }
-    .timer-digit span{font-size:.48rem;font-weight:500;opacity:.6;text-transform:uppercase;letter-spacing:.07em;margin-top:2px;font-family:var(--font);}
+    .timer-digit{display:inline-flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.07);border-radius:8px;padding:.2rem .5rem;min-width:2.6rem;font-variant-numeric:tabular-nums;font-weight:700;font-size:1.1rem;line-height:1;font-family:var(--mono);}
+    .timer-digit span{font-size:.5rem;font-weight:500;opacity:.6;text-transform:uppercase;letter-spacing:.07em;margin-top:3px;font-family:var(--font);}
     .timer-pulse{animation:pulse .9s ease-in-out infinite;}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-    .timer-progress-wrap{height:3px;border-radius:999px;background:rgba(0,0,0,.08);overflow:hidden;margin-top:9px;}
+    .timer-progress-wrap{height:3px;border-radius:999px;background:rgba(0,0,0,.08);overflow:hidden;margin-top:10px;}
     .timer-progress-fill{height:100%;border-radius:999px;background:currentColor;opacity:.4;transition:width 1s linear;}
 
     /* ── Upcoming pill ── */
-    .upcoming-pill{
-        background:var(--indigo-light);border:1px solid var(--indigo-border);
-        border-radius:var(--radius-md);padding:11px 14px;
-        display:flex;align-items:center;gap:12px;margin-bottom:16px;
-        animation:slideUp .4s ease both;
-    }
-    .up-icon{width:34px;height:34px;background:var(--indigo);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 8px rgba(55,48,163,.25);}
-    .up-eyebrow{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--indigo);margin-bottom:2px;}
-    .up-name{font-size:13px;font-weight:600;color:#0f172a;}
-    .up-time{font-size:10px;color:#4338ca;font-family:var(--mono);}
-    .up-btn{margin-left:auto;font-size:11px;font-weight:600;color:var(--indigo);background:white;border:1px solid var(--indigo-border);border-radius:8px;padding:5px 11px;text-decoration:none;white-space:nowrap;transition:all var(--transition);}
-    .up-btn:hover{background:var(--indigo);color:white;box-shadow:0 2px 8px rgba(55,48,163,.2);}
+    .upcoming-pill{background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:var(--r-md);padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:20px;animation:slideUp .4s ease both;}
+    .up-icon{width:38px;height:38px;background:var(--indigo);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(55,48,163,.28);}
+    .up-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--indigo);margin-bottom:2px;}
+    .up-name{font-size:.88rem;font-weight:700;color:#0f172a;}
+    .up-time{font-size:.72rem;color:#4338ca;font-family:var(--mono);margin-top:1px;}
+    .up-btn{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--indigo);background:white;border:1px solid var(--indigo-border);border-radius:8px;padding:6px 13px;text-decoration:none;white-space:nowrap;transition:all var(--ease);}
+    .up-btn:hover{background:var(--indigo);color:white;box-shadow:0 2px 8px rgba(55,48,163,.22);}
 
-    /* ── Stat cards ── */
-    .stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;}
-    .stat-card{background:var(--card);border:1px solid rgba(99,102,241,.08);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow-sm);transition:transform var(--transition),box-shadow var(--transition);}
+    /* ═══════════════════════════════════════════════════
+       STAT CARDS
+    ═══════════════════════════════════════════════════ */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px;}
+    .stat-card{background:var(--card);border:1px solid rgba(99,102,241,.08);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow-sm);transition:transform var(--ease),box-shadow var(--ease);}
     .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
-    .stat-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
-    .stat-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;}
-    .stat-lbl{font-size:9px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#94a3b8;}
-    .stat-num{font-family:var(--font-display);font-size:26px;font-weight:700;color:#0f172a;line-height:1;letter-spacing:-.5px;}
-    .stat-hint{font-size:10px;color:#94a3b8;margin-top:3px;}
+    .stat-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+    .stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+    .stat-lbl{font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#94a3b8;}
+    .stat-num{font-size:2rem;font-weight:800;color:#0f172a;line-height:1;letter-spacing:-.04em;font-family:var(--mono);}
+    .stat-hint{font-size:.72rem;color:#94a3b8;margin-top:4px;}
 
-    /* ── Main 2-col ── */
-    .grid-main{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(0,1fr);gap:14px;margin-bottom:16px;}
-    .side-col{display:flex;flex-direction:column;gap:12px;}
+    /* ═══════════════════════════════════════════════════
+       MAIN 2-COL GRID
+    ═══════════════════════════════════════════════════ */
+    .grid-main{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:16px;margin-bottom:18px;}
+    .side-col{display:flex;flex-direction:column;gap:14px;}
 
-    /* ── FullCalendar ── */
-    #calendar{font-size:.78rem;font-family:var(--font);}
+    /* ═══════════════════════════════════════════════════
+       FULLCALENDAR
+    ═══════════════════════════════════════════════════ */
+    #calendar{font-size:.8rem;font-family:var(--font);}
     .fc .fc-toolbar{flex-wrap:wrap;gap:.5rem;}
-    .fc-toolbar-title{font-size:.88rem!important;font-weight:700!important;color:#0f172a!important;font-family:var(--font-display)!important;}
-    .fc-button-primary{background:var(--indigo)!important;border-color:var(--indigo)!important;border-radius:8px!important;font-family:var(--font)!important;font-weight:600!important;font-size:.7rem!important;padding:.26rem .55rem!important;box-shadow:none!important;}
+    .fc-toolbar-title{font-size:.95rem!important;font-weight:800!important;color:#0f172a!important;font-family:var(--font)!important;letter-spacing:-.02em!important;}
+    .fc-button-primary{background:var(--indigo)!important;border-color:var(--indigo)!important;border-radius:9px!important;font-family:var(--font)!important;font-weight:700!important;font-size:.72rem!important;padding:.3rem .65rem!important;box-shadow:none!important;}
     .fc-button-primary:hover{background:#312e81!important;}
     .fc-button-primary:not(:disabled):active,.fc-button-primary:not(:disabled).fc-button-active{background:#1e1b4b!important;}
-    .fc-daygrid-event{border-radius:4px!important;font-size:.62rem!important;font-weight:600!important;padding:1px 4px!important;border:none!important;cursor:pointer!important;font-family:var(--font)!important;}
+    .fc-daygrid-event{border-radius:5px!important;font-size:.65rem!important;font-weight:600!important;padding:2px 5px!important;border:none!important;cursor:pointer!important;font-family:var(--font)!important;}
     .fc-daygrid-day:hover{background-color:var(--indigo-light)!important;cursor:pointer;}
     .fc-day-today{background:rgba(55,48,163,.06)!important;}
-    .fc-day-today .fc-daygrid-day-number{color:var(--indigo)!important;font-weight:700!important;}
-    .fc-daygrid-day-number{font-size:.7rem;font-weight:500;font-family:var(--font);}
-    .fc-col-header-cell-cushion{font-family:var(--font);font-size:.7rem;font-weight:600;}
-    .cal-legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-    .leg-item{display:flex;align-items:center;gap:4px;}
-    .leg-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-    .leg-lbl{font-size:9.5px;font-weight:500;color:#94a3b8;}
+    .fc-day-today .fc-daygrid-day-number{color:var(--indigo)!important;font-weight:800!important;}
+    .fc-daygrid-day-number{font-size:.72rem;font-weight:600;font-family:var(--font);}
+    .fc-col-header-cell-cushion{font-family:var(--font);font-size:.72rem;font-weight:700;letter-spacing:.04em;}
+    .cal-legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .leg-item{display:flex;align-items:center;gap:5px;}
+    .leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+    .leg-lbl{font-size:.68rem;font-weight:600;color:#94a3b8;}
 
     /* ── Quick actions ── */
-    .qa-link{
-        display:flex;align-items:center;gap:9px;
-        padding:9px 10px;border-radius:var(--radius-sm);
-        border:1px solid rgba(99,102,241,.09);background:white;
-        text-decoration:none;color:#475569;font-size:12px;font-weight:500;
-        transition:all var(--transition);
-    }
-    .qa-link:hover{border-color:var(--indigo);background:var(--indigo-light);color:var(--indigo);transform:translateX(2px);}
-    .qa-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .qa-chev{margin-left:auto;color:#cbd5e1;transition:color var(--transition);}
+    .qa-link{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:var(--r-sm);border:1px solid rgba(99,102,241,.09);background:white;text-decoration:none;color:#475569;font-size:.83rem;font-weight:600;transition:all var(--ease);}
+    .qa-link:hover{border-color:var(--indigo);background:var(--indigo-light);color:var(--indigo);transform:translateX(3px);}
+    .qa-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .qa-chev{margin-left:auto;color:#cbd5e1;transition:color var(--ease);}
     .qa-link:hover .qa-chev{color:var(--indigo);}
 
     /* ── Booking rows ── */
-    .bk-row{display:flex;align-items:center;gap:9px;padding:7px 7px;border-radius:10px;text-decoration:none;color:inherit;transition:background var(--transition);}
+    .bk-row{display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:11px;text-decoration:none;color:inherit;transition:background var(--ease);}
     .bk-row:hover{background:var(--indigo-light);}
-    .bk-date{width:34px;height:34px;background:#f8fafc;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(99,102,241,.08);}
-    .bk-month{font-size:8px;font-weight:600;text-transform:uppercase;color:#94a3b8;}
-    .bk-day{font-size:14px;font-weight:700;color:#0f172a;line-height:1;font-family:var(--mono);}
-    .bk-name{font-size:12px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .bk-time{font-size:10px;color:#94a3b8;margin-top:1px;font-family:var(--mono);}
+    .bk-date{width:38px;height:38px;background:#f8fafc;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(99,102,241,.09);}
+    .bk-month{font-size:.55rem;font-weight:700;text-transform:uppercase;color:#94a3b8;}
+    .bk-day{font-size:.95rem;font-weight:800;color:#0f172a;line-height:1;font-family:var(--mono);}
+    .bk-name{font-size:.82rem;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .bk-time{font-size:.68rem;color:#94a3b8;margin-top:1px;font-family:var(--mono);}
 
     /* ── Status tags ── */
-    .tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;}
+    .tag{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:999px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;}
     .tag-pending{background:#fef3c7;color:#92400e;}
     .tag-approved{background:#dcfce7;color:#166534;}
     .tag-claimed{background:#ede9fe;color:#5b21b6;}
@@ -448,118 +415,22 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
     .tag-expired{background:#f1f5f9;color:#475569;}
 
     /* ── Notification dropdown ── */
-    .notif-dd{
-        position:fixed;top:62px;right:16px;width:310px;
-        background:white;border-radius:var(--radius-xl);
-        box-shadow:var(--shadow-lg),0 0 0 1px rgba(99,102,241,.08);
-        z-index:200;display:none;overflow:hidden;
-        animation:dropIn .15s ease;
-    }
+    .notif-dd{position:fixed;top:68px;right:20px;width:320px;background:white;border-radius:var(--r-xl);box-shadow:var(--shadow-lg),0 0 0 1px rgba(99,102,241,.09);z-index:200;display:none;overflow:hidden;animation:dropIn .15s ease;}
     @keyframes dropIn{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
     .notif-dd.show{display:block;}
-    .notif-item{padding:.75rem 1rem;border-bottom:1px solid #f8fafc;transition:background .15s;cursor:pointer;}
+    .notif-item{padding:.85rem 1.1rem;border-bottom:1px solid #f8fafc;transition:background .15s;cursor:pointer;}
     .notif-item:hover{background:#f8fafc;}
     .notif-item.unread{background:var(--indigo-light);}
     .notif-item:last-child{border-bottom:none;}
 
     /* ── Modal ── */
-    .modal-back{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(6px);z-index:300;padding:1.25rem;overflow-y:auto;align-items:center;justify-content:center;}
+    .modal-back{display:none;position:fixed;inset:0;background:rgba(15,23,42,.52);backdrop-filter:blur(6px);z-index:300;padding:1.5rem;overflow-y:auto;align-items:center;justify-content:center;}
     .modal-back.show{display:flex;animation:fadeIn .15s ease;}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    .modal-card{background:white;border-radius:var(--radius-xl);width:100%;max-width:500px;padding:20px;max-height:calc(100vh - 2.5rem);overflow-y:auto;margin:auto;animation:slideUp .2s ease;box-shadow:var(--shadow-lg);}
-    .date-row{display:flex;align-items:center;gap:10px;padding:.65rem;border-bottom:1px solid #f8fafc;border-radius:9px;transition:background .15s;}
+    .modal-card{background:white;border-radius:var(--r-xl);width:100%;max-width:520px;padding:24px;max-height:calc(100vh - 3rem);overflow-y:auto;margin:auto;animation:slideUp .2s ease;box-shadow:var(--shadow-lg);}
+    .date-row{display:flex;align-items:center;gap:11px;padding:.75rem;border-bottom:1px solid #f8fafc;border-radius:10px;transition:background .15s;}
     .date-row:hover{background:#f8fafc;}
     .date-row:last-child{border-bottom:none;}
-
-    /* ── Login toast ── */
-    .login-toast{
-        position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(16px);
-        background:#0f172a;color:white;border-radius:var(--radius-xl);
-        padding:.75rem 1rem;z-index:500;max-width:380px;width:calc(100% - 2rem);
-        box-shadow:0 16px 40px rgba(0,0,0,.25);
-        display:flex;align-items:flex-start;gap:10px;
-        opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);
-        border:1px solid rgba(255,255,255,.06);
-    }
-    .login-toast.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
-    .toast-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .toast-close{margin-left:auto;flex-shrink:0;width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.07);border:none;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
-    .toast-close:hover{background:rgba(255,255,255,.15);}
-
-    /* ── Library banner ── */
-    .lib-banner{
-        background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#3730a3 100%);
-        border-radius:var(--radius-lg);padding:18px 20px;
-        position:relative;overflow:hidden;
-        box-shadow:0 8px 24px rgba(55,48,163,.25);
-        border:1px solid rgba(255,255,255,.06);
-    }
-    .lib-banner::before{content:'';position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none;}
-    .lib-banner::after{content:'';position:absolute;left:-20px;bottom:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.03);pointer-events:none;}
-    .lib-eyebrow{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(165,180,252,.5);margin-bottom:4px;}
-    .lib-title{font-family:var(--font-display);font-size:19px;font-weight:700;color:#fff;letter-spacing:-.3px;}
-    .lib-sub{font-size:10px;color:rgba(165,180,252,.55);margin-top:2px;}
-    .lib-browse{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:9px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;margin-top:13px;transition:background var(--transition);}
-    .lib-browse:hover{background:rgba(255,255,255,.18);}
-    .lib-stats{display:flex;gap:12px;margin-top:13px;padding-top:13px;border-top:1px solid rgba(255,255,255,.07);}
-    .lib-stat{display:flex;align-items:center;gap:8px;}
-    .lib-stat-icon{width:24px;height:24px;background:rgba(255,255,255,.08);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#a5b4fc;}
-    .lib-stat-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:rgba(165,180,252,.45);}
-    .lib-stat-val{font-family:var(--font-display);font-size:13px;font-weight:700;color:#fff;}
-
-    /* ── Books ── */
-    .book-letter{width:32px;height:32px;border-radius:9px;background:var(--indigo-light);color:var(--indigo);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:13px;font-weight:700;flex-shrink:0;}
-    .book-title{font-size:12px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .book-author{font-size:10px;color:#94a3b8;}
-    .avail-dot{width:6px;height:6px;border-radius:50%;}
-    .avail-dot.on{background:#22c55e;}
-    .avail-dot.off{background:#f87171;}
-    .avail-num{font-size:9px;font-weight:600;color:#94a3b8;font-family:var(--mono);}
-
-    /* ── AI search ── */
-    .rag-wrap{position:relative;margin:10px 0 8px;}
-    .rag-wrap .rag-icon-pos{position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;}
-    .search-input{width:100%;padding:8px 11px 8px 30px;border-radius:10px;border:1px solid rgba(99,102,241,.15);background:#f8fafc;font-family:var(--font);font-size:12px;color:#0f172a;outline:none;transition:border .15s,background .15s,box-shadow .15s;}
-    .search-input:focus{border-color:var(--indigo);background:white;box-shadow:0 0 0 3px rgba(55,48,163,.08);}
-    .search-input::placeholder{color:#94a3b8;}
-    .ai-result-box{background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:var(--radius-md);padding:.75rem 1rem;margin-top:.65rem;display:none;animation:fadeIn .3s ease;}
-    .ai-result-box.show{display:block;}
-    .shimmer{height:9px;border-radius:5px;background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%);background-size:200% 100%;animation:shimmerAnim 1.3s infinite;margin-bottom:.35rem;}
-    @keyframes shimmerAnim{0%{background-position:200% 0}100%{background-position:-200% 0}}
-    .find-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;background:var(--indigo);color:#fff;border-radius:9px;font-size:11px;font-weight:600;border:none;cursor:pointer;font-family:var(--font);transition:all var(--transition);box-shadow:0 2px 8px rgba(55,48,163,.2);}
-    .find-btn:hover{background:#312e81;transform:translateY(-1px);}
-    .find-btn:disabled{opacity:.6;cursor:wait;transform:none;}
-
-    /* ── Borrow rows ── */
-    .borrow-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);background:#f8fafc;border:1px solid rgba(99,102,241,.07);}
-
-    /* ── How it works ── */
-    .how-step{display:flex;align-items:flex-start;gap:10px;padding:.75rem 0;border-bottom:1px solid #f8fafc;}
-    .how-step:last-child{border-bottom:none;}
-    .step-num{width:24px;height:24px;border-radius:7px;background:var(--indigo);color:white;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-family:var(--mono);}
-    .status-guide-row{display:flex;align-items:center;gap:9px;padding:.45rem 0;border-bottom:1px solid #f8fafc;}
-    .status-guide-row:last-child{border-bottom:none;}
-
-    /* ── Library 2-col ── */
-    .grid-lib{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(0,1fr);gap:14px;}
-
-    /* ── Animations ── */
-    @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-    .fade-up{animation:slideUp .4s ease both;}
-    .fade-up-1{animation:slideUp .4s .05s ease both;}
-    .fade-up-2{animation:slideUp .4s .1s ease both;}
-    .fade-up-3{animation:slideUp .4s .15s ease both;}
-    .fade-up-4{animation:slideUp .4s .2s ease both;}
-
-    /* ── Responsive ── */
-    @media(max-width:1024px){
-        .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
-        .grid-main,.grid-lib{grid-template-columns:1fr;}
-    }
-    @media(max-width:640px){
-        .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
-        .greeting-name{font-size:19px;}
-    }
 
     /* ── DARK MODE ── */
     body.dark{
@@ -637,6 +508,11 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         ['url'=>'/books',            'icon'=>'book-open',  'label'=>'Library',         'key'=>'books'],
         ['url'=>'/profile',          'icon'=>'user',       'label'=>'Profile',         'key'=>'profile'],
     ];
+    $ICON_NAV  = 16; // sidebar nav icons
+    $ICON_MOB  = 20; // mobile nav icons (bigger tap target feel)
+    $ICON_CARD = 16; // card header icons
+    $ICON_STAT = 16; // stat card icons
+    $ICON_BTN  = 16; // topbar button icons
     // First letter of user name for avatar
     $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'U'), 0, 1));
     ?>
@@ -667,7 +543,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 ?>
                 <a href="<?= base_url($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
                     <div class="nav-icon">
-                        <?= icon($item['icon'], 14, $active ? 'white' : '#64748b') ?>
+                        <?= icon($item['icon'], $ICON_NAV, $active ? 'white' : '#64748b') ?>
                     </div>
                     <?= $item['label'] ?>
                     <?php if ($showBadge): ?>
@@ -697,7 +573,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             <div class="sidebar-footer">
                 <a href="<?= base_url('/logout') ?>" class="logout-link">
                     <div class="nav-icon" style="background:rgba(239,68,68,.08);">
-                        <?= icon('logout', 14, '#f87171') ?>
+                        <?= icon('logout', $ICON_NAV, '#f87171') ?>
                     </div>
                     Sign Out
                 </a>
@@ -712,12 +588,12 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 $active = ($page == $item['key']);
             ?>
             <a href="<?= base_url($item['url']) ?>" class="mob-nav-item <?= $active ? 'active' : '' ?>">
-                <?= icon($item['icon'], 16, $active ? 'white' : '#64748b') ?>
+                <?= icon($item['icon'], $ICON_MOB, $active ? 'var(--indigo)' : '#64748b') ?>
                 <span class="mob-nav-lbl"><?= $item['label'] ?></span>
             </a>
             <?php endforeach; ?>
             <a href="<?= base_url('/logout') ?>" class="mob-nav-item mob-logout">
-                <?= icon('logout', 16, '#f87171') ?>
+                <?= icon('logout', $ICON_MOB, '#f87171') ?>
                 <span class="mob-nav-lbl">Logout</span>
             </a>
         </div>
@@ -740,7 +616,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 <div style="display:flex;justify-content:center;margin-bottom:8px;color:#cbd5e1;"><?= icon('calendar-x', 26, '#cbd5e1') ?></div>
                 <p style="font-size:12px;color:#94a3b8;">No reservations for this date.</p>
             </div>
-            <button onclick="closeDateModal()" style="margin-top:16px;width:100%;padding:10px;background:#f8fafc;border-radius:var(--radius-sm);font-weight:600;color:#475569;border:1px solid rgba(99,102,241,.1);cursor:pointer;font-size:12px;font-family:var(--font);">Close</button>
+            <button onclick="closeDateModal()" style="margin-top:16px;width:100%;padding:10px;background:#f8fafc;border-radius:var(--radius-sm);font-weight:600;color:#475569;border:1px solid rgba(99,102,241,.1);cursor:pointer;font-size:.82rem;font-family:var(--font);">Close</button>
         </div>
     </div>
 
@@ -772,11 +648,11 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 </div>
                 <script>document.getElementById('tgl-row').style.display='flex';</script>
                 <a href="<?= base_url('/reservation') ?>" class="reserve-btn" id="reserveBtn" style="display:none;">
-                    <?= icon('plus', 11, 'white') ?> Reserve
+                    <?= icon('plus', $ICON_BTN, 'white') ?> <span class="btn-text">Reserve</span>
                 </a>
                 <script>if(window.innerWidth>=640)document.getElementById('reserveBtn').style.display='flex';</script>
                 <div class="notif-bell" onclick="toggleNotifications()">
-                    <div class="icon-btn"><?= icon('bell', 15, '#64748b') ?></div>
+                    <div class="icon-btn"><?= icon('bell', $ICON_BTN, '#64748b') ?></div>
                     <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
                 </div>
             </div>
@@ -809,7 +685,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 <div class="next-eyebrow" style="color:<?= $nc['icon_fg'] ?>;">What to do next</div>
                 <div class="next-msg"><?= $nextAction['msg'] ?></div>
                 <a href="<?= base_url($nextAction['url']) ?>" class="next-cta" style="background:<?= $nc['btn_bg'] ?>;">
-                    <?= $nextAction['cta'] ?> <?= icon('arrow-right', 10, 'white') ?>
+                    <?= $nextAction['cta'] ?> <?= icon('arrow-right', 12, 'white') ?>
                 </a>
             </div>
         </div>
@@ -819,11 +695,11 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         <div id="timerBanner" class="timer-banner">
             <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;">
                 <div id="timerIconWrap" style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.07);flex-shrink:0;">
-                    <?= icon('hourglass', 13, 'currentColor') ?>
+                    <?= icon('hourglass', $ICON_CARD, 'currentColor') ?>
                 </div>
                 <div style="flex:1;min-width:0;">
-                    <p style="font-weight:700;font-size:13px;line-height:1.3;" id="timerTitle">Your reservation ends soon</p>
-                    <p style="font-size:11px;opacity:.7;margin-top:1px;" id="timerSub"></p>
+                    <p style="font-weight:700;font-size:.9rem;font-weight:700;line-height:1.3;" id="timerTitle">Your reservation ends soon</p>
+                    <p style="font-size:.76rem;opacity:.7;margin-top:2px;" id="timerSub"></p>
                 </div>
                 <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
                     <div class="timer-digit"><span id="tdH">00</span><span>hrs</span></div>
@@ -841,7 +717,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         <!-- Upcoming reservation -->
         <?php if ($upcoming): ?>
         <div class="upcoming-pill fade-up-1">
-            <div class="up-icon"><?= icon('ticket', 14, 'white') ?></div>
+            <div class="up-icon"><?= icon('ticket', 16, 'white') ?></div>
             <div style="flex:1;min-width:0;">
                 <div class="up-eyebrow">Upcoming Reservation</div>
                 <div class="up-name"><?= esc($upcoming['resource_name'] ?? 'Resource') ?><?php if(!empty($upcoming['pc_number'])): ?> &middot; <span style="font-weight:400;"><?= esc($upcoming['pc_number']) ?></span><?php endif; ?></div>
@@ -855,7 +731,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         <div class="stats-grid fade-up-2">
             <div class="stat-card">
                 <div class="stat-card-top">
-                    <div class="stat-icon" style="background:#eef2ff;"><?= icon('layers', 13, '#3730a3') ?></div>
+                    <div class="stat-icon" style="background:#eef2ff;"><?= icon('layers', $ICON_STAT, '#3730a3') ?></div>
                     <span class="stat-lbl">Total</span>
                 </div>
                 <div class="stat-num"><?= $total ?></div>
@@ -863,7 +739,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
             <div class="stat-card">
                 <div class="stat-card-top">
-                    <div class="stat-icon" style="background:#fef3c7;"><?= icon('clock', 13, '#d97706') ?></div>
+                    <div class="stat-icon" style="background:#fef3c7;"><?= icon('clock', $ICON_STAT, '#d97706') ?></div>
                     <span class="stat-lbl">Pending</span>
                 </div>
                 <div class="stat-num" style="color:#d97706;"><?= $pending ?></div>
@@ -871,7 +747,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
             <div class="stat-card">
                 <div class="stat-card-top">
-                    <div class="stat-icon" style="background:#dcfce7;"><?= icon('check-circle', 13, '#16a34a') ?></div>
+                    <div class="stat-icon" style="background:#dcfce7;"><?= icon('check-circle', $ICON_STAT, '#16a34a') ?></div>
                     <span class="stat-lbl">Approved</span>
                 </div>
                 <div class="stat-num" style="color:#16a34a;"><?= $approved ?></div>
@@ -880,7 +756,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             <?php if ($unclaimedCount > 0): ?>
             <div class="stat-card" style="border-color:rgba(251,146,60,.25);">
                 <div class="stat-card-top">
-                    <div class="stat-icon" style="background:#fff7ed;"><?= icon('ticket', 13, '#ea580c') ?></div>
+                    <div class="stat-icon" style="background:#fff7ed;"><?= icon('ticket', $ICON_STAT, '#ea580c') ?></div>
                     <span class="stat-lbl">No-show</span>
                 </div>
                 <div class="stat-num" style="color:#ea580c;"><?= $unclaimedCount ?></div>
@@ -889,7 +765,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             <?php elseif ($claimedCount > 0): ?>
             <div class="stat-card">
                 <div class="stat-card-top">
-                    <div class="stat-icon" style="background:#ede9fe;"><?= icon('check-double', 13, '#7c3aed') ?></div>
+                    <div class="stat-icon" style="background:#ede9fe;"><?= icon('check-double', $ICON_STAT, '#7c3aed') ?></div>
                     <span class="stat-lbl">Claimed</span>
                 </div>
                 <div class="stat-num" style="color:#7c3aed;"><?= $claimedCount ?></div>
@@ -898,7 +774,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             <?php else: ?>
             <div class="stat-card">
                 <div class="stat-card-top">
-                    <div class="stat-icon" style="background:#fee2e2;"><?= icon('ban', 13, '#dc2626') ?></div>
+                    <div class="stat-icon" style="background:#fee2e2;"><?= icon('ban', $ICON_STAT, '#dc2626') ?></div>
                     <span class="stat-lbl">Declined</span>
                 </div>
                 <div class="stat-num" style="color:#dc2626;"><?= $declined ?></div>
@@ -912,7 +788,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             <div class="card card-p-lg">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="card-icon" style="background:#eef2ff;"><?= icon('calendar-days', 13, 'var(--indigo)') ?></div>
+                        <div class="card-icon" style="background:#eef2ff;"><?= icon('calendar-days', $ICON_CARD, 'var(--indigo)') ?></div>
                         <div>
                             <div class="card-title">Community Schedule</div>
                             <div class="card-sub">Click any date to see reservations</div>
@@ -933,28 +809,28 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     <div class="section-lbl">Quick Actions</div>
                     <div style="display:flex;flex-direction:column;gap:5px;">
                         <a href="<?= base_url('/reservation') ?>" class="qa-link">
-                            <div class="qa-icon" style="background:#eef2ff;"><?= icon('plus', 13, 'var(--indigo)') ?></div>
+                            <div class="qa-icon" style="background:#eef2ff;"><?= icon('plus', 16, 'var(--indigo)') ?></div>
                             New Reservation
-                            <span class="qa-chev"><?= icon('chevron-right', 11, '#cbd5e1') ?></span>
+                            <span class="qa-chev"><?= icon('chevron-right', 14, '#cbd5e1') ?></span>
                         </a>
                         <a href="<?= base_url('/reservation-list') ?>" class="qa-link">
-                            <div class="qa-icon" style="background:#ede9fe;"><?= icon('calendar', 13, '#7c3aed') ?></div>
+                            <div class="qa-icon" style="background:#ede9fe;"><?= icon('calendar', 16, '#7c3aed') ?></div>
                             My Reservations
                             <?php if ($pending > 0): ?>
                             <span style="margin-left:auto;background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;"><?= $pending ?></span>
                             <?php else: ?>
-                            <span class="qa-chev"><?= icon('chevron-right', 11, '#cbd5e1') ?></span>
+                            <span class="qa-chev"><?= icon('chevron-right', 14, '#cbd5e1') ?></span>
                             <?php endif; ?>
                         </a>
                         <a href="<?= base_url('/books') ?>" class="qa-link">
-                            <div class="qa-icon" style="background:#fef3c7;"><?= icon('book-open', 13, '#d97706') ?></div>
+                            <div class="qa-icon" style="background:#fef3c7;"><?= icon('book-open', 16, '#d97706') ?></div>
                             Browse Library
-                            <span class="qa-chev"><?= icon('chevron-right', 11, '#cbd5e1') ?></span>
+                            <span class="qa-chev"><?= icon('chevron-right', 14, '#cbd5e1') ?></span>
                         </a>
                         <a href="<?= base_url('/profile') ?>" class="qa-link">
-                            <div class="qa-icon" style="background:#f3e8ff;"><?= icon('user', 13, '#9333ea') ?></div>
+                            <div class="qa-icon" style="background:#f3e8ff;"><?= icon('user', 16, '#9333ea') ?></div>
                             View Profile
-                            <span class="qa-chev"><?= icon('chevron-right', 11, '#cbd5e1') ?></span>
+                            <span class="qa-chev"><?= icon('chevron-right', 14, '#cbd5e1') ?></span>
                         </a>
                     </div>
                 </div>
@@ -989,7 +865,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                         <div style="display:flex;justify-content:center;margin-bottom:8px;color:#e2e8f0;"><?= icon('calendar-x', 28, '#e2e8f0') ?></div>
                         <p style="font-size:12px;color:#94a3b8;">No bookings yet</p>
                         <a href="<?= base_url('/reservation') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:9px;font-size:11px;font-weight:700;color:var(--indigo);text-decoration:none;">
-                            <?= icon('plus', 10, 'var(--indigo)') ?> Make your first reservation
+                            <?= icon('plus', 12, 'var(--indigo)') ?> Make your first reservation
                         </a>
                     </div>
                     <?php endif; ?>
@@ -1002,7 +878,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
         <div class="grid-main" style="margin-bottom:16px;">
             <div class="card card-p">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                    <div class="card-icon" style="background:#eef2ff;"><?= icon('list-check', 13, 'var(--indigo)') ?></div>
+                    <div class="card-icon" style="background:#eef2ff;"><?= icon('list-check', $ICON_CARD, 'var(--indigo)') ?></div>
                     <div>
                         <div class="card-title">How to Reserve</div>
                         <div class="card-sub">Step-by-step guide</div>
@@ -1026,7 +902,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
             </div>
             <div class="card card-p">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                    <div class="card-icon" style="background:#eef2ff;"><?= icon('info', 13, 'var(--indigo)') ?></div>
+                    <div class="card-icon" style="background:#eef2ff;"><?= icon('info', $ICON_CARD, 'var(--indigo)') ?></div>
                     <div>
                         <div class="card-title">Status Reference</div>
                         <div class="card-sub">What each status means</div>
@@ -1062,19 +938,19 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                             <div class="lib-title"><?= $availableCount ?> books available</div>
                             <div class="lib-sub"><?= $totalBooks ?> total titles in collection</div>
                         </div>
-                        <a href="<?= base_url('/books') ?>" class="lib-browse"><?= icon('book-open', 11, 'white') ?> Browse All</a>
+                        <a href="<?= base_url('/books') ?>" class="lib-browse"><?= icon('book-open', 14, 'white') ?> Browse All</a>
                     </div>
                     <div class="lib-stats" style="position:relative;z-index:1;">
                         <div class="lib-stat">
-                            <div class="lib-stat-icon"><?= icon('bookmark', 11, '#a5b4fc') ?></div>
+                            <div class="lib-stat-icon"><?= icon('bookmark', 14, '#a5b4fc') ?></div>
                             <div><div class="lib-stat-lbl">My Borrows</div><div class="lib-stat-val"><?= count($myBorrowings) ?></div></div>
                         </div>
                         <div class="lib-stat">
-                            <div class="lib-stat-icon"><?= icon('hourglass', 11, '#fcd34d') ?></div>
+                            <div class="lib-stat-icon"><?= icon('hourglass', 14, '#fcd34d') ?></div>
                             <div><div class="lib-stat-lbl">Pending</div><div class="lib-stat-val"><?= count(array_filter($myBorrowings,fn($b)=>($b['status']??'')==='pending')) ?></div></div>
                         </div>
                         <div class="lib-stat">
-                            <div class="lib-stat-icon"><?= icon('check-circle', 11, '#7dd3fc') ?></div>
+                            <div class="lib-stat-icon"><?= icon('check-circle', 14, '#7dd3fc') ?></div>
                             <div><div class="lib-stat-lbl">Active</div><div class="lib-stat-val"><?= count(array_filter($myBorrowings,fn($b)=>($b['status']??'')==='approved')) ?></div></div>
                         </div>
                     </div>
@@ -1083,14 +959,14 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                 <!-- AI Book Finder -->
                 <div class="card card-p">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', 13, '#7c3aed') ?></div>
+                        <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', $ICON_CARD, '#7c3aed') ?></div>
                         <div>
                             <div class="card-title">AI Book Finder</div>
                             <div class="card-sub">Describe what you want to read</div>
                         </div>
                     </div>
                     <div class="rag-wrap">
-                        <span class="rag-icon-pos"><?= icon('search', 11, '#94a3b8') ?></span>
+                        <span class="rag-icon-pos"><?= icon('search', 13, '#94a3b8') ?></span>
                         <input type="text" id="ragInput" class="search-input" placeholder="e.g. Filipino history, funny stories, adventure…" onkeydown="if(event.key==='Enter') doRagSearch()">
                     </div>
                     <div id="ragSkel" style="display:none;margin-top:.5rem;">
@@ -1100,7 +976,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     </div>
                     <div class="ai-result-box" id="ragResult">
                         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                            <?= icon('robot', 11, 'var(--indigo)') ?>
+                            <?= icon('robot', 14, 'var(--indigo)') ?>
                             <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
                         </div>
                         <p style="font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
@@ -1109,7 +985,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                     <div id="ragErr" style="display:none;margin-top:5px;font-size:11px;color:#dc2626;font-weight:500;"></div>
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;">
                         <button onclick="doRagSearch()" id="ragBtn" class="find-btn">
-                            <?= icon('sparkles', 10, 'white') ?> Find Books
+                            <?= icon('sparkles', 13, 'white') ?> Find Books
                         </button>
                         <a href="<?= base_url('/books') ?>" class="link-sm">Full library →</a>
                     </div>
@@ -1178,7 +1054,7 @@ function icon($name, $size=16, $stroke='currentColor', $extra='') {
                         <div style="display:flex;justify-content:center;margin-bottom:6px;"><?= icon('bookmark', 22, '#e2e8f0') ?></div>
                         <p style="font-size:12px;color:#94a3b8;">No active borrows</p>
                         <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-weight:700;color:var(--indigo);text-decoration:none;">
-                            <?= icon('book-open', 10, 'var(--indigo)') ?> Borrow a book
+                            <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
                         </a>
                     </div>
                     <?php endif; ?>
