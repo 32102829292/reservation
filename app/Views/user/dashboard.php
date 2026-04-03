@@ -2098,9 +2098,77 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         }
 
         @media(max-width:639px) {
-            .main-area {
-                padding: 14px 14px 0;
-            }
+            .lib-banner {
+        padding: 16px 16px 14px;
+    }
+
+    .lib-banner > div[style] {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .lib-browse {
+        width: 100%;
+        justify-content: center;
+        padding: 9px 12px;
+        font-size: .75rem;
+    }
+
+    .lib-title {
+        font-size: 1.25rem;
+    }
+
+    .lib-stats {
+        gap: 5px;
+        margin-top: 10px;
+    }
+
+    .lib-stat {
+        padding: 6px;
+        gap: 4px;
+        border-radius: 8px;
+    }
+
+    .lib-stat-icon {
+        display: none;
+    }
+
+    .lib-stat-lbl {
+        font-size: .48rem;
+        letter-spacing: .04em;
+    }
+
+    .lib-stat-val {
+        font-size: .82rem;
+    }
+
+    /* Book rows */
+    .book-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
+    }
+
+    .book-author {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
+    }
+
+    /* AI Book finder row */
+    .find-btn + .link-sm {
+        display: none;
+    }
+
+    /* Main area padding */
+    .main-area {
+        padding: 14px 12px 0;
+    }
+}
+
 
             .topbar {
                 margin-bottom: 14px;
