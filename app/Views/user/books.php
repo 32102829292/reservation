@@ -1332,8 +1332,9 @@
             border-color: rgba(99, 102, 241, .12)
         }
 
+        /* FIX #2: Was .body.dark — corrected to body.dark */
         body.dark .sidebar-top,
-        .body.dark .sidebar-footer {
+        body.dark .sidebar-footer {
             border-color: rgba(99, 102, 241, .1)
         }
 
@@ -1372,10 +1373,11 @@
             background: rgba(99, 102, 241, .15)
         }
 
+        /* FIX #2: Was .body.dark — corrected to body.dark */
         body.dark .card,
-        .body.dark .ai-card,
-        .body.dark .book-card,
-        .body.dark .borrow-card {
+        body.dark .ai-card,
+        body.dark .book-card,
+        body.dark .borrow-card {
             background: #0b1628;
             border-color: rgba(99, 102, 241, .1)
         }
@@ -1390,9 +1392,10 @@
             color: #7fb3e8
         }
 
+        /* FIX #2: Was .body.dark — corrected to body.dark */
         body.dark .search-input,
-        .body.dark .genre-select,
-        .body.dark .ai-input {
+        body.dark .genre-select,
+        body.dark .ai-input {
             background: #101e35;
             border-color: rgba(99, 102, 241, .18);
             color: #e2eaf8
@@ -1433,8 +1436,9 @@
             border-color: rgba(91, 33, 182, .3)
         }
 
+        /* FIX #2: Was .body.dark — corrected to body.dark */
         body.dark .detail-card,
-        .body.dark .modal-card {
+        body.dark .modal-card {
             background: #0b1628
         }
 
@@ -1988,6 +1992,11 @@
 
     </main><!-- /main -->
 
+    <!-- FIX #3: Expose base_url to JS so borrow form action is not hardcoded -->
+    <script>
+        const BASE_URL = "<?= base_url() ?>";
+    </script>
+
     <script>
         (function() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
@@ -2113,27 +2122,32 @@
 
             const acts = document.getElementById('detailActions');
             if (avail) {
+                // FIX #1: Use data attributes instead of JSON.stringify in onclick
+                // to avoid quote-escaping issues with titles containing " characters
                 acts.innerHTML = `
-            <button onclick="closeDetailModal();openBorrowModal(${b.id},${JSON.stringify(b.title)})"
-                style="flex:1;padding:12px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-weight:700;font-size:.85rem;border:none;cursor:pointer;font-family:var(--font);box-shadow:0 4px 12px rgba(55,48,163,.28);display:flex;align-items:center;justify-content:center;gap:7px;transition:background var(--ease);"
-                onmouseover="this.style.background='#312e81'" onmouseout="this.style.background='var(--indigo)'">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Borrow This Book
-            </button>
-            <button onclick="closeDetailModal()"
-                style="padding:12px 18px;background:#f8fafc;border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid rgba(99,102,241,.1);cursor:pointer;color:#64748b;font-family:var(--font);">
-                Close
-            </button>`;
+                    <button
+                        data-id="${b.id}"
+                        data-title="${b.title.replace(/"/g, '&quot;')}"
+                        onclick="closeDetailModal(); openBorrowModal(+this.dataset.id, this.dataset.title)"
+                        style="flex:1;padding:12px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-weight:700;font-size:.85rem;border:none;cursor:pointer;font-family:var(--font);box-shadow:0 4px 12px rgba(55,48,163,.28);display:flex;align-items:center;justify-content:center;gap:7px;transition:background var(--ease);"
+                        onmouseover="this.style.background='#312e81'" onmouseout="this.style.background='var(--indigo)'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Borrow This Book
+                    </button>
+                    <button onclick="closeDetailModal()"
+                        style="padding:12px 18px;background:#f8fafc;border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid rgba(99,102,241,.1);cursor:pointer;color:#64748b;font-family:var(--font);">
+                        Close
+                    </button>`;
             } else {
                 acts.innerHTML = `
-            <button disabled
-                style="flex:1;padding:12px;background:#f8fafc;border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid rgba(99,102,241,.08);cursor:not-allowed;color:#94a3b8;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;">
-                Currently Unavailable
-            </button>
-            <button onclick="closeDetailModal()"
-                style="padding:12px 18px;background:#f8fafc;border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid rgba(99,102,241,.1);cursor:pointer;color:#64748b;font-family:var(--font);">
-                Close
-            </button>`;
+                    <button disabled
+                        style="flex:1;padding:12px;background:#f8fafc;border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid rgba(99,102,241,.08);cursor:not-allowed;color:#94a3b8;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;">
+                        Currently Unavailable
+                    </button>
+                    <button onclick="closeDetailModal()"
+                        style="padding:12px 18px;background:#f8fafc;border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid rgba(99,102,241,.1);cursor:pointer;color:#64748b;font-family:var(--font);">
+                        Close
+                    </button>`;
             }
 
             document.getElementById('bookDetailModal').classList.add('show');
@@ -2152,7 +2166,8 @@
         /* ── Borrow modal ── */
         function openBorrowModal(id, title) {
             document.getElementById('modalBookTitle').textContent = title;
-            document.getElementById('borrowForm').action = '/books/borrow/' + id;
+            // FIX #3: Use BASE_URL instead of hardcoded /books/borrow/
+            document.getElementById('borrowForm').action = BASE_URL + 'books/borrow/' + id;
             document.getElementById('borrowModal').classList.add('show');
             document.body.style.overflow = 'hidden';
         }

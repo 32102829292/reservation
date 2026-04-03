@@ -834,20 +834,6 @@
         </div>
     </nav>
 
-    <!-- Notification -->
-    <div class="notif-btn" onclick="toggleNotifications()" style="position:relative;">
-        <i class="fa-regular fa-bell" style="font-size:16px;color:#64748b;"></i>
-        <span class="notif-badge" id="notificationBadge" style="display:none;">0</span>
-    </div>
-    <div id="notificationDropdown" class="notif-dd">
-        <div style="padding:.9rem 1.1rem;border-bottom:1px solid rgba(99,102,241,.07);display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-weight:700;font-size:.88rem;color:#0f172a;">Notifications</span>
-            <button onclick="markAllAsRead()" style="font-size:.72rem;color:var(--indigo);font-weight:700;background:none;border:none;cursor:pointer;">Mark all read</button>
-        </div>
-        <div id="notificationList" style="max-height:280px;overflow-y:auto;"></div>
-    </div>
-    <div id="toastContainer" class="toast-wrap"></div>
-
     <main class="main-area">
         <!-- Topbar -->
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap;">
