@@ -15,9 +15,11 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
     <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
     <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <meta name="csrf-name"  content="<?= csrf_token() ?>">
+    <script>(function(){if(localStorage.getItem('admin_theme')==='dark')document.documentElement.classList.add('dark-pre')})();</script>
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; }
+        html.dark-pre body { background: #060e1e; }
 
         .sidebar-card { background: white; border-radius: 32px; border: 1px solid #e2e8f0; height: calc(100vh - 48px); position: sticky; top: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
         .sidebar-header { flex-shrink: 0; padding: 20px 20px 16px; border-bottom: 1px solid #f1f5f9; }
@@ -119,6 +121,91 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
         .card-empty { padding: 3rem 1.5rem; text-align: center; background: white; border-radius: 20px; border: 1px dashed #e2e8f0; }
         .unclaimed-banner { background: #fff7ed; border: 1.5px dashed #fdba74; border-radius: 16px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 10px; margin: 0 1.75rem 1rem; }
         .unclaimed-banner .ub-icon { width: 34px; height: 34px; background: #fed7aa; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #c2410c; font-size: 0.85rem; flex-shrink: 0; }
+
+        /* ══════════════════════════════════════
+           DARK MODE
+        ══════════════════════════════════════ */
+        body.dark { background: #060e1e; color: #e2eaf8; }
+
+        /* Sidebar */
+        body.dark .sidebar-card { background: #0b1628; border-color: rgba(37,99,235,.12); }
+        body.dark .sidebar-header,
+        body.dark .sidebar-footer { border-color: rgba(37,99,235,.1); }
+        body.dark .sidebar-item:not(.active) { color: #93c5fd; }
+        body.dark .sidebar-item:not(.active):hover { background: rgba(37,99,235,.1); color: #bfdbfe; }
+        body.dark .text-slate-800 { color: #e2eaf8 !important; }
+        body.dark .text-blue-600 { color: #60a5fa !important; }
+
+        /* Main area whites */
+        body.dark .bg-white { background: #0b1628 !important; }
+        body.dark .border-slate-200 { border-color: #1e3a5f !important; }
+        body.dark .border-slate-100 { border-color: rgba(37,99,235,.08) !important; }
+        body.dark .text-slate-900 { color: #e2eaf8 !important; }
+        body.dark .text-slate-700 { color: #cbd5e1 !important; }
+        body.dark .text-slate-600 { color: #93a3b8 !important; }
+        body.dark .text-slate-500 { color: #64748b !important; }
+        body.dark .text-slate-400 { color: #4a6fa5 !important; }
+        body.dark .text-slate-300 { color: #1e3a5f !important; }
+
+        /* Stat cards */
+        body.dark .stat-card { background: #0b1628; border-color: #1e3a5f; }
+
+        /* Tabs */
+        body.dark .qtab { background: #0b1628; border-color: #1e3a5f; color: #93c5fd; }
+        body.dark .qtab:hover { border-color: #2563eb; color: #60a5fa; }
+        body.dark .qtab.active { background: #2563eb; border-color: #2563eb; color: white; }
+
+        /* Filter inputs */
+        body.dark .field { background: #101e35; border-color: #1e3a5f; color: #e2eaf8; }
+        body.dark .field:focus { border-color: #16a34a; }
+        body.dark .bg-slate-50\/40 { background: rgba(15,23,42,.5) !important; }
+
+        /* Table */
+        body.dark thead th { background: #101e35 !important; color: #4a6fa5 !important; border-color: #1e3a5f !important; }
+        body.dark thead th:hover { color: #34d399 !important; }
+        body.dark td { border-color: #1e3a5f; color: #e2eaf8; }
+        body.dark tbody tr:hover td { background: #101e35 !important; }
+        body.dark .bg-slate-50\/60 { background: rgba(16,30,53,.8) !important; }
+
+        /* Dark badges */
+        body.dark .badge-pending   { background: rgba(251,191,36,.15);  color: #fbbf24; }
+        body.dark .badge-approved  { background: rgba(34,197,94,.15);   color: #4ade80; }
+        body.dark .badge-declined,
+        body.dark .badge-canceled  { background: rgba(239,68,68,.15);   color: #f87171; }
+        body.dark .badge-claimed   { background: rgba(168,85,247,.15);  color: #c084fc; }
+        body.dark .badge-expired   { background: rgba(100,116,139,.15); color: #94a3b8; }
+        body.dark .badge-unclaimed { background: rgba(251,146,60,.12);  color: #fb923c; border-color: rgba(251,146,60,.3); }
+
+        /* Mobile res cards */
+        body.dark .res-card { background: #0b1628; border-color: #1e3a5f; }
+        body.dark .res-card:hover { border-color: #2563eb; }
+        body.dark .card-empty { background: #0b1628; border-color: #1e3a5f; }
+
+        /* Modals */
+        body.dark .modal-box { background: #0b1628; }
+        body.dark .sheet-handle { background: #1e3a5f; }
+        body.dark .drow { border-color: #1e3a5f; }
+        body.dark .dvalue { color: #e2eaf8; }
+        body.dark .dicon { background: rgba(22,163,74,.12); color: #4ade80; }
+        body.dark #dPrintLogForm { background: #101e35; border-color: #1e3a5f; }
+        body.dark #dPrintLogForm input[type=number] { background: #0b1628; border-color: #1e3a5f; color: #e2eaf8; }
+        body.dark .btn-cancel { background: #101e35; color: #93c5fd; }
+        body.dark .btn-cancel:hover { background: #1e3a5f; }
+        body.dark .unclaimed-banner { background: rgba(251,146,60,.1); border-color: rgba(251,146,60,.3); }
+        body.dark .print-pill-yes { background: rgba(22,163,74,.15); color: #4ade80; }
+        body.dark .print-pill-no  { background: rgba(100,116,139,.15); color: #94a3b8; }
+
+        /* Flash messages */
+        body.dark .bg-green-50 { background: rgba(22,163,74,.12) !important; }
+        body.dark .border-green-200 { border-color: rgba(22,163,74,.3) !important; }
+        body.dark .text-green-700 { color: #4ade80 !important; }
+        body.dark .bg-red-50 { background: rgba(239,68,68,.12) !important; }
+        body.dark .border-red-200 { border-color: rgba(239,68,68,.3) !important; }
+        body.dark .text-red-700 { color: #f87171 !important; }
+        body.dark .text-red-500 { color: #f87171 !important; }
+
+        /* Auto-refresh indicator */
+        #autoRefreshIndicator { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
 <body class="flex min-h-screen">
@@ -377,9 +464,15 @@ $statusIcons = [
                 <?php endif; ?>
             </p>
         </div>
-        <button onclick="exportCSV()" class="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm flex-shrink-0">
-            <i class="fa-solid fa-file-csv"></i> Export CSV
-        </button>
+        <div class="flex items-center gap-3">
+            <button onclick="toggleDark()" id="darkBtn"
+                class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:border-blue-400 hover:text-blue-600 transition shadow-sm flex-shrink-0">
+                <span id="darkIcon"><i class="fa-regular fa-sun"></i></span>
+            </button>
+            <button onclick="exportCSV()" class="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm flex-shrink-0">
+                <i class="fa-solid fa-file-csv"></i> Export CSV
+            </button>
+        </div>
     </header>
 
     <!-- Stat cards -->
@@ -650,7 +743,6 @@ $statusIcons = [
                                 <span class="text-[10px] text-green-500 font-bold"><?= $start ?> – <?= $end ?></span>
                             </div>
                         </div>
-                        <!-- print pill wrapper — targeted by JS -->
                         <div class="card-print-pill flex-shrink-0">
                             <?php if ($plPrinted === true): ?>
                                 <span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> <?= $plPages ?>pg</span>
@@ -695,16 +787,13 @@ const allCards     = Array.from(document.querySelectorAll('#mobileCardList .res-
 let   curTab       = 'all';
 let   approveTargetId = null, declineTargetId = null;
 
-// ── CSRF: read from meta tags, refreshed after every successful POST ───────
 let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 let csrfName  = document.querySelector('meta[name="csrf-name"]')?.getAttribute('content')  ?? 'csrf_token';
 
-// Call this after every successful JSON response that returns new CSRF values
 function refreshCsrf(data) {
     if (data.csrf_hash && data.csrf_token) {
         csrfToken = data.csrf_hash;
         csrfName  = data.csrf_token;
-        // Also update the meta tags so the approve/decline forms stay fresh
         document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', csrfToken);
         document.querySelector('meta[name="csrf-name"]')?.setAttribute('content', csrfName);
     }
@@ -721,7 +810,22 @@ printLogMap[<?= (int)$resId ?>] = {
 
 let _currentReservationId = null;
 
-// ── FIXED: refreshes CSRF token after save so desktop works without reload ─
+// Dark mode
+function toggleDark() {
+    const isDark = document.body.classList.toggle('dark');
+    const icon = document.getElementById('darkIcon');
+    icon.innerHTML = isDark ? '<i class="fa-regular fa-moon"></i>' : '<i class="fa-regular fa-sun"></i>';
+    localStorage.setItem('admin_theme', isDark ? 'dark' : 'light');
+}
+(function initDark(){
+    if(localStorage.getItem('admin_theme')==='dark'){
+        document.body.classList.add('dark');
+        const icon=document.getElementById('darkIcon');
+        if(icon) icon.innerHTML='<i class="fa-regular fa-moon"></i>';
+    }
+    document.documentElement.classList.remove('dark-pre');
+})();
+
 async function savePrintLog() {
     const rid   = _currentReservationId;
     const pages = parseInt(document.getElementById('printPagesInput').value, 10) || 0;
@@ -733,7 +837,7 @@ async function savePrintLog() {
     msg.textContent = ''; msg.style.color = '';
 
     const body = new FormData();
-    body.append(csrfName, csrfToken);   // always use current (refreshed) token
+    body.append(csrfName, csrfToken);
     body.append('reservation_id', rid);
     body.append('printed', pages > 0 ? 1 : 0);
     body.append('pages', pages);
@@ -744,24 +848,20 @@ async function savePrintLog() {
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body
         });
-
-        // ── Parse response — handle both JSON and unexpected HTML (500/404) ──
         const text = await res.text();
         let data;
         try { data = JSON.parse(text); }
         catch { throw new Error(`Server error (${res.status})`); }
 
         if (data.ok) {
-            // ── Refresh CSRF token so next save works without page reload ──
             refreshCsrf(data);
-
             const now = new Date();
             const fmt = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                       + ' · '
                       + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
             printLogMap[rid] = { printed: pages > 0, pages, at: fmt };
             refreshPrintLogStrip(rid);
-            refreshBothPrintCells(rid, pages);   // updates table row + mobile card
+            refreshBothPrintCells(rid, pages);
             msg.textContent = pages > 0
                 ? `✓ Saved — ${pages} page${pages !== 1 ? 's' : ''} printed`
                 : '✓ Saved — no printing logged';
@@ -800,9 +900,7 @@ function refreshPrintLogStrip(rid) {
     }
 }
 
-// ── FIXED: now updates BOTH desktop table rows AND mobile cards instantly ──
 function refreshBothPrintCells(rid, pages) {
-    // Desktop table — column index 7 = Print column
     allTableRows.forEach(row => {
         if (row.dataset.id == rid) {
             const cell = row.cells[7];
@@ -817,8 +915,6 @@ function refreshBothPrintCells(rid, pages) {
             }
         }
     });
-
-    // Mobile cards — update the .card-print-pill wrapper
     allCards.forEach(card => {
         if (card.dataset.id == rid) {
             const wrapper = card.querySelector('.card-print-pill');
@@ -1006,143 +1102,65 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
 
 applyFilters();
 
-// ── AUTO-REFRESH ────────────────────────────────────────────────────────────
-// Polls the server every 30s. Skips refresh if a modal is open or user is
-// actively typing in search/date fields. Shows a live countdown indicator.
-const AUTO_REFRESH_INTERVAL = 30; // seconds
-let   autoRefreshTimer  = null;
-let   countdownTimer    = null;
-let   secondsLeft       = AUTO_REFRESH_INTERVAL;
-let   refreshPaused     = false;
+// Auto-refresh
+const AUTO_REFRESH_INTERVAL = 30;
+let autoRefreshTimer = null, countdownTimer = null, secondsLeft = AUTO_REFRESH_INTERVAL, refreshPaused = false;
 
 const refreshIndicator = document.createElement('div');
 refreshIndicator.id    = 'autoRefreshIndicator';
-refreshIndicator.style.cssText = `
-    position: fixed; bottom: calc(90px + env(safe-area-inset-bottom,16px)); right: 16px;
-    background: rgba(15,23,42,0.82); backdrop-filter: blur(8px);
-    color: white; font-family: inherit; font-size: 0.7rem; font-weight: 700;
-    padding: 6px 12px; border-radius: 999px; z-index: 90;
-    display: flex; align-items: center; gap: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer;
-    transition: opacity 0.2s;
-`;
+refreshIndicator.style.cssText = `position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,16px));right:16px;background:rgba(15,23,42,0.82);backdrop-filter:blur(8px);color:white;font-family:inherit;font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:999px;z-index:90;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,0.2);cursor:pointer;transition:opacity 0.2s;`;
 refreshIndicator.title = 'Click to refresh now';
 refreshIndicator.innerHTML = `<span id="refreshDot" style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;"></span><span id="refreshCountdown">Refresh in ${AUTO_REFRESH_INTERVAL}s</span>`;
 document.body.appendChild(refreshIndicator);
-
 refreshIndicator.addEventListener('click', () => doAutoRefresh(true));
 
 function updateCountdown() {
-    const el = document.getElementById('refreshCountdown');
-    const dot = document.getElementById('refreshDot');
+    const el = document.getElementById('refreshCountdown'), dot = document.getElementById('refreshDot');
     if (!el) return;
-    if (refreshPaused) {
-        el.textContent = 'Refresh paused';
-        dot.style.background = '#f59e0b';
-    } else {
-        el.textContent = `Refresh in ${secondsLeft}s`;
-        dot.style.background = '#22c55e';
-    }
+    if (refreshPaused) { el.textContent = 'Refresh paused'; dot.style.background = '#f59e0b'; }
+    else { el.textContent = `Refresh in ${secondsLeft}s`; dot.style.background = '#22c55e'; }
 }
-
 function startCountdown() {
-    clearInterval(countdownTimer);
-    secondsLeft = AUTO_REFRESH_INTERVAL;
-    updateCountdown();
-    countdownTimer = setInterval(() => {
-        if (!refreshPaused) {
-            secondsLeft--;
-            if (secondsLeft <= 0) secondsLeft = AUTO_REFRESH_INTERVAL;
-        }
-        updateCountdown();
-    }, 1000);
+    clearInterval(countdownTimer); secondsLeft = AUTO_REFRESH_INTERVAL; updateCountdown();
+    countdownTimer = setInterval(() => { if (!refreshPaused) { secondsLeft--; if (secondsLeft <= 0) secondsLeft = AUTO_REFRESH_INTERVAL; } updateCountdown(); }, 1000);
 }
-
 async function doAutoRefresh(force = false) {
-    // Don't refresh if any modal is open (user is working)
     const anyOpen = document.querySelector('.overlay.open');
     if (anyOpen && !force) return;
-
-    // Don't refresh if user is typing in search/date
-    const search = document.getElementById('searchInput');
-    const date   = document.getElementById('dateInput');
+    const search = document.getElementById('searchInput'), date = document.getElementById('dateInput');
     if (!force && (document.activeElement === search || document.activeElement === date)) return;
-
     try {
-        const dot = document.getElementById('refreshDot');
-        if (dot) { dot.style.background = '#3b82f6'; }
-        const el = document.getElementById('refreshCountdown');
+        const dot = document.getElementById('refreshDot'), el = document.getElementById('refreshCountdown');
+        if (dot) dot.style.background = '#3b82f6';
         if (el) el.textContent = 'Refreshing…';
-
-        const response = await fetch(window.location.href, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
-            credentials: 'same-origin',
-        });
-
+        const response = await fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }, credentials: 'same-origin' });
         if (!response.ok) throw new Error('HTTP ' + response.status);
         const html = await response.text();
-
-        const parser  = new DOMParser();
-        const newDoc  = parser.parseFromString(html, 'text/html');
-
-        // ── Swap table body ──
-        const newTbody = newDoc.querySelector('#tableBody');
-        const oldTbody = document.querySelector('#tableBody');
+        const parser = new DOMParser(), newDoc = parser.parseFromString(html, 'text/html');
+        const newTbody = newDoc.querySelector('#tableBody'), oldTbody = document.querySelector('#tableBody');
         if (newTbody && oldTbody) oldTbody.innerHTML = newTbody.innerHTML;
-
-        // ── Swap mobile card list ──
-        const newCards = newDoc.querySelector('#mobileCardList');
-        const oldCards = document.querySelector('#mobileCardList');
+        const newCards = newDoc.querySelector('#mobileCardList'), oldCards = document.querySelector('#mobileCardList');
         if (newCards && oldCards) oldCards.innerHTML = newCards.innerHTML;
-
-        // ── Update stat card numbers ──
-        newDoc.querySelectorAll('.stat-card').forEach((nc, i) => {
-            const oc = document.querySelectorAll('.stat-card')[i];
-            if (oc) oc.querySelector('p:last-child').textContent = nc.querySelector('p:last-child').textContent;
-        });
-
-        // ── Update pending badge in sidebar ──
-        const newBadge = newDoc.querySelector('.sidebar-item.active .ml-auto');
-        const oldBadge = document.querySelector('.sidebar-item.active .ml-auto');
-        if (newBadge && oldBadge) oldBadge.textContent = newBadge.textContent;
-
-        // ── Re-register row references so filters/print log still work ──
-        allTableRows.length = 0;
-        document.querySelectorAll('#tableBody .res-row').forEach(r => allTableRows.push(r));
-        allCards.length = 0;
-        document.querySelectorAll('#mobileCardList .res-card').forEach(c => allCards.push(c));
-
-        // ── Re-apply current filter so view stays consistent ──
+        newDoc.querySelectorAll('.stat-card').forEach((nc, i) => { const oc = document.querySelectorAll('.stat-card')[i]; if (oc) oc.querySelector('p:last-child').textContent = nc.querySelector('p:last-child').textContent; });
+        allTableRows.length = 0; document.querySelectorAll('#tableBody .res-row').forEach(r => allTableRows.push(r));
+        allCards.length = 0; document.querySelectorAll('#mobileCardList .res-card').forEach(c => allCards.push(c));
         applyFilters();
-
-        secondsLeft = AUTO_REFRESH_INTERVAL;
-        updateCountdown();
+        secondsLeft = AUTO_REFRESH_INTERVAL; updateCountdown();
         if (dot) dot.style.background = '#22c55e';
-
     } catch (err) {
         console.warn('Auto-refresh failed:', err.message);
         const dot = document.getElementById('refreshDot');
-        if (dot) dot.style.background = '#ef4444';
-        setTimeout(() => { if (dot) dot.style.background = '#22c55e'; }, 3000);
+        if (dot) { dot.style.background = '#ef4444'; setTimeout(() => { if(dot) dot.style.background = '#22c55e'; }, 3000); }
     }
 }
 
-// Pause auto-refresh while any modal is open
-const observer = new MutationObserver(() => {
-    refreshPaused = !!document.querySelector('.overlay.open');
-    updateCountdown();
-});
+const observer = new MutationObserver(() => { refreshPaused = !!document.querySelector('.overlay.open'); updateCountdown(); });
 document.querySelectorAll('.overlay').forEach(el => observer.observe(el, { attributes: true, attributeFilter: ['class'] }));
-
-// Pause while typing in search/date
 ['searchInput','dateInput'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
+    const el = document.getElementById(id); if (!el) return;
     el.addEventListener('focus', () => { refreshPaused = true; updateCountdown(); });
     el.addEventListener('blur',  () => { refreshPaused = !!document.querySelector('.overlay.open'); updateCountdown(); });
 });
-
-// Kick everything off
 autoRefreshTimer = setInterval(() => doAutoRefresh(), AUTO_REFRESH_INTERVAL * 1000);
 startCountdown();
 </script>

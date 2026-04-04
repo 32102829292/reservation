@@ -9,11 +9,12 @@
     <meta name="theme-color" content="#2563eb">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>(function(){if(localStorage.getItem('admin_theme')==='dark')document.documentElement.classList.add('dark-pre')})();</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        html.dark-pre body { background: #060e1e; }
 
-        /* ── Sidebar ── */
         .sidebar-card { background: white; border-radius: 32px; border: 1px solid #e2e8f0; height: calc(100vh - 48px); position: sticky; top: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; width: 100%; }
         .sidebar-header { flex-shrink: 0; padding: 20px 20px 16px; border-bottom: 1px solid #f1f5f9; }
         .sidebar-nav    { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; }
@@ -23,28 +24,23 @@
         .sidebar-item   { transition: all 0.18s; }
         .sidebar-item.active { background: #2563eb; color: white !important; box-shadow: 0 8px 20px -4px rgba(37,99,235,0.35); }
 
-        /* ── Mobile Nav ── */
         .mobile-nav-pill { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
         .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .mobile-scroll-container::-webkit-scrollbar { display: none; }
 
-        /* ── Badges ── */
         .badge { display: inline-flex; align-items: center; gap: 5px; padding: 0.28rem 0.65rem; border-radius: 10px; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
         .badge-pending  { background: #fef3c7; color: #92400e; }
         .badge-approved { background: #dcfce7; color: #166534; }
         .badge-rejected { background: #fee2e2; color: #991b1b; }
 
-        /* ── Stat cards ── */
         .stat-card { background: white; border-radius: 20px; padding: 1rem 1.15rem; border: 1px solid #e2e8f0; border-left-width: 4px; transition: all 0.2s; cursor: pointer; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); }
         .stat-card.ring-active { box-shadow: 0 0 0 2px #2563eb; }
 
-        /* ── Quick tabs ── */
         .qtab { display: inline-flex; align-items: center; gap: 6px; padding: 0.45rem 0.9rem; border-radius: 12px; font-size: 0.78rem; font-weight: 700; cursor: pointer; border: 1.5px solid #e2e8f0; color: #64748b; background: white; transition: all 0.18s; white-space: nowrap; font-family: inherit; }
         .qtab:hover  { border-color: #2563eb; color: #2563eb; }
         .qtab.active { background: #2563eb; color: white; border-color: #2563eb; box-shadow: 0 4px 12px -2px rgba(37,99,235,0.3); }
 
-        /* ── Desktop table ── */
         .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .table-wrap::-webkit-scrollbar { height: 4px; }
         .table-wrap::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
@@ -55,11 +51,9 @@
         tbody tr { transition: background 0.12s; }
         tbody tr:hover td { background: #eff6ff; }
 
-        /* ── Field ── */
         .field { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.7rem 1rem 0.7rem 2.5rem; font-size: 0.875rem; font-family: inherit; color: #1e293b; transition: all 0.2s; width: 100%; }
         .field:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
-        /* ── Modals — bottom-sheet on mobile, centered on sm+ ── */
         .overlay { display: none; position: fixed; inset: 0; z-index: 200; align-items: flex-end; justify-content: center; padding: 0; }
         @media (min-width: 640px) { .overlay { align-items: center; padding: 12px; } }
         .overlay.open { display: flex; }
@@ -79,14 +73,12 @@
         .modal-box::-webkit-scrollbar { width: 4px; }
         .modal-box::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
 
-        /* ── Detail rows ── */
         .drow  { display: flex; align-items: flex-start; gap: 12px; padding: 0.65rem 0; border-bottom: 1px solid #f1f5f9; }
         .drow:last-child { border-bottom: none; }
         .dicon { width: 34px; height: 34px; border-radius: 12px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; flex-shrink: 0; }
         .dlabel { font-size: 0.67rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 2px; }
         .dvalue { font-size: 0.88rem; font-weight: 700; color: #1e293b; break-all: break-all; }
 
-        /* ── Buttons ── */
         .btn-ghost    { background: #f1f5f9; color: #475569; border: none; border-radius: 10px; padding: 0.45rem 0.8rem; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.18s; display: inline-flex; align-items: center; gap: 4px; font-family: inherit; }
         .btn-ghost:hover { background: #e2e8f0; }
         .btn-approve  { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; border-radius: 10px; padding: 0.45rem 0.8rem; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.18s; display: inline-flex; align-items: center; gap: 4px; font-family: inherit; }
@@ -105,10 +97,79 @@
 
         .sk-avatar { width: 36px; height: 36px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.88rem; flex-shrink: 0; }
 
-        /* ── Mobile SK card ── */
         .sk-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 1rem 1.1rem; transition: box-shadow 0.15s, border-color 0.15s; cursor: pointer; }
         .sk-card:hover { box-shadow: 0 6px 20px -4px rgba(0,0,0,0.08); border-color: #bfdbfe; }
         .sk-card:active { background: #f0f7ff; }
+
+        /* ══════════════════════════════════════
+           DARK MODE
+        ══════════════════════════════════════ */
+        body.dark { background: #060e1e; color: #e2eaf8; }
+
+        body.dark .sidebar-card { background: #0b1628; border-color: rgba(37,99,235,.12); }
+        body.dark .sidebar-header,
+        body.dark .sidebar-footer { border-color: rgba(37,99,235,.1); }
+        body.dark .sidebar-item:not(.active) { color: #93c5fd; }
+        body.dark .sidebar-item:not(.active):hover { background: rgba(37,99,235,.1); color: #bfdbfe; }
+        body.dark .text-slate-800,
+        body.dark .text-slate-900 { color: #e2eaf8 !important; }
+        body.dark .text-blue-600 { color: #60a5fa !important; }
+        body.dark .text-slate-400 { color: #4a6fa5 !important; }
+        body.dark .text-slate-500 { color: #64748b !important; }
+        body.dark .text-red-500 { color: #f87171 !important; }
+
+        /* Stat cards */
+        body.dark .stat-card { background: #0b1628; border-color: #1e3a5f; }
+
+        /* Filter */
+        body.dark .bg-white { background: #0b1628 !important; }
+        body.dark .border-slate-200 { border-color: #1e3a5f !important; }
+        body.dark .field { background: #101e35; border-color: #1e3a5f; color: #e2eaf8; }
+        body.dark .field:focus { border-color: #2563eb; }
+
+        /* Tabs */
+        body.dark .qtab { background: #0b1628; border-color: #1e3a5f; color: #93c5fd; }
+        body.dark .qtab:hover { border-color: #2563eb; color: #60a5fa; }
+        body.dark .qtab.active { background: #2563eb; border-color: #2563eb; color: white; }
+
+        /* Table */
+        body.dark thead th { background: #101e35 !important; color: #4a6fa5 !important; border-color: #1e3a5f !important; }
+        body.dark td { border-color: #1e3a5f; color: #e2eaf8; }
+        body.dark tbody tr:hover td { background: #101e35 !important; }
+        body.dark .text-slate-700 { color: #cbd5e1 !important; }
+
+        /* Dark badges */
+        body.dark .badge-pending  { background: rgba(251,191,36,.15); color: #fbbf24; }
+        body.dark .badge-approved { background: rgba(34,197,94,.15);  color: #4ade80; }
+        body.dark .badge-rejected { background: rgba(239,68,68,.15);  color: #f87171; }
+
+        /* Mobile SK cards */
+        body.dark .sk-card { background: #0b1628; border-color: #1e3a5f; }
+        body.dark .sk-card:hover { border-color: #2563eb; }
+        body.dark .sk-card:active { background: rgba(37,99,235,.08); }
+
+        /* Modals */
+        body.dark .modal-box { background: #0b1628; }
+        body.dark .modal-box::-webkit-scrollbar-thumb { background: #1e3a5f; }
+        body.dark .drow { border-color: #1e3a5f; }
+        body.dark .dvalue { color: #e2eaf8; }
+        body.dark .dicon { background: rgba(37,99,235,.12); color: #60a5fa; }
+        body.dark #dHero { background: #101e35 !important; border-color: #1e3a5f !important; }
+        body.dark #dHero p { color: #e2eaf8 !important; }
+        body.dark #dHero p.text-xs { color: #4a6fa5 !important; }
+        body.dark .btn-cancel-lg { background: #101e35; color: #93c5fd; }
+        body.dark .btn-cancel-lg:hover { background: #1e3a5f; }
+        body.dark .btn-ghost { background: #101e35; color: #93c5fd; }
+        body.dark .btn-ghost:hover { background: #1e3a5f; }
+
+        /* Pending banner */
+        body.dark .bg-amber-50 { background: rgba(251,191,36,.1) !important; }
+        body.dark .border-amber-200 { border-color: rgba(251,191,36,.3) !important; }
+        body.dark .text-amber-700 { color: #fbbf24 !important; }
+
+        /* Result count */
+        body.dark #resultCount { color: #4a6fa5; }
+        body.dark #tableFooter { color: #4a6fa5; }
     </style>
 </head>
 <body class="flex min-h-screen">
@@ -150,11 +211,10 @@
     $sIcon = ['pending'=>'fa-clock','approved'=>'fa-check','rejected'=>'fa-xmark'];
     ?>
 
-    <!-- Hidden forms -->
     <form id="approveForm" method="POST" action="/admin/approve-sk" style="display:none"><?= csrf_field() ?><input type="hidden" name="id" id="approveId"></form>
     <form id="rejectForm"  method="POST" action="/admin/reject-sk"  style="display:none"><?= csrf_field() ?><input type="hidden" name="id" id="rejectId"></form>
 
-    <!-- ══ DETAIL MODAL ══ -->
+    <!-- DETAIL MODAL -->
     <div id="detailModal" class="overlay" role="dialog" aria-modal="true">
         <div class="overlay-bg" onclick="closeModal('detail')"></div>
         <div class="modal-box">
@@ -268,15 +328,21 @@
                 <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">SK Accounts</h2>
                 <p class="text-slate-400 font-medium text-sm mt-0.5">Manage Sangguniang Kabataan registrations</p>
             </div>
-            <?php if ($pCount > 0): ?>
-                <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2.5 rounded-2xl font-bold text-sm flex-shrink-0">
-                    <i class="fa-solid fa-clock text-xs"></i>
-                    <?= $pCount ?> pending approval<?= $pCount > 1 ? 's' : '' ?>
-                </div>
-            <?php endif; ?>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleDark()" id="darkBtn"
+                    class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:border-blue-400 hover:text-blue-600 transition shadow-sm flex-shrink-0">
+                    <span id="darkIcon"><i class="fa-regular fa-sun"></i></span>
+                </button>
+                <?php if ($pCount > 0): ?>
+                    <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2.5 rounded-2xl font-bold text-sm flex-shrink-0">
+                        <i class="fa-solid fa-clock text-xs"></i>
+                        <?= $pCount ?> pending approval<?= $pCount > 1 ? 's' : '' ?>
+                    </div>
+                <?php endif; ?>
+            </div>
         </header>
 
-        <!-- Stat cards: 2 → 4 (sm) -->
+        <!-- Stat cards -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
             <?php foreach ([
                 ['Total',    $total,  'border-blue-400',    'text-slate-700',   'fa-users',      'all'],
@@ -310,7 +376,7 @@
 
         <p id="resultCount" class="text-xs font-bold text-slate-400 px-1 mb-4"></p>
 
-        <!-- ══ DESKTOP TABLE (md+) ══ -->
+        <!-- DESKTOP TABLE -->
         <div class="hidden md:block bg-white border border-slate-200 rounded-[28px] shadow-sm overflow-hidden">
             <div class="table-wrap">
                 <table>
@@ -385,7 +451,7 @@
             </div>
         </div>
 
-        <!-- ══ MOBILE CARDS (< md) ══ -->
+        <!-- MOBILE CARDS -->
         <div class="md:hidden space-y-3" id="mobileCardList">
             <?php if (empty($allMerged)): ?>
                 <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm py-16 text-center">
@@ -409,8 +475,6 @@
                          data-status="<?= $s ?>"
                          data-search="<?= strtolower("$name $email") ?>"
                          onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
-
-                        <!-- Top: avatar + name + badge -->
                         <div class="flex items-center gap-3 mb-2">
                             <div class="sk-avatar <?= $colStr ?>"><?= $init ?></div>
                             <div class="flex-1 min-w-0">
@@ -421,13 +485,9 @@
                                 <i class="fa-solid <?= $sIcon[$s] ?? 'fa-circle' ?> text-[9px]"></i> <?= ucfirst($s) ?>
                             </span>
                         </div>
-
-                        <!-- Applied date -->
                         <p class="text-xs text-slate-400 font-semibold mb-3">
                             <i class="fa-regular fa-calendar text-[10px] mr-1"></i>Applied <?= $date ?>
                         </p>
-
-                        <!-- Pending actions -->
                         <?php if ($s === 'pending'): ?>
                             <div class="flex gap-2 pt-2.5 border-t border-slate-100" onclick="event.stopPropagation()">
                                 <button onclick="triggerApprove(<?= $sk['id'] ?>,'<?= addslashes($name) ?>')"
@@ -463,7 +523,22 @@
     const allTableRows   = Array.from(document.querySelectorAll('.sk-row'));
     const allMobileCards = Array.from(document.querySelectorAll('.mobile-sk-card'));
 
-    /* ── Tabs ── */
+    // Dark mode
+    function toggleDark() {
+        const isDark = document.body.classList.toggle('dark');
+        const icon = document.getElementById('darkIcon');
+        icon.innerHTML = isDark ? '<i class="fa-regular fa-moon"></i>' : '<i class="fa-regular fa-sun"></i>';
+        localStorage.setItem('admin_theme', isDark ? 'dark' : 'light');
+    }
+    (function initDark(){
+        if(localStorage.getItem('admin_theme')==='dark'){
+            document.body.classList.add('dark');
+            const icon=document.getElementById('darkIcon');
+            if(icon) icon.innerHTML='<i class="fa-regular fa-moon"></i>';
+        }
+        document.documentElement.classList.remove('dark-pre');
+    })();
+
     function switchToTab(tab) {
         curTab = tab;
         document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
@@ -490,7 +565,6 @@
         const mnr = document.getElementById('mobileNoResults'); if (mnr) mnr.classList.toggle('hidden', m > 0 || allMobileCards.length === 0);
     }
 
-    /* ── Detail modal ── */
     const STATUS_META = {
         pending:  { icon:'fa-clock',      bg:'#fef3c7', color:'#92400e', label:'Pending — Awaiting review' },
         approved: { icon:'fa-user-check', bg:'#dcfce7', color:'#166534', label:'Approved — Portal access granted' },
@@ -524,7 +598,6 @@
         document.body.style.overflow = 'hidden';
     }
 
-    /* ── Approve / Reject ── */
     function triggerApprove(id, name) { approveTargetId = id; document.getElementById('approveConfirmName').textContent = name ? `"${name}"` : ''; openModal('approve'); }
     function triggerReject(id, name)  { rejectTargetId  = id; document.getElementById('rejectConfirmName').textContent  = name ? `"${name}"` : ''; openModal('reject');  }
     function submitApprove() {
@@ -536,7 +609,6 @@
         document.getElementById('rejectId').value = rejectTargetId; document.getElementById('rejectForm').submit();
     }
 
-    /* ── Modal helpers ── */
     const overlayIds = { detail:'detailModal', approve:'approveModal', reject:'rejectModal' };
     function openModal(key)  { const el = document.getElementById(overlayIds[key]); if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; } }
     function closeModal(key) { const el = document.getElementById(overlayIds[key]); if (el) { el.classList.remove('open'); document.body.style.overflow = ''; } }
