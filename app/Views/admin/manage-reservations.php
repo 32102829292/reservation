@@ -17,211 +17,266 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
     <meta name="csrf-name"  content="<?= csrf_token() ?>">
     <script>(function(){if(localStorage.getItem('admin_theme')==='dark')document.documentElement.classList.add('dark-pre')})();</script>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; }
-        html.dark-pre body { background: #060e1e; }
-
-        .sidebar-card { background: white; border-radius: 32px; border: 1px solid #e2e8f0; height: calc(100vh - 48px); position: sticky; top: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
-        .sidebar-header { flex-shrink: 0; padding: 20px 20px 16px; border-bottom: 1px solid #f1f5f9; }
-        .sidebar-nav    { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; }
-        .sidebar-nav::-webkit-scrollbar { width: 4px; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
-        .sidebar-footer { flex-shrink: 0; padding: 16px; border-top: 1px solid #f1f5f9; }
-        .sidebar-item   { transition: all 0.18s; }
-        .sidebar-item.active { background: #2563eb; color: white !important; box-shadow: 0 8px 20px -4px rgba(37,99,235,0.35); }
-
-        .mobile-nav-pill { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); border-radius: 24px; padding: 6px; z-index: 100; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
-        .mobile-scroll-container { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .mobile-scroll-container::-webkit-scrollbar { display: none; }
-
-        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table  { width: 100%; border-collapse: collapse; min-width: 700px; }
-        thead th { background: #f8fafc; font-weight: 800; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.12em; color: #94a3b8; padding: 0.9rem 1rem; border-bottom: 1px solid #e2e8f0; white-space: nowrap; cursor: pointer; user-select: none; }
-        thead th:hover { color: #16a34a; }
-        thead th .sort-icon { opacity: 0.35; margin-left: 4px; font-size: 0.6rem; }
-        thead th.sorted .sort-icon { opacity: 1; color: #16a34a; }
-        td { padding: 0.875rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr { transition: background 0.12s; cursor: pointer; }
-        tbody tr:hover td { background: #f0fdf4; }
-
-        .res-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 1rem 1.1rem; cursor: pointer; transition: all 0.18s; position: relative; overflow: hidden; }
-        .res-card:hover, .res-card:active { border-color: #bbf7d0; box-shadow: 0 6px 20px -4px rgba(22,163,74,0.15); transform: translateY(-1px); }
-        .res-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 0 4px 4px 0; }
-        .res-card[data-status="pending"]::before   { background: #fbbf24; }
-        .res-card[data-status="approved"]::before  { background: #22c55e; }
-        .res-card[data-status="claimed"]::before   { background: #a855f7; }
-        .res-card[data-status="declined"]::before,
-        .res-card[data-status="canceled"]::before  { background: #ef4444; }
-        .res-card[data-status="unclaimed"]::before { background: #fb923c; }
-        .res-card[data-status="expired"]::before   { background: #94a3b8; }
-
-        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 0.3rem 0.75rem; border-radius: 10px; font-size: 0.67rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
-        .badge-pending   { background: #fef3c7; color: #92400e; }
-        .badge-approved  { background: #dcfce7; color: #166534; }
-        .badge-declined, .badge-canceled { background: #fee2e2; color: #991b1b; }
-        .badge-claimed   { background: #f3e8ff; color: #6b21a8; }
-        .badge-expired   { background: #f1f5f9; color: #64748b; }
-        .badge-unclaimed { background: #fff7ed; color: #c2410c; border: 1px dashed #fdba74; }
-
-        .stat-card { background: white; border-radius: 20px; padding: 1.1rem 1.25rem; border: 1px solid #e2e8f0; border-left-width: 4px; transition: all 0.2s; cursor: pointer; }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); }
-        .stat-card.ring { box-shadow: 0 0 0 2px #16a34a; }
-
-        .qtab { display: inline-flex; align-items: center; gap: 6px; padding: 0.45rem 1rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; transition: all 0.18s; cursor: pointer; border: 1px solid #e2e8f0; white-space: nowrap; color: #64748b; background: white; }
-        .qtab:hover  { border-color: #16a34a; color: #16a34a; }
-        .qtab.active { background: #2563eb; color: white; border-color: #2563eb; box-shadow: 0 4px 12px -2px rgba(37,99,235,0.3); }
-
-        .field { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.7rem 1rem 0.7rem 2.5rem; font-size: 0.875rem; font-family: inherit; color: #1e293b; transition: all 0.2s; width: 100%; }
-        .field:focus { outline: none; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
-
-        .overlay { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; }
-        .overlay.open { display: flex; }
-        .overlay-bg { position: absolute; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(6px); }
-        .modal-box { position: relative; margin: auto; background: white; border-radius: 32px; width: 94%; max-width: 520px; max-height: 92vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); animation: popIn 0.22s cubic-bezier(0.34,1.56,0.64,1) both; }
-        .modal-box.sm { max-width: 380px; }
-        .sheet-handle { display: none; width: 40px; height: 4px; background: #e2e8f0; border-radius: 9999px; margin: 10px auto 0; }
-
-        @media (max-width: 639px) {
-            .overlay#detailModal { align-items: flex-end; }
-            .overlay#detailModal .modal-box { margin: 0; width: 100%; max-width: 100%; border-radius: 28px 28px 0 0; max-height: 92vh; animation: slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1) both; }
-            .sheet-handle { display: block; }
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+        :root{
+            --bg:#f0f2f9;--card:#fff;--brd:rgba(99,102,241,.1);--brd2:rgba(99,102,241,.07);
+            --text:#0f172a;--muted:#94a3b8;--muted2:#64748b;
+            --indigo:#3730a3;--indigo-mid:#4338ca;--indigo-light:#eef2ff;--indigo-brd:#c7d2fe;
+            --green:#16a34a;--green-bg:#dcfce7;--amber:#d97706;--amber-bg:#fef3c7;
+            --purple:#7c3aed;--purple-bg:#ede9fe;--red:#dc2626;--red-bg:#fee2e2;
+            --orange:#c2410c;--orange-bg:#fff7ed;
+            --sidebar-w:268px;--r:20px;--r-md:14px;--r-sm:10px;
+            --font:'Plus Jakarta Sans',system-ui,sans-serif;
+            --shadow-sm:0 1px 4px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);
+            --shadow-md:0 4px 16px rgba(15,23,42,.09),0 2px 4px rgba(15,23,42,.04);
+            --mob-nav-h:60px;
         }
+        html.dark-pre body{background:#060e1e}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;min-height:100vh;-webkit-font-smoothing:antialiased}
 
-        @keyframes popIn    { from { opacity:0; transform:scale(0.92) translateY(16px); } to { opacity:1; transform:none; } }
-        @keyframes slideUp  { from { opacity:0; transform:translateY(60px); }            to { opacity:1; transform:none; } }
+        /* ── Sidebar ── */
+        .sidebar{width:var(--sidebar-w);flex-shrink:0;padding:18px 14px;height:100vh;position:sticky;top:0;overflow-y:auto}
+        .sidebar::-webkit-scrollbar{display:none}
+        .sidebar-inner{background:var(--card);border-radius:24px;border:1px solid var(--brd);height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-md)}
+        .sb-top{padding:20px 18px 16px;border-bottom:1px solid var(--brd2)}
+        .brand-tag{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+        .brand-name{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.03em}
+        .brand-name em{font-style:normal;color:var(--indigo-mid)}
+        .user-card{margin:12px 12px 0;background:var(--indigo-light);border-radius:var(--r-md);padding:12px 14px;border:1px solid var(--indigo-brd);display:flex;align-items:center;gap:9px}
+        .user-av{width:34px;height:34px;border-radius:50%;background:var(--indigo);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;box-shadow:0 2px 8px rgba(55,48,163,.3)}
+        .user-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .user-role{font-size:11px;color:#6366f1;font-weight:500;margin-top:1px}
+        .sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px;display:flex;flex-direction:column;gap:3px}
+        .sb-nav::-webkit-scrollbar{display:none}
+        .nav-sec-lbl{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:10px 10px 5px}
+        .nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:13px;font-weight:600;color:var(--muted2);text-decoration:none;transition:all .18s}
+        .nav-link:hover{background:var(--indigo-light);color:var(--indigo)}
+        .nav-link.active{background:var(--indigo);color:#fff;box-shadow:0 4px 14px rgba(55,48,163,.32)}
+        .nav-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;background:#f1f5f9}
+        .nav-link:not(.active):hover .nav-icon{background:var(--indigo-light)}
+        .nav-link.active .nav-icon{background:rgba(255,255,255,.15)}
+        .nav-badge{margin-left:auto;background:rgba(245,158,11,.18);color:#d97706;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
+        .nav-link.active .nav-badge{background:rgba(255,255,255,.22);color:#fff}
+        .sb-footer{padding:10px 10px 12px;border-top:1px solid var(--brd2)}
+        .logout-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:all .18s}
+        .logout-link:hover{background:var(--red-bg);color:var(--red)}
+        .logout-link:hover .nav-icon{background:var(--red-bg)}
 
-        .drow  { display: flex; align-items: flex-start; gap: 12px; padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9; }
-        .drow:last-child { border-bottom: none; }
-        .dicon { width: 36px; height: 36px; border-radius: 12px; background: #f0fdf4; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
-        .dlabel { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 3px; }
-        .dvalue { font-size: 0.9rem; font-weight: 700; color: #1e293b; }
+        /* ── Mobile Nav ── */
+        .mobile-nav-pill{display:none;position:fixed;bottom:0;left:0;right:0;width:100%;background:var(--card);border-top:1px solid var(--brd);height:calc(var(--mob-nav-h) + env(safe-area-inset-bottom,0px));z-index:200;box-shadow:0 -4px 20px rgba(55,48,163,.1)}
+        .mob-scroll{display:flex;justify-content:space-evenly;align-items:center;height:var(--mob-nav-h);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 4px}
+        .mob-scroll::-webkit-scrollbar{display:none}
+        .mob-item{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 10px;border-radius:12px;cursor:pointer;text-decoration:none;color:var(--muted2);font-size:10px;font-weight:700;gap:2px;transition:all .15s}
+        .mob-item:hover,.mob-item.active{background:var(--indigo-light);color:var(--indigo)}
+        .mob-item.active::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:var(--indigo);border-radius:50%}
+        .mob-item{position:relative}
+        @media(max-width:1023px){.sidebar{display:none!important}.mobile-nav-pill{display:flex!important}.main{padding-bottom:calc(var(--mob-nav-h) + 16px)!important}}
+        @media(min-width:1024px){.mobile-nav-pill{display:none!important}}
 
-        .btn-confirm-approve { background: #16a34a; color: white; border: none; border-radius: 14px; padding: 0.85rem; font-size: 0.875rem; font-weight: 800; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: inherit; flex: 1; }
-        .btn-confirm-approve:hover:not(:disabled) { background: #15803d; }
-        .btn-confirm-decline { background: #ef4444; color: white; border: none; border-radius: 14px; padding: 0.85rem; font-size: 0.875rem; font-weight: 800; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: inherit; flex: 1; }
-        .btn-confirm-decline:hover:not(:disabled) { background: #dc2626; }
-        .btn-cancel { background: #f1f5f9; color: #475569; border: none; border-radius: 14px; padding: 0.85rem; font-size: 0.875rem; font-weight: 800; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: inherit; flex: 1; }
-        .btn-cancel:hover { background: #e2e8f0; }
+        /* ── Main ── */
+        .main{flex:1;min-width:0;padding:24px 28px 48px;overflow-x:hidden}
+        @media(max-width:639px){.main{padding:14px 12px 0}}
 
-        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
-        .fade-up { animation: fadeUp 0.35s ease both; }
-        .ticket-section { border: 2px dashed #bbf7d0; border-radius: 24px; padding: 1.5rem; background: #f0fdf4; display: flex; flex-direction: column; align-items: center; }
-        .empty-state { padding: 5rem 2rem; text-align: center; }
-        .print-pill-yes { display: inline-flex; align-items: center; gap: 4px; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.66rem; font-weight: 800; background: #f0fdf4; color: #15803d; white-space: nowrap; }
-        .print-pill-no  { display: inline-flex; align-items: center; gap: 4px; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.66rem; font-weight: 800; background: #f1f5f9; color: #64748b; white-space: nowrap; }
-        #dPrintLogForm { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.1rem 1.25rem; margin: 0 1.75rem 1rem; }
-        #dPrintLogForm label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; display: block; margin-bottom: 6px; }
-        #dPrintLogForm input[type=number] { width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.55rem 0.8rem; font-size: 0.875rem; font-family: inherit; color: #1e293b; }
-        #dPrintLogForm input[type=number]:focus { outline: none; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
-        .btn-save-print { background: #16a34a; color: white; border: none; border-radius: 12px; padding: 0.65rem 1.25rem; font-size: 0.8rem; font-weight: 800; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 6px; font-family: inherit; white-space: nowrap; }
-        .btn-save-print:hover:not(:disabled) { background: #15803d; }
-        .btn-save-print:disabled { opacity: 0.6; cursor: not-allowed; }
-        #printSaveMsg { font-size: 0.75rem; font-weight: 700; margin-top: 6px; min-height: 18px; }
-        .card-empty { padding: 3rem 1.5rem; text-align: center; background: white; border-radius: 20px; border: 1px dashed #e2e8f0; }
-        .unclaimed-banner { background: #fff7ed; border: 1.5px dashed #fdba74; border-radius: 16px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 10px; margin: 0 1.75rem 1rem; }
-        .unclaimed-banner .ub-icon { width: 34px; height: 34px; background: #fed7aa; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #c2410c; font-size: 0.85rem; flex-shrink: 0; }
+        /* ── Topbar ── */
+        .topbar{display:flex;flex-direction:column;gap:3px;margin-bottom:24px}
+        .topbar-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+        .eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+        .page-title{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.04em}
+        .page-sub{font-size:12px;color:var(--muted);margin-top:3px}
+        .topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .icon-btn{width:42px;height:42px;background:var(--card);border:1px solid var(--brd);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--muted2);cursor:pointer;transition:all .15s;font-size:15px;border:none}
+        .icon-btn:hover{background:var(--indigo-light);color:var(--indigo)}
+        .btn-export{display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--indigo);color:#fff;border-radius:var(--r-sm);font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:var(--font);transition:all .15s;box-shadow:0 4px 12px rgba(55,48,163,.28)}
+        .btn-export:hover{background:#312e81}
 
-        /* ══════════════════════════════════════
-           DARK MODE
-        ══════════════════════════════════════ */
-        body.dark { background: #060e1e; color: #e2eaf8; }
+        /* ── Stat cards ── */
+        .stats-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px}
+        @media(max-width:900px){.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+        @media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        .stat-card{background:var(--card);border:1px solid var(--brd);border-left-width:4px;border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:transform .15s,box-shadow .15s}
+        .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+        .stat-card.ring{box-shadow:0 0 0 2px var(--indigo)}
+        .stat-lbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+        .stat-num{font-size:1.8rem;font-weight:800;line-height:1;letter-spacing:-.04em}
 
-        /* Sidebar */
-        body.dark .sidebar-card { background: #0b1628; border-color: rgba(37,99,235,.12); }
-        body.dark .sidebar-header,
-        body.dark .sidebar-footer { border-color: rgba(37,99,235,.1); }
-        body.dark .sidebar-item:not(.active) { color: #93c5fd; }
-        body.dark .sidebar-item:not(.active):hover { background: rgba(37,99,235,.1); color: #bfdbfe; }
-        body.dark .text-slate-800 { color: #e2eaf8 !important; }
-        body.dark .text-blue-600 { color: #60a5fa !important; }
+        /* ── Filter bar ── */
+        .filter-bar{background:var(--card);border:1px solid var(--brd);border-radius:24px;padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+        .field{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:9px 14px 9px 36px;font-size:13px;font-family:var(--font);color:var(--text);width:100%;transition:all .2s;outline:none}
+        .field:focus{border-color:var(--indigo-mid);box-shadow:0 0 0 3px rgba(67,56,202,.1)}
+        .field-plain{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:9px 14px 9px 36px;font-size:13px;font-family:var(--font);color:var(--text);width:100%;transition:all .2s;outline:none}
+        .field-plain:focus{border-color:var(--indigo-mid);box-shadow:0 0 0 3px rgba(67,56,202,.1)}
+        .qtab{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--brd);color:var(--muted2);background:var(--card);transition:all .15s;white-space:nowrap;font-family:var(--font)}
+        .qtab:hover{border-color:var(--indigo);color:var(--indigo)}
+        .qtab.active{background:var(--indigo);color:#fff;border-color:var(--indigo);box-shadow:0 4px 12px rgba(55,48,163,.3)}
+        .btn-reset{padding:9px 14px;background:#f1f5f9;color:var(--muted2);border-radius:12px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:var(--font);transition:all .15s;display:flex;align-items:center;gap:6px;flex-shrink:0}
+        .btn-reset:hover{background:var(--indigo-light);color:var(--indigo)}
 
-        /* Main area whites */
-        body.dark .bg-white { background: #0b1628 !important; }
-        body.dark .border-slate-200 { border-color: #1e3a5f !important; }
-        body.dark .border-slate-100 { border-color: rgba(37,99,235,.08) !important; }
-        body.dark .text-slate-900 { color: #e2eaf8 !important; }
-        body.dark .text-slate-700 { color: #cbd5e1 !important; }
-        body.dark .text-slate-600 { color: #93a3b8 !important; }
-        body.dark .text-slate-500 { color: #64748b !important; }
-        body.dark .text-slate-400 { color: #4a6fa5 !important; }
-        body.dark .text-slate-300 { color: #1e3a5f !important; }
+        /* ── Table ── */
+        .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+        .table-wrap::-webkit-scrollbar{height:4px}
+        .table-wrap::-webkit-scrollbar-thumb{background:var(--brd);border-radius:4px}
+        table{width:100%;border-collapse:collapse;min-width:700px}
+        thead th{background:#f8fafc;font-weight:800;text-transform:uppercase;font-size:10px;letter-spacing:.12em;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--brd);white-space:nowrap;cursor:pointer;user-select:none}
+        thead th:hover{color:var(--indigo)}
+        thead th .sort-icon{opacity:.35;margin-left:4px;font-size:9px}
+        thead th.sorted .sort-icon{opacity:1;color:var(--indigo)}
+        td{padding:12px 14px;border-bottom:1px solid var(--brd2);vertical-align:middle}
+        tbody tr:last-child td{border-bottom:none}
+        tbody tr{transition:background .12s;cursor:pointer}
+        tbody tr:hover td{background:var(--indigo-light)}
 
-        /* Stat cards */
-        body.dark .stat-card { background: #0b1628; border-color: #1e3a5f; }
+        /* ── Badges ── */
+        .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:10px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+        .badge-pending{background:var(--amber-bg);color:var(--amber)}
+        .badge-approved{background:var(--green-bg);color:var(--green)}
+        .badge-declined,.badge-canceled{background:var(--red-bg);color:var(--red)}
+        .badge-claimed{background:var(--purple-bg);color:var(--purple)}
+        .badge-expired{background:#f1f5f9;color:var(--muted2)}
+        .badge-unclaimed{background:var(--orange-bg);color:var(--orange);border:1px dashed #fdba74}
 
-        /* Tabs */
-        body.dark .qtab { background: #0b1628; border-color: #1e3a5f; color: #93c5fd; }
-        body.dark .qtab:hover { border-color: #2563eb; color: #60a5fa; }
-        body.dark .qtab.active { background: #2563eb; border-color: #2563eb; color: white; }
+        /* ── Action buttons ── */
+        .btn-approve-sm{background:var(--green-bg);color:var(--green);border:1px solid #86efac;border-radius:9px;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font);transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+        .btn-approve-sm:hover{background:#bbf7d0}
+        .btn-decline-sm{background:var(--red-bg);color:var(--red);border:1px solid #fca5a5;border-radius:9px;padding:6px 8px;font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font);transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+        .btn-decline-sm:hover{background:#fecaca}
+        .print-pill-yes{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;background:var(--green-bg);color:var(--green)}
+        .print-pill-no{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;background:#f1f5f9;color:var(--muted2)}
 
-        /* Filter inputs */
-        body.dark .field { background: #101e35; border-color: #1e3a5f; color: #e2eaf8; }
-        body.dark .field:focus { border-color: #16a34a; }
-        body.dark .bg-slate-50\/40 { background: rgba(15,23,42,.5) !important; }
+        /* ── Mobile cards ── */
+        .res-card{background:var(--card);border-radius:var(--r);border:1px solid var(--brd);padding:14px 16px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+        .res-card:hover{border-color:var(--indigo-brd);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+        .res-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:0 4px 4px 0}
+        .res-card[data-status="pending"]::before{background:#fbbf24}
+        .res-card[data-status="approved"]::before{background:#10b981}
+        .res-card[data-status="claimed"]::before{background:#a855f7}
+        .res-card[data-status="declined"]::before,.res-card[data-status="canceled"]::before{background:#ef4444}
+        .res-card[data-status="unclaimed"]::before{background:#fb923c}
+        .res-card[data-status="expired"]::before{background:#94a3b8}
 
-        /* Table */
-        body.dark thead th { background: #101e35 !important; color: #4a6fa5 !important; border-color: #1e3a5f !important; }
-        body.dark thead th:hover { color: #34d399 !important; }
-        body.dark td { border-color: #1e3a5f; color: #e2eaf8; }
-        body.dark tbody tr:hover td { background: #101e35 !important; }
-        body.dark .bg-slate-50\/60 { background: rgba(16,30,53,.8) !important; }
+        /* ── Overlays ── */
+        .overlay{display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center}
+        .overlay.open{display:flex}
+        .overlay-bg{position:absolute;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(6px)}
+        .modal-box{position:relative;margin:auto;background:var(--card);border-radius:28px;width:94%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,.35);animation:popIn .22s cubic-bezier(.34,1.56,.64,1) both}
+        .modal-box.sm{max-width:380px}
+        .sheet-handle{display:none;width:40px;height:4px;background:var(--brd);border-radius:999px;margin:10px auto 0}
+        @media(max-width:639px){
+            .overlay#detailModal{align-items:flex-end}
+            .overlay#detailModal .modal-box{margin:0;width:100%;max-width:100%;border-radius:28px 28px 0 0;max-height:92vh;animation:slideUp .28s cubic-bezier(.34,1.2,.64,1) both}
+            .sheet-handle{display:block}
+        }
+        @keyframes popIn{from{opacity:0;transform:scale(.92) translateY(16px)}to{opacity:1;transform:none}}
+        @keyframes slideUp{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
+        .modal-box::-webkit-scrollbar{width:4px}
+        .modal-box::-webkit-scrollbar-thumb{background:var(--brd);border-radius:4px}
 
-        /* Dark badges */
-        body.dark .badge-pending   { background: rgba(251,191,36,.15);  color: #fbbf24; }
-        body.dark .badge-approved  { background: rgba(34,197,94,.15);   color: #4ade80; }
-        body.dark .badge-declined,
-        body.dark .badge-canceled  { background: rgba(239,68,68,.15);   color: #f87171; }
-        body.dark .badge-claimed   { background: rgba(168,85,247,.15);  color: #c084fc; }
-        body.dark .badge-expired   { background: rgba(100,116,139,.15); color: #94a3b8; }
-        body.dark .badge-unclaimed { background: rgba(251,146,60,.12);  color: #fb923c; border-color: rgba(251,146,60,.3); }
+        /* ── Detail rows ── */
+        .drow{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--brd2)}
+        .drow:last-child{border-bottom:none}
+        .dicon{width:36px;height:36px;border-radius:12px;background:var(--indigo-light);color:var(--indigo);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+        .dlabel{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:2px}
+        .dvalue{font-size:14px;font-weight:700;color:var(--text)}
 
-        /* Mobile res cards */
-        body.dark .res-card { background: #0b1628; border-color: #1e3a5f; }
-        body.dark .res-card:hover { border-color: #2563eb; }
-        body.dark .card-empty { background: #0b1628; border-color: #1e3a5f; }
+        /* ── Modal buttons ── */
+        .btn-confirm-approve{background:#16a34a;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:7px;font-family:var(--font);flex:1}
+        .btn-confirm-approve:hover:not(:disabled){background:#15803d}
+        .btn-confirm-decline{background:#ef4444;color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:7px;font-family:var(--font);flex:1}
+        .btn-confirm-decline:hover:not(:disabled){background:#dc2626}
+        .btn-cancel{background:#f1f5f9;color:var(--muted2);border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:7px;font-family:var(--font);flex:1}
+        .btn-cancel:hover{background:#e2e8f0}
 
-        /* Modals */
-        body.dark .modal-box { background: #0b1628; }
-        body.dark .sheet-handle { background: #1e3a5f; }
-        body.dark .drow { border-color: #1e3a5f; }
-        body.dark .dvalue { color: #e2eaf8; }
-        body.dark .dicon { background: rgba(22,163,74,.12); color: #4ade80; }
-        body.dark #dPrintLogForm { background: #101e35; border-color: #1e3a5f; }
-        body.dark #dPrintLogForm input[type=number] { background: #0b1628; border-color: #1e3a5f; color: #e2eaf8; }
-        body.dark .btn-cancel { background: #101e35; color: #93c5fd; }
-        body.dark .btn-cancel:hover { background: #1e3a5f; }
-        body.dark .unclaimed-banner { background: rgba(251,146,60,.1); border-color: rgba(251,146,60,.3); }
-        body.dark .print-pill-yes { background: rgba(22,163,74,.15); color: #4ade80; }
-        body.dark .print-pill-no  { background: rgba(100,116,139,.15); color: #94a3b8; }
+        /* ── Ticket / Print ── */
+        .ticket-section{border:2px dashed var(--indigo-brd);border-radius:20px;padding:20px;background:var(--indigo-light);display:flex;flex-direction:column;align-items:center}
+        #dPrintLogForm{background:#f8fafc;border:1px solid var(--brd);border-radius:18px;padding:16px 18px;margin:0 24px 14px}
+        #dPrintLogForm label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:6px}
+        #dPrintLogForm input[type=number]{width:100%;border:1px solid var(--brd);border-radius:10px;padding:8px 12px;font-size:14px;font-family:var(--font);color:var(--text);background:var(--card);outline:none}
+        #dPrintLogForm input[type=number]:focus{border-color:var(--indigo-mid);box-shadow:0 0 0 3px rgba(67,56,202,.1)}
+        .btn-save-print{background:var(--indigo);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font);transition:all .15s;display:flex;align-items:center;gap:6px}
+        .btn-save-print:hover:not(:disabled){background:#312e81}
+        .btn-save-print:disabled{opacity:.6;cursor:not-allowed}
+        .unclaimed-banner{background:var(--orange-bg);border:1.5px dashed #fdba74;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin:0 24px 14px}
+        .ub-icon{width:34px;height:34px;background:#fed7aa;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--orange);font-size:13px;flex-shrink:0}
 
-        /* Flash messages */
-        body.dark .bg-green-50 { background: rgba(22,163,74,.12) !important; }
-        body.dark .border-green-200 { border-color: rgba(22,163,74,.3) !important; }
-        body.dark .text-green-700 { color: #4ade80 !important; }
-        body.dark .bg-red-50 { background: rgba(239,68,68,.12) !important; }
-        body.dark .border-red-200 { border-color: rgba(239,68,68,.3) !important; }
-        body.dark .text-red-700 { color: #f87171 !important; }
-        body.dark .text-red-500 { color: #f87171 !important; }
+        .sec-lbl{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .sec-lbl::before{content:'';width:3px;height:14px;background:var(--indigo);border-radius:2px;flex-shrink:0}
+        .card-empty{padding:48px 24px;text-align:center;background:var(--card);border-radius:var(--r);border:1px dashed var(--brd)}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+        .fade-up{animation:fadeUp .35s ease both}
 
-        /* Auto-refresh indicator */
-        #autoRefreshIndicator { font-family: 'Plus Jakarta Sans', sans-serif; }
+        /* ── DARK MODE ── */
+        body.dark{background:#060e1e;color:#e2eaf8}
+        body.dark .sidebar-inner{background:#0b1628;border-color:rgba(99,102,241,.12)}
+        body.dark .sb-top,.dark .sb-footer{border-color:rgba(99,102,241,.1)}
+        body.dark .brand-name{color:#e2eaf8}
+        body.dark .user-card{background:rgba(55,48,163,.15);border-color:rgba(99,102,241,.2)}
+        body.dark .user-name{color:#e2eaf8}
+        body.dark .user-role{color:#818cf8}
+        body.dark .nav-link{color:#7fb3e8}
+        body.dark .nav-link:hover{background:rgba(99,102,241,.12);color:#a5b4fc}
+        body.dark .nav-link:not(.active) .nav-icon{background:rgba(99,102,241,.1)}
+        body.dark .nav-link:hover:not(.active) .nav-icon{background:rgba(99,102,241,.2)}
+        body.dark .mobile-nav-pill{background:#0b1628;border-color:rgba(99,102,241,.18)}
+        body.dark .mob-item{color:#7fb3e8}
+        body.dark .mob-item.active,.dark .mob-item:hover{background:rgba(99,102,241,.18);color:#a5b4fc}
+        body.dark .stat-card,.dark .filter-bar,.dark .card-empty{background:#0b1628;border-color:#1e3a5f}
+        body.dark .stat-lbl,.dark .muted{color:#4a6fa5}
+        body.dark .qtab{background:#0b1628;border-color:#1e3a5f;color:#93c5fd}
+        body.dark .qtab:hover{border-color:var(--indigo);color:#a5b4fc}
+        body.dark .qtab.active{background:var(--indigo);border-color:var(--indigo);color:#fff}
+        body.dark .field,.dark .field-plain{background:#101e35;border-color:#1e3a5f;color:#e2eaf8}
+        body.dark .field:focus,.dark .field-plain:focus{border-color:#6366f1}
+        body.dark thead th{background:#101e35!important;color:#4a6fa5!important;border-color:#1e3a5f!important}
+        body.dark td{border-color:#1e3a5f;color:#e2eaf8}
+        body.dark tbody tr:hover td{background:rgba(99,102,241,.08)!important}
+        body.dark .badge-expired{background:rgba(100,116,139,.15);color:#94a3b8}
+        body.dark .badge-pending{background:rgba(251,191,36,.15);color:#fbbf24}
+        body.dark .badge-approved{background:rgba(34,197,94,.15);color:#4ade80}
+        body.dark .badge-declined,.dark .badge-canceled{background:rgba(239,68,68,.15);color:#f87171}
+        body.dark .badge-claimed{background:rgba(168,85,247,.15);color:#c084fc}
+        body.dark .badge-unclaimed{background:rgba(251,146,60,.12);color:#fb923c;border-color:rgba(251,146,60,.3)}
+        body.dark .print-pill-yes{background:rgba(34,197,94,.15);color:#4ade80}
+        body.dark .print-pill-no{background:rgba(100,116,139,.15);color:#94a3b8}
+        body.dark .res-card{background:#0b1628;border-color:#1e3a5f}
+        body.dark .res-card:hover{border-color:var(--indigo)}
+        body.dark .modal-box{background:#0b1628}
+        body.dark .modal-box::-webkit-scrollbar-thumb{background:#1e3a5f}
+        body.dark .sheet-handle{background:#1e3a5f}
+        body.dark .drow{border-color:#1e3a5f}
+        body.dark .dvalue{color:#e2eaf8}
+        body.dark .dicon{background:rgba(99,102,241,.12);color:#818cf8}
+        body.dark #dPrintLogForm{background:#101e35;border-color:#1e3a5f}
+        body.dark #dPrintLogForm input[type=number]{background:#0b1628;border-color:#1e3a5f;color:#e2eaf8}
+        body.dark .btn-cancel{background:#101e35;color:#93c5fd}
+        body.dark .btn-cancel:hover{background:#1e3a5f}
+        body.dark .btn-reset{background:#101e35;color:#93c5fd}
+        body.dark .btn-reset:hover{background:#1e3a5f}
+        body.dark .unclaimed-banner{background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3)}
+        body.dark .ticket-section{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.3)}
+        body.dark #dPrintLog{background:#101e35;border-color:#1e3a5f}
+        body.dark #autoRefreshIndicator{background:rgba(11,22,40,.95)}
+        body.dark .bg-green-50{background:rgba(22,163,74,.12)!important}
+        body.dark .border-green-200{border-color:rgba(22,163,74,.3)!important}
+        body.dark .text-green-700{color:#4ade80!important}
+        body.dark .bg-red-50{background:rgba(239,68,68,.12)!important}
+        body.dark .border-red-200{border-color:rgba(239,68,68,.3)!important}
+        body.dark .text-red-700{color:#f87171!important}
+        body.dark .bg-slate-50\/60{background:rgba(16,30,53,.8)!important}
     </style>
 </head>
 <body class="flex min-h-screen">
 
 <?php
 $navItems = [
-    ['url' => '/admin/dashboard',           'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
-    ['url' => '/admin/new-reservation',     'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'new-reservation'],
-    ['url' => '/admin/manage-reservations', 'icon' => 'fa-calendar',        'label' => 'Reservations',    'key' => 'manage-reservations'],
-    ['url' => '/admin/manage-pcs',          'icon' => 'fa-desktop',         'label' => 'Manage PCs',      'key' => 'manage-pcs'],
-    ['url' => '/admin/manage-sk',           'icon' => 'fa-user-shield',     'label' => 'Manage SK',       'key' => 'manage-sk'],
-    ['url' => '/admin/books',               'icon' => 'fa-book-open',       'label' => 'Library',         'key' => 'books'],
-    ['url' => '/admin/login-logs',          'icon' => 'fa-clock',           'label' => 'Login Logs',      'key' => 'login-logs'],
-    ['url' => '/admin/scanner',             'icon' => 'fa-qrcode',          'label' => 'Scanner',         'key' => 'scanner'],
-    ['url' => '/admin/activity-logs',       'icon' => 'fa-list',            'label' => 'Activity Logs',   'key' => 'activity-logs'],
-    ['url' => '/admin/profile',             'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
+    ['url'=>'/admin/dashboard',           'icon'=>'fa-house',           'label'=>'Dashboard',       'key'=>'dashboard'],
+    ['url'=>'/admin/new-reservation',     'icon'=>'fa-plus',            'label'=>'New Reservation', 'key'=>'new-reservation'],
+    ['url'=>'/admin/manage-reservations', 'icon'=>'fa-calendar',        'label'=>'Reservations',    'key'=>'manage-reservations'],
+    ['url'=>'/admin/manage-pcs',          'icon'=>'fa-desktop',         'label'=>'Manage PCs',      'key'=>'manage-pcs'],
+    ['url'=>'/admin/manage-sk',           'icon'=>'fa-user-shield',     'label'=>'Manage SK',       'key'=>'manage-sk'],
+    ['url'=>'/admin/books',               'icon'=>'fa-book-open',       'label'=>'Library',         'key'=>'books'],
+    ['url'=>'/admin/login-logs',          'icon'=>'fa-clock',           'label'=>'Login Logs',      'key'=>'login-logs'],
+    ['url'=>'/admin/scanner',             'icon'=>'fa-qrcode',          'label'=>'Scanner',         'key'=>'scanner'],
+    ['url'=>'/admin/activity-logs',       'icon'=>'fa-list',            'label'=>'Activity Logs',   'key'=>'activity-logs'],
+    ['url'=>'/admin/profile',             'icon'=>'fa-regular fa-user', 'label'=>'Profile',         'key'=>'profile'],
 ];
 
 $processed = [];
@@ -229,7 +284,6 @@ foreach (($reservations ?? []) as $res) {
     $s          = strtolower($res['status'] ?? 'pending');
     $claimedVal = $res['claimed'] ?? false;
     $isClaimed  = in_array($claimedVal, [true, 1, 't', 'true', '1'], true);
-
     if ($isClaimed) {
         $s = 'claimed';
     } elseif ($s === 'approved') {
@@ -239,7 +293,6 @@ foreach (($reservations ?? []) as $res) {
         $rdt = strtotime($res['reservation_date'] ?? '');
         if ($rdt && $rdt < strtotime('today')) $s = 'expired';
     }
-
     $res['_status']    = $s;
     $res['_unclaimed'] = ($s === 'unclaimed');
     $processed[] = $res;
@@ -265,6 +318,7 @@ $statusIcons = [
     'expired'   => 'fa-hourglass-end',
     'unclaimed' => 'fa-ticket',
 ];
+$avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 ?>
 
 <form id="approveForm" method="POST" action="<?= base_url('admin/approve') ?>" style="display:none">
@@ -279,34 +333,32 @@ $statusIcons = [
     <div class="overlay-bg" onclick="closeModal('detail')"></div>
     <div class="modal-box">
         <div class="sheet-handle"></div>
-        <div class="flex items-start justify-between px-7 pt-5 pb-3">
+        <div class="flex items-start justify-between px-6 pt-5 pb-3" style="display:flex;align-items:flex-start;justify-content:space-between;padding:20px 24px 12px">
             <div>
-                <p id="dId" class="text-xs font-black text-slate-400 font-mono mb-1"></p>
-                <h3 class="text-xl font-black text-slate-900">Reservation Details</h3>
+                <p id="dId" style="font-size:11px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:3px"></p>
+                <h3 style="font-size:18px;font-weight:800;color:var(--text)">Reservation Details</h3>
             </div>
-            <button onclick="closeModal('detail')" class="w-9 h-9 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition flex-shrink-0 mt-0.5">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <button onclick="closeModal('detail')" style="width:36px;height:36px;border-radius:10px;background:#f1f5f9;border:none;color:var(--muted2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;font-size:14px"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div id="dStatusBar" class="mx-7 mb-3 px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold"></div>
+        <div id="dStatusBar" style="margin:0 24px 12px;padding:10px 14px;border-radius:14px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700"></div>
 
         <div id="dUnclaimedBanner" class="unclaimed-banner" style="display:none">
             <div class="ub-icon"><i class="fa-solid fa-ticket"></i></div>
             <div>
-                <p class="font-black text-sm text-orange-700">Not Yet Claimed</p>
-                <p class="text-xs text-orange-500 font-medium mt-0.5">Approved but the e-ticket was never scanned.</p>
+                <p style="font-weight:800;font-size:13px;color:#c2410c">Not Yet Claimed</p>
+                <p style="font-size:11px;color:#ea580c;font-weight:500;margin-top:2px">Approved but the e-ticket was never scanned.</p>
             </div>
         </div>
 
-        <div class="px-7 pb-2">
+        <div style="padding:0 24px 8px">
             <div class="drow"><div class="dicon"><i class="fa-solid fa-user"></i></div>
-                <div><p class="dlabel">Requestor</p><p id="dName" class="dvalue"></p><p id="dEmail" class="text-xs text-slate-400 font-semibold mt-0.5"></p></div>
+                <div><p class="dlabel">Requestor</p><p id="dName" class="dvalue"></p><p id="dEmail" style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px"></p></div>
             </div>
             <div class="drow"><div class="dicon"><i class="fa-solid fa-desktop"></i></div>
-                <div><p class="dlabel">Resource</p><p id="dResource" class="dvalue"></p><p id="dPc" class="text-xs text-slate-400 font-semibold mt-0.5"></p></div>
+                <div><p class="dlabel">Resource</p><p id="dResource" class="dvalue"></p><p id="dPc" style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px"></p></div>
             </div>
             <div class="drow"><div class="dicon"><i class="fa-solid fa-calendar-day"></i></div>
-                <div><p class="dlabel">Schedule</p><p id="dDate" class="dvalue"></p><p id="dTime" class="text-xs text-slate-400 font-semibold mt-0.5"></p></div>
+                <div><p class="dlabel">Schedule</p><p id="dDate" class="dvalue"></p><p id="dTime" style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px"></p></div>
             </div>
             <div class="drow"><div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div>
                 <div><p class="dlabel">Purpose</p><p id="dPurpose" class="dvalue"></p></div>
@@ -319,8 +371,8 @@ $statusIcons = [
                 <div>
                     <p class="dlabel" id="dApprovedByLabel">Approved By</p>
                     <p id="dApprovedByName" class="dvalue"></p>
-                    <p id="dApprovedByEmail" class="text-xs text-slate-400 font-semibold mt-0.5"></p>
-                    <p id="dApprovedAt" class="text-xs text-slate-400 font-semibold mt-0.5"></p>
+                    <p id="dApprovedByEmail" style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px"></p>
+                    <p id="dApprovedAt" style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px"></p>
                 </div>
             </div>
             <div class="drow"><div class="dicon"><i class="fa-regular fa-clock"></i></div>
@@ -328,211 +380,213 @@ $statusIcons = [
             </div>
         </div>
 
-        <div id="dQr" class="mx-7 mb-4 ticket-section" style="display:none">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">E-Ticket</p>
-            <canvas id="qrCanvas" class="rounded-xl"></canvas>
-            <p id="dTicketCode" class="text-xs text-slate-400 font-mono mt-2 text-center break-all px-2"></p>
-            <button onclick="downloadTicket()" class="mt-3 flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition">
-                <i class="fa-solid fa-download text-xs"></i> Download E-Ticket
-            </button>
+        <div id="dQr" class="ticket-section" style="display:none;margin:0 24px 14px">
+            <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:12px">E-Ticket</p>
+            <canvas id="qrCanvas" style="border-radius:12px"></canvas>
+            <p id="dTicketCode" style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:8px;text-align:center;word-break:break-all;padding:0 8px"></p>
+            <button onclick="downloadTicket()" style="margin-top:12px;display:flex;align-items:center;gap:8px;padding:8px 18px;background:var(--indigo);color:#fff;border-radius:10px;font-weight:800;font-size:12px;border:none;cursor:pointer;font-family:var(--font)"><i class="fa-solid fa-download" style="font-size:11px"></i> Download E-Ticket</button>
         </div>
-        <div id="dClaimed" class="mx-7 mb-4 bg-purple-50 border-2 border-dashed border-purple-200 rounded-2xl p-5 text-center" style="display:none">
-            <i class="fa-solid fa-check-double text-2xl text-purple-500 mb-1 block"></i>
-            <p class="font-black text-purple-700 text-sm">Ticket Already Claimed</p>
-            <p class="text-xs text-purple-400 mt-0.5">This reservation has been used.</p>
+        <div id="dClaimed" style="display:none;margin:0 24px 14px;background:var(--purple-bg);border:2px dashed #c4b5fd;border-radius:18px;padding:20px;text-align:center">
+            <i class="fa-solid fa-check-double" style="font-size:1.5rem;color:var(--purple);display:block;margin-bottom:6px"></i>
+            <p style="font-weight:800;color:var(--purple);font-size:13px">Ticket Already Claimed</p>
+            <p style="font-size:11px;color:#8b5cf6;margin-top:3px">This reservation has been used.</p>
         </div>
-        <div id="dPrintLog" class="mx-7 mb-3 rounded-2xl px-4 py-3 border border-slate-100 bg-slate-50 flex items-center gap-3" style="display:none">
-            <div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <i class="fa-solid fa-print text-green-600 text-sm"></i>
+        <div id="dPrintLog" style="display:none;margin:0 24px 12px;border-radius:18px;padding:12px 14px;border:1px solid var(--brd);background:#f8fafc;display:none;align-items:center;gap:12px">
+            <div style="width:36px;height:36px;background:var(--green-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-print" style="color:var(--green);font-size:13px"></i></div>
+            <div style="flex:1;min-width:0">
+                <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:2px">Print Log</p>
+                <p id="dPrintText" style="font-size:13px;font-weight:700;color:var(--text)"></p>
             </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Print Log</p>
-                <p id="dPrintText" class="text-sm font-bold text-slate-700"></p>
-            </div>
-            <span id="dPrintBadge" class="text-[10px] font-black px-2.5 py-1 rounded-full flex-shrink-0"></span>
+            <span id="dPrintBadge" style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:999px;flex-shrink:0"></span>
         </div>
-        <div id="dPrintLogForm">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-print text-green-500"></i> Log Print for this Reservation
-            </p>
-            <div class="flex items-end gap-3">
-                <div class="flex-1">
-                    <label>Pages Printed <span class="text-slate-300 font-normal normal-case tracking-normal">(0 = not printed)</span></label>
+        <div id="dPrintLogForm" style="margin:0 24px 14px">
+            <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:7px"><i class="fa-solid fa-print" style="color:var(--indigo)"></i> Log Print for this Reservation</p>
+            <div style="display:flex;align-items:flex-end;gap:10px">
+                <div style="flex:1">
+                    <label>Pages Printed <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(0 = not printed)</span></label>
                     <input type="number" id="printPagesInput" min="0" max="999" value="0" placeholder="0">
                 </div>
-                <button id="savePrintBtn" class="btn-save-print" onclick="savePrintLog()">
-                    <i class="fa-solid fa-floppy-disk text-xs"></i> Save
-                </button>
+                <button id="savePrintBtn" class="btn-save-print" onclick="savePrintLog()"><i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save</button>
             </div>
-            <p id="printSaveMsg" class="text-slate-400"></p>
+            <p id="printSaveMsg" style="font-size:12px;font-weight:700;margin-top:6px;min-height:18px;color:var(--muted)"></p>
         </div>
-        <div id="dActions" class="px-7 py-5 border-t border-slate-100 flex gap-3 flex-wrap mt-2"></div>
+        <div id="dActions" style="padding:16px 24px;border-top:1px solid var(--brd2);display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"></div>
     </div>
 </div>
 
-<!-- Approve confirm modal -->
+<!-- Approve confirm -->
 <div id="approveModal" class="overlay">
     <div class="overlay-bg" onclick="closeModal('approve')"></div>
     <div class="modal-box sm">
-        <div class="px-7 pt-7 pb-5 text-center">
-            <div class="w-16 h-16 bg-green-50 text-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fa-solid fa-circle-check"></i></div>
-            <h3 class="text-xl font-black text-slate-900">Approve Reservation?</h3>
-            <p class="text-slate-400 text-sm mt-1 font-medium">This will confirm the reservation.</p>
-            <p id="approveConfirmName" class="text-slate-700 text-sm mt-3 font-black"></p>
+        <div style="padding:24px 24px 20px;text-align:center">
+            <div style="width:64px;height:64px;background:var(--green-bg);color:var(--green);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem"><i class="fa-solid fa-circle-check"></i></div>
+            <h3 style="font-size:18px;font-weight:800;color:var(--text)">Approve Reservation?</h3>
+            <p style="color:var(--muted);font-size:13px;margin-top:4px;font-weight:500">This will confirm the reservation.</p>
+            <p id="approveConfirmName" style="color:var(--text);font-size:13px;margin-top:10px;font-weight:800"></p>
         </div>
-        <div class="px-7 pb-7 flex gap-3">
-            <button class="btn-cancel" onclick="closeModal('approve')"><i class="fa-solid fa-xmark text-xs"></i> Cancel</button>
+        <div style="padding:0 24px 24px;display:flex;gap:10px">
+            <button class="btn-cancel" onclick="closeModal('approve')"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Cancel</button>
             <button id="confirmApproveBtn" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button>
         </div>
     </div>
 </div>
 
-<!-- Decline confirm modal -->
+<!-- Decline confirm -->
 <div id="declineModal" class="overlay">
     <div class="overlay-bg" onclick="closeModal('decline')"></div>
     <div class="modal-box sm">
-        <div class="px-7 pt-7 pb-5 text-center">
-            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            <h3 class="text-xl font-black text-slate-900">Decline Reservation?</h3>
-            <p class="text-slate-400 text-sm mt-1 font-medium">This action cannot be undone.</p>
-            <p id="declineConfirmName" class="text-slate-700 text-sm mt-3 font-black"></p>
+        <div style="padding:24px 24px 20px;text-align:center">
+            <div style="width:64px;height:64px;background:var(--red-bg);color:var(--red);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 style="font-size:18px;font-weight:800;color:var(--text)">Decline Reservation?</h3>
+            <p style="color:var(--muted);font-size:13px;margin-top:4px;font-weight:500">This action cannot be undone.</p>
+            <p id="declineConfirmName" style="color:var(--text);font-size:13px;margin-top:10px;font-weight:800"></p>
         </div>
-        <div class="px-7 pb-7 flex gap-3">
-            <button class="btn-cancel" onclick="closeModal('decline')"><i class="fa-solid fa-xmark text-xs"></i> Cancel</button>
+        <div style="padding:0 24px 24px;display:flex;gap:10px">
+            <button class="btn-cancel" onclick="closeModal('decline')"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Cancel</button>
             <button id="confirmDeclineBtn" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>
         </div>
     </div>
 </div>
 
 <!-- SIDEBAR -->
-<aside class="hidden lg:flex flex-col w-80 flex-shrink-0 p-6">
-    <div class="sidebar-card">
-        <div class="sidebar-header">
-            <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Control Room</span>
-            <h1 class="text-2xl font-extrabold text-slate-800">Admin<span class="text-blue-600">.</span></h1>
+<aside class="sidebar">
+    <div class="sidebar-inner">
+        <div class="sb-top">
+            <div class="brand-tag">Admin Control Room</div>
+            <div class="brand-name">my<em>Space.</em></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px">Administration Panel</div>
         </div>
-        <nav class="sidebar-nav space-y-1">
+        <div class="user-card">
+            <div class="user-av"><?= $avatarLetter ?></div>
+            <div style="min-width:0">
+                <div class="user-name"><?= htmlspecialchars($sk_name) ?></div>
+                <div class="user-role">System Admin</div>
+            </div>
+        </div>
+        <nav class="sb-nav">
+            <div class="nav-sec-lbl">Menu</div>
             <?php foreach ($navItems as $item):
-                $active = ($page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600';
+                $active = ($page == $item['key']);
+                $hasBadge = ($item['key']==='manage-reservations' && ($counts['pending'] ?? 0) > 0);
             ?>
-                <a href="<?= $item['url'] ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
-                    <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
+                <a href="<?= $item['url'] ?>" class="nav-link <?= $active ? 'active' : '' ?>">
+                    <div class="nav-icon"><i class="fa-solid <?= $item['icon'] ?>" style="font-size:13px"></i></div>
                     <?= $item['label'] ?>
-                    <?php if ($item['key'] === 'manage-reservations' && ($counts['pending'] ?? 0) > 0): ?>
-                        <span class="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= $counts['pending'] ?></span>
+                    <?php if ($hasBadge): ?>
+                        <span class="nav-badge"><?= $counts['pending'] ?></span>
                     <?php endif; ?>
                 </a>
             <?php endforeach; ?>
         </nav>
-        <div class="sidebar-footer">
-            <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
-                <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
+        <div class="sb-footer">
+            <a href="/logout" class="logout-link">
+                <div class="nav-icon" style="background:rgba(239,68,68,.08)"><i class="fa-solid fa-arrow-right-from-bracket" style="font-size:13px;color:#f87171"></i></div>
+                Sign Out
             </a>
         </div>
     </div>
 </aside>
 
 <!-- MOBILE NAV -->
-<nav class="lg:hidden mobile-nav-pill">
-    <div class="mobile-scroll-container text-white px-2">
+<nav class="mobile-nav-pill">
+    <div class="mob-scroll">
         <?php foreach ($navItems as $item):
-            $btnClass = ($page == $item['key']) ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
+            $active = ($page == $item['key']);
         ?>
-            <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $btnClass ?>">
-                <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
-                <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+            <a href="<?= $item['url'] ?>" class="mob-item <?= $active ? 'active' : '' ?>">
+                <i class="fa-solid <?= $item['icon'] ?>" style="font-size:1rem"></i>
             </a>
         <?php endforeach; ?>
-        <a href="/logout" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 hover:bg-red-500/30 text-red-400">
-            <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
-            <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap">Logout</span>
+        <a href="/logout" class="mob-item" style="color:#f87171">
+            <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:1rem"></i>
         </a>
     </div>
 </nav>
 
 <!-- MAIN -->
-<main class="flex-1 min-w-0 p-4 lg:p-10 pb-32">
-
-    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 fade-up">
-        <div>
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Admin Portal</p>
-            <h2 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Manage Reservations</h2>
-            <p class="text-slate-400 font-medium text-sm mt-0.5">
-                <?= $counts['all'] ?> total record<?= $counts['all'] != 1 ? 's' : '' ?>
-                <?php if ($counts['unclaimed'] > 0): ?>
-                    · <span class="text-orange-500 font-bold"><?= $counts['unclaimed'] ?> unclaimed</span>
-                <?php endif; ?>
-            </p>
+<main class="main">
+    <div class="fade-up">
+        <div class="topbar-row" style="margin-bottom:6px">
+            <div>
+                <div class="eyebrow">Admin Portal</div>
+                <div class="page-title">Manage Reservations</div>
+                <div class="page-sub">
+                    <?= $counts['all'] ?> total record<?= $counts['all'] != 1 ? 's' : '' ?>
+                    <?php if ($counts['unclaimed'] > 0): ?>
+                        · <span style="color:var(--orange);font-weight:700"><?= $counts['unclaimed'] ?> unclaimed</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <button onclick="toggleDark()" id="darkBtn" style="width:42px;height:42px;background:var(--card);border:1px solid var(--brd);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--muted2);cursor:pointer;transition:all .15s;font-size:15px">
+                    <span id="darkIcon"><i class="fa-regular fa-sun"></i></span>
+                </button>
+                <button onclick="exportCSV()" class="btn-export"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            </div>
         </div>
-        <div class="flex items-center gap-3">
-            <button onclick="toggleDark()" id="darkBtn"
-                class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:border-blue-400 hover:text-blue-600 transition shadow-sm flex-shrink-0">
-                <span id="darkIcon"><i class="fa-regular fa-sun"></i></span>
-            </button>
-            <button onclick="exportCSV()" class="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-sm transition shadow-sm flex-shrink-0">
-                <i class="fa-solid fa-file-csv"></i> Export CSV
-            </button>
-        </div>
-    </header>
+    </div>
 
     <!-- Stat cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+    <div class="stats-grid fade-up">
         <?php foreach ([
-            ['Total',     $counts['all'],       'border-green-400',   'text-slate-700',   'all'],
-            ['Pending',   $counts['pending'],   'border-amber-400',   'text-amber-600',   'pending'],
-            ['Approved',  $counts['approved'],  'border-emerald-400', 'text-emerald-600', 'approved'],
-            ['Claimed',   $counts['claimed'],   'border-purple-400',  'text-purple-600',  'claimed'],
-            ['Declined',  $counts['declined'],  'border-rose-400',    'text-rose-600',    'declined'],
-            ['Unclaimed', $counts['unclaimed'], 'border-orange-400',  'text-orange-600',  'unclaimed'],
-        ] as [$lbl, $val, $border, $color, $key]): ?>
-            <div class="stat-card <?= $border ?>" onclick="filterByStatus('<?= $key ?>')" data-filter="<?= $key ?>">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1"><?= $lbl ?></p>
-                <p class="text-2xl font-black <?= $color ?>"><?= $val ?></p>
+            ['Total',     $counts['all'],       '#3730a3', 'fa-layer-group', 'all'],
+            ['Pending',   $counts['pending'],   '#d97706', 'fa-clock',       'pending'],
+            ['Approved',  $counts['approved'],  '#16a34a', 'fa-circle-check','approved'],
+            ['Claimed',   $counts['claimed'],   '#7c3aed', 'fa-check-double','claimed'],
+            ['Declined',  $counts['declined'],  '#dc2626', 'fa-xmark-circle','declined'],
+            ['Unclaimed', $counts['unclaimed'], '#c2410c', 'fa-ticket',      'unclaimed'],
+        ] as [$lbl, $val, $color, $icon, $key]): ?>
+            <div class="stat-card" style="border-left-color:<?= $color ?>" onclick="filterByStatus('<?= $key ?>')" data-filter="<?= $key ?>">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                    <p class="stat-lbl"><?= $lbl ?></p>
+                    <i class="fa-solid <?= $icon ?>" style="font-size:13px;color:<?= $color ?>"></i>
+                </div>
+                <p class="stat-num" style="color:<?= $color ?>"><?= $val ?></p>
             </div>
         <?php endforeach; ?>
     </div>
 
     <?php if (session()->getFlashdata('success')): ?>
-        <div class="mb-5 px-5 py-4 bg-green-50 border border-green-200 text-green-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-up">
-            <i class="fa-solid fa-circle-check text-green-500"></i><?= session()->getFlashdata('success') ?>
+        <div style="margin-bottom:16px;padding:14px 18px;background:var(--green-bg);border:1px solid #86efac;color:var(--green);font-weight:700;border-radius:16px;display:flex;align-items:center;gap:10px;font-size:13px" class="fade-up">
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i><?= session()->getFlashdata('success') ?>
         </div>
     <?php endif; ?>
     <?php if (session()->getFlashdata('error')): ?>
-        <div class="mb-5 px-5 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3 text-sm fade-up">
-            <i class="fa-solid fa-circle-exclamation text-red-500"></i><?= session()->getFlashdata('error') ?>
+        <div style="margin-bottom:16px;padding:14px 18px;background:var(--red-bg);border:1px solid #fca5a5;color:var(--red);font-weight:700;border-radius:16px;display:flex;align-items:center;gap:10px;font-size:13px" class="fade-up">
+            <i class="fa-solid fa-circle-exclamation" style="color:var(--red)"></i><?= session()->getFlashdata('error') ?>
         </div>
     <?php endif; ?>
 
     <!-- Filter bar -->
-    <div class="bg-white border border-slate-200 rounded-[28px] p-4 lg:p-5 mb-4 shadow-sm">
-        <div class="flex flex-col sm:flex-row gap-3">
-            <div class="relative flex-1">
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
-                <input id="searchInput" type="text" placeholder="Search name, resource, purpose…" class="field" oninput="applyFilters()">
+    <div class="filter-bar fade-up">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px" class="sm:flex-row">
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <div style="position:relative;flex:1;min-width:180px">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:11px;pointer-events:none"></i>
+                    <input id="searchInput" type="text" placeholder="Search name, resource, purpose…" class="field" oninput="applyFilters()">
+                </div>
+                <div style="position:relative;width:160px">
+                    <i class="fa-regular fa-calendar" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:11px;pointer-events:none"></i>
+                    <input id="dateInput" type="date" class="field-plain" style="padding-left:36px" onchange="applyFilters()">
+                </div>
+                <button onclick="clearFilters()" class="btn-reset"><i class="fa-solid fa-rotate-left" style="font-size:11px"></i> Reset</button>
             </div>
-            <div class="relative sm:w-44">
-                <i class="fa-regular fa-calendar absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
-                <input id="dateInput" type="date" class="field" onchange="applyFilters()">
-            </div>
-            <button onclick="clearFilters()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-sm transition flex items-center gap-2 flex-shrink-0">
-                <i class="fa-solid fa-rotate-left text-xs"></i> Reset
-            </button>
         </div>
-        <div class="flex gap-2 mt-3 overflow-x-auto pb-0.5">
-            <button class="qtab active" data-tab="all"       onclick="setTab(this,'all')"><i class="fa-solid fa-layer-group text-xs"></i> All <span class="text-[9px] font-black opacity-70"><?= $counts['all'] ?></span></button>
-            <button class="qtab" data-tab="pending"          onclick="setTab(this,'pending')"><i class="fa-solid fa-clock text-xs"></i> Pending <?php if ($counts['pending'] > 0): ?><span class="bg-amber-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none"><?= $counts['pending'] ?></span><?php endif; ?></button>
-            <button class="qtab" data-tab="approved"         onclick="setTab(this,'approved')"><i class="fa-solid fa-circle-check text-xs"></i> Approved</button>
-            <button class="qtab" data-tab="unclaimed"        onclick="setTab(this,'unclaimed')"><i class="fa-solid fa-ticket text-xs"></i> Unclaimed<?php if ($counts['unclaimed'] > 0): ?><span class="bg-orange-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none"><?= $counts['unclaimed'] ?></span><?php endif; ?></button>
-            <button class="qtab" data-tab="claimed"          onclick="setTab(this,'claimed')"><i class="fa-solid fa-check-double text-xs"></i> Claimed</button>
-            <button class="qtab" data-tab="declined"         onclick="setTab(this,'declined')"><i class="fa-solid fa-xmark text-xs"></i> Declined</button>
-            <button class="qtab" data-tab="expired"          onclick="setTab(this,'expired')"><i class="fa-solid fa-hourglass-end text-xs"></i> Expired</button>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px">
+            <button class="qtab active" data-tab="all" onclick="setTab(this,'all')"><i class="fa-solid fa-layer-group" style="font-size:11px"></i> All <span style="font-size:9px;font-weight:800;opacity:.7"><?= $counts['all'] ?></span></button>
+            <button class="qtab" data-tab="pending" onclick="setTab(this,'pending')"><i class="fa-solid fa-clock" style="font-size:11px"></i> Pending<?php if ($counts['pending'] > 0): ?><span style="background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;line-height:1"><?= $counts['pending'] ?></span><?php endif; ?></button>
+            <button class="qtab" data-tab="approved" onclick="setTab(this,'approved')"><i class="fa-solid fa-circle-check" style="font-size:11px"></i> Approved</button>
+            <button class="qtab" data-tab="unclaimed" onclick="setTab(this,'unclaimed')"><i class="fa-solid fa-ticket" style="font-size:11px"></i> Unclaimed<?php if ($counts['unclaimed'] > 0): ?><span style="background:#fb923c;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;line-height:1"><?= $counts['unclaimed'] ?></span><?php endif; ?></button>
+            <button class="qtab" data-tab="claimed" onclick="setTab(this,'claimed')"><i class="fa-solid fa-check-double" style="font-size:11px"></i> Claimed</button>
+            <button class="qtab" data-tab="declined" onclick="setTab(this,'declined')"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Declined</button>
+            <button class="qtab" data-tab="expired" onclick="setTab(this,'expired')"><i class="fa-solid fa-hourglass-end" style="font-size:11px"></i> Expired</button>
         </div>
     </div>
 
-    <div class="px-1 mb-3"><p id="resultCount" class="text-xs font-bold text-slate-400"></p></div>
+    <p id="resultCount" style="font-size:11px;font-weight:700;color:var(--muted);padding:0 4px;margin-bottom:12px"></p>
 
     <!-- DESKTOP TABLE -->
-    <div id="desktopTableWrap" class="hidden md:block bg-white border border-slate-200 rounded-[28px] shadow-sm overflow-hidden">
+    <div class="hidden md:block fade-up" style="background:var(--card);border:1px solid var(--brd);border-radius:24px;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.05)">
         <div class="table-wrap">
             <table id="resTable">
                 <thead>
@@ -545,15 +599,17 @@ $statusIcons = [
                         <th onclick="sortTable(5)">Status <i class="fa-solid fa-sort sort-icon"></i></th>
                         <th onclick="sortTable(6)">Approved By <i class="fa-solid fa-sort sort-icon"></i></th>
                         <th>Print</th>
-                        <th class="text-right" style="width:140px">Actions</th>
+                        <th class="text-right" style="width:140px;text-align:right">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                     <?php if (empty($processed)): ?>
-                        <tr><td colspan="9"><div class="empty-state">
-                            <i class="fa-solid fa-calendar-xmark text-5xl text-slate-200 mb-4 block"></i>
-                            <p class="font-black text-slate-400 text-lg">No reservations yet</p>
-                        </div></td></tr>
+                        <tr><td colspan="9">
+                            <div style="padding:80px 24px;text-align:center">
+                                <i class="fa-solid fa-calendar-xmark" style="font-size:2.5rem;color:var(--brd);display:block;margin-bottom:12px"></i>
+                                <p style="font-weight:800;color:var(--muted);font-size:15px">No reservations yet</p>
+                            </div>
+                        </td></tr>
                     <?php else: ?>
                         <?php foreach ($processed as $res):
                             $s           = $res['_status'];
@@ -581,13 +637,13 @@ $statusIcons = [
                             $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
                             $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
                             $mdata       = json_encode([
-                                'id'=>$res['id'], 'status'=>$s, 'name'=>$name, 'email'=>$email,
-                                'resource'=>$resource, 'pc'=>$pc, 'date'=>$date, 'rawDate'=>$rawDate,
-                                'start'=>$start, 'end'=>$end, 'purpose'=>$purpose, 'type'=>$type,
-                                'created'=>$created, 'code'=>$code,
-                                'claimed'=>$isClaimed, 'unclaimed'=>$isUnclaimed,
-                                'approverName'=>$approverName, 'approverEmail'=>$approverEmail, 'approvedAt'=>$approvedAt,
-                                'plPrinted'=>$plPrinted, 'plPages'=>$plPages, 'plAt'=>$plAt,
+                                'id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,
+                                'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,
+                                'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,
+                                'created'=>$created,'code'=>$code,
+                                'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,
+                                'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,
+                                'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt,
                             ]);
                         ?>
                         <tr class="res-row"
@@ -600,50 +656,50 @@ $statusIcons = [
                             data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
                             data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
                             onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
-                            <td><span class="text-xs font-black text-slate-400 font-mono">#<?= $res['id'] ?></span></td>
+                            <td><span style="font-size:11px;font-weight:800;color:var(--muted);font-family:monospace">#<?= $res['id'] ?></span></td>
                             <td>
-                                <p class="font-bold text-sm text-slate-800 leading-tight"><?= $name ?></p>
-                                <?php if ($email): ?><p class="text-[11px] text-slate-400 mt-0.5 truncate max-w-[160px]"><?= $email ?></p><?php endif; ?>
+                                <p style="font-weight:700;font-size:13px;color:var(--text)"><?= $name ?></p>
+                                <?php if ($email): ?><p style="font-size:11px;color:var(--muted);margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
                             </td>
                             <td>
-                                <p class="font-bold text-sm text-slate-800 leading-tight"><?= $resource ?></p>
-                                <?php if ($pc): ?><div class="flex items-center gap-1 mt-0.5"><i class="fa-solid fa-desktop text-[9px] text-slate-400"></i><span class="text-[11px] text-slate-500 font-semibold"><?= $pc ?></span></div><?php endif; ?>
+                                <p style="font-weight:700;font-size:13px;color:var(--text)"><?= $resource ?></p>
+                                <?php if ($pc): ?><div style="display:flex;align-items:center;gap:5px;margin-top:2px"><i class="fa-solid fa-desktop" style="font-size:9px;color:var(--muted)"></i><span style="font-size:11px;color:var(--muted2);font-weight:600"><?= $pc ?></span></div><?php endif; ?>
                             </td>
                             <td>
-                                <p class="text-sm font-bold text-slate-700"><?= $date ?></p>
-                                <p class="text-[11px] text-green-500 font-semibold mt-0.5"><?= $start ?> – <?= $end ?></p>
+                                <p style="font-size:13px;font-weight:700;color:var(--text)"><?= $date ?></p>
+                                <p style="font-size:11px;color:var(--indigo-mid);font-weight:600;margin-top:2px"><?= $start ?> – <?= $end ?></p>
                             </td>
-                            <td><span class="text-sm text-slate-500 font-medium" style="display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:130px"><?= $purpose ?></span></td>
-                            <td><span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span></td>
+                            <td><span style="font-size:12px;color:var(--muted2);font-weight:500;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:130px"><?= $purpose ?></span></td>
+                            <td><span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?>" style="font-size:9px"></i><?= ucfirst($s) ?></span></td>
                             <td onclick="event.stopPropagation()">
                                 <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired','unclaimed'])): ?>
-                                    <div class="flex items-center gap-1.5">
-                                        <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[9px] font-black flex-shrink-0 <?= $s === 'declined' ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-700' ?>"><?= mb_strtoupper(mb_substr($approverName, 0, 1)) ?></div>
-                                        <div class="min-w-0">
-                                            <p class="text-xs font-bold text-slate-700 truncate max-w-[110px]"><?= $approverName ?></p>
-                                            <?php if ($approvedAt): ?><p class="text-[10px] text-slate-400 font-medium truncate"><?= $approvedAt ?></p><?php endif; ?>
+                                    <div style="display:flex;align-items:center;gap:7px">
+                                        <div style="width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;<?= $s==='declined'?'background:var(--red-bg);color:var(--red)':'background:var(--green-bg);color:var(--green)' ?>"><?= mb_strtoupper(mb_substr($approverName,0,1)) ?></div>
+                                        <div style="min-width:0">
+                                            <p style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px"><?= $approverName ?></p>
+                                            <?php if ($approvedAt): ?><p style="font-size:10px;color:var(--muted);font-weight:500"><?= $approvedAt ?></p><?php endif; ?>
                                         </div>
                                     </div>
-                                <?php else: ?><span class="text-[10px] text-slate-300 font-bold">—</span><?php endif; ?>
+                                <?php else: ?><span style="font-size:10px;color:var(--brd);font-weight:700">—</span><?php endif; ?>
                             </td>
                             <td onclick="event.stopPropagation()">
-                                <?php if ($plPrinted === true): ?><span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> <?= $plPages ?>pg</span>
-                                <?php elseif ($plPrinted === false): ?><span class="print-pill-no"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>
-                                <?php else: ?><span class="text-[10px] text-slate-300 font-bold">—</span><?php endif; ?>
+                                <?php if ($plPrinted === true): ?><span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> <?= $plPages ?>pg</span>
+                                <?php elseif ($plPrinted === false): ?><span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>
+                                <?php else: ?><span style="font-size:10px;color:var(--brd);font-weight:700">—</span><?php endif; ?>
                             </td>
-                            <td class="text-right" onclick="event.stopPropagation()">
-                                <div class="flex items-center justify-end gap-1.5">
+                            <td style="text-align:right" onclick="event.stopPropagation()">
+                                <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px">
                                     <?php if ($s === 'pending'): ?>
-                                        <button onclick="triggerApprove(<?= $res['id'] ?>, '<?= addslashes($name) ?>')" class="h-8 px-3 rounded-xl bg-green-100 hover:bg-green-600 hover:text-white text-green-700 font-bold text-xs transition flex items-center gap-1.5"><i class="fa-solid fa-check text-[11px]"></i> Approve</button>
-                                        <button onclick="triggerDecline(<?= $res['id'] ?>, '<?= addslashes($name) ?>')" class="h-8 px-2 rounded-xl bg-red-100 hover:bg-red-500 hover:text-white text-red-600 font-bold text-xs transition flex items-center"><i class="fa-solid fa-xmark text-[11px]"></i></button>
+                                        <button onclick="triggerApprove(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-approve-sm"><i class="fa-solid fa-check" style="font-size:10px"></i> Approve</button>
+                                        <button onclick="triggerDecline(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-decline-sm"><i class="fa-solid fa-xmark" style="font-size:10px"></i></button>
                                     <?php elseif ($s === 'unclaimed'): ?>
-                                        <span class="text-[11px] text-orange-500 font-black flex items-center gap-1"><i class="fa-solid fa-ticket"></i> Unclaimed</span>
+                                        <span style="font-size:11px;color:var(--orange);font-weight:800;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-ticket" style="font-size:10px"></i> Unclaimed</span>
                                     <?php elseif ($s === 'approved'): ?>
-                                        <span class="text-[11px] text-emerald-500 font-black flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Approved</span>
+                                        <span style="font-size:11px;color:var(--green);font-weight:800;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-circle-check" style="font-size:10px"></i> Approved</span>
                                     <?php elseif ($s === 'claimed'): ?>
-                                        <span class="text-[11px] text-purple-500 font-black flex items-center gap-1"><i class="fa-solid fa-check-double"></i> Claimed</span>
+                                        <span style="font-size:11px;color:var(--purple);font-weight:800;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-check-double" style="font-size:10px"></i> Claimed</span>
                                     <?php else: ?>
-                                        <span class="text-xs text-slate-300 font-semibold italic">—</span>
+                                        <span style="font-size:11px;color:var(--muted);font-style:italic">—</span>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -653,19 +709,16 @@ $statusIcons = [
                 </tbody>
             </table>
         </div>
-        <div class="px-5 py-3 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between">
-            <p id="tableFooter" class="text-xs font-bold text-slate-400"></p>
-            <p class="text-xs text-slate-300 font-semibold hidden sm:block">Click any row to preview · Export CSV exports current filter</p>
+        <div style="padding:10px 18px;border-top:1px solid var(--brd2);background:rgba(238,242,255,.4);display:flex;align-items:center;justify-content:space-between">
+            <p id="tableFooter" style="font-size:11px;font-weight:700;color:var(--muted)"></p>
+            <p style="font-size:11px;color:var(--brd);font-weight:600;display:none" class="sm:block">Click any row to preview · Export CSV exports current filter</p>
         </div>
     </div>
 
     <!-- MOBILE CARDS -->
-    <div id="mobileCardList" class="md:hidden space-y-3">
+    <div id="mobileCardList" class="md:hidden space-y-3" style="display:flex;flex-direction:column;gap:10px">
         <?php if (empty($processed)): ?>
-            <div class="card-empty">
-                <i class="fa-solid fa-calendar-xmark text-4xl text-slate-200 mb-3 block"></i>
-                <p class="font-black text-slate-400">No reservations yet</p>
-            </div>
+            <div class="card-empty"><i class="fa-solid fa-calendar-xmark" style="font-size:2rem;color:var(--brd);display:block;margin-bottom:10px"></i><p style="font-weight:800;color:var(--muted)">No reservations yet</p></div>
         <?php else: ?>
             <?php foreach ($processed as $res):
                 $s           = $res['_status'];
@@ -693,23 +746,15 @@ $statusIcons = [
                 $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
                 $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
                 $mdata       = json_encode([
-                    'id'=>$res['id'], 'status'=>$s, 'name'=>$name, 'email'=>$email,
-                    'resource'=>$resource, 'pc'=>$pc, 'date'=>$date, 'rawDate'=>$rawDate,
-                    'start'=>$start, 'end'=>$end, 'purpose'=>$purpose, 'type'=>$type,
-                    'created'=>$created, 'code'=>$code,
-                    'claimed'=>$isClaimed, 'unclaimed'=>$isUnclaimed,
-                    'approverName'=>$approverName, 'approverEmail'=>$approverEmail, 'approvedAt'=>$approvedAt,
-                    'plPrinted'=>$plPrinted, 'plPages'=>$plPages, 'plAt'=>$plAt,
+                    'id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,
+                    'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,
+                    'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,
+                    'created'=>$created,'code'=>$code,
+                    'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,
+                    'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,
+                    'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt,
                 ]);
-                $avatarBg = [
-                    'pending'   => 'bg-amber-100 text-amber-700',
-                    'approved'  => 'bg-emerald-100 text-emerald-700',
-                    'claimed'   => 'bg-purple-100 text-purple-700',
-                    'declined'  => 'bg-red-100 text-red-600',
-                    'canceled'  => 'bg-red-100 text-red-600',
-                    'expired'   => 'bg-slate-100 text-slate-500',
-                    'unclaimed' => 'bg-orange-100 text-orange-700',
-                ][$s] ?? 'bg-slate-100 text-slate-500';
+                $avatarBg = ['pending'=>'background:#fef3c7;color:#92400e','approved'=>'background:#dcfce7;color:#166534','claimed'=>'background:#ede9fe;color:#6b21a8','declined'=>'background:#fee2e2;color:#991b1b','canceled'=>'background:#fee2e2;color:#991b1b','expired'=>'background:#f1f5f9;color:#64748b','unclaimed'=>'background:#fff7ed;color:#c2410c'][$s] ?? 'background:#f1f5f9;color:#64748b';
             ?>
                 <div class="res-card"
                      data-id="<?= $res['id'] ?>"
@@ -721,50 +766,45 @@ $statusIcons = [
                      data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
                      data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
                      onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-10 h-10 rounded-2xl <?= $avatarBg ?> flex items-center justify-center font-black text-sm flex-shrink-0">
-                            <?= mb_strtoupper(mb_substr(strip_tags($name), 0, 1)) ?>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                        <div style="width:38px;height:38px;border-radius:14px;<?= $avatarBg ?>;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0"><?= mb_strtoupper(mb_substr(strip_tags($name),0,1)) ?></div>
+                        <div style="flex:1;min-width:0">
+                            <p style="font-weight:700;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $name ?></p>
+                            <?php if ($email): ?><p style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="font-bold text-sm text-slate-800 truncate leading-tight"><?= $name ?></p>
-                            <?php if ($email): ?><p class="text-[11px] text-slate-400 truncate"><?= $email ?></p><?php endif; ?>
-                        </div>
-                        <span class="badge badge-<?= $s ?> flex-shrink-0"><i class="fa-solid <?= $icon ?> text-[9px]"></i><?= ucfirst($s) ?></span>
+                        <span class="badge badge-<?= $s ?>" style="flex-shrink:0"><i class="fa-solid <?= $icon ?>" style="font-size:9px"></i><?= ucfirst($s) ?></span>
                     </div>
-                    <div class="flex items-start gap-2 mb-2">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-1.5 mb-1">
-                                <i class="fa-solid fa-desktop text-[10px] text-slate-400 flex-shrink-0"></i>
-                                <p class="text-xs font-bold text-slate-700 truncate"><?= $resource ?><?= $pc ? ' · ' . $pc : '' ?></p>
+                    <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
+                        <div style="flex:1;min-width:0">
+                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                                <i class="fa-solid fa-desktop" style="font-size:10px;color:var(--muted);flex-shrink:0"></i>
+                                <p style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $resource ?><?= $pc ? ' · '.$pc : '' ?></p>
                             </div>
-                            <div class="flex items-center gap-1.5">
-                                <i class="fa-regular fa-calendar text-[10px] text-slate-400 flex-shrink-0"></i>
-                                <p class="text-xs text-slate-500 font-semibold"><?= $date ?></p>
-                                <span class="text-[10px] text-green-500 font-bold"><?= $start ?> – <?= $end ?></span>
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <i class="fa-regular fa-calendar" style="font-size:10px;color:var(--muted);flex-shrink:0"></i>
+                                <p style="font-size:11px;color:var(--muted2);font-weight:600"><?= $date ?></p>
+                                <span style="font-size:10px;color:var(--indigo-mid);font-weight:700"><?= $start ?> – <?= $end ?></span>
                             </div>
                         </div>
-                        <div class="card-print-pill flex-shrink-0">
-                            <?php if ($plPrinted === true): ?>
-                                <span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> <?= $plPages ?>pg</span>
-                            <?php elseif ($plPrinted === false): ?>
-                                <span class="print-pill-no"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>
-                            <?php endif; ?>
+                        <div class="card-print-pill" style="flex-shrink:0">
+                            <?php if ($plPrinted === true): ?><span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> <?= $plPages ?>pg</span>
+                            <?php elseif ($plPrinted === false): ?><span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span><?php endif; ?>
                         </div>
                     </div>
-                    <p class="text-[11px] text-slate-400 font-medium truncate mb-3"><?= $purpose ?></p>
-                    <div class="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100">
-                        <div class="flex items-center gap-1.5 min-w-0">
+                    <p style="font-size:11px;color:var(--muted);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:10px"><?= $purpose ?></p>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--brd2)">
+                        <div style="display:flex;align-items:center;gap:6px;min-width:0">
                             <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired','unclaimed'])): ?>
-                                <div class="w-5 h-5 rounded-md flex items-center justify-center text-[8px] font-black flex-shrink-0 <?= $s === 'declined' ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-700' ?>"><?= mb_strtoupper(mb_substr($approverName, 0, 1)) ?></div>
-                                <p class="text-[10px] text-slate-500 font-semibold truncate"><?= $s === 'declined' ? 'Declined' : 'Approved' ?> by <?= $approverName ?></p>
+                                <div style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0;<?= $s==='declined'?'background:var(--red-bg);color:var(--red)':'background:var(--green-bg);color:var(--green)' ?>"><?= mb_strtoupper(mb_substr($approverName,0,1)) ?></div>
+                                <p style="font-size:10px;color:var(--muted2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $s==='declined'?'Declined':'Approved' ?> by <?= $approverName ?></p>
                             <?php else: ?>
-                                <p class="text-[10px] text-slate-300 font-semibold">#<?= $res['id'] ?></p>
+                                <p style="font-size:10px;color:var(--brd);font-weight:600">#<?= $res['id'] ?></p>
                             <?php endif; ?>
                         </div>
                         <?php if ($s === 'pending'): ?>
-                            <div class="flex items-center gap-1.5 flex-shrink-0" onclick="event.stopPropagation()">
-                                <button onclick="triggerApprove(<?= $res['id'] ?>, '<?= addslashes($name) ?>')" class="h-7 px-2.5 rounded-xl bg-green-100 hover:bg-green-600 hover:text-white text-green-700 font-bold text-xs transition flex items-center gap-1"><i class="fa-solid fa-check text-[10px]"></i> Approve</button>
-                                <button onclick="triggerDecline(<?= $res['id'] ?>, '<?= addslashes($name) ?>')" class="h-7 px-2 rounded-xl bg-red-100 hover:bg-red-500 hover:text-white text-red-600 font-bold text-xs transition flex items-center"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+                            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
+                                <button onclick="triggerApprove(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-approve-sm" style="height:28px;padding:0 10px;font-size:11px"><i class="fa-solid fa-check" style="font-size:10px"></i> Approve</button>
+                                <button onclick="triggerDecline(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-decline-sm" style="height:28px;padding:0 8px;font-size:11px"><i class="fa-solid fa-xmark" style="font-size:10px"></i></button>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -773,12 +813,11 @@ $statusIcons = [
         <?php endif; ?>
     </div>
 
-    <div id="mobileEmpty" class="md:hidden card-empty" style="display:none">
-        <i class="fa-solid fa-filter-circle-xmark text-4xl text-slate-200 mb-3 block"></i>
-        <p class="font-black text-slate-400">No reservations match</p>
-        <p class="text-slate-300 text-sm mt-1">Try adjusting your search or filters.</p>
+    <div id="mobileEmpty" style="display:none" class="card-empty">
+        <i class="fa-solid fa-filter-circle-xmark" style="font-size:2rem;color:var(--brd);display:block;margin-bottom:10px"></i>
+        <p style="font-weight:800;color:var(--muted)">No reservations match</p>
+        <p style="color:var(--brd);font-size:12px;margin-top:4px">Try adjusting your search or filters.</p>
     </div>
-
 </main>
 
 <script>
@@ -790,12 +829,11 @@ let   approveTargetId = null, declineTargetId = null;
 let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 let csrfName  = document.querySelector('meta[name="csrf-name"]')?.getAttribute('content')  ?? 'csrf_token';
 
-function refreshCsrf(data) {
-    if (data.csrf_hash && data.csrf_token) {
-        csrfToken = data.csrf_hash;
-        csrfName  = data.csrf_token;
-        document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', csrfToken);
-        document.querySelector('meta[name="csrf-name"]')?.setAttribute('content', csrfName);
+function refreshCsrf(data){
+    if(data.csrf_hash && data.csrf_token){
+        csrfToken=data.csrf_hash; csrfName=data.csrf_token;
+        document.querySelector('meta[name="csrf-token"]')?.setAttribute('content',csrfToken);
+        document.querySelector('meta[name="csrf-name"]')?.setAttribute('content',csrfName);
     }
 }
 
@@ -810,8 +848,7 @@ printLogMap[<?= (int)$resId ?>] = {
 
 let _currentReservationId = null;
 
-// Dark mode
-function toggleDark() {
+function toggleDark(){
     const isDark = document.body.classList.toggle('dark');
     const icon = document.getElementById('darkIcon');
     icon.innerHTML = isDark ? '<i class="fa-regular fa-moon"></i>' : '<i class="fa-regular fa-sun"></i>';
@@ -826,342 +863,281 @@ function toggleDark() {
     document.documentElement.classList.remove('dark-pre');
 })();
 
-async function savePrintLog() {
-    const rid   = _currentReservationId;
-    const pages = parseInt(document.getElementById('printPagesInput').value, 10) || 0;
-    const btn   = document.getElementById('savePrintBtn');
-    const msg   = document.getElementById('printSaveMsg');
-    if (!rid) { msg.textContent = 'No reservation selected.'; msg.style.color = '#ef4444'; return; }
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Saving…';
-    msg.textContent = ''; msg.style.color = '';
-
-    const body = new FormData();
-    body.append(csrfName, csrfToken);
-    body.append('reservation_id', rid);
-    body.append('printed', pages > 0 ? 1 : 0);
-    body.append('pages', pages);
-
-    try {
-        const res  = await fetch('<?= base_url('admin/log-print') ?>', {
-            method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            body
-        });
-        const text = await res.text();
-        let data;
-        try { data = JSON.parse(text); }
-        catch { throw new Error(`Server error (${res.status})`); }
-
-        if (data.ok) {
+async function savePrintLog(){
+    const rid=_currentReservationId, pages=parseInt(document.getElementById('printPagesInput').value,10)||0;
+    const btn=document.getElementById('savePrintBtn'), msg=document.getElementById('printSaveMsg');
+    if(!rid){msg.textContent='No reservation selected.';msg.style.color='var(--red)';return;}
+    btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin" style="font-size:11px"></i> Saving…'; msg.textContent='';
+    const body=new FormData();
+    body.append(csrfName,csrfToken); body.append('reservation_id',rid);
+    body.append('printed',pages>0?1:0); body.append('pages',pages);
+    try{
+        const res=await fetch('<?= base_url('admin/log-print') ?>',{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'},body});
+        const text=await res.text(); let data;
+        try{data=JSON.parse(text);}catch{throw new Error(`Server error (${res.status})`);}
+        if(data.ok){
             refreshCsrf(data);
-            const now = new Date();
-            const fmt = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                      + ' · '
-                      + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-            printLogMap[rid] = { printed: pages > 0, pages, at: fmt };
-            refreshPrintLogStrip(rid);
-            refreshBothPrintCells(rid, pages);
-            msg.textContent = pages > 0
-                ? `✓ Saved — ${pages} page${pages !== 1 ? 's' : ''} printed`
-                : '✓ Saved — no printing logged';
-            msg.style.color = '#16a34a';
-            btn.innerHTML = '<i class="fa-solid fa-check text-xs"></i> Saved';
-            setTimeout(() => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs"></i> Save';
-            }, 2000);
-        } else {
-            throw new Error(data.error ?? 'Unknown error');
-        }
-    } catch (err) {
-        msg.textContent = '✗ Failed: ' + err.message;
-        msg.style.color = '#ef4444';
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs"></i> Save';
+            const now=new Date();
+            const fmt=now.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+            printLogMap[rid]={printed:pages>0,pages,at:fmt};
+            refreshPrintLogStrip(rid); refreshBothPrintCells(rid,pages);
+            msg.textContent=pages>0?`✓ Saved — ${pages} page${pages!==1?'s':''} printed`:'✓ Saved — no printing logged';
+            msg.style.color='var(--green)';
+            btn.innerHTML='<i class="fa-solid fa-check" style="font-size:11px"></i> Saved';
+            setTimeout(()=>{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';},2000);
+        }else{throw new Error(data.error??'Unknown error');}
+    }catch(err){
+        msg.textContent='✗ Failed: '+err.message; msg.style.color='var(--red)';
+        btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
     }
 }
 
-function refreshPrintLogStrip(rid) {
-    const plog  = printLogMap[rid];
-    const logEl = document.getElementById('dPrintLog');
-    if (!plog) { logEl.style.display = 'none'; return; }
-    logEl.style.display = 'flex';
-    const logText  = document.getElementById('dPrintText');
-    const logBadge = document.getElementById('dPrintBadge');
-    if (plog.printed) {
-        logText.textContent  = `Printed ${plog.pages} page${plog.pages !== 1 ? 's' : ''}` + (plog.at ? ` · ${plog.at}` : '');
-        logBadge.textContent = `${plog.pages}pg`;
-        logBadge.className   = 'text-[10px] font-black px-2.5 py-1 rounded-full bg-green-100 text-green-700';
-    } else {
-        logText.textContent  = 'No printing during this session';
-        logBadge.textContent = 'No print';
-        logBadge.className   = 'text-[10px] font-black px-2.5 py-1 rounded-full bg-slate-200 text-slate-500';
+function refreshPrintLogStrip(rid){
+    const plog=printLogMap[rid],logEl=document.getElementById('dPrintLog');
+    if(!plog){logEl.style.display='none';return;}
+    logEl.style.display='flex';
+    const logText=document.getElementById('dPrintText'), logBadge=document.getElementById('dPrintBadge');
+    if(plog.printed){
+        logText.textContent=`Printed ${plog.pages} page${plog.pages!==1?'s':''}${plog.at?' · '+plog.at:''}`;
+        logBadge.textContent=`${plog.pages}pg`;
+        logBadge.style.cssText='background:var(--green-bg);color:var(--green)';
+    }else{
+        logText.textContent='No printing during this session';
+        logBadge.textContent='No print';
+        logBadge.style.cssText='background:#f1f5f9;color:var(--muted2)';
     }
 }
 
-function refreshBothPrintCells(rid, pages) {
-    allTableRows.forEach(row => {
-        if (row.dataset.id == rid) {
-            const cell = row.cells[7];
-            if (pages > 0) {
-                cell.innerHTML      = `<span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> ${pages}pg</span>`;
-                row.dataset.plPrinted = 'Yes';
-                row.dataset.plPages   = pages;
-            } else {
-                cell.innerHTML      = `<span class="print-pill-no"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>`;
-                row.dataset.plPrinted = 'No';
-                row.dataset.plPages   = '';
-            }
+function refreshBothPrintCells(rid,pages){
+    allTableRows.forEach(row=>{
+        if(row.dataset.id==rid){
+            const cell=row.cells[7];
+            if(pages>0){cell.innerHTML=`<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`;row.dataset.plPrinted='Yes';row.dataset.plPages=pages;}
+            else{cell.innerHTML=`<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;row.dataset.plPrinted='No';row.dataset.plPages='';}
         }
     });
-    allCards.forEach(card => {
-        if (card.dataset.id == rid) {
-            const wrapper = card.querySelector('.card-print-pill');
-            if (wrapper) {
-                if (pages > 0) {
-                    wrapper.innerHTML = `<span class="print-pill-yes"><i class="fa-solid fa-print text-[9px]"></i> ${pages}pg</span>`;
-                } else {
-                    wrapper.innerHTML = `<span class="print-pill-no"><i class="fa-solid fa-xmark text-[9px]"></i> No print</span>`;
-                }
-            }
-            card.dataset.plPrinted = pages > 0 ? 'Yes' : 'No';
-            card.dataset.plPages   = pages > 0 ? pages : '';
+    allCards.forEach(card=>{
+        if(card.dataset.id==rid){
+            const w=card.querySelector('.card-print-pill');
+            if(w){w.innerHTML=pages>0?`<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`:`<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;}
+            card.dataset.plPrinted=pages>0?'Yes':'No'; card.dataset.plPages=pages>0?pages:'';
         }
     });
 }
 
-function exportCSV() {
-    const visibleRows = allTableRows.filter(r => r.style.display !== 'none');
-    const headers = ['ID','User Name','Email','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
-    const escape  = v => { const s = String(v ?? ''); return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s; };
-    const lines   = [headers.map(escape).join(',')];
-    visibleRows.forEach(row => {
-        try {
-            const d = JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/, '').replace(/\)$/, ''));
-            lines.push([d.id??'',d.name??'',d.email??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));
-        } catch (e) {}
+function exportCSV(){
+    const visibleRows=allTableRows.filter(r=>r.style.display!=='none');
+    const headers=['ID','User Name','Email','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
+    const escape=v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
+    const lines=[headers.map(escape).join(',')];
+    visibleRows.forEach(row=>{
+        try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));
+        lines.push([d.id??'',d.name??'',d.email??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));}catch(e){}
     });
-    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = `admin-reservations-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
-    URL.revokeObjectURL(url);
+    const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=`admin-reservations-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url);
 }
 
-function setTab(btn, tab) { document.querySelectorAll('.qtab').forEach(t => t.classList.remove('active')); btn.classList.add('active'); curTab = tab; syncCards(tab); applyFilters(); }
-function filterByStatus(tab) { curTab = tab; document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab)); syncCards(tab); applyFilters(); }
-function syncCards(tab) { document.querySelectorAll('[data-filter]').forEach(c => c.classList.toggle('ring', c.dataset.filter === tab)); }
+function setTab(btn,tab){document.querySelectorAll('.qtab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');curTab=tab;syncCards(tab);applyFilters();}
+function filterByStatus(tab){curTab=tab;document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));syncCards(tab);applyFilters();}
+function syncCards(tab){document.querySelectorAll('[data-filter]').forEach(c=>c.classList.toggle('ring',c.dataset.filter===tab));}
 
-function applyFilters() {
-    const q    = document.getElementById('searchInput').value.toLowerCase().trim();
-    const date = document.getElementById('dateInput').value;
-    const matchesFilters = el => {
+function applyFilters(){
+    const q=document.getElementById('searchInput').value.toLowerCase().trim();
+    const date=document.getElementById('dateInput').value;
+    const matchesFilters=el=>{
         let matchTab;
-        if      (curTab === 'all')      matchTab = true;
-        else if (curTab === 'declined') matchTab = ['declined','canceled'].includes(el.dataset.status);
-        else                            matchTab = el.dataset.status === curTab;
-        return matchTab && (!q || el.dataset.search.includes(q)) && (!date || el.dataset.date === date);
+        if(curTab==='all') matchTab=true;
+        else if(curTab==='declined') matchTab=['declined','canceled'].includes(el.dataset.status);
+        else matchTab=el.dataset.status===curTab;
+        return matchTab&&(!q||el.dataset.search.includes(q))&&(!date||el.dataset.date===date);
     };
-    let n = 0;
-    allTableRows.forEach(row => { const show = matchesFilters(row); row.style.display = show ? '' : 'none'; if (show) n++; });
-    let cardVisible = 0;
-    allCards.forEach(card => { const show = matchesFilters(card); card.style.display = show ? '' : 'none'; if (show) cardVisible++; });
-    if (allCards.length > 0) document.getElementById('mobileEmpty').style.display = cardVisible === 0 ? 'block' : 'none';
-    const total = allTableRows.length;
-    document.getElementById('resultCount').textContent = `Showing ${n} of ${total} reservation${total !== 1 ? 's' : ''}`;
-    document.getElementById('tableFooter').textContent = `${n} result${n !== 1 ? 's' : ''} displayed`;
+    let n=0; allTableRows.forEach(row=>{const show=matchesFilters(row);row.style.display=show?'':'none';if(show)n++;});
+    let m=0; allCards.forEach(card=>{const show=matchesFilters(card);card.style.display=show?'':'none';if(show)m++;});
+    if(allCards.length>0) document.getElementById('mobileEmpty').style.display=m===0?'block':'none';
+    const total=allTableRows.length;
+    document.getElementById('resultCount').textContent=`Showing ${n} of ${total} reservation${total!==1?'s':''}`;
+    document.getElementById('tableFooter').textContent=`${n} result${n!==1?'s':''} displayed`;
 }
 
-function clearFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('dateInput').value   = '';
-    curTab = 'all';
-    document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'all'));
-    syncCards('all');
-    applyFilters();
+function clearFilters(){
+    document.getElementById('searchInput').value=''; document.getElementById('dateInput').value='';
+    curTab='all'; document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='all'));
+    syncCards('all'); applyFilters();
 }
 
-let sortDir = {};
-function sortTable(col) {
-    sortDir[col] = !sortDir[col];
-    const tbody = document.getElementById('tableBody');
-    Array.from(tbody.querySelectorAll('.res-row')).sort((a, b) => {
-        const at = (a.cells[col]?.innerText ?? '').trim().toLowerCase();
-        const bt = (b.cells[col]?.innerText ?? '').trim().toLowerCase();
-        return sortDir[col] ? at.localeCompare(bt) : bt.localeCompare(at);
-    }).forEach(r => tbody.appendChild(r));
-    document.querySelectorAll('thead th').forEach((th, i) => {
-        th.classList.toggle('sorted', i === col);
-        const ic = th.querySelector('.sort-icon');
-        if (ic) ic.className = `fa-solid ${i === col ? (sortDir[col] ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'} sort-icon`;
+let sortDir={};
+function sortTable(col){
+    sortDir[col]=!sortDir[col];
+    const tbody=document.getElementById('tableBody');
+    Array.from(tbody.querySelectorAll('.res-row')).sort((a,b)=>{
+        const at=(a.cells[col]?.innerText??'').trim().toLowerCase();
+        const bt=(b.cells[col]?.innerText??'').trim().toLowerCase();
+        return sortDir[col]?at.localeCompare(bt):bt.localeCompare(at);
+    }).forEach(r=>tbody.appendChild(r));
+    document.querySelectorAll('thead th').forEach((th,i)=>{
+        th.classList.toggle('sorted',i===col);
+        const ic=th.querySelector('.sort-icon');
+        if(ic) ic.className=`fa-solid ${i===col?(sortDir[col]?'fa-sort-up':'fa-sort-down'):'fa-sort'} sort-icon`;
     });
 }
 
-const STATUS_META = {
-    pending:   { icon: 'fa-clock',         bg: '#fef3c7', color: '#92400e', label: 'Pending — Awaiting approval' },
-    approved:  { icon: 'fa-circle-check',  bg: '#dcfce7', color: '#166534', label: 'Approved' },
-    claimed:   { icon: 'fa-check-double',  bg: '#f3e8ff', color: '#6b21a8', label: 'Claimed — Ticket used' },
-    declined:  { icon: 'fa-xmark-circle',  bg: '#fee2e2', color: '#991b1b', label: 'Declined' },
-    canceled:  { icon: 'fa-ban',           bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
-    expired:   { icon: 'fa-hourglass-end', bg: '#f1f5f9', color: '#475569', label: 'Expired — Was never approved' },
-    unclaimed: { icon: 'fa-ticket',        bg: '#fff7ed', color: '#c2410c', label: 'Unclaimed — Approved but did not show up' },
+const STATUS_META={
+    pending:   {icon:'fa-clock',        bg:'#fef3c7',color:'#92400e',label:'Pending — Awaiting approval'},
+    approved:  {icon:'fa-circle-check', bg:'#dcfce7',color:'#166534',label:'Approved'},
+    claimed:   {icon:'fa-check-double', bg:'#f3e8ff',color:'#6b21a8',label:'Claimed — Ticket used'},
+    declined:  {icon:'fa-xmark-circle', bg:'#fee2e2',color:'#991b1b',label:'Declined'},
+    canceled:  {icon:'fa-ban',          bg:'#fee2e2',color:'#991b1b',label:'Cancelled'},
+    expired:   {icon:'fa-hourglass-end',bg:'#f1f5f9',color:'#475569',label:'Expired — Was never approved'},
+    unclaimed: {icon:'fa-ticket',       bg:'#fff7ed',color:'#c2410c',label:'Unclaimed — Approved but did not show up'},
 };
 
-function openDetail(d) {
-    _currentReservationId = d.id;
-    const plog = printLogMap[d.id];
-    document.getElementById('printPagesInput').value = plog ? (plog.printed ? plog.pages : 0) : 0;
-    document.getElementById('printSaveMsg').textContent = '';
-    const saveBtn = document.getElementById('savePrintBtn');
-    saveBtn.disabled = false;
-    saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs"></i> Save';
+function openDetail(d){
+    _currentReservationId=d.id;
+    const plog=printLogMap[d.id];
+    document.getElementById('printPagesInput').value=plog?(plog.printed?plog.pages:0):0;
+    document.getElementById('printSaveMsg').textContent='';
+    const saveBtn=document.getElementById('savePrintBtn');
+    saveBtn.disabled=false; saveBtn.innerHTML='<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
 
-    const m = STATUS_META[d.status] || STATUS_META.pending;
-    document.getElementById('dId').textContent       = 'Reservation #' + d.id;
-    document.getElementById('dName').textContent     = d.name;
-    document.getElementById('dEmail').textContent    = d.email;
-    document.getElementById('dResource').textContent = d.resource;
-    document.getElementById('dPc').textContent       = d.pc ? 'PC: ' + d.pc : '';
-    document.getElementById('dDate').textContent     = d.date;
-    document.getElementById('dTime').textContent     = d.start + ' – ' + d.end;
-    document.getElementById('dPurpose').textContent  = d.purpose;
-    document.getElementById('dType').textContent     = d.type;
-    document.getElementById('dCreated').textContent  = d.created;
+    const m=STATUS_META[d.status]||STATUS_META.pending;
+    document.getElementById('dId').textContent='Reservation #'+d.id;
+    document.getElementById('dName').textContent=d.name;
+    document.getElementById('dEmail').textContent=d.email;
+    document.getElementById('dResource').textContent=d.resource;
+    document.getElementById('dPc').textContent=d.pc?'PC: '+d.pc:'';
+    document.getElementById('dDate').textContent=d.date;
+    document.getElementById('dTime').textContent=d.start+' – '+d.end;
+    document.getElementById('dPurpose').textContent=d.purpose;
+    document.getElementById('dType').textContent=d.type;
+    document.getElementById('dCreated').textContent=d.created;
 
-    const approverRow = document.getElementById('dApprovedByRow');
-    if (d.approverName && ['approved','claimed','declined','expired','unclaimed'].includes(d.status)) {
-        approverRow.style.display = 'flex';
-        const isDeclined = d.status === 'declined';
-        document.getElementById('dApprovedByLabel').textContent = isDeclined ? 'Declined By' : 'Approved By';
-        document.getElementById('dApprovedByIcon').className    = `dicon ${isDeclined ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`;
-        document.getElementById('dApprovedByIcon').innerHTML    = `<i class="fa-solid ${isDeclined ? 'fa-user-xmark' : 'fa-user-check'}"></i>`;
-        document.getElementById('dApprovedByName').textContent  = d.approverName;
-        document.getElementById('dApprovedByEmail').textContent = d.approverEmail || '';
-        document.getElementById('dApprovedAt').textContent      = d.approvedAt ? `on ${d.approvedAt}` : '';
-    } else { approverRow.style.display = 'none'; }
+    const approverRow=document.getElementById('dApprovedByRow');
+    if(d.approverName&&['approved','claimed','declined','expired','unclaimed'].includes(d.status)){
+        approverRow.style.display='flex';
+        const isDeclined=d.status==='declined';
+        document.getElementById('dApprovedByLabel').textContent=isDeclined?'Declined By':'Approved By';
+        const iconEl=document.getElementById('dApprovedByIcon');
+        iconEl.className='dicon';
+        iconEl.style.background=isDeclined?'var(--red-bg)':'var(--green-bg)';
+        iconEl.style.color=isDeclined?'var(--red)':'var(--green)';
+        iconEl.innerHTML=`<i class="fa-solid ${isDeclined?'fa-user-xmark':'fa-user-check'}"></i>`;
+        document.getElementById('dApprovedByName').textContent=d.approverName;
+        document.getElementById('dApprovedByEmail').textContent=d.approverEmail||'';
+        document.getElementById('dApprovedAt').textContent=d.approvedAt?`on ${d.approvedAt}`:'';
+    }else{approverRow.style.display='none';}
 
-    const bar = document.getElementById('dStatusBar');
-    bar.style.background = m.bg; bar.style.color = m.color;
-    bar.innerHTML = `<i class="fa-solid ${m.icon}"></i> <span>${m.label}</span>`;
+    const bar=document.getElementById('dStatusBar');
+    bar.style.background=m.bg; bar.style.color=m.color;
+    bar.innerHTML=`<i class="fa-solid ${m.icon}"></i> <span style="font-weight:700">${m.label}</span>`;
 
-    document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
+    document.getElementById('dUnclaimedBanner').style.display=d.unclaimed?'flex':'none';
 
-    const qrSec = document.getElementById('dQr'), clSec = document.getElementById('dClaimed');
-    if (d.claimed || d.status === 'claimed') {
-        qrSec.style.display = 'none'; clSec.style.display = 'block';
-    } else if (d.status === 'approved' || d.status === 'unclaimed') {
-        clSec.style.display = 'none'; qrSec.style.display = 'flex';
-        QRCode.toCanvas(document.getElementById('qrCanvas'), d.code, { width: 150, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } });
-        document.getElementById('dTicketCode').textContent = d.code;
-    } else { qrSec.style.display = 'none'; clSec.style.display = 'none'; }
+    const qrSec=document.getElementById('dQr'), clSec=document.getElementById('dClaimed');
+    if(d.claimed||d.status==='claimed'){
+        qrSec.style.display='none'; clSec.style.display='block';
+    }else if(d.status==='approved'||d.status==='unclaimed'){
+        clSec.style.display='none'; qrSec.style.display='flex';
+        QRCode.toCanvas(document.getElementById('qrCanvas'),d.code,{width:150,margin:1,color:{dark:'#1e293b',light:'#ffffff'}});
+        document.getElementById('dTicketCode').textContent=d.code;
+    }else{qrSec.style.display='none'; clSec.style.display='none';}
 
     refreshPrintLogStrip(d.id);
 
-    const acts = document.getElementById('dActions');
-    if (d.status === 'pending') {
-        acts.innerHTML = `<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve flex-1"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline flex-1"><i class="fa-solid fa-xmark"></i> Decline</button>`;
-    } else {
-        acts.innerHTML = `<button onclick="closeModal('detail')" class="btn-cancel w-full"><i class="fa-solid fa-xmark text-xs"></i> Close</button>`;
+    const acts=document.getElementById('dActions');
+    if(d.status==='pending'){
+        acts.innerHTML=`<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>`;
+    }else{
+        acts.innerHTML=`<button onclick="closeModal('detail')" class="btn-cancel" style="width:100%"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Close</button>`;
     }
     document.getElementById('detailModal').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow='hidden';
 }
 
-function downloadTicket() {
-    const canvas = document.getElementById('qrCanvas'), code = document.getElementById('dTicketCode').textContent;
-    const link = document.createElement('a');
-    link.download = `E-Ticket-${code}.png`; link.href = canvas.toDataURL('image/png'); link.click();
+function downloadTicket(){
+    const canvas=document.getElementById('qrCanvas'), code=document.getElementById('dTicketCode').textContent;
+    const link=document.createElement('a'); link.download=`E-Ticket-${code}.png`; link.href=canvas.toDataURL('image/png'); link.click();
 }
 
-function triggerApprove(id, name) { approveTargetId = id; document.getElementById('approveConfirmName').textContent = name ? `"${name}"` : ''; openModal('approve'); }
-function triggerDecline(id, name) { declineTargetId = id; document.getElementById('declineConfirmName').textContent = name ? `"${name}"` : ''; openModal('decline'); }
+function triggerApprove(id,name){approveTargetId=id;document.getElementById('approveConfirmName').textContent=name?`"${name}"`:'';openModal('approve');}
+function triggerDecline(id,name){declineTargetId=id;document.getElementById('declineConfirmName').textContent=name?`"${name}"`:'';openModal('decline');}
 
-document.getElementById('confirmApproveBtn').addEventListener('click', function () {
-    if (!approveTargetId) return;
-    this.disabled = true; this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving…';
-    document.getElementById('approveId').value = approveTargetId;
-    document.getElementById('approveForm').submit();
+document.getElementById('confirmApproveBtn').addEventListener('click',function(){
+    if(!approveTargetId)return;
+    this.disabled=true; this.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Approving…';
+    document.getElementById('approveId').value=approveTargetId; document.getElementById('approveForm').submit();
 });
-document.getElementById('confirmDeclineBtn').addEventListener('click', function () {
-    if (!declineTargetId) return;
-    this.disabled = true; this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Declining…';
-    document.getElementById('declineId').value = declineTargetId;
-    document.getElementById('declineForm').submit();
+document.getElementById('confirmDeclineBtn').addEventListener('click',function(){
+    if(!declineTargetId)return;
+    this.disabled=true; this.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Declining…';
+    document.getElementById('declineId').value=declineTargetId; document.getElementById('declineForm').submit();
 });
 
-const modalIds = { detail: 'detailModal', approve: 'approveModal', decline: 'declineModal' };
-function openModal(key)  { const el = document.getElementById(modalIds[key]); if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; } }
-function closeModal(key) {
-    const el = document.getElementById(modalIds[key]); if (el) { el.classList.remove('open'); document.body.style.overflow = ''; }
-    if (key === 'detail')  _currentReservationId = null;
-    if (key === 'approve') { const b = document.getElementById('confirmApproveBtn'); b.disabled = false; b.innerHTML = '<i class="fa-solid fa-check"></i> Approve'; }
-    if (key === 'decline') { const b = document.getElementById('confirmDeclineBtn'); b.disabled = false; b.innerHTML = '<i class="fa-solid fa-xmark"></i> Decline'; }
+const modalIds={detail:'detailModal',approve:'approveModal',decline:'declineModal'};
+function openModal(key){const el=document.getElementById(modalIds[key]);if(el){el.classList.add('open');document.body.style.overflow='hidden';}}
+function closeModal(key){
+    const el=document.getElementById(modalIds[key]);if(el){el.classList.remove('open');document.body.style.overflow='';}
+    if(key==='detail') _currentReservationId=null;
+    if(key==='approve'){const b=document.getElementById('confirmApproveBtn');b.disabled=false;b.innerHTML='<i class="fa-solid fa-check"></i> Approve';}
+    if(key==='decline'){const b=document.getElementById('confirmDeclineBtn');b.disabled=false;b.innerHTML='<i class="fa-solid fa-xmark"></i> Decline';}
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('detail'); closeModal('approve'); closeModal('decline'); } });
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('detail');closeModal('approve');closeModal('decline');}});
 
 applyFilters();
 
-// Auto-refresh
-const AUTO_REFRESH_INTERVAL = 30;
-let autoRefreshTimer = null, countdownTimer = null, secondsLeft = AUTO_REFRESH_INTERVAL, refreshPaused = false;
-
-const refreshIndicator = document.createElement('div');
-refreshIndicator.id    = 'autoRefreshIndicator';
-refreshIndicator.style.cssText = `position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,16px));right:16px;background:rgba(15,23,42,0.82);backdrop-filter:blur(8px);color:white;font-family:inherit;font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:999px;z-index:90;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,0.2);cursor:pointer;transition:opacity 0.2s;`;
-refreshIndicator.title = 'Click to refresh now';
-refreshIndicator.innerHTML = `<span id="refreshDot" style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;"></span><span id="refreshCountdown">Refresh in ${AUTO_REFRESH_INTERVAL}s</span>`;
+/* Auto-refresh */
+const AUTO_REFRESH_INTERVAL=30;
+let autoRefreshTimer=null,countdownTimer=null,secondsLeft=AUTO_REFRESH_INTERVAL,refreshPaused=false;
+const refreshIndicator=document.createElement('div');
+refreshIndicator.id='autoRefreshIndicator';
+refreshIndicator.style.cssText='position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,16px));right:16px;background:rgba(55,48,163,.9);backdrop-filter:blur(8px);color:white;font-family:var(--font);font-size:11px;font-weight:700;padding:6px 12px;border-radius:999px;z-index:90;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(55,48,163,.3);cursor:pointer;';
+refreshIndicator.title='Click to refresh now';
+refreshIndicator.innerHTML=`<span id="refreshDot" style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block"></span><span id="refreshCountdown">Refresh in ${AUTO_REFRESH_INTERVAL}s</span>`;
 document.body.appendChild(refreshIndicator);
-refreshIndicator.addEventListener('click', () => doAutoRefresh(true));
+refreshIndicator.addEventListener('click',()=>doAutoRefresh(true));
 
-function updateCountdown() {
-    const el = document.getElementById('refreshCountdown'), dot = document.getElementById('refreshDot');
-    if (!el) return;
-    if (refreshPaused) { el.textContent = 'Refresh paused'; dot.style.background = '#f59e0b'; }
-    else { el.textContent = `Refresh in ${secondsLeft}s`; dot.style.background = '#22c55e'; }
+function updateCountdown(){
+    const el=document.getElementById('refreshCountdown'),dot=document.getElementById('refreshDot');
+    if(!el)return;
+    if(refreshPaused){el.textContent='Refresh paused';dot.style.background='#fbbf24';}
+    else{el.textContent=`Refresh in ${secondsLeft}s`;dot.style.background='#4ade80';}
 }
-function startCountdown() {
-    clearInterval(countdownTimer); secondsLeft = AUTO_REFRESH_INTERVAL; updateCountdown();
-    countdownTimer = setInterval(() => { if (!refreshPaused) { secondsLeft--; if (secondsLeft <= 0) secondsLeft = AUTO_REFRESH_INTERVAL; } updateCountdown(); }, 1000);
-}
-async function doAutoRefresh(force = false) {
-    const anyOpen = document.querySelector('.overlay.open');
-    if (anyOpen && !force) return;
-    const search = document.getElementById('searchInput'), date = document.getElementById('dateInput');
-    if (!force && (document.activeElement === search || document.activeElement === date)) return;
-    try {
-        const dot = document.getElementById('refreshDot'), el = document.getElementById('refreshCountdown');
-        if (dot) dot.style.background = '#3b82f6';
-        if (el) el.textContent = 'Refreshing…';
-        const response = await fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }, credentials: 'same-origin' });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const html = await response.text();
-        const parser = new DOMParser(), newDoc = parser.parseFromString(html, 'text/html');
-        const newTbody = newDoc.querySelector('#tableBody'), oldTbody = document.querySelector('#tableBody');
-        if (newTbody && oldTbody) oldTbody.innerHTML = newTbody.innerHTML;
-        const newCards = newDoc.querySelector('#mobileCardList'), oldCards = document.querySelector('#mobileCardList');
-        if (newCards && oldCards) oldCards.innerHTML = newCards.innerHTML;
-        newDoc.querySelectorAll('.stat-card').forEach((nc, i) => { const oc = document.querySelectorAll('.stat-card')[i]; if (oc) oc.querySelector('p:last-child').textContent = nc.querySelector('p:last-child').textContent; });
-        allTableRows.length = 0; document.querySelectorAll('#tableBody .res-row').forEach(r => allTableRows.push(r));
-        allCards.length = 0; document.querySelectorAll('#mobileCardList .res-card').forEach(c => allCards.push(c));
-        applyFilters();
-        secondsLeft = AUTO_REFRESH_INTERVAL; updateCountdown();
-        if (dot) dot.style.background = '#22c55e';
-    } catch (err) {
-        console.warn('Auto-refresh failed:', err.message);
-        const dot = document.getElementById('refreshDot');
-        if (dot) { dot.style.background = '#ef4444'; setTimeout(() => { if(dot) dot.style.background = '#22c55e'; }, 3000); }
+function startCountdown(){clearInterval(countdownTimer);secondsLeft=AUTO_REFRESH_INTERVAL;updateCountdown();countdownTimer=setInterval(()=>{if(!refreshPaused){secondsLeft--;if(secondsLeft<=0)secondsLeft=AUTO_REFRESH_INTERVAL;}updateCountdown();},1000);}
+async function doAutoRefresh(force=false){
+    const anyOpen=document.querySelector('.overlay.open');
+    if(anyOpen&&!force)return;
+    const search=document.getElementById('searchInput'),date=document.getElementById('dateInput');
+    if(!force&&(document.activeElement===search||document.activeElement===date))return;
+    try{
+        const dot=document.getElementById('refreshDot'),el=document.getElementById('refreshCountdown');
+        if(dot)dot.style.background='#818cf8'; if(el)el.textContent='Refreshing…';
+        const response=await fetch(window.location.href,{headers:{'X-Requested-With':'XMLHttpRequest','Accept':'text/html'},credentials:'same-origin'});
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        const html=await response.text();
+        const parser=new DOMParser(),newDoc=parser.parseFromString(html,'text/html');
+        const newTbody=newDoc.querySelector('#tableBody'),oldTbody=document.querySelector('#tableBody');
+        if(newTbody&&oldTbody)oldTbody.innerHTML=newTbody.innerHTML;
+        const newCards=newDoc.querySelector('#mobileCardList'),oldCards=document.querySelector('#mobileCardList');
+        if(newCards&&oldCards)oldCards.innerHTML=newCards.innerHTML;
+        allTableRows.length=0;document.querySelectorAll('#tableBody .res-row').forEach(r=>allTableRows.push(r));
+        allCards.length=0;document.querySelectorAll('#mobileCardList .res-card').forEach(c=>allCards.push(c));
+        applyFilters(); secondsLeft=AUTO_REFRESH_INTERVAL; updateCountdown();
+        if(dot)dot.style.background='#4ade80';
+    }catch(err){
+        console.warn('Auto-refresh failed:',err.message);
+        const dot=document.getElementById('refreshDot');
+        if(dot){dot.style.background='#f87171';setTimeout(()=>{if(dot)dot.style.background='#4ade80';},3000);}
     }
 }
-
-const observer = new MutationObserver(() => { refreshPaused = !!document.querySelector('.overlay.open'); updateCountdown(); });
-document.querySelectorAll('.overlay').forEach(el => observer.observe(el, { attributes: true, attributeFilter: ['class'] }));
-['searchInput','dateInput'].forEach(id => {
-    const el = document.getElementById(id); if (!el) return;
-    el.addEventListener('focus', () => { refreshPaused = true; updateCountdown(); });
-    el.addEventListener('blur',  () => { refreshPaused = !!document.querySelector('.overlay.open'); updateCountdown(); });
+const observer=new MutationObserver(()=>{refreshPaused=!!document.querySelector('.overlay.open');updateCountdown();});
+document.querySelectorAll('.overlay').forEach(el=>observer.observe(el,{attributes:true,attributeFilter:['class']}));
+['searchInput','dateInput'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.addEventListener('focus',()=>{refreshPaused=true;updateCountdown();});
+    el.addEventListener('blur',()=>{refreshPaused=!!document.querySelector('.overlay.open');updateCountdown();});
 });
-autoRefreshTimer = setInterval(() => doAutoRefresh(), AUTO_REFRESH_INTERVAL * 1000);
+autoRefreshTimer=setInterval(()=>doAutoRefresh(),AUTO_REFRESH_INTERVAL*1000);
 startCountdown();
 </script>
 </body>
