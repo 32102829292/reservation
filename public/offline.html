@@ -3,124 +3,551 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#3730a3">
   <title>You're Offline | SK Reservation</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .pulse-ring {
-      animation: pulseRing 2s ease-out infinite;
-    }
-    @keyframes pulseRing {
-      0%   { transform: scale(0.8); opacity: 1; }
-      100% { transform: scale(1.6); opacity: 0; }
+    :root {
+      --indigo: #3730a3;
+      --indigo-mid: #4338ca;
+      --indigo-light: #eef2ff;
+      --indigo-border: #c7d2fe;
+      --bg: #f0f2f9;
+      --card: #ffffff;
+      --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --shadow-sm: 0 1px 4px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.04);
+      --shadow-md: 0 4px 16px rgba(15,23,42,.09), 0 2px 4px rgba(15,23,42,.04);
+      --shadow-lg: 0 12px 40px rgba(15,23,42,.12), 0 4px 8px rgba(15,23,42,.06);
+      --r-sm: 10px;
+      --r-md: 14px;
+      --r-lg: 20px;
+      --r-xl: 24px;
     }
 
-    .float {
-      animation: float 3s ease-in-out infinite;
+    html { height: 100%; height: 100dvh; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: #0f172a;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+    }
+
+    /* Grid background pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(99,102,241,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .blob-1 {
+      width: 400px; height: 400px;
+      background: rgba(99,102,241,.1);
+      top: -100px; left: -100px;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .blob-2 {
+      width: 350px; height: 350px;
+      background: rgba(139,92,246,.07);
+      bottom: -80px; right: -80px;
+      animation: drift 15s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    /* Brand strip */
+    .brand-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 32px;
+      animation: fadeDown .5s ease both;
+    }
+    .brand-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--indigo);
+      opacity: .3;
+    }
+    .brand-name {
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .brand-name em {
+      font-style: normal;
+      color: var(--indigo);
+    }
+
+    /* Main card */
+    .card {
+      background: var(--card);
+      border-radius: var(--r-xl);
+      border: 1px solid rgba(99,102,241,.1);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: fadeUp .5s .1s ease both;
+    }
+
+    /* Card hero */
+    .card-hero {
+      background: linear-gradient(135deg, #3730a3 0%, #4f46e5 50%, #6366f1 100%);
+      padding: 40px 32px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Icon */
+    .icon-ring {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .ring-pulse {
+      position: absolute;
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.2);
+      animation: ringPulse 2.4s ease-out infinite;
+    }
+    .ring-pulse:nth-child(2) { animation-delay: .8s; }
+    .ring-pulse:nth-child(3) { animation-delay: 1.6s; }
+    @keyframes ringPulse {
+      0%   { transform: scale(.7); opacity: .8; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+    .icon-box {
+      position: relative;
+      z-index: 1;
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,.12);
+      border: 1.5px solid rgba(255,255,255,.2);
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      animation: float 4s ease-in-out infinite;
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
     }
     @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50%       { transform: translateY(-12px); }
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
     }
 
-    .dot-bounce { display: inline-flex; gap: 4px; }
+    .card-hero h1 {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -.04em;
+      line-height: 1.1;
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .card-hero p {
+      font-size: .82rem;
+      color: rgba(255,255,255,.65);
+      font-weight: 500;
+      line-height: 1.6;
+      position: relative;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: rgba(0,0,0,.18);
+      border-top: 1px solid rgba(255,255,255,.08);
+      position: relative;
+    }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #f59e0b;
+      flex-shrink: 0;
+    }
+    .status-dot.online { background: #34d399; }
+    .status-text {
+      font-size: .7rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.6);
+      letter-spacing: .04em;
+    }
+    .dot-bounce {
+      display: inline-flex;
+      gap: 3px;
+      align-items: center;
+    }
     .dot-bounce span {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #16a34a;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.5);
       animation: dotBounce 1.4s ease-in-out infinite;
     }
-    .dot-bounce span:nth-child(2) { animation-delay: 0.2s; }
-    .dot-bounce span:nth-child(3) { animation-delay: 0.4s; }
+    .dot-bounce span:nth-child(2) { animation-delay: .2s; }
+    .dot-bounce span:nth-child(3) { animation-delay: .4s; }
     @keyframes dotBounce {
-      0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+      0%, 80%, 100% { transform: scale(0); opacity: .4; }
       40%            { transform: scale(1);   opacity: 1;   }
     }
 
-    .cached-item { transition: all 0.2s; }
-    .cached-item:hover { transform: translateX(4px); }
+    /* Card body */
+    .card-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Pending pill */
+    .pending-pill {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: var(--r-md);
+    }
+    .pending-pill .pp-icon {
+      width: 32px; height: 32px;
+      background: #fed7aa;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: .75rem;
+      color: #c2410c;
+    }
+    .pending-pill .pp-text {
+      font-size: .78rem;
+      font-weight: 700;
+      color: #92400e;
+    }
+    .pending-pill .pp-sub {
+      font-size: .65rem;
+      color: #d97706;
+      margin-top: 1px;
+      font-weight: 500;
+    }
+    .pending-count-badge {
+      margin-left: auto;
+      background: #f59e0b;
+      color: white;
+      font-size: .62rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    /* Section */
+    .section-lbl {
+      font-size: .58rem;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    /* Cached pages */
+    .cached-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .cached-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--r-sm);
+      text-decoration: none;
+      transition: all .15s;
+      color: #0f172a;
+    }
+    .cached-item:hover {
+      background: var(--indigo-light);
+      transform: translateX(3px);
+    }
+    .cached-icon {
+      width: 30px; height: 30px;
+      background: var(--indigo-light);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .72rem;
+      color: var(--indigo);
+      flex-shrink: 0;
+    }
+    .cached-label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: #334155;
+    }
+    .cached-chevron {
+      margin-left: auto;
+      color: #e2e8f0;
+      font-size: .65rem;
+    }
+    .cached-empty {
+      font-size: .78rem;
+      color: #94a3b8;
+      font-style: italic;
+      padding: 8px 12px;
+    }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(99,102,241,.07);
+    }
+
+    /* Retry button */
+    .retry-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px;
+      background: var(--indigo);
+      color: white;
+      border: none;
+      border-radius: var(--r-sm);
+      font-size: .875rem;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all .18s;
+      box-shadow: 0 4px 12px rgba(55,48,163,.28);
+    }
+    .retry-btn:hover {
+      background: #312e81;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(55,48,163,.35);
+    }
+    .retry-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Footer note */
+    .footer-note {
+      text-align: center;
+      font-size: .65rem;
+      color: #94a3b8;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* Restored state */
+    .restored-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: var(--r-md);
+    }
+    .restored-banner .rb-icon {
+      width: 32px; height: 32px;
+      background: #bbf7d0;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .75rem;
+      color: #15803d;
+      flex-shrink: 0;
+    }
+    .restored-banner .rb-text {
+      font-size: .78rem;
+      font-weight: 700;
+      color: #14532d;
+    }
+    .restored-banner .rb-sub {
+      font-size: .65rem;
+      color: #16a34a;
+      margin-top: 1px;
+    }
+
+    @media (max-width: 480px) {
+      .card-hero { padding: 32px 20px 24px; }
+      .card-body  { padding: 18px; }
+    }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center px-6 py-12">
+<body>
 
-  <!-- Background blobs -->
-  <div class="fixed inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute -top-32 -left-32 w-96 h-96 bg-green-100 rounded-full opacity-40 blur-3xl"></div>
-    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-emerald-100 rounded-full opacity-40 blur-3xl"></div>
-  </div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
 
-  <div class="relative z-10 max-w-md w-full text-center">
+  <div class="container">
 
-    <!-- Animated icon -->
-    <div class="relative inline-flex items-center justify-center mb-10">
-      <div class="pulse-ring absolute w-32 h-32 rounded-full border-4 border-green-200"></div>
-      <div class="float w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center border border-slate-100">
-        <i class="fas fa-wifi text-4xl text-slate-400"></i>
+    <!-- Brand -->
+    <div class="brand-strip">
+      <div class="brand-dot"></div>
+      <span class="brand-name">my<em>Space.</em> &nbsp;·&nbsp; SK Officer Portal</span>
+      <div class="brand-dot"></div>
+    </div>
+
+    <div class="card">
+
+      <!-- Hero -->
+      <div class="card-hero">
+        <div class="icon-ring">
+          <div class="ring-pulse"></div>
+          <div class="ring-pulse"></div>
+          <div class="ring-pulse"></div>
+          <div class="icon-box">
+            <i class="fa-solid fa-wifi-slash" style="font-size:1.6rem;color:rgba(255,255,255,.85)"></i>
+          </div>
+        </div>
+        <h1>You're offline</h1>
+        <p>No internet connection detected. Your data is safe — everything will sync automatically once you're back online.</p>
+
+        <!-- Status bar -->
+        <div class="status-bar" style="margin: 20px -32px -32px; padding: 10px 32px;">
+          <div class="dot-bounce" id="statusDots"><span></span><span></span><span></span></div>
+          <div class="status-dot" id="statusDot"></div>
+          <span class="status-text" id="statusText">Checking connection…</span>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="card-body">
+
+        <!-- Restored banner (hidden by default) -->
+        <div class="restored-banner" id="restoredBanner">
+          <div class="rb-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div>
+            <p class="rb-text">Connection restored!</p>
+            <p class="rb-sub">Reloading in a moment…</p>
+          </div>
+        </div>
+
+        <!-- Pending reservations -->
+        <div class="pending-pill" id="pendingPill">
+          <div class="pp-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          <div>
+            <p class="pp-text">Pending sync</p>
+            <p class="pp-sub">Waiting for connection to upload</p>
+          </div>
+          <span class="pending-count-badge" id="pendingBadge">0</span>
+        </div>
+
+        <!-- Cached pages -->
+        <div>
+          <p class="section-lbl">Available offline</p>
+          <div class="cached-list" id="cachedPagesList">
+            <p class="cached-empty">Checking saved pages…</p>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Retry -->
+        <button class="retry-btn" id="retryBtn" onclick="retryConnection()">
+          <i class="fa-solid fa-rotate-right" style="font-size:.8rem"></i> Try Again
+        </button>
+
+        <p class="footer-note">
+          <i class="fa-solid fa-shield-halved" style="font-size:.6rem;margin-right:3px"></i>
+          Your reservations are saved locally and will sync when reconnected.
+        </p>
+
       </div>
     </div>
 
-    <!-- Message -->
-    <h1 class="text-3xl font-black text-slate-900 tracking-tight mb-3">You're offline</h1>
-    <p class="text-slate-500 font-medium mb-2 leading-relaxed">
-      Looks like you lost your connection. Don't worry — your reservation has been saved and will sync automatically when you're back online.
+    <!-- Bottom label -->
+    <p style="text-align:center;font-size:.62rem;color:#cbd5e1;font-weight:600;margin-top:16px;letter-spacing:.06em">
+      SK RESERVATION SYSTEM &nbsp;·&nbsp; OFFLINE MODE
     </p>
 
-    <!-- Pending reservations count (from your version) -->
-    <div id="pendingCount" class="bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 mb-4">
-      <p class="text-blue-800 font-bold text-sm">
-        <i class="fa-solid fa-clock-rotate-left mr-2"></i>
-        <span id="count">0</span> pending reservation(s) waiting to sync
-      </p>
-    </div>
-
-    <!-- Connection status -->
-    <div id="statusCheck" class="flex items-center justify-center gap-2 text-sm text-slate-400 mb-8">
-      <div class="dot-bounce"><span></span><span></span><span></span></div>
-      <span id="statusText">Checking connection…</span>
-    </div>
-
-    <!-- Cached pages you can still visit -->
-    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 mb-6 text-left">
-      <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Available offline</p>
-      <div id="cachedPagesList" class="space-y-1">
-        <p class="text-sm text-slate-400 italic">Checking saved pages…</p>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <button onclick="retryConnection()" id="retryBtn"
-      class="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-2xl transition flex items-center justify-center gap-2 text-sm mb-3">
-      <i class="fas fa-sync mr-2"></i> Try Again
-    </button>
-
-    <p class="text-xs text-slate-400 font-medium">
-      <i class="fas fa-info-circle mr-1"></i>
-      Reservations will sync automatically when connection is restored.
-    </p>
-
-    <!-- Footer -->
-    <p class="mt-8 text-xs text-slate-300 font-medium">
-      SK Reservation System &nbsp;·&nbsp; Offline Mode
-    </p>
   </div>
 
   <script>
-    // ── Register SW (from your version) ────────────────────────────────────────
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');
     }
 
-    // ── Pending count from localStorage (from your version) ───────────────────
     function updatePendingCount() {
       const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
-      document.getElementById('count').textContent = pending.length;
-      document.getElementById('pendingCount').style.display =
-        pending.length > 0 ? 'block' : 'none';
+      const pill = document.getElementById('pendingPill');
+      const badge = document.getElementById('pendingBadge');
+      badge.textContent = pending.length;
+      pill.style.display = pending.length > 0 ? 'flex' : 'none';
     }
 
-    // ── Show cached pages (from earlier version) ───────────────────────────────
     async function showCachedPages() {
       const list = document.getElementById('cachedPagesList');
       try {
@@ -133,66 +560,71 @@
 
         const unique = [...new Set(pages)];
         if (!unique.length) {
-          list.innerHTML = '<p class="text-sm text-slate-400 italic">No pages cached yet. Visit some pages while online first.</p>';
+          list.innerHTML = '<p class="cached-empty">No pages cached yet. Visit some pages while online first.</p>';
           return;
         }
 
         const labels = {
-          '/dashboard':        { icon: 'fa-house',        label: 'Dashboard' },
-          '/reservation':      { icon: 'fa-plus',         label: 'New Reservation' },
-          '/reservation-list': { icon: 'fa-calendar',     label: 'My Reservations' },
-          '/profile':          { icon: 'fa-user',         label: 'Profile' },
-          '/sk/dashboard':     { icon: 'fa-house',        label: 'SK Dashboard' },
-          '/admin/dashboard':  { icon: 'fa-house',        label: 'Admin Dashboard' },
+          '/dashboard':           { icon: 'fa-house',        label: 'Dashboard' },
+          '/reservation':         { icon: 'fa-plus',         label: 'New Reservation' },
+          '/reservation-list':    { icon: 'fa-calendar',     label: 'My Reservations' },
+          '/profile':             { icon: 'fa-user',         label: 'Profile' },
+          '/sk/dashboard':        { icon: 'fa-house',        label: 'SK Dashboard' },
+          '/sk/reservations':     { icon: 'fa-calendar-alt', label: 'All Reservations' },
+          '/sk/new-reservation':  { icon: 'fa-plus',         label: 'New Reservation' },
+          '/sk/my-reservations':  { icon: 'fa-calendar',     label: 'My Reservations' },
+          '/sk/scanner':          { icon: 'fa-qrcode',       label: 'Scanner' },
+          '/admin/dashboard':     { icon: 'fa-house',        label: 'Admin Dashboard' },
         };
 
         list.innerHTML = unique.map(path => {
           const meta = labels[path] || { icon: 'fa-file', label: path };
           return `
-            <a href="${path}" class="cached-item flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition">
-              <div class="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <i class="fa-solid ${meta.icon} text-green-600 text-xs"></i>
-              </div>
-              <span class="font-semibold text-sm text-slate-700">${meta.label}</span>
-              <span class="ml-auto text-slate-300">
-                <i class="fa-solid fa-chevron-right text-xs"></i>
-              </span>
+            <a href="${path}" class="cached-item">
+              <div class="cached-icon"><i class="fa-solid ${meta.icon}"></i></div>
+              <span class="cached-label">${meta.label}</span>
+              <i class="fa-solid fa-chevron-right cached-chevron"></i>
             </a>`;
         }).join('');
       } catch {
-        list.innerHTML = '<p class="text-sm text-slate-400 italic">Cache unavailable.</p>';
+        list.innerHTML = '<p class="cached-empty">Cache unavailable in this browser.</p>';
       }
     }
 
-    // ── Connection status ──────────────────────────────────────────────────────
     function updateStatus() {
-      const text = document.getElementById('statusText');
-      const dots = document.querySelector('.dot-bounce');
+      const dot   = document.getElementById('statusDot');
+      const dots  = document.getElementById('statusDots');
+      const text  = document.getElementById('statusText');
+      const banner = document.getElementById('restoredBanner');
+
       if (navigator.onLine) {
         dots.style.display = 'none';
-        text.textContent = '✓ Connection restored — reloading…';
-        text.classList.add('text-green-600', 'font-semibold');
-        // Notify SW to skip waiting (from your version)
+        dot.classList.add('online');
+        text.textContent = 'Connection restored — reloading…';
+        banner.style.display = 'flex';
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
           navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
         }
-        setTimeout(() => location.reload(), 1200);
+        setTimeout(() => location.reload(), 1500);
       } else {
-        text.textContent = 'Still offline';
+        dots.style.display = 'inline-flex';
+        dot.classList.remove('online');
+        text.textContent = 'No connection detected';
       }
     }
 
     function retryConnection() {
       const btn = document.getElementById('retryBtn');
-      btn.innerHTML = '<i class="fas fa-sync fa-spin mr-2"></i> Checking…';
-      fetch('/dashboard', { cache: 'no-store' })
+      btn.innerHTML = '<i class="fa-solid fa-rotate-right fa-spin" style="font-size:.8rem"></i> Checking…';
+      btn.disabled = true;
+      fetch('/sk/dashboard', { cache: 'no-store' })
         .then(() => location.reload())
         .catch(() => {
-          btn.innerHTML = '<i class="fas fa-sync mr-2"></i> Try Again';
+          btn.innerHTML = '<i class="fa-solid fa-rotate-right" style="font-size:.8rem"></i> Try Again';
+          btn.disabled = false;
         });
     }
 
-    // ── Listen for SW messages (from your version) ─────────────────────────────
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', event => {
         if (event.data?.type === 'RESERVATIONS_SYNCED') {
@@ -201,7 +633,6 @@
       });
     }
 
-    // ── Init ───────────────────────────────────────────────────────────────────
     window.addEventListener('online',  updateStatus);
     window.addEventListener('offline', updateStatus);
 
