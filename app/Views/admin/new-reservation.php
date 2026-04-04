@@ -1,414 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>New Reservation | Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-    <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#2563eb">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SK Admin">
-    <link rel="apple-touch-icon" href="/assets/img/icon-192.png">
+    <meta name="theme-color" content="#3730a3">
+    <script>(function(){if(localStorage.getItem('admin_theme')==='dark')document.documentElement.classList.add('dark-pre')})();</script>
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+        :root{
+            --indigo:#3730a3;--indigo-mid:#4338ca;--indigo-light:#eef2ff;--indigo-border:#c7d2fe;
+            --bg:#f0f2f9;--card:#ffffff;
+            --font:'Plus Jakarta Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+            --shadow-sm:0 1px 4px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);
+            --shadow-md:0 4px 16px rgba(15,23,42,.09),0 2px 4px rgba(15,23,42,.04);
+            --shadow-lg:0 12px 40px rgba(15,23,42,.12),0 4px 8px rgba(15,23,42,.06);
+            --r-sm:10px;--r-md:14px;--r-lg:20px;--r-xl:24px;
+            --sidebar-w:268px;--ease:.18s cubic-bezier(.4,0,.2,1);
+            --mob-nav-h:60px;--mob-nav-total:calc(var(--mob-nav-h) + env(safe-area-inset-bottom,0px));
         }
 
-        .sidebar-card {
-            background: white;
-            border-radius: 32px;
-            border: 1px solid #e2e8f0;
-            height: calc(100vh - 48px);
-            position: sticky;
-            top: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        html{height:100%;height:100dvh;font-size:16px}
+        body{font-family:var(--font);background:var(--bg);color:#0f172a;display:flex;height:100vh;height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased;}
+        html.dark-pre body{background:#060e1e}
 
-        .sidebar-header {
-            flex-shrink: 0;
-            padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
-        }
+        /* ── Sidebar ── */
+        .sidebar{width:var(--sidebar-w);flex-shrink:0;padding:18px 14px;height:100vh;height:100dvh;display:flex;flex-direction:column}
+        .sidebar-inner{background:var(--card);border-radius:var(--r-xl);border:1px solid rgba(99,102,241,.1);height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-md)}
+        .sidebar-top{padding:22px 18px 16px;border-bottom:1px solid rgba(99,102,241,.07)}
+        .sidebar-nav{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:3px;scrollbar-width:none}
+        .sidebar-nav::-webkit-scrollbar{display:none}
+        .sidebar-footer{flex-shrink:0;padding:10px 10px 12px;border-top:1px solid rgba(99,102,241,.07)}
+        .nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:#64748b;text-decoration:none;transition:all var(--ease)}
+        .nav-link:hover{background:var(--indigo-light);color:var(--indigo)}
+        .nav-link.active{background:var(--indigo);color:#fff;box-shadow:0 4px 14px rgba(55,48,163,.32)}
+        .nav-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem}
+        .nav-link:not(.active) .nav-icon{background:#f1f5f9}
+        .nav-link:hover:not(.active) .nav-icon{background:#e0e7ff}
+        .nav-link.active .nav-icon{background:rgba(255,255,255,.15)}
+        .logout-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:#94a3b8;text-decoration:none;transition:all var(--ease)}
+        .logout-link:hover{background:#fef2f2;color:#dc2626}
+        .logout-link:hover .nav-icon{background:#fee2e2}
 
-        .sidebar-nav {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 8px;
-        }
+        /* ── Mobile Nav ── */
+        .mobile-nav-pill{display:none;position:fixed;bottom:0;left:0;right:0;width:100%;background:white;border-top:1px solid rgba(99,102,241,.1);height:var(--mob-nav-total);z-index:200;box-shadow:0 -4px 20px rgba(55,48,163,.1)}
+        .mobile-scroll-container{display:flex;justify-content:space-evenly;align-items:center;height:var(--mob-nav-h);width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 4px}
+        .mobile-scroll-container::-webkit-scrollbar{display:none}
+        .mob-nav-item{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 10px;border-radius:12px;cursor:pointer;text-decoration:none;color:#64748b;transition:background .15s,color .15s;font-size:.62rem;font-weight:700;gap:2px}
+        .mob-nav-item:hover,.mob-nav-item.active{background:var(--indigo-light);color:var(--indigo)}
 
-        .sidebar-nav::-webkit-scrollbar {
-            width: 6px;
-        }
+        @media(max-width:1023px){.sidebar{display:none!important}.mobile-nav-pill{display:flex!important}.main-area{padding-bottom:calc(var(--mob-nav-total) + 16px)!important}}
+        @media(min-width:1024px){.sidebar{display:flex!important}.mobile-nav-pill{display:none!important}}
 
-        .sidebar-nav::-webkit-scrollbar-track {
-            background: transparent;
-        }
+        /* ── Main ── */
+        .main-area{flex:1;min-width:0;height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:24px 28px 40px}
+        @media(max-width:1023px){.main-area::-webkit-scrollbar{display:none}.main-area{scrollbar-width:none}}
+        @media(min-width:1024px){.main-area::-webkit-scrollbar{width:4px}.main-area::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}}
+        @media(max-width:639px){.main-area{padding:14px 12px 20px}}
 
-        .sidebar-nav::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
+        /* ── Cards ── */
+        .card{background:var(--card);border-radius:var(--r-lg);border:1px solid rgba(99,102,241,.08);box-shadow:var(--shadow-sm)}
 
-        .sidebar-nav::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        /* ── Form Styles ── */
+        .form-card{background:var(--card);border-radius:var(--r-xl);border:1px solid rgba(99,102,241,.08);box-shadow:var(--shadow-sm);padding:32px;max-width:760px;margin:0 auto}
+        @media(max-width:639px){.form-card{padding:20px 16px}}
 
-        .sidebar-footer {
-            flex-shrink: 0;
-            padding: 16px;
-            border-top: 1px solid #e2e8f0;
-        }
+        .field-label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px}
+        .field-input{width:100%;padding:.875rem 1rem;border:1px solid rgba(99,102,241,.15);font-size:.88rem;transition:all .2s;background:#f8fafc;border-radius:var(--r-sm);font-family:var(--font);color:#0f172a;outline:none}
+        .field-input:focus{border-color:var(--indigo);background:white;box-shadow:0 0 0 4px rgba(55,48,163,.08)}
+        .field-input[readonly]{background:#f1f5f9;color:#64748b;cursor:not-allowed}
+        select.field-input{cursor:pointer}
 
-        .sidebar-item {
-            transition: all 0.2s;
-        }
+        .section-divider{border:none;border-top:1px solid rgba(99,102,241,.08);margin:1.75rem 0}
 
-        .sidebar-item.active {
-            background: #2563eb;
-            color: white;
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-        }
+        /* ── Type Toggle ── */
+        .type-toggle{display:flex;background:#f1f5f9;padding:5px;border-radius:14px;gap:4px}
+        .type-btn{flex:1;text-align:center;padding:.7rem 1rem;border-radius:10px;cursor:pointer;font-weight:700;font-size:.82rem;transition:all .18s;color:#64748b;border:none;background:transparent;font-family:var(--font)}
+        .type-btn.active{background:var(--indigo);color:white;box-shadow:0 4px 14px rgba(55,48,163,.3)}
 
-        .mobile-nav-pill {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 92%;
-            max-width: 600px;
-            background: rgba(30, 41, 59, 0.98);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            padding: 6px;
-            z-index: 100;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-        }
+        /* ── Autocomplete ── */
+        .autocomplete-wrap{position:relative}
+        .autocomplete-list{position:absolute;z-index:50;background:white;border:1px solid rgba(99,102,241,.15);border-radius:var(--r-md);box-shadow:var(--shadow-md);max-height:220px;overflow-y:auto;width:100%;top:calc(100% + 4px);left:0}
+        .autocomplete-item{padding:11px 14px;cursor:pointer;font-size:.85rem;transition:background .12s}
+        .autocomplete-item:hover{background:var(--indigo-light);color:var(--indigo)}
+        .autocomplete-item .sub{font-size:.72rem;color:#94a3b8;margin-top:2px}
 
-        .mobile-scroll-container {
-            display: flex;
-            gap: 4px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
+        /* ── PC Section ── */
+        .pc-section{background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:var(--r-md);padding:16px}
 
-        .mobile-scroll-container::-webkit-scrollbar {
-            display: none;
-        }
+        /* ── Button ── */
+        .btn-primary{background:var(--indigo);color:white;border:none;padding:.875rem 1.75rem;border-radius:var(--r-md);font-weight:800;font-size:.85rem;letter-spacing:.04em;cursor:pointer;transition:all .2s;font-family:var(--font);display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(55,48,163,.28)}
+        .btn-primary:hover{background:var(--indigo-mid);transform:translateY(-2px);box-shadow:0 8px 20px rgba(55,48,163,.35)}
+        .btn-primary:active{transform:translateY(0)}
 
-        .form-card {
-            background: white;
-            border-radius: 28px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02);
-        }
+        /* ── Flash ── */
+        .flash-err{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:13px 18px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-weight:700;border-radius:var(--r-md);font-size:.875rem}
 
-        .section-divider {
-            border: none;
-            border-top: 1px solid #f1f5f9;
-            margin: 2rem 0;
-        }
+        /* ── Icon helper ── */
+        .section-icon{width:36px;height:36px;border-radius:10px;background:var(--indigo-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 1px solid #e2e8f0;
-            font-size: 0.92rem;
-            transition: all 0.2s;
-            background: #fcfdfe;
-            border-radius: 12px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #1e293b;
-        }
+        /* ── Modal ── */
+        .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(7px);z-index:200;padding:1.5rem;overflow-y:auto;align-items:center;justify-content:center}
+        .modal-backdrop.show{display:flex;animation:fadeIn .15s ease}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        .modal-box{background:white;border-radius:var(--r-xl);width:100%;max-width:460px;padding:28px;margin:auto;animation:slideUp .2s ease;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+        @keyframes slideUp{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
 
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #2563eb;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
-        }
+        .mrow{display:flex;justify-content:space-between;align-items:flex-start;padding:.55rem 0;border-bottom:1px solid rgba(99,102,241,.07);gap:1rem}
+        .mrow:last-child{border-bottom:none}
+        .mrow-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:#94a3b8;flex-shrink:0}
+        .mrow-value{font-weight:700;color:#0f172a;font-size:.83rem;text-align:right}
 
-        input[readonly] {
-            background: #f1f5f9;
-            color: #64748b;
-            cursor: not-allowed;
-        }
+        .sheet-handle{display:none;width:36px;height:4px;background:#e2e8f0;border-radius:999px;margin:0 auto 16px}
+        @media(max-width:639px){.modal-backdrop{padding:0;align-items:flex-end!important}.modal-box{border-radius:var(--r-xl) var(--r-xl) 0 0;max-width:100%;animation:sheetUp .25s cubic-bezier(.34,1.2,.64,1) both}.sheet-handle{display:block}}
+        @keyframes sheetUp{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
 
-        .type-btn {
-            flex: 1;
-            text-align: center;
-            padding: 0.75rem 1rem;
-            border-radius: 14px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-            color: #64748b;
-            border: none;
-            background: transparent;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .type-btn.active {
-            background: #2563eb;
-            color: white;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-        }
-
-        .autocomplete-wrap {
-            position: relative;
-        }
-
-        .autocomplete-list {
-            position: absolute;
-            z-index: 50;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-            max-height: 220px;
-            overflow-y: auto;
-            width: 100%;
-            top: calc(100% + 4px);
-            left: 0;
-        }
-
-        .autocomplete-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            font-size: 0.88rem;
-            transition: background 0.15s;
-        }
-
-        .autocomplete-item:hover {
-            background: #eff6ff;
-            color: #2563eb;
-        }
-
-        .autocomplete-item .sub {
-            font-size: 0.75rem;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            transition: all 0.25s;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-            transform: translateY(-2px);
-            box-shadow: 0 12px 20px -5px rgba(37, 99, 235, 0.35);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .modal-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(6px);
-            z-index: 200;
-            padding: 1.5rem;
-            overflow-y: auto;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-backdrop.show {
-            display: flex;
-            animation: fadeIn 0.15s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .modal-box {
-            background: white;
-            border-radius: 32px;
-            width: 100%;
-            max-width: 460px;
-            padding: 2.5rem;
-            margin: auto;
-            animation: slideUp 0.2s ease;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(16px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .mrow {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid #f1f5f9;
-            gap: 1rem;
-        }
-
-        .mrow:last-child {
-            border-bottom: none;
-        }
-
-        .mrow-label {
-            font-size: 0.68rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #94a3b8;
-            flex-shrink: 0;
-        }
-
-        .mrow-value {
-            font-weight: 700;
-            color: #1e293b;
-            font-size: 0.85rem;
-            text-align: right;
-        }
-
-        .field-label {
-            font-size: 0.68rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #94a3b8;
-            display: block;
-            margin-bottom: 0.4rem;
-        }
-
-        .pc-section {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 20px;
-            padding: 1.5rem;
-        }
+        /* ── Dark Mode ── */
+        body.dark{--bg:#060e1e;--card:#0b1628;--indigo-light:rgba(55,48,163,.12);--indigo-border:rgba(99,102,241,.25);color:#e2eaf8}
+        body.dark .sidebar-inner{background:#0b1628;border-color:rgba(99,102,241,.12)}
+        body.dark .sidebar-top,.body.dark .sidebar-footer{border-color:rgba(99,102,241,.1)}
+        body.dark .nav-link{color:#7fb3e8}
+        body.dark .nav-link:hover{background:rgba(99,102,241,.12);color:#a5b4fc}
+        body.dark .nav-link:not(.active) .nav-icon{background:rgba(99,102,241,.1)}
+        body.dark .nav-link:hover:not(.active) .nav-icon{background:rgba(99,102,241,.2)}
+        body.dark .logout-link{color:#4a6fa5}
+        body.dark .logout-link:hover{background:rgba(239,68,68,.1);color:#f87171}
+        body.dark .logout-link:hover .nav-icon{background:rgba(239,68,68,.12)}
+        body.dark .mobile-nav-pill{background:#0b1628;border-color:rgba(99,102,241,.18)}
+        body.dark .mob-nav-item{color:#7fb3e8}
+        body.dark .mob-nav-item.active{background:rgba(99,102,241,.18)}
+        body.dark .form-card{background:#0b1628;border-color:rgba(99,102,241,.1)}
+        body.dark .field-input{background:#101e35;border-color:rgba(99,102,241,.18);color:#e2eaf8}
+        body.dark .field-input:focus{background:#0b1628;border-color:var(--indigo)}
+        body.dark .field-input[readonly]{background:#060e1e;color:#4a6fa5}
+        body.dark .type-toggle{background:#101e35}
+        body.dark .type-btn{color:#7fb3e8}
+        body.dark .section-divider{border-color:rgba(99,102,241,.1)}
+        body.dark .section-icon{background:rgba(55,48,163,.2)}
+        body.dark .pc-section{background:rgba(55,48,163,.1);border-color:rgba(99,102,241,.2)}
+        body.dark .flash-err{background:rgba(220,38,38,.1);border-color:rgba(248,113,113,.3);color:#f87171}
+        body.dark .autocomplete-list{background:#0b1628;border-color:rgba(99,102,241,.18)}
+        body.dark .autocomplete-item:hover{background:rgba(99,102,241,.12);color:#a5b4fc}
+        body.dark .autocomplete-item .sub{color:#4a6fa5}
+        body.dark .modal-box{background:#0b1628;color:#e2eaf8}
+        body.dark .mrow-label{color:#4a6fa5}
+        body.dark .mrow-value{color:#e2eaf8}
+        body.dark .mrow{border-color:rgba(99,102,241,.08)}
+        body.dark .sheet-handle{background:#1e3a5f}
+        body.dark .modal-box .bg-slate-50{background:#101e35!important;border-color:rgba(99,102,241,.1)!important}
+        body.dark input[placeholder]{color:#4a6fa5}
+        body.dark .field-input::placeholder{color:#4a6fa5}
+        body.dark select.field-input option{background:#0b1628;color:#e2eaf8}
     </style>
 </head>
-
 <body class="flex">
 
     <!-- ── Sidebar ── -->
-    <aside class="hidden lg:flex flex-col w-80 p-6">
-        <div class="sidebar-card">
-            <div class="sidebar-header">
-                <span class="text-xs font-black tracking-[0.2em] text-blue-600 uppercase">Control Room</span>
-                <h1 class="text-2xl font-extrabold text-slate-800">Admin<span class="text-blue-600">.</span></h1>
+    <aside class="sidebar">
+        <div class="sidebar-inner">
+            <div class="sidebar-top">
+                <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#94a3b8;margin-bottom:5px">Admin Control Room</div>
+                <div style="font-size:1.35rem;font-weight:800;color:#0f172a;letter-spacing:-.03em">my<span style="color:var(--indigo)">Space.</span></div>
+                <div style="font-size:.7rem;color:#94a3b8;margin-top:3px">Administration Panel</div>
             </div>
-            <nav class="sidebar-nav space-y-1">
+            <nav class="sidebar-nav">
                 <?php
                 $navItems = [
-    ['url' => '/admin/dashboard',           'icon' => 'fa-house',           'label' => 'Dashboard',       'key' => 'dashboard'],
-    ['url' => '/admin/new-reservation',     'icon' => 'fa-plus',            'label' => 'New Reservation', 'key' => 'new-reservation'],
-    ['url' => '/admin/manage-reservations', 'icon' => 'fa-calendar',        'label' => 'Reservations',    'key' => 'manage-reservations'],
-    ['url' => '/admin/manage-pcs',          'icon' => 'fa-desktop',         'label' => 'Manage PCs',      'key' => 'manage-pcs'],
-    ['url' => '/admin/manage-sk',           'icon' => 'fa-user-shield',     'label' => 'Manage SK',       'key' => 'manage-sk'],
-    ['url' => '/admin/books',               'icon' => 'fa-book-open',       'label' => 'Library',         'key' => 'books'],
-    ['url' => '/admin/login-logs',          'icon' => 'fa-clock',           'label' => 'Login Logs',      'key' => 'login-logs'],
-    ['url' => '/admin/scanner',             'icon' => 'fa-qrcode',          'label' => 'Scanner',         'key' => 'scanner'],
-    ['url' => '/admin/activity-logs',       'icon' => 'fa-list',            'label' => 'Activity Logs',   'key' => 'activity-logs'],
-    ['url' => '/admin/profile',             'icon' => 'fa-regular fa-user', 'label' => 'Profile',         'key' => 'profile'],
-];
+                    ['url'=>'/admin/dashboard',           'icon'=>'fa-house',           'label'=>'Dashboard',       'key'=>'dashboard'],
+                    ['url'=>'/admin/new-reservation',     'icon'=>'fa-plus',            'label'=>'New Reservation', 'key'=>'new-reservation'],
+                    ['url'=>'/admin/manage-reservations', 'icon'=>'fa-calendar',        'label'=>'Reservations',    'key'=>'manage-reservations'],
+                    ['url'=>'/admin/manage-pcs',          'icon'=>'fa-desktop',         'label'=>'Manage PCs',      'key'=>'manage-pcs'],
+                    ['url'=>'/admin/manage-sk',           'icon'=>'fa-user-shield',     'label'=>'Manage SK',       'key'=>'manage-sk'],
+                    ['url'=>'/admin/books',               'icon'=>'fa-book-open',       'label'=>'Library',         'key'=>'books'],
+                    ['url'=>'/admin/login-logs',          'icon'=>'fa-clock',           'label'=>'Login Logs',      'key'=>'login-logs'],
+                    ['url'=>'/admin/scanner',             'icon'=>'fa-qrcode',          'label'=>'Scanner',         'key'=>'scanner'],
+                    ['url'=>'/admin/activity-logs',       'icon'=>'fa-list',            'label'=>'Activity Logs',   'key'=>'activity-logs'],
+                    ['url'=>'/admin/profile',             'icon'=>'fa-user',            'label'=>'Profile',         'key'=>'profile'],
+                ];
                 foreach ($navItems as $item):
-                    $active = (isset($page) && $page == $item['key']) ? 'active' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600';
+                    $active = (isset($page) && $page == $item['key']) ? 'active' : '';
                 ?>
-                    <a href="<?= $item['url'] ?>" class="sidebar-item flex items-center gap-4 px-5 py-3.5 rounded-2xl font-semibold text-sm <?= $active ?>">
-                        <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-lg"></i>
+                    <a href="<?= $item['url'] ?>" class="nav-link <?= $active ?>">
+                        <div class="nav-icon"><i class="fa-solid <?= $item['icon'] ?>" style="font-size:.85rem"></i></div>
                         <?= $item['label'] ?>
                     </a>
                 <?php endforeach; ?>
             </nav>
             <div class="sidebar-footer">
-                <a href="/logout" class="flex items-center gap-4 px-5 py-4 rounded-2xl text-red-500 font-bold hover:bg-red-50 transition-all">
-                    <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
+                <a href="/logout" class="logout-link">
+                    <div class="nav-icon" style="background:rgba(239,68,68,.08)"><i class="fa-solid fa-arrow-right-from-bracket" style="font-size:.85rem;color:#f87171"></i></div>
+                    Sign Out
                 </a>
             </div>
         </div>
     </aside>
 
     <!-- ── Mobile Nav ── -->
-    <nav class="lg:hidden mobile-nav-pill">
-        <div class="mobile-scroll-container text-white px-2">
+    <nav class="mobile-nav-pill">
+        <div class="mobile-scroll-container">
             <?php foreach ($navItems as $item):
-                $isActive = (isset($page) && $page == $item['key']);
-                $btnClass = $isActive ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-500/30';
+                $active = (isset($page) && $page == $item['key']) ? 'active' : '';
             ?>
-                <a href="<?= $item['url'] ?>" class="flex flex-col items-center justify-center py-2 px-3 min-w-[75px] rounded-xl transition flex-shrink-0 <?= $btnClass ?>">
-                    <i class="fa-solid <?= $item['icon'] ?> text-lg"></i>
-                    <span class="text-[10px] mt-1 text-center leading-tight whitespace-nowrap"><?= $item['label'] ?></span>
+                <a href="<?= $item['url'] ?>" class="mob-nav-item <?= $active ?>" title="<?= $item['label'] ?>">
+                    <i class="fa-solid <?= $item['icon'] ?>" style="font-size:1.05rem"></i>
+                    <span><?= $item['label'] ?></span>
                 </a>
             <?php endforeach; ?>
+            <a href="/logout" class="mob-nav-item" style="color:#f87171" title="Sign Out">
+                <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:1.05rem"></i>
+                <span>Logout</span>
+            </a>
         </div>
     </nav>
 
     <!-- ── Main ── -->
-    <main class="flex-1 p-6 lg:p-12 pb-32">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-            <div>
-                <h2 class="text-3xl font-black text-slate-900 tracking-tight">New Reservation</h2>
-                <p class="text-slate-500 font-medium">Register a manual entry into the system.</p>
+    <main class="main-area">
+        <!-- Header -->
+        <header style="display:flex;flex-direction:column;gap:4px;margin-bottom:28px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+                <div>
+                    <p style="font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Administration</p>
+                    <h2 style="font-size:1.75rem;font-weight:800;color:#0f172a;letter-spacing:-.04em;line-height:1.1">New Reservation</h2>
+                    <p style="font-size:.78rem;color:#94a3b8;font-weight:500;margin-top:4px">Register a manual entry into the system.</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+                    <div onclick="toggleDark()" id="darkBtn" title="Toggle dark mode" style="width:44px;height:44px;background:white;border:1px solid rgba(99,102,241,.12);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:#64748b;cursor:pointer;transition:all var(--ease);box-shadow:var(--shadow-sm)">
+                        <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem"></i></span>
+                    </div>
+                    <a href="/admin/manage-reservations" style="display:flex;align-items:center;gap:7px;padding:10px 18px;background:white;border:1px solid rgba(99,102,241,.15);border-radius:var(--r-sm);font-size:.85rem;font-weight:700;color:#475569;text-decoration:none;transition:all var(--ease);box-shadow:var(--shadow-sm)">
+                        <i class="fa-solid fa-chevron-left" style="font-size:.75rem"></i> Back
+                    </a>
+                </div>
             </div>
-            <a href="/admin/manage-reservations" class="px-6 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
-                <i class="fa-solid fa-chevron-left text-sm"></i> Back
-            </a>
         </header>
 
         <?php if (session()->getFlashdata('error')): ?>
-            <div class="mb-6 px-6 py-4 bg-red-50 border border-red-200 text-red-700 font-bold rounded-2xl flex items-center gap-3">
-                <i class="fa-solid fa-circle-exclamation"></i> <?= session()->getFlashdata('error') ?>
-            </div>
+            <div class="flash-err"><i class="fa-solid fa-circle-exclamation"></i><?= session()->getFlashdata('error') ?></div>
         <?php endif; ?>
 
-        <div class="form-card max-w-3xl mx-auto p-8 lg:p-10">
+        <div class="form-card">
             <form id="reservationForm" method="POST" action="<?= base_url('admin/create-reservation') ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="visitor_name" id="finalVisitorName">
@@ -417,15 +253,15 @@
                 <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
                 <input type="hidden" name="purpose" id="finalPurpose">
 
-                <!-- ① User Type Toggle -->
-                <div class="mb-8">
-                    <span class="field-label mb-3 block">Visitor Classification</span>
-                    <div class="flex bg-slate-100 p-1.5 rounded-[18px]">
+                <!-- ① Visitor Type -->
+                <div style="margin-bottom:24px">
+                    <span class="field-label" style="margin-bottom:10px;display:block">Visitor Classification</span>
+                    <div class="type-toggle">
                         <button type="button" class="type-btn active" id="btnUser" onclick="setType('User')">
-                            <i class="fa-solid fa-user mr-2"></i>Registered User
+                            <i class="fa-solid fa-user" style="margin-right:7px;font-size:.8rem"></i>Registered User
                         </button>
                         <button type="button" class="type-btn" id="btnVisitor" onclick="setType('Visitor')">
-                            <i class="fa-solid fa-person-walking mr-2"></i>Walk-in Visitor
+                            <i class="fa-solid fa-person-walking" style="margin-right:7px;font-size:.8rem"></i>Walk-in Visitor
                         </button>
                     </div>
                 </div>
@@ -433,37 +269,38 @@
                 <hr class="section-divider">
 
                 <!-- ② Personal Details -->
-                <div class="mb-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-sm">
-                            <i class="fa-solid fa-id-card"></i>
+                <div style="margin-bottom:24px">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                        <div class="section-icon"><i class="fa-solid fa-id-card" style="color:var(--indigo);font-size:.85rem"></i></div>
+                        <div>
+                            <p style="font-weight:800;color:#0f172a;font-size:.9rem">Personal Details</p>
+                            <p style="font-size:.7rem;color:#94a3b8;margin-top:2px">Identify the visitor</p>
                         </div>
-                        <h3 class="font-extrabold text-slate-800 tracking-tight">Personal Details</h3>
                     </div>
 
-                    <div id="userFields" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="userFields" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
                         <div>
                             <label class="field-label">Full Name</label>
                             <div class="autocomplete-wrap">
-                                <input type="text" id="userNameInput" placeholder="Type to search users..." autocomplete="off">
+                                <input type="text" id="userNameInput" class="field-input" placeholder="Type to search users…" autocomplete="off">
                                 <ul id="autocompleteList" class="autocomplete-list hidden"></ul>
                             </div>
                         </div>
                         <div>
                             <label class="field-label">Email Address</label>
-                            <input type="email" id="userEmailDisplay" placeholder="Auto-filled on selection" readonly>
-                            <p class="text-[10px] text-slate-400 mt-1">Fills automatically when a user is selected</p>
+                            <input type="email" id="userEmailDisplay" class="field-input" placeholder="Auto-filled on selection" readonly>
+                            <p style="font-size:.65rem;color:#94a3b8;margin-top:4px">Fills automatically when a user is selected</p>
                         </div>
                     </div>
 
-                    <div id="visitorFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="visitorFields" style="display:none;grid-template-columns:1fr 1fr;gap:16px">
                         <div>
                             <label class="field-label">Full Name</label>
-                            <input type="text" id="visitorNameInput" placeholder="Enter visitor's full name">
+                            <input type="text" id="visitorNameInput" class="field-input" placeholder="Enter visitor's full name">
                         </div>
                         <div>
                             <label class="field-label">Email Address</label>
-                            <input type="email" id="visitorEmailInput" placeholder="Enter email (optional)">
+                            <input type="email" id="visitorEmailInput" class="field-input" placeholder="Enter email (optional)">
                         </div>
                     </div>
                 </div>
@@ -471,17 +308,18 @@
                 <hr class="section-divider">
 
                 <!-- ③ Resource & Schedule -->
-                <div class="mb-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-sm">
-                            <i class="fa-solid fa-calendar-days"></i>
+                <div style="margin-bottom:24px">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                        <div class="section-icon"><i class="fa-solid fa-calendar-days" style="color:var(--indigo);font-size:.85rem"></i></div>
+                        <div>
+                            <p style="font-weight:800;color:#0f172a;font-size:.9rem">Resource & Schedule</p>
+                            <p style="font-size:.7rem;color:#94a3b8;margin-top:2px">What, where, and when</p>
                         </div>
-                        <h3 class="font-extrabold text-slate-800 tracking-tight">Resource & Schedule</h3>
                     </div>
 
-                    <div class="mb-5">
+                    <div style="margin-bottom:16px">
                         <label class="field-label">Select Asset / Resource</label>
-                        <select id="resourceSelect" name="resource_id" required>
+                        <select id="resourceSelect" name="resource_id" class="field-input" required>
                             <option value="">— Choose a resource —</option>
                             <?php foreach ($resources as $res): ?>
                                 <option value="<?= $res['id'] ?>" data-name="<?= htmlspecialchars($res['name']) ?>">
@@ -491,36 +329,34 @@
                         </select>
                     </div>
 
-                    <div id="pcSection" class="hidden pc-section mb-5">
-                        <label class="field-label text-blue-700">Assign Workstation</label>
-                        <select id="pcSelect" name="pc_number">
+                    <div id="pcSection" style="display:none" class="pc-section" style="margin-bottom:16px">
+                        <label class="field-label" style="color:var(--indigo)">Assign Workstation</label>
+                        <select id="pcSelect" name="pc_number" class="field-input" style="margin-top:6px">
                             <option value="">— No specific station —</option>
                             <?php foreach ($pcs as $pc): ?>
-                                <option value="<?= htmlspecialchars($pc['pc_number']) ?>">
-                                    Station <?= htmlspecialchars($pc['pc_number']) ?>
-                                </option>
+                                <option value="<?= htmlspecialchars($pc['pc_number']) ?>">Station <?= htmlspecialchars($pc['pc_number']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
                         <div>
                             <label class="field-label">Date</label>
-                            <input type="date" name="reservation_date" id="resDate" value="<?= date('Y-m-d') ?>" required>
+                            <input type="date" name="reservation_date" id="resDate" class="field-input" value="<?= date('Y-m-d') ?>" required>
                         </div>
                         <div>
                             <label class="field-label">Start Time</label>
-                            <input type="time" name="start_time" id="startTime" required>
+                            <input type="time" name="start_time" id="startTime" class="field-input" required>
                         </div>
                         <div>
                             <label class="field-label">End Time</label>
-                            <input type="time" name="end_time" id="endTime" required>
+                            <input type="time" name="end_time" id="endTime" class="field-input" required>
                         </div>
                     </div>
 
                     <div>
                         <label class="field-label">Purpose of Visit</label>
-                        <select id="purposeSelect" required>
+                        <select id="purposeSelect" class="field-input" required>
                             <option value="">— Select purpose —</option>
                             <option value="Work">Work</option>
                             <option value="Personal">Personal</option>
@@ -528,15 +364,15 @@
                             <option value="Others">Others</option>
                         </select>
                     </div>
-                    <div id="purposeOtherWrap" class="hidden mt-3">
+                    <div id="purposeOtherWrap" style="display:none;margin-top:12px">
                         <label class="field-label">Please Specify</label>
-                        <input type="text" id="purposeOther" placeholder="Describe the purpose...">
+                        <input type="text" id="purposeOther" class="field-input" placeholder="Describe the purpose…">
                     </div>
                 </div>
 
-                <div class="flex justify-end pt-2">
-                    <button type="button" onclick="previewReservation()" class="btn-primary w-full md:w-auto">
-                        <i class="fa-solid fa-eye"></i> Preview & Confirm
+                <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid rgba(99,102,241,.08)">
+                    <button type="button" onclick="previewReservation()" class="btn-primary" style="width:100%;max-width:none">
+                        <i class="fa-solid fa-eye" style="font-size:.85rem"></i> Preview & Confirm
                     </button>
                 </div>
             </form>
@@ -546,38 +382,39 @@
     <!-- ── Confirmation Modal ── -->
     <div id="confirmModal" class="modal-backdrop" onclick="handleBackdrop(event)">
         <div class="modal-box">
-            <div class="text-center mb-6">
-                <div class="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-xl shadow-lg shadow-blue-200">
+            <div class="sheet-handle"></div>
+            <div style="text-align:center;margin-bottom:20px">
+                <div style="width:52px;height:52px;background:var(--indigo);color:white;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.1rem;box-shadow:0 8px 20px rgba(55,48,163,.3)">
                     <i class="fa-solid fa-clipboard-check"></i>
                 </div>
-                <h3 class="text-xl font-black text-slate-900">Confirm Reservation</h3>
-                <p class="text-slate-400 text-sm font-medium mt-1">Review details before saving.</p>
+                <h3 style="font-size:1.05rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">Confirm Reservation</h3>
+                <p style="font-size:.75rem;color:#94a3b8;margin-top:3px">Review details before saving.</p>
             </div>
 
-            <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-5">
-                <div class="mrow"><span class="mrow-label">Type</span> <span class="mrow-value" id="mType"></span></div>
-                <div class="mrow"><span class="mrow-label">Name</span> <span class="mrow-value" id="mName"></span></div>
-                <div class="mrow"><span class="mrow-label">Email</span> <span class="mrow-value" id="mEmail"></span></div>
-                <div class="mrow"><span class="mrow-label">Asset</span> <span class="mrow-value" id="mAsset"></span></div>
+            <div style="background:#f8fafc;border-radius:var(--r-md);padding:16px;border:1px solid rgba(99,102,241,.08);margin-bottom:16px">
+                <div class="mrow"><span class="mrow-label">Type</span><span class="mrow-value" id="mType"></span></div>
+                <div class="mrow"><span class="mrow-label">Name</span><span class="mrow-value" id="mName"></span></div>
+                <div class="mrow"><span class="mrow-label">Email</span><span class="mrow-value" id="mEmail"></span></div>
+                <div class="mrow"><span class="mrow-label">Asset</span><span class="mrow-value" id="mAsset"></span></div>
                 <div class="mrow"><span class="mrow-label">Station</span><span class="mrow-value" id="mStation"></span></div>
-                <div class="mrow"><span class="mrow-label">Date</span> <span class="mrow-value" id="mDate"></span></div>
-                <div class="mrow"><span class="mrow-label">Time</span> <span class="mrow-value" id="mTime"></span></div>
+                <div class="mrow"><span class="mrow-label">Date</span><span class="mrow-value" id="mDate"></span></div>
+                <div class="mrow"><span class="mrow-label">Time</span><span class="mrow-value" id="mTime"></span></div>
                 <div class="mrow"><span class="mrow-label">Purpose</span><span class="mrow-value" id="mPurpose"></span></div>
             </div>
 
-            <div id="qrWrap" class="hidden bg-white border-2 border-dashed border-blue-100 rounded-2xl p-5 flex flex-col items-center mb-5">
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">E-Ticket Preview</p>
-                <canvas id="qrCanvas" class="rounded-xl mx-auto"></canvas>
-                <p id="qrText" class="text-xs text-slate-400 font-mono mt-2 text-center break-all"></p>
-                <button type="button" onclick="downloadQR()" class="mt-3 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 transition">
+            <div id="qrWrap" style="display:none;background:white;border:2px dashed var(--indigo-border);border-radius:var(--r-md);padding:20px;flex-direction:column;align-items:center;margin-bottom:16px">
+                <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:#94a3b8;margin-bottom:12px">E-Ticket Preview</p>
+                <canvas id="qrCanvas" style="border-radius:10px;margin:0 auto"></canvas>
+                <p id="qrText" style="font-size:.7rem;color:#94a3b8;font-family:var(--mono);margin-top:8px;text-align:center;word-break:break-all"></p>
+                <button type="button" onclick="downloadQR()" style="margin-top:12px;display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--indigo);color:white;border-radius:9px;font-weight:700;font-size:.75rem;border:none;cursor:pointer;font-family:var(--font)">
                     <i class="fa-solid fa-download"></i> Download E-Ticket
                 </button>
             </div>
 
-            <div class="flex gap-3">
-                <button type="button" onclick="closeModal()" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 hover:bg-slate-200 transition text-sm">Cancel</button>
-                <button type="button" id="confirmBtn" onclick="submitReservation()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition text-sm flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-check"></i> Confirm & Save
+            <div style="display:flex;gap:10px">
+                <button type="button" onclick="closeModal()" style="flex:1;padding:13px;background:#f8fafc;border-radius:var(--r-md);font-weight:700;color:#475569;border:1px solid rgba(99,102,241,.1);cursor:pointer;font-family:var(--font);font-size:.82rem;transition:background .15s" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">Cancel</button>
+                <button type="button" id="confirmBtn" onclick="submitReservation()" style="flex:2;padding:13px;background:var(--indigo);color:white;border-radius:var(--r-md);font-weight:700;border:none;cursor:pointer;font-family:var(--font);font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(55,48,163,.3);transition:background .15s">
+                    <i class="fa-solid fa-check" style="font-size:.75rem"></i> Confirm & Save
                 </button>
             </div>
         </div>
@@ -588,14 +425,42 @@
         let currentType = 'User';
         let selectedUser = null;
 
+        /* Dark mode */
+        function toggleDark(){
+            const isDark = document.body.classList.toggle('dark');
+            document.getElementById('darkIcon').innerHTML = isDark
+                ? '<i class="fa-regular fa-moon" style="font-size:.85rem"></i>'
+                : '<i class="fa-regular fa-sun" style="font-size:.85rem"></i>';
+            localStorage.setItem('admin_theme', isDark ? 'dark' : 'light');
+        }
+        (function(){
+            if(localStorage.getItem('admin_theme')==='dark'){
+                document.body.classList.add('dark');
+                document.getElementById('darkIcon').innerHTML='<i class="fa-regular fa-moon" style="font-size:.85rem"></i>';
+            }
+            document.documentElement.classList.remove('dark-pre');
+        })();
+
+        /* Responsive user fields grid */
+        function setFieldGridCols(){
+            const g1=document.getElementById('userFields'),g2=document.getElementById('visitorFields');
+            const cols=window.innerWidth<640?'1fr':'1fr 1fr';
+            g1.style.gridTemplateColumns=cols;g2.style.gridTemplateColumns=cols;
+        }
+        setFieldGridCols();window.addEventListener('resize',setFieldGridCols);
+        function setDateGridCols(){
+            const g=document.querySelector('[data-date-grid]');
+            if(g)g.style.gridTemplateColumns=window.innerWidth<640?'1fr':' 1fr 1fr 1fr';
+        }
+
         function setType(type) {
             currentType = type;
             document.getElementById('finalVisitorType').value = type;
             const isUser = type === 'User';
             document.getElementById('btnUser').classList.toggle('active', isUser);
             document.getElementById('btnVisitor').classList.toggle('active', !isUser);
-            document.getElementById('userFields').classList.toggle('hidden', !isUser);
-            document.getElementById('visitorFields').classList.toggle('hidden', isUser);
+            document.getElementById('userFields').style.display = isUser ? 'grid' : 'none';
+            document.getElementById('visitorFields').style.display = isUser ? 'none' : 'grid';
             selectedUser = null;
             document.getElementById('userNameInput').value = '';
             document.getElementById('userEmailDisplay').value = '';
@@ -611,24 +476,18 @@
             const q = userNameInput.value.toLowerCase().trim();
             autocompleteList.innerHTML = '';
             selectedUser = null;
-            if (!q) {
-                autocompleteList.classList.add('hidden');
-                return;
-            }
+            if (!q) { autocompleteList.classList.add('hidden'); return; }
             const matches = allUsers.filter(u =>
                 (u.name && u.name.toLowerCase().includes(q)) ||
                 (u.full_name && u.full_name.toLowerCase().includes(q)) ||
                 (u.email && u.email.toLowerCase().includes(q))
             ).slice(0, 8);
-            if (!matches.length) {
-                autocompleteList.classList.add('hidden');
-                return;
-            }
+            if (!matches.length) { autocompleteList.classList.add('hidden'); return; }
             matches.forEach(u => {
                 const displayName = u.full_name || u.name || '';
                 const li = document.createElement('li');
                 li.className = 'autocomplete-item';
-                li.innerHTML = `<div class="font-semibold">${displayName}</div><div class="sub">${u.email}</div>`;
+                li.innerHTML = `<div style="font-weight:700;font-size:.85rem">${displayName}</div><div class="sub">${u.email}</div>`;
                 li.addEventListener('mousedown', () => {
                     selectedUser = u;
                     userNameInput.value = displayName;
@@ -640,18 +499,16 @@
             });
             autocompleteList.classList.remove('hidden');
         });
-        userNameInput.addEventListener('blur', () => {
-            setTimeout(() => autocompleteList.classList.add('hidden'), 150);
-        });
+        userNameInput.addEventListener('blur', () => setTimeout(() => autocompleteList.classList.add('hidden'), 150));
 
         document.getElementById('resourceSelect').addEventListener('change', function() {
             const name = this.options[this.selectedIndex].dataset.name || '';
             const isComputer = name.toLowerCase().includes('computer') || name.toLowerCase().includes('pc');
-            document.getElementById('pcSection').classList.toggle('hidden', !isComputer);
+            document.getElementById('pcSection').style.display = isComputer ? 'block' : 'none';
         });
 
         document.getElementById('purposeSelect').addEventListener('change', function() {
-            document.getElementById('purposeOtherWrap').classList.toggle('hidden', this.value !== 'Others');
+            document.getElementById('purposeOtherWrap').style.display = this.value === 'Others' ? 'block' : 'none';
         });
 
         function previewReservation() {
@@ -669,33 +526,14 @@
             const purposeOther = document.getElementById('purposeOther').value.trim();
             const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
 
-            if (!name) {
-                alert('Please enter a name.');
-                return;
-            }
-            if (!resourceId) {
-                alert('Please select a resource.');
-                return;
-            }
-            if (!date) {
-                alert('Please select a date.');
-                return;
-            }
-            if (!startTime) {
-                alert('Please enter a start time.');
-                return;
-            }
-            if (!endTime) {
-                alert('Please enter an end time.');
-                return;
-            }
-            if (!purposeVal) {
-                alert('Please select a purpose.');
-                return;
-            }
+            if (!name) { alert('Please enter a name.'); return; }
+            if (!resourceId) { alert('Please select a resource.'); return; }
+            if (!date) { alert('Please select a date.'); return; }
+            if (!startTime) { alert('Please enter a start time.'); return; }
+            if (!endTime) { alert('Please enter an end time.'); return; }
+            if (!purposeVal) { alert('Please select a purpose.'); return; }
             if (isUser && !selectedUser && !document.getElementById('finalUserId').value) {
-                alert('Please select a registered user from the dropdown.');
-                return;
+                alert('Please select a registered user from the dropdown.'); return;
             }
 
             document.getElementById('finalVisitorName').value = name;
@@ -711,7 +549,7 @@
             document.getElementById('mTime').textContent = `${startTime} – ${endTime}`;
             document.getElementById('mPurpose').textContent = purposeFinal || '—';
 
-            document.getElementById('qrWrap').classList.add('hidden');
+            document.getElementById('qrWrap').style.display = 'none';
             document.getElementById('confirmBtn').style.display = '';
             openModal();
         }
@@ -719,18 +557,13 @@
         function submitReservation() {
             const btn = document.getElementById('confirmBtn');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
             const code = `ACCESS-${Date.now()}`;
             document.getElementById('qrText').textContent = code;
             QRCode.toCanvas(document.getElementById('qrCanvas'), code, {
-                width: 160,
-                margin: 1,
-                color: {
-                    dark: '#1e293b',
-                    light: '#ffffff'
-                }
+                width: 150, margin: 1, color: { dark: '#0f172a', light: '#ffffff' }
             }, () => {
-                document.getElementById('qrWrap').classList.remove('hidden');
+                document.getElementById('qrWrap').style.display = 'flex';
                 btn.style.display = 'none';
                 setTimeout(() => document.getElementById('reservationForm').submit(), 800);
             });
@@ -745,196 +578,16 @@
             link.click();
         }
 
-        function openModal() {
-            document.getElementById('confirmModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
+        function openModal() { document.getElementById('confirmModal').classList.add('show'); document.body.style.overflow = 'hidden'; }
         function closeModal() {
             document.getElementById('confirmModal').classList.remove('show');
             document.body.style.overflow = '';
             const btn = document.getElementById('confirmBtn');
-            btn.disabled = false;
-            btn.style.display = '';
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirm & Save';
+            btn.disabled = false; btn.style.display = '';
+            btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:.75rem"></i> Confirm & Save';
         }
-
-        function handleBackdrop(e) {
-            if (e.target === document.getElementById('confirmModal')) closeModal();
-        }
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeModal();
-        });
+        function handleBackdrop(e) { if (e.target === document.getElementById('confirmModal')) closeModal(); }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     </script>
-
-    <!-- ── PWA (blue theme for admin) ── -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js', {
-                        scope: '/'
-                    })
-                    .then(reg => {
-                        reg.addEventListener('updatefound', () => {
-                            const nw = reg.installing;
-                            nw.addEventListener('statechange', () => {
-                                if (nw.state === 'installed' && navigator.serviceWorker.controller) showAdminUpdateBanner();
-                            });
-                        });
-                    }).catch(err => console.warn('[PWA] SW failed:', err));
-
-                navigator.serviceWorker.addEventListener('message', event => {
-                    if (!event.data) return;
-                    switch (event.data.type) {
-                        case 'SAVE_PENDING_RESERVATION': {
-                            const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
-                            pending.push(event.data.payload);
-                            localStorage.setItem('pending_reservations', JSON.stringify(pending));
-                            showAdminPwaToast('fa-solid fa-floppy-disk', '#f59e0b', 'Saved offline', "Reservation will sync when you're back online.");
-                            break;
-                        }
-                        case 'FLUSH_PENDING_RESERVATIONS': {
-                            flushAdminPending();
-                            break;
-                        }
-                    }
-                });
-            });
-        }
-
-        async function flushAdminPending() {
-            const pending = JSON.parse(localStorage.getItem('pending_reservations') || '[]');
-            if (!pending.length) return;
-            const remaining = [];
-            for (const item of pending) {
-                try {
-                    const fd = new FormData();
-                    Object.entries(item.data).forEach(([k, v]) => fd.append(k, v));
-                    const r = await fetch(item.url, {
-                        method: 'POST',
-                        body: fd
-                    });
-                    if (!r.ok) remaining.push(item);
-                } catch {
-                    remaining.push(item);
-                }
-            }
-            localStorage.setItem('pending_reservations', JSON.stringify(remaining));
-            if (navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({
-                type: 'RESERVATIONS_SYNCED'
-            });
-            if (pending.length !== remaining.length)
-                showAdminPwaToast('fa-solid fa-circle-check', '#2563eb', `${pending.length - remaining.length} reservation(s) synced!`, 'Pending reservations were submitted successfully.');
-        }
-
-        window.addEventListener('online', async () => {
-            removeAdminBanner('pwa-offline-banner');
-            createAdminBanner('pwa-online-banner', `<i class="fa-solid fa-circle-check" style="color:#fff"></i> Back online!`, '#2563eb', '#fff');
-            setTimeout(() => removeAdminBanner('pwa-online-banner'), 3000);
-            if ('serviceWorker' in navigator && 'SyncManager' in window) {
-                try {
-                    const reg = await navigator.serviceWorker.ready;
-                    await reg.sync.register('sync-reservations');
-                } catch {
-                    flushAdminPending();
-                }
-            } else {
-                flushAdminPending();
-            }
-        });
-
-        window.addEventListener('offline', () => {
-            createAdminBanner('pwa-offline-banner', `<i class="fa-solid fa-wifi" style="color:#fff;opacity:0.7"></i> You're offline — cached pages still work`, '#1e293b', '#fff');
-        });
-
-        function createAdminBanner(id, html, bg, color) {
-            if (document.getElementById(id)) return;
-            const el = document.createElement('div');
-            el.id = id;
-            el.style.cssText = `position:fixed;top:0;left:0;right:0;z-index:9999;padding:10px 20px;text-align:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;transform:translateY(-100%);transition:transform 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px;background:${bg};color:${color};`;
-            el.innerHTML = html;
-            document.body.prepend(el);
-            requestAnimationFrame(() => {
-                el.style.transform = 'translateY(0)';
-            });
-        }
-
-        function removeAdminBanner(id) {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.transform = 'translateY(-100%)';
-                setTimeout(() => el.remove(), 350);
-            }
-        }
-
-        function showAdminUpdateBanner() {
-            createAdminBanner('pwa-update-banner', `<i class="fa-solid fa-rotate" style="color:#fff"></i> New version available &nbsp;<button onclick="applyAdminUpdate()" style="background:white;color:#2563eb;border:none;padding:3px 12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;">Update now</button>`, '#2563eb', '#fff');
-        }
-
-        function applyAdminUpdate() {
-            if (navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({
-                type: 'SKIP_WAITING'
-            });
-            location.reload();
-        }
-
-        function showAdminPwaToast(icon, iconColor, title, message) {
-            let c = document.getElementById('pwa-toast-container');
-            if (!c) {
-                c = document.createElement('div');
-                c.id = 'pwa-toast-container';
-                c.style.cssText = 'position:fixed;bottom:90px;right:16px;z-index:8888;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
-                document.body.appendChild(c);
-            }
-            const id = 'pwat-' + Date.now();
-            const t = document.createElement('div');
-            t.id = id;
-            t.style.cssText = `background:white;border-radius:16px;padding:12px 16px;box-shadow:0 10px 25px rgba(0,0,0,0.12);border-left:4px solid ${iconColor};display:flex;align-items:center;gap:10px;pointer-events:auto;font-family:'Plus Jakarta Sans',sans-serif;min-width:260px;max-width:340px;`;
-            t.innerHTML = `<div style="width:32px;height:32px;border-radius:10px;background:${iconColor}20;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="${icon}" style="color:${iconColor};font-size:14px;"></i></div><div style="flex:1"><p style="font-weight:800;font-size:13px;color:#1e293b;margin:0;">${title}</p><p style="font-size:11px;color:#64748b;margin:2px 0 0;">${message}</p></div><button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:14px;">✕</button>`;
-            c.appendChild(t);
-            setTimeout(() => {
-                const el = document.getElementById(id);
-                if (el) el.remove();
-            }, 5000);
-        }
-
-        let deferredPrompt = null;
-        window.addEventListener('beforeinstallprompt', e => {
-            e.preventDefault();
-            deferredPrompt = e;
-            setTimeout(() => {
-                if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) showAdminInstallChip();
-            }, 10000);
-        });
-
-        function showAdminInstallChip() {
-            if (document.getElementById('pwa-install-chip')) return;
-            const chip = document.createElement('div');
-            chip.id = 'pwa-install-chip';
-            chip.style.cssText = "position:fixed;bottom:90px;right:16px;z-index:999;background:white;border:1px solid #e2e8f0;border-radius:20px;padding:10px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 25px rgba(0,0,0,0.12);font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;";
-            chip.innerHTML = `<div style="width:32px;height:32px;background:#eff6ff;border-radius:10px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-download" style="color:#2563eb;font-size:14px;"></i></div><div><p style="font-weight:800;font-size:13px;color:#1e293b;margin:0;">Install Admin Panel</p><p style="font-size:11px;color:#94a3b8;margin:0;">Works offline, no App Store needed</p></div><button onclick="event.stopPropagation();document.getElementById('pwa-install-chip').remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:14px;margin-left:4px;">✕</button>`;
-            chip.addEventListener('click', async e => {
-                if (e.target.tagName === 'BUTTON') return;
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const {
-                        outcome
-                    } = await deferredPrompt.userChoice;
-                    deferredPrompt = null;
-                    chip.remove();
-                }
-            });
-            document.body.appendChild(chip);
-            setTimeout(() => {
-                const c = document.getElementById('pwa-install-chip');
-                if (c) c.remove();
-            }, 12000);
-        }
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-        });
-    </script>
-
 </body>
-
 </html>
