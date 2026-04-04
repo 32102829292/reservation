@@ -356,6 +356,11 @@ $page = $page ?? 'profile'; ?>
         .tag { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 999px; font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
         .tag-indigo { background: var(--indigo-light); color: #3730a3; border: 1px solid var(--indigo-border); }
 
+        /* ── Delete modal specific ── */
+        #deleteSubmitBtn:disabled { opacity: .4; cursor: not-allowed; }
+        #deleteSubmitBtn:not(:disabled) { opacity: 1; cursor: pointer; }
+        .delete-confirm-input-error { border-color: #f87171 !important; background: #fff5f5 !important; }
+
         /* ── Animations ── */
         @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -407,6 +412,8 @@ $page = $page ?? 'profile'; ?>
         body.dark .info-row { border-color: rgba(99,102,241,.06); }
         body.dark .flash-ok { background: rgba(55,48,163,.15); border-color: rgba(99,102,241,.3); color: #a5b4fc; }
         body.dark .flash-err { background: rgba(220,38,38,.1); border-color: rgba(248,113,113,.3); color: #f87171; }
+        body.dark .delete-modal-card { background: #0b1628; }
+        body.dark #deleteConfirmInput { background: #101e35; border-color: rgba(99,102,241,.18); color: #e2eaf8; }
     </style>
 </head>
 
@@ -445,6 +452,7 @@ $page = $page ?? 'profile'; ?>
             'x'          => '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
             'trash'      => '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2" stroke-linecap="round" stroke-linejoin="round"/>',
             'lock'       => '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round" stroke-linejoin="round"/>',
+            'alert'      => '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
         ];
         $d = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
         return '<svg xmlns="http://www.w3.org/2000/svg" width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" stroke="'.$stroke.'" stroke-width="1.8">'.$d.'</svg>';
@@ -455,6 +463,9 @@ $page = $page ?? 'profile'; ?>
     $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_at'])) : date('Y');
     ?>
 
+    <!-- ══════════════════════════════════════════
+         SIDEBAR
+    ══════════════════════════════════════════ -->
     <aside class="sidebar">
         <div class="sidebar-inner">
             <div class="sidebar-top">
@@ -489,6 +500,9 @@ $page = $page ?? 'profile'; ?>
         </div>
     </aside>
 
+    <!-- ══════════════════════════════════════════
+         MOBILE NAV
+    ══════════════════════════════════════════ -->
     <nav class="mobile-nav-pill">
         <div class="mobile-scroll-container">
             <?php foreach ($navItems as $item):
@@ -504,7 +518,9 @@ $page = $page ?? 'profile'; ?>
         </div>
     </nav>
 
-    <!-- Edit Modal -->
+    <!-- ══════════════════════════════════════════
+         EDIT PROFILE MODAL
+    ══════════════════════════════════════════ -->
     <div id="editModal" class="modal-back" onclick="handleModalBack(event)">
         <div class="modal-card">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;">
@@ -544,6 +560,79 @@ $page = $page ?? 'profile'; ?>
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════════
+         DELETE ACCOUNT MODAL
+    ══════════════════════════════════════════ -->
+    <div id="deleteModal" class="modal-back" onclick="handleDeleteBack(event)">
+        <div class="modal-card" style="max-width:420px;">
+            <!-- Header -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:42px;height:42px;background:#fef2f2;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #fecaca;">
+                        <?= svgIcon('trash', 18, '#dc2626') ?>
+                    </div>
+                    <div>
+                        <h3 style="font-size:.97rem;font-weight:800;color:#0f172a;letter-spacing:-.02em;">Delete Account</h3>
+                        <p style="font-size:.72rem;color:#94a3b8;margin-top:2px;">This cannot be undone</p>
+                    </div>
+                </div>
+                <button onclick="closeDeleteModal()" style="width:34px;height:34px;border-radius:9px;background:#f1f5f9;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <?= svgIcon('x', 12, '#64748b') ?>
+                </button>
+            </div>
+
+            <!-- Warning banner -->
+            <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--r-sm);padding:13px 15px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+                <?= svgIcon('alert', 15, '#dc2626') ?>
+                <div>
+                    <p style="font-size:.8rem;font-weight:700;color:#b91c1c;margin-bottom:3px;">Warning: Permanent Action</p>
+                    <p style="font-size:.73rem;color:#dc2626;line-height:1.5;">All your reservations, library history, and account data will be <strong>permanently deleted</strong>. You will be immediately logged out and cannot recover your account.</p>
+                </div>
+            </div>
+
+            <!-- Confirmation form -->
+            <form action="<?= base_url('profile/delete') ?>" method="POST" id="deleteForm">
+                <?= csrf_field() ?>
+                <div style="margin-bottom:18px;">
+                    <label class="field-label" style="color:#dc2626;">
+                        Type <span style="font-family:var(--mono);background:#fef2f2;padding:1px 6px;border-radius:4px;font-size:.65rem;">DELETE</span> to confirm
+                    </label>
+                    <input
+                        type="text"
+                        id="deleteConfirmInput"
+                        class="field-input"
+                        placeholder="Type DELETE here"
+                        oninput="checkDeleteConfirm(this.value)"
+                        autocomplete="off"
+                        style="margin-top:6px;border-color:#fecaca;"
+                    >
+                    <p class="field-hint" id="deleteHint" style="color:#dc2626;">This field is case-sensitive</p>
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                    <button
+                        type="button"
+                        onclick="closeDeleteModal()"
+                        style="flex:1;padding:12px;background:#f8fafc;border-radius:var(--r-sm);font-weight:700;color:#475569;border:1px solid rgba(99,102,241,.1);cursor:pointer;font-size:.82rem;font-family:var(--font);transition:background var(--ease);"
+                        onmouseover="this.style.background='#f1f5f9'"
+                        onmouseout="this.style.background='#f8fafc'"
+                    >Cancel</button>
+                    <button
+                        type="submit"
+                        id="deleteSubmitBtn"
+                        disabled
+                        style="flex:2;padding:12px;background:#dc2626;color:white;border-radius:var(--r-sm);font-weight:700;border:none;font-size:.82rem;font-family:var(--font);transition:all var(--ease);box-shadow:0 4px 12px rgba(220,38,38,.25);"
+                    >
+                        <span id="deleteSubmitTxt">Delete My Account</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         MAIN CONTENT
+    ══════════════════════════════════════════ -->
     <main class="main-area">
 
         <!-- Topbar -->
@@ -577,7 +666,7 @@ $page = $page ?? 'profile'; ?>
 
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;" class="fade-up-1" id="profileGrid">
 
-            <!-- LEFT: Identity card -->
+            <!-- ── LEFT: Identity card ── -->
             <div style="display:flex;flex-direction:column;gap:14px;">
 
                 <div class="card card-p" style="text-align:center;">
@@ -643,7 +732,7 @@ $page = $page ?? 'profile'; ?>
                 </div>
             </div>
 
-            <!-- RIGHT: Details -->
+            <!-- ── RIGHT: Details ── -->
             <div style="display:flex;flex-direction:column;gap:14px;">
 
                 <!-- Personal Info -->
@@ -721,7 +810,7 @@ $page = $page ?? 'profile'; ?>
                     </div>
                 </div>
 
-                <!-- Danger zone -->
+                <!-- Danger Zone -->
                 <div class="card card-p-lg">
                     <div class="card-head" style="margin-bottom:8px;">
                         <div style="display:flex;align-items:center;gap:10px;">
@@ -732,12 +821,13 @@ $page = $page ?? 'profile'; ?>
                             </div>
                         </div>
                     </div>
-                    <div class="danger-row" style="padding-top:12px;">
+                    <div class="danger-row" style="padding-top:12px;border-bottom:none;padding-bottom:0;">
                         <div style="min-width:0;">
                             <p style="font-size:.83rem;font-weight:600;color:#0f172a;">Delete Account</p>
                             <p style="font-size:.72rem;color:#94a3b8;margin-top:2px;">Permanently remove your account and all data</p>
                         </div>
-                        <button class="danger-btn">Delete</button>
+                        <!-- ✅ This button now opens the delete confirmation modal -->
+                        <button class="danger-btn" onclick="openDeleteModal()">Delete</button>
                     </div>
                 </div>
 
@@ -747,6 +837,7 @@ $page = $page ?? 'profile'; ?>
     </main>
 
     <script>
+        /* ── Edit Modal ── */
         function openModal() {
             document.getElementById('editModal').classList.add('show');
             document.body.style.overflow = 'hidden';
@@ -758,12 +849,90 @@ $page = $page ?? 'profile'; ?>
         function handleModalBack(e) {
             if (e.target === document.getElementById('editModal')) closeModal();
         }
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+        /* ── Delete Modal ── */
+        function openDeleteModal() {
+            // Reset state each time it opens
+            document.getElementById('deleteConfirmInput').value = '';
+            document.getElementById('deleteConfirmInput').classList.remove('delete-confirm-input-error');
+            document.getElementById('deleteSubmitBtn').disabled = true;
+            document.getElementById('deleteHint').textContent = 'This field is case-sensitive';
+            document.getElementById('deleteHint').style.color = '#dc2626';
+
+            document.getElementById('deleteModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            // Auto-focus input after animation
+            setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 200);
+        }
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        function handleDeleteBack(e) {
+            if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+        }
+
+        /* ── Delete confirm input check ── */
+        function checkDeleteConfirm(val) {
+            const btn  = document.getElementById('deleteSubmitBtn');
+            const hint = document.getElementById('deleteHint');
+            const inp  = document.getElementById('deleteConfirmInput');
+
+            if (val === 'DELETE') {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                inp.classList.remove('delete-confirm-input-error');
+                inp.style.borderColor = '#86efac';
+                inp.style.background  = '#f0fdf4';
+                hint.textContent = '✓ Confirmed — you may now delete your account';
+                hint.style.color = '#16a34a';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.4';
+                btn.style.cursor = 'not-allowed';
+                if (val.length > 0) {
+                    inp.classList.add('delete-confirm-input-error');
+                    hint.textContent = 'Must be exactly "DELETE" in uppercase';
+                    hint.style.color = '#dc2626';
+                } else {
+                    inp.classList.remove('delete-confirm-input-error');
+                    inp.style.borderColor = '#fecaca';
+                    inp.style.background  = '';
+                    hint.textContent = 'This field is case-sensitive';
+                    hint.style.color = '#dc2626';
+                }
+            }
+        }
+
+        /* ── Prevent accidental double-submit on delete ── */
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            const val = document.getElementById('deleteConfirmInput').value;
+            if (val !== 'DELETE') {
+                e.preventDefault();
+                return;
+            }
+            const btn = document.getElementById('deleteSubmitBtn');
+            const txt = document.getElementById('deleteSubmitTxt');
+            btn.disabled = true;
+            txt.textContent = 'Deleting…';
+            btn.style.opacity = '0.7';
+        });
+
+        /* ── Global ESC key handler ── */
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeDeleteModal();
+            }
+        });
+
+        /* ── Password strength ── */
         function checkPw(val) {
             const fill = document.getElementById('pwFill');
             const hint = document.getElementById('pwHint');
-            if (!val) { fill.style.width = '0%'; fill.style.background = '#e2e8f0'; hint.textContent = 'Minimum 8 characters'; return; }
+            if (!val) { fill.style.width = '0%'; fill.style.background = '#e2e8f0'; hint.textContent = 'Minimum 8 characters'; hint.style.color = '#94a3b8'; return; }
             let score = 0;
             if (val.length >= 8) score++;
             if (/[A-Z]/.test(val)) score++;
@@ -777,6 +946,7 @@ $page = $page ?? 'profile'; ?>
             hint.style.color = colors[score];
         }
 
+        /* ── Dark mode ── */
         function toggleDark() {
             const isDark = document.body.classList.toggle('dark');
             const icon = document.getElementById('dark-icon');

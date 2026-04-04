@@ -147,7 +147,15 @@ $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_
         .field-input:focus{border-color:#818cf8;background:white;box-shadow:0 0 0 3px rgba(99,102,241,.08)}
         .field-hint{font-size:.65rem;color:#94a3b8;margin-top:4px}
         .sheet-handle{display:none;width:36px;height:4px;background:#e2e8f0;border-radius:999px;margin:0 auto 16px}
-        @media(max-width:639px){.modal-back{padding:0;align-items:flex-end!important}.modal-card{border-radius:var(--r-xl) var(--r-xl) 0 0;max-width:100%;max-height:92dvh;animation:sheetUp .25s cubic-bezier(.34,1.2,.64,1) both}.sheet-handle{display:block}}
+        @media(max-width:639px){
+            .modal-back{padding:0;align-items:flex-end!important}
+            .modal-card{border-radius:var(--r-xl) var(--r-xl) 0 0;max-width:100%;max-height:92dvh;animation:sheetUp .25s cubic-bezier(.34,1.2,.64,1) both}
+            .sheet-handle{display:block}
+        }
+
+        /* Delete input states */
+        #deleteConfirmInput.input-success{border-color:#86efac!important;background:#f0fdf4!important}
+        #deleteConfirmInput.input-error{border-color:#f87171!important;background:#fff5f5!important}
 
         @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
         @keyframes sheetUp{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
@@ -188,6 +196,8 @@ $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_
         body.dark .icon-btn:hover{background:rgba(99,102,241,.12)}
         body.dark .pw-strength{background:rgba(99,102,241,.15)}
         body.dark #deleteConfirmInput{background:#101e35;border-color:rgba(99,102,241,.18);color:#e2eaf8}
+        body.dark #deleteConfirmInput.input-success{background:#052e16!important;border-color:#16a34a!important}
+        body.dark #deleteConfirmInput.input-error{background:#2d0a0a!important;border-color:#f87171!important}
     </style>
 </head>
 <body>
@@ -204,7 +214,9 @@ $navItems = [
 ];
 ?>
 
-<!-- Edit Profile Modal -->
+<!-- ══════════════════════════════════════════
+     EDIT PROFILE MODAL
+══════════════════════════════════════════ -->
 <div id="editModal" class="modal-back" onclick="if(event.target===this)closeModal('editModal')">
     <div class="modal-card">
         <div class="sheet-handle"></div>
@@ -236,36 +248,85 @@ $navItems = [
     </div>
 </div>
 
-<!-- Delete Account Modal -->
+<!-- ══════════════════════════════════════════
+     DELETE ACCOUNT MODAL
+══════════════════════════════════════════ -->
 <div id="deleteModal" class="modal-back" onclick="if(event.target===this)closeModal('deleteModal')">
     <div class="modal-card" style="max-width:420px">
         <div class="sheet-handle"></div>
-        <div style="text-align:center;margin-bottom:20px">
-            <div style="width:56px;height:56px;background:#fef2f2;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
-                <i class="fa-solid fa-triangle-exclamation" style="font-size:1.5rem;color:#dc2626"></i>
+
+        <!-- Header -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:44px;height:44px;background:#fef2f2;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #fecaca">
+                    <i class="fa-solid fa-trash" style="font-size:1.1rem;color:#dc2626"></i>
+                </div>
+                <div>
+                    <h3 style="font-size:.97rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">Delete Account?</h3>
+                    <p style="font-size:.7rem;color:#94a3b8;margin-top:2px">This cannot be undone</p>
+                </div>
             </div>
-            <h3 style="font-size:1rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">Delete Account?</h3>
-            <p style="font-size:.78rem;color:#94a3b8;margin-top:6px;line-height:1.6">This will permanently delete your account and all associated data. <strong style="color:#dc2626">This cannot be undone.</strong></p>
-        </div>
-        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--r-sm);padding:12px 14px;margin-bottom:18px">
-            <p style="font-size:.78rem;font-weight:600;color:#dc2626;display:flex;align-items:flex-start;gap:8px"><i class="fa-solid fa-circle-exclamation" style="margin-top:1px;flex-shrink:0"></i> All reservations, borrowings and profile data linked to this account will be removed.</p>
-        </div>
-        <div style="margin-bottom:18px">
-            <label class="field-label" style="margin-bottom:6px">Type <strong style="color:#dc2626;font-family:var(--mono);font-weight:800">DELETE</strong> to confirm</label>
-            <input type="text" id="deleteConfirmInput" placeholder="Type DELETE here…" style="width:100%;background:#f8fafc;border:1px solid #fecaca;border-radius:var(--r-sm);padding:11px 14px;font-family:var(--font);font-size:.87rem;font-weight:600;color:#0f172a;outline:none;transition:all .2s" oninput="checkDeleteInput(this.value)" onfocus="this.style.borderColor='#f87171';this.style.boxShadow='0 0 0 3px rgba(239,68,68,.1)'">
-            <p id="deleteInputHint" style="font-size:.65rem;color:#94a3b8;margin-top:4px">This action is irreversible.</p>
-        </div>
-        <div style="display:flex;gap:10px">
-            <button type="button" onclick="closeModal('deleteModal')" style="flex:1;padding:12px;background:#f8fafc;border-radius:var(--r-sm);font-weight:700;color:#475569;border:1px solid #e2e8f0;cursor:pointer;font-size:.82rem;font-family:var(--font)">Cancel</button>
-            <button type="button" id="deleteConfirmBtn" onclick="confirmDeleteAccount()" disabled style="flex:2;padding:12px;background:#dc2626;color:white;border-radius:var(--r-sm);font-weight:700;border:none;cursor:not-allowed;font-size:.82rem;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;opacity:.5;transition:all .2s">
-                <i class="fa-solid fa-trash" style="font-size:.75rem"></i> Delete Account
+            <button onclick="closeModal('deleteModal')" style="width:32px;height:32px;border-radius:9px;background:#f1f5f9;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+                <i class="fa-solid fa-xmark" style="font-size:.8rem;color:#64748b"></i>
             </button>
         </div>
+
+        <!-- Warning banner -->
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--r-sm);padding:13px 15px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start">
+            <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;font-size:.9rem;margin-top:1px;flex-shrink:0"></i>
+            <div>
+                <p style="font-size:.8rem;font-weight:700;color:#b91c1c;margin-bottom:3px">Warning: Permanent Action</p>
+                <p style="font-size:.73rem;color:#dc2626;line-height:1.5">All your reservations, borrowings and profile data will be <strong>permanently deleted</strong>. You will be immediately logged out and cannot recover your account.</p>
+            </div>
+        </div>
+
+        <!-- Confirm input -->
+        <div style="margin-bottom:18px">
+            <label class="field-label" style="color:#dc2626;margin-bottom:8px">
+                Type <span style="font-family:var(--mono);background:#fef2f2;border:1px solid #fecaca;padding:2px 7px;border-radius:5px;font-size:.65rem;font-weight:800;color:#b91c1c">DELETE</span> to confirm
+            </label>
+            <input
+                type="text"
+                id="deleteConfirmInput"
+                placeholder="Type DELETE here…"
+                style="width:100%;background:#f8fafc;border:1px solid #fecaca;border-radius:var(--r-sm);padding:11px 14px;font-family:var(--font);font-size:.87rem;font-weight:600;color:#0f172a;outline:none;transition:all .2s;margin-top:6px"
+                oninput="checkDeleteInput(this.value)"
+                autocomplete="off"
+                onfocus="this.style.boxShadow='0 0 0 3px rgba(239,68,68,.1)'"
+                onblur="this.style.boxShadow='none'"
+            >
+            <p id="deleteInputHint" style="font-size:.65rem;color:#94a3b8;margin-top:5px">This action is irreversible. Case-sensitive.</p>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:10px">
+            <button
+                type="button"
+                onclick="closeModal('deleteModal')"
+                style="flex:1;padding:12px;background:#f8fafc;border-radius:var(--r-sm);font-weight:700;color:#475569;border:1px solid #e2e8f0;cursor:pointer;font-size:.82rem;font-family:var(--font);transition:background .15s"
+                onmouseover="this.style.background='#f1f5f9'"
+                onmouseout="this.style.background='#f8fafc'"
+            >Cancel</button>
+            <button
+                type="button"
+                id="deleteConfirmBtn"
+                onclick="confirmDeleteAccount()"
+                disabled
+                style="flex:2;padding:12px;background:#dc2626;color:white;border-radius:var(--r-sm);font-weight:700;border:none;cursor:not-allowed;font-size:.82rem;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;opacity:.4;transition:all .2s;box-shadow:0 4px 12px rgba(220,38,38,.0)"
+            >
+                <i class="fa-solid fa-trash" style="font-size:.75rem"></i>
+                <span id="deleteSubmitTxt">Delete My Account</span>
+            </button>
+        </div>
+
+        <!-- Error message -->
         <p id="deleteErrMsg" style="font-size:.72rem;color:#dc2626;font-weight:600;margin-top:10px;min-height:18px;text-align:center"></p>
     </div>
 </div>
 
-<!-- SIDEBAR -->
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════ -->
 <aside class="sidebar">
     <div class="sidebar-inner">
         <div class="sidebar-top">
@@ -302,7 +363,9 @@ $navItems = [
     </div>
 </aside>
 
-<!-- MOBILE NAV -->
+<!-- ══════════════════════════════════════════
+     MOBILE NAV
+══════════════════════════════════════════ -->
 <nav class="mobile-nav-pill">
     <div class="mobile-scroll-container">
         <?php foreach ($navItems as $item):
@@ -311,14 +374,20 @@ $navItems = [
         ?>
             <a href="<?= $item['url'] ?>" class="mob-nav-item <?= $active ? 'active' : '' ?>" title="<?= htmlspecialchars($item['label']) ?>">
                 <i class="fa-solid <?= $item['icon'] ?>" style="font-size:1.1rem"></i>
-                <?php if ($showBadge): ?><span style="position:absolute;top:6px;right:20%;background:#ef4444;color:white;font-size:.5rem;font-weight:700;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white"><?= $pendingUserCount > 9 ? '9+' : $pendingUserCount ?></span><?php endif; ?>
+                <?php if ($showBadge): ?>
+                    <span style="position:absolute;top:6px;right:20%;background:#ef4444;color:white;font-size:.5rem;font-weight:700;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white"><?= $pendingUserCount > 9 ? '9+' : $pendingUserCount ?></span>
+                <?php endif; ?>
             </a>
         <?php endforeach; ?>
-        <a href="/logout" class="mob-nav-item mob-logout" title="Sign Out"><i class="fa-solid fa-arrow-right-from-bracket" style="font-size:1.1rem;color:#f87171"></i></a>
+        <a href="/logout" class="mob-nav-item mob-logout" title="Sign Out">
+            <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:1.1rem;color:#f87171"></i>
+        </a>
     </div>
 </nav>
 
-<!-- MAIN -->
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════ -->
 <main class="main-area">
     <!-- Topbar -->
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px" class="fade-up">
@@ -358,11 +427,15 @@ $navItems = [
                 </div>
                 <h3 style="font-size:1rem;font-weight:800;color:#0f172a;letter-spacing:-.02em"><?= htmlspecialchars($user['name'] ?? 'SK Officer') ?></h3>
                 <p style="font-size:.78rem;color:#94a3b8;font-weight:500;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= htmlspecialchars($user['email'] ?? '') ?></p>
-                <?php if (!empty($user['phone'])): ?><p style="font-size:.72rem;color:#94a3b8;margin-top:2px;font-family:var(--mono)"><?= htmlspecialchars($user['phone']) ?></p><?php endif; ?>
+                <?php if (!empty($user['phone'])): ?>
+                    <p style="font-size:.72rem;color:#94a3b8;margin-top:2px;font-family:var(--mono)"><?= htmlspecialchars($user['phone']) ?></p>
+                <?php endif; ?>
                 <div style="margin-top:12px">
                     <span style="display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--indigo-light);color:var(--indigo);border:1px solid var(--indigo-border)">SK Officer</span>
                 </div>
-                <button class="edit-btn" onclick="openModal('editModal')"><i class="fa-solid fa-pen-to-square" style="font-size:.8rem"></i> Edit Profile</button>
+                <button class="edit-btn" onclick="openModal('editModal')">
+                    <i class="fa-solid fa-pen-to-square" style="font-size:.8rem"></i> Edit Profile
+                </button>
             </div>
 
             <!-- Activity card -->
@@ -420,19 +493,19 @@ $navItems = [
                     <button onclick="openModal('editModal')" class="action-btn-sm"><i class="fa-solid fa-pen-to-square" style="font-size:.7rem"></i> Edit</button>
                 </div>
                 <?php foreach ([
-                    ['fa-user',        'Full Name',      $user['name']  ?? 'Not set'],
-                    ['fa-envelope',    'Email Address',  $user['email'] ?? 'Not set'],
-                    ['fa-phone',       'Contact Number', $user['phone'] ?? 'Not set'],
-                    ['fa-star',        'Role',           'Sangguniang Kabataan Officer'],
-                    ['fa-calendar',    'Member Since',   $memberSince],
+                    ['fa-user',     'Full Name',      $user['name']  ?? 'Not set'],
+                    ['fa-envelope', 'Email Address',  $user['email'] ?? 'Not set'],
+                    ['fa-phone',    'Contact Number', $user['phone'] ?? 'Not set'],
+                    ['fa-star',     'Role',           'Sangguniang Kabataan Officer'],
+                    ['fa-calendar', 'Member Since',   $memberSince],
                 ] as $f): ?>
-                <div class="info-row">
-                    <div class="info-icon"><i class="fa-solid <?= $f[0] ?>" style="font-size:.8rem;color:#94a3b8"></i></div>
-                    <div style="min-width:0">
-                        <div class="info-label"><?= $f[1] ?></div>
-                        <div class="info-value"><?= htmlspecialchars($f[2]) ?></div>
+                    <div class="info-row">
+                        <div class="info-icon"><i class="fa-solid <?= $f[0] ?>" style="font-size:.8rem;color:#94a3b8"></i></div>
+                        <div style="min-width:0">
+                            <div class="info-label"><?= $f[1] ?></div>
+                            <div class="info-value"><?= htmlspecialchars($f[2]) ?></div>
+                        </div>
                     </div>
-                </div>
                 <?php endforeach; ?>
             </div>
 
@@ -485,7 +558,10 @@ $navItems = [
                         <p style="font-size:.83rem;font-weight:600;color:#0f172a">Delete Account</p>
                         <p style="font-size:.72rem;color:#94a3b8;margin-top:2px">Permanently remove your account and all data. Cannot be undone.</p>
                     </div>
-                    <button class="danger-btn" onclick="openModal('deleteModal')"><i class="fa-solid fa-trash" style="font-size:.7rem;margin-right:5px"></i> Delete</button>
+                    <!-- ✅ Opens delete confirmation modal -->
+                    <button class="danger-btn" onclick="openModal('deleteModal')">
+                        <i class="fa-solid fa-trash" style="font-size:.7rem;margin-right:5px"></i> Delete
+                    </button>
                 </div>
             </div>
         </div>
@@ -493,40 +569,176 @@ $navItems = [
 </main>
 
 <script>
-function openModal(id){document.getElementById(id).classList.add('show');document.body.style.overflow='hidden';}
-function closeModal(id){document.getElementById(id).classList.remove('show');document.body.style.overflow='';if(id==='deleteModal'){document.getElementById('deleteConfirmInput').value='';document.getElementById('deleteErrMsg').textContent='';resetDeleteBtn();}}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('editModal');closeModal('deleteModal');}});
-
-function checkPw(val){const fill=document.getElementById('pwFill'),hint=document.getElementById('pwHint');if(!val){fill.style.width='0%';fill.style.background='#e2e8f0';hint.textContent='Minimum 8 characters';hint.style.color='';return;}let score=0;if(val.length>=8)score++;if(/[A-Z]/.test(val))score++;if(/[0-9]/.test(val))score++;if(/[^A-Za-z0-9]/.test(val))score++;const labels=['Too short','Weak','Fair','Good','Strong'];const colors=['#e2e8f0','#f87171','#fbbf24','#34d399','#10b981'];fill.style.width=(score*25)+'%';fill.style.background=colors[score];hint.textContent=labels[score];hint.style.color=colors[score];}
-
-// Delete account
-function checkDeleteInput(val){const btn=document.getElementById('deleteConfirmBtn'),hint=document.getElementById('deleteInputHint');if(val.trim()==='DELETE'){btn.disabled=false;btn.style.opacity='1';btn.style.cursor='pointer';hint.textContent='';hint.style.color='';}else{resetDeleteBtn();if(val.length>0&&val.trim()!=='DELETE'){hint.textContent='Type exactly: DELETE';hint.style.color='#dc2626';}else{hint.textContent='This action is irreversible.';hint.style.color='';}}}
-function resetDeleteBtn(){const btn=document.getElementById('deleteConfirmBtn');btn.disabled=true;btn.style.opacity='.5';btn.style.cursor='not-allowed';}
-async function confirmDeleteAccount(){
-    const btn=document.getElementById('deleteConfirmBtn'),errMsg=document.getElementById('deleteErrMsg');
-    const confirmVal=document.getElementById('deleteConfirmInput').value.trim();
-    if(confirmVal!=='DELETE'){errMsg.textContent='Please type DELETE to confirm.';return;}
-    btn.disabled=true;btn.style.opacity='.7';btn.innerHTML='<i class="fa-solid fa-spinner fa-spin" style="font-size:.75rem"></i> Deleting…';errMsg.textContent='';
-    try{
-        const csrfToken=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')||'';
-        const csrfName=document.querySelector('meta[name="csrf-name"]')?.getAttribute('content')||'csrf_token';
-        const body=new FormData();body.append(csrfName,csrfToken);
-        const res=await fetch('<?= base_url('sk/profile/delete') ?>',{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'},body,credentials:'same-origin'});
-        const text=await res.text();let data;try{data=JSON.parse(text);}catch{throw new Error('Server error ('+res.status+')');}
-        if(data.ok||data.success){window.location.href=data.redirect||'/logout';}
-        else{throw new Error(data.error||data.message||'Could not delete account. Please try again.');}
-    }catch(err){
-        errMsg.textContent='✗ '+err.message;
-        btn.disabled=false;btn.style.opacity='1';btn.innerHTML='<i class="fa-solid fa-trash" style="font-size:.75rem"></i> Delete Account';
+/* ── Modal helpers ── */
+function openModal(id) {
+    document.getElementById(id).classList.add('show');
+    document.body.style.overflow = 'hidden';
+    if (id === 'deleteModal') {
+        // Reset state every time it opens
+        document.getElementById('deleteConfirmInput').value = '';
+        document.getElementById('deleteConfirmInput').className = '';
+        document.getElementById('deleteConfirmInput').style.borderColor = '#fecaca';
+        document.getElementById('deleteConfirmInput').style.background = '#f8fafc';
+        document.getElementById('deleteInputHint').textContent = 'This action is irreversible. Case-sensitive.';
+        document.getElementById('deleteInputHint').style.color = '#94a3b8';
+        document.getElementById('deleteErrMsg').textContent = '';
+        resetDeleteBtn();
+        setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 200);
     }
 }
 
-function toggleDark(){const isDark=document.body.classList.toggle('dark');const icon=document.getElementById('dark-icon');icon.innerHTML=isDark?'<i class="fa-regular fa-moon" style="font-size:.85rem"></i>':'<i class="fa-regular fa-sun" style="font-size:.85rem"></i>';localStorage.setItem('sk_theme',isDark?'dark':'light');}
-document.addEventListener('DOMContentLoaded',()=>{
-    if(localStorage.getItem('sk_theme')==='dark'){document.body.classList.add('dark');const icon=document.getElementById('dark-icon');if(icon)icon.innerHTML='<i class="fa-regular fa-moon" style="font-size:.85rem"></i>';}
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        closeModal('editModal');
+        closeModal('deleteModal');
+    }
+});
+
+/* ── Password strength ── */
+function checkPw(val) {
+    const fill = document.getElementById('pwFill'), hint = document.getElementById('pwHint');
+    if (!val) { fill.style.width='0%'; fill.style.background='#e2e8f0'; hint.textContent='Minimum 8 characters'; hint.style.color=''; return; }
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const labels = ['Too short','Weak','Fair','Good','Strong'];
+    const colors = ['#e2e8f0','#f87171','#fbbf24','#34d399','#10b981'];
+    fill.style.width = (score * 25) + '%';
+    fill.style.background = colors[score];
+    hint.textContent = labels[score];
+    hint.style.color = colors[score];
+}
+
+/* ── Delete account confirm input ── */
+function checkDeleteInput(val) {
+    const btn  = document.getElementById('deleteConfirmBtn');
+    const hint = document.getElementById('deleteInputHint');
+    const inp  = document.getElementById('deleteConfirmInput');
+
+    if (val === 'DELETE') {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.style.boxShadow = '0 4px 12px rgba(220,38,38,.28)';
+        inp.classList.add('input-success');
+        inp.classList.remove('input-error');
+        inp.style.borderColor = '#86efac';
+        inp.style.background = '#f0fdf4';
+        hint.textContent = '✓ Confirmed — you may now delete your account';
+        hint.style.color = '#16a34a';
+    } else {
+        resetDeleteBtn();
+        inp.classList.remove('input-success');
+        if (val.length > 0) {
+            inp.classList.add('input-error');
+            inp.style.borderColor = '#f87171';
+            inp.style.background = '#fff5f5';
+            hint.textContent = 'Must be exactly "DELETE" in uppercase';
+            hint.style.color = '#dc2626';
+        } else {
+            inp.classList.remove('input-error');
+            inp.style.borderColor = '#fecaca';
+            inp.style.background = '#f8fafc';
+            hint.textContent = 'This action is irreversible. Case-sensitive.';
+            hint.style.color = '#94a3b8';
+        }
+    }
+}
+
+function resetDeleteBtn() {
+    const btn = document.getElementById('deleteConfirmBtn');
+    btn.disabled = true;
+    btn.style.opacity = '.4';
+    btn.style.cursor = 'not-allowed';
+    btn.style.boxShadow = 'none';
+}
+
+/* ── Confirm delete (AJAX) ── */
+async function confirmDeleteAccount() {
+    const btn     = document.getElementById('deleteConfirmBtn');
+    const errMsg  = document.getElementById('deleteErrMsg');
+    const txtSpan = document.getElementById('deleteSubmitTxt');
+    const val     = document.getElementById('deleteConfirmInput').value.trim();
+
+    if (val !== 'DELETE') {
+        errMsg.textContent = 'Please type DELETE to confirm.';
+        return;
+    }
+
+    // Loading state
+    btn.disabled = true;
+    btn.style.opacity = '.7';
+    btn.style.cursor = 'not-allowed';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:.75rem"></i> &nbsp;Deleting…';
+    errMsg.textContent = '';
+
+    try {
+        // Grab CSRF token from meta tags (set by head_meta.php)
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const csrfName  = document.querySelector('meta[name="csrf-name"]')?.getAttribute('content')  || 'csrf_token';
+
+        const body = new FormData();
+        body.append(csrfName, csrfToken);
+
+        const res = await fetch('<?= base_url('sk/profile/delete') ?>', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body,
+            credentials: 'same-origin'
+        });
+
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch { throw new Error('Server error (' + res.status + ')'); }
+
+        if (data.ok || data.success) {
+            // Success — redirect
+            window.location.href = data.redirect || '/logout';
+        } else {
+            throw new Error(data.error || data.message || 'Could not delete account. Please try again.');
+        }
+
+    } catch (err) {
+        errMsg.textContent = '✗ ' + err.message;
+        // Restore button
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.innerHTML = '<i class="fa-solid fa-trash" style="font-size:.75rem"></i> Delete My Account';
+    }
+}
+
+/* ── Dark mode ── */
+function toggleDark() {
+    const isDark = document.body.classList.toggle('dark');
+    const icon = document.getElementById('dark-icon');
+    icon.innerHTML = isDark
+        ? '<i class="fa-regular fa-moon" style="font-size:.85rem"></i>'
+        : '<i class="fa-regular fa-sun" style="font-size:.85rem"></i>';
+    localStorage.setItem('sk_theme', isDark ? 'dark' : 'light');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('sk_theme') === 'dark') {
+        document.body.classList.add('dark');
+        const icon = document.getElementById('dark-icon');
+        if (icon) icon.innerHTML = '<i class="fa-regular fa-moon" style="font-size:.85rem"></i>';
+    }
     document.documentElement.classList.remove('dark-pre');
-    function checkGrid(){const grid=document.getElementById('profileGrid');if(grid)grid.style.gridTemplateColumns=window.innerWidth<900?'1fr':'minmax(0,1fr) minmax(0,1.6fr)';}
-    checkGrid();window.addEventListener('resize',checkGrid);
+
+    function checkGrid() {
+        const grid = document.getElementById('profileGrid');
+        if (grid) grid.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : 'minmax(0,1fr) minmax(0,1.6fr)';
+    }
+    checkGrid();
+    window.addEventListener('resize', checkGrid);
 });
 </script>
 </body>
