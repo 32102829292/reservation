@@ -1237,6 +1237,22 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
             background: #101e35;
             color: #a5b4fc
         }
+
+        @media (min-width: 768px) {
+            #mobileCardList {
+                display: none !important;
+            }
+
+            #mobileEmpty {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 767px) {
+            #desktopTableWrap {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -1566,7 +1582,7 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
         </div>
 
         <!-- Desktop table -->
-        <div id="desktopTableWrap" class="hidden md:block card" style="overflow:hidden;margin-bottom:20px">
+        <div id="desktopTableWrap" class="card" style="overflow:hidden;margin-bottom:20px">
             <div class="table-wrap">
                 <table id="resTable">
                     <thead>
@@ -1671,7 +1687,7 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
         </div>
 
         <!-- Mobile cards -->
-        <div id="mobileCardList" class="md:hidden" style="display:flex;flex-direction:column;gap:10px">
+        <div id="mobileCardList" style="display:flex;flex-direction:column;gap:10px">
             <?php if (empty($processed)): ?>
                 <div class="card-empty"><i class="fa-solid fa-calendar-xmark" style="font-size:2.5rem;color:#e2e8f0;display:block;margin-bottom:10px"></i>
                     <p style="font-weight:800;color:#94a3b8">No reservations yet</p>
@@ -1742,7 +1758,7 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
             <?php endif; ?>
         </div>
 
-        <div id="mobileEmpty" class="md:hidden card-empty" style="display:none">
+        <div id="mobileEmpty" class="card-empty" style="display:none">
             <i class="fa-solid fa-filter-circle-xmark" style="font-size:2.5rem;color:#e2e8f0;display:block;margin-bottom:10px"></i>
             <p style="font-weight:800;color:#94a3b8">No reservations match</p>
             <p style="color:#cbd5e1;font-size:.85rem;margin-top:4px">Try adjusting your search or filters.</p>
