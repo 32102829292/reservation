@@ -1,3 +1,10 @@
+<?php
+date_default_timezone_set('Asia/Manila');
+$page = $page ?? 'new-reservation';
+$sk_name = session()->get('name') ?? 'SK Officer';
+$pendingUserCount = $pendingUserCount ?? 0;
+$avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,11 +13,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>New Reservation | SK</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#15803d">
     <script>
         (function() {
             if (localStorage.getItem('sk_theme') === 'dark') document.documentElement.classList.add('dark-pre')
@@ -27,11 +32,11 @@
         }
 
         :root {
-            --green: #15803d;
-            --green-mid: #16a34a;
-            --green-light: #f0fdf4;
-            --green-border: #bbf7d0;
-            --bg: #f0f4f1;
+            --indigo: #3730a3;
+            --indigo-mid: #4338ca;
+            --indigo-light: #eef2ff;
+            --indigo-border: #c7d2fe;
+            --bg: #f0f2f9;
             --card: #ffffff;
             --font: 'Plus Jakarta Sans', system-ui, sans-serif;
             --mono: 'JetBrains Mono', monospace;
@@ -62,15 +67,14 @@
             height: 100vh;
             height: 100dvh;
             overflow: hidden;
-            font-size: 1rem;
-            line-height: 1.6;
             -webkit-font-smoothing: antialiased
         }
 
         html.dark-pre body {
-            background: #031a0a
+            background: #060e1e
         }
 
+        /* Sidebar */
         .sidebar {
             width: var(--sidebar-w);
             flex-shrink: 0;
@@ -84,7 +88,7 @@
         .sidebar-inner {
             background: var(--card);
             border-radius: var(--r-xl);
-            border: 1px solid rgba(22, 163, 74, .12);
+            border: 1px solid rgba(99, 102, 241, .1);
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -94,7 +98,7 @@
 
         .sidebar-top {
             padding: 22px 18px 16px;
-            border-bottom: 1px solid rgba(22, 163, 74, .08)
+            border-bottom: 1px solid rgba(99, 102, 241, .07)
         }
 
         .brand-tag {
@@ -116,7 +120,7 @@
 
         .brand-name em {
             font-style: normal;
-            color: var(--green)
+            color: var(--indigo)
         }
 
         .brand-sub {
@@ -127,17 +131,20 @@
 
         .user-card {
             margin: 12px 12px 0;
-            background: var(--green-light);
+            background: var(--indigo-light);
             border-radius: var(--r-md);
             padding: 12px 14px;
-            border: 1px solid var(--green-border)
+            border: 1px solid var(--indigo-border);
+            display: flex;
+            align-items: center;
+            gap: 9px
         }
 
-        .user-avatar-sm {
+        .user-avatar {
             width: 34px;
             height: 34px;
             border-radius: 50%;
-            background: var(--green);
+            background: var(--indigo);
             color: #fff;
             display: flex;
             align-items: center;
@@ -145,19 +152,22 @@
             font-weight: 800;
             font-size: .85rem;
             flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(21, 128, 61, .3)
+            box-shadow: 0 2px 8px rgba(55, 48, 163, .3)
         }
 
         .user-name-txt {
             font-size: .8rem;
             font-weight: 700;
             color: #0f172a;
-            letter-spacing: -.01em
+            letter-spacing: -.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
         }
 
         .user-role-txt {
             font-size: .68rem;
-            color: #16a34a;
+            color: #6366f1;
             font-weight: 500;
             margin-top: 1px
         }
@@ -168,16 +178,12 @@
             padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 3px
+            gap: 3px;
+            scrollbar-width: none
         }
 
         .sidebar-nav::-webkit-scrollbar {
-            width: 2px
-        }
-
-        .sidebar-nav::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 2px
+            display: none
         }
 
         .nav-section-lbl {
@@ -186,8 +192,7 @@
             letter-spacing: .18em;
             text-transform: uppercase;
             color: #cbd5e1;
-            padding: 10px 10px 5px;
-            margin-top: 2px
+            padding: 10px 10px 5px
         }
 
         .nav-link {
@@ -204,14 +209,14 @@
         }
 
         .nav-link:hover {
-            background: var(--green-light);
-            color: var(--green)
+            background: var(--indigo-light);
+            color: var(--indigo)
         }
 
         .nav-link.active {
-            background: var(--green);
+            background: var(--indigo);
             color: #fff;
-            box-shadow: 0 4px 14px rgba(21, 128, 61, .32)
+            box-shadow: 0 4px 14px rgba(55, 48, 163, .32)
         }
 
         .nav-icon {
@@ -221,11 +226,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0
-        }
-
-        .nav-link.active .nav-icon {
-            background: rgba(255, 255, 255, .15)
+            flex-shrink: 0;
+            font-size: .85rem
         }
 
         .nav-link:not(.active) .nav-icon {
@@ -233,27 +235,26 @@
         }
 
         .nav-link:hover:not(.active) .nav-icon {
-            background: #dcfce7
+            background: #e0e7ff
+        }
+
+        .nav-link.active .nav-icon {
+            background: rgba(255, 255, 255, .15)
         }
 
         .nav-badge {
             margin-left: auto;
-            background: rgba(239, 68, 68, .15);
-            color: #dc2626;
+            background: rgba(245, 158, 11, .18);
+            color: #d97706;
             font-size: .6rem;
             font-weight: 700;
             padding: 2px 7px;
             border-radius: 999px
         }
 
-        .nav-link.active .nav-badge {
-            background: rgba(255, 255, 255, .22);
-            color: #fff
-        }
-
         .sidebar-footer {
             padding: 10px 10px 12px;
-            border-top: 1px solid rgba(22, 163, 74, .07)
+            border-top: 1px solid rgba(99, 102, 241, .07)
         }
 
         .logout-link {
@@ -274,18 +275,22 @@
             color: #dc2626
         }
 
+        .logout-link:hover .nav-icon {
+            background: #fee2e2
+        }
+
+        /* Mobile nav */
         .mobile-nav-pill {
             display: none;
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            width: 100%;
             background: white;
-            border-top: 1px solid rgba(22, 163, 74, .12);
+            border-top: 1px solid rgba(99, 102, 241, .1);
             height: var(--mob-nav-total);
             z-index: 200;
-            box-shadow: 0 -4px 20px rgba(21, 128, 61, .1)
+            box-shadow: 0 -4px 20px rgba(55, 48, 163, .1)
         }
 
         .mobile-scroll-container {
@@ -307,13 +312,13 @@
             text-decoration: none;
             color: #64748b;
             position: relative;
-            transition: background .15s
+            transition: background .15s, color .15s
         }
 
         .mob-nav-item:hover,
         .mob-nav-item.active {
-            background: var(--green-light);
-            color: var(--green)
+            background: var(--indigo-light);
+            color: var(--indigo)
         }
 
         .mob-nav-item.active::after {
@@ -324,7 +329,7 @@
             transform: translateX(-50%);
             width: 4px;
             height: 4px;
-            background: var(--green);
+            background: var(--indigo);
             border-radius: 50%
         }
 
@@ -361,6 +366,7 @@
             }
         }
 
+        /* Main */
         .main-area {
             flex: 1;
             min-width: 0;
@@ -394,51 +400,17 @@
             }
         }
 
-        .topbar {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            gap: 16px
-        }
-
-        .greeting-eyebrow {
-            font-size: .7rem;
-            font-weight: 700;
-            letter-spacing: .2em;
-            text-transform: uppercase;
-            color: #94a3b8;
-            margin-bottom: 4px
-        }
-
-        .greeting-name {
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: -.04em;
-            line-height: 1.1
-        }
-
-        .greeting-sub {
-            font-size: .78rem;
-            color: #94a3b8;
-            margin-top: 4px;
-            font-weight: 500
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-            margin-top: 4px
+        @media(max-width:639px) {
+            .main-area {
+                padding: 14px 12px 0
+            }
         }
 
         .icon-btn {
             width: 44px;
             height: 44px;
             background: white;
-            border: 1px solid rgba(22, 163, 74, .12);
+            border: 1px solid rgba(99, 102, 241, .12);
             border-radius: var(--r-sm);
             display: flex;
             align-items: center;
@@ -450,9 +422,9 @@
         }
 
         .icon-btn:hover {
-            background: var(--green-light);
-            border-color: var(--green-border);
-            color: var(--green)
+            background: var(--indigo-light);
+            border-color: var(--indigo-border);
+            color: var(--indigo)
         }
 
         .back-btn {
@@ -461,7 +433,7 @@
             gap: 7px;
             padding: 10px 16px;
             background: white;
-            border: 1px solid rgba(22, 163, 74, .15);
+            border: 1px solid rgba(99, 102, 241, .15);
             border-radius: var(--r-sm);
             font-size: .82rem;
             font-weight: 700;
@@ -472,19 +444,19 @@
         }
 
         .back-btn:hover {
-            border-color: var(--green);
-            color: var(--green);
-            background: var(--green-light)
+            border-color: var(--indigo);
+            color: var(--indigo);
+            background: var(--indigo-light)
         }
 
         /* Form card */
         .form-card {
             background: var(--card);
             border-radius: var(--r-lg);
-            border: 1px solid rgba(22, 163, 74, .08);
+            border: 1px solid rgba(99, 102, 241, .08);
             box-shadow: var(--shadow-sm);
             padding: 28px 32px;
-            max-width: 760px;
+            max-width: 780px;
             margin: 0 auto
         }
 
@@ -500,13 +472,13 @@
             gap: 10px;
             margin-bottom: 20px;
             padding-bottom: 14px;
-            border-bottom: 1px solid rgba(22, 163, 74, .06)
+            border-bottom: 1px solid rgba(99, 102, 241, .07)
         }
 
         .section-icon {
             width: 36px;
             height: 36px;
-            background: var(--green-light);
+            background: var(--indigo-light);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -517,8 +489,7 @@
         .section-title {
             font-size: .9rem;
             font-weight: 700;
-            color: #0f172a;
-            letter-spacing: -.01em
+            color: #0f172a
         }
 
         .field-label {
@@ -534,7 +505,7 @@
         .field-input {
             width: 100%;
             background: #f8fafc;
-            border: 1px solid rgba(22, 163, 74, .15);
+            border: 1px solid rgba(99, 102, 241, .12);
             border-radius: var(--r-sm);
             padding: 11px 14px;
             font-family: var(--font);
@@ -546,9 +517,9 @@
         }
 
         .field-input:focus {
-            border-color: #4ade80;
+            border-color: #818cf8;
             background: white;
-            box-shadow: 0 0 0 3px rgba(22, 163, 74, .08)
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .08)
         }
 
         .field-input:read-only {
@@ -590,9 +561,9 @@
         }
 
         .type-btn.active {
-            background: var(--green);
+            background: var(--indigo);
             color: white;
-            box-shadow: 0 4px 12px rgba(21, 128, 61, .25)
+            box-shadow: 0 4px 12px rgba(55, 48, 163, .25)
         }
 
         /* Autocomplete */
@@ -604,7 +575,7 @@
             position: absolute;
             z-index: 50;
             background: white;
-            border: 1px solid rgba(22, 163, 74, .15);
+            border: 1px solid rgba(99, 102, 241, .15);
             border-radius: var(--r-md);
             box-shadow: var(--shadow-lg);
             max-height: 220px;
@@ -623,8 +594,8 @@
         }
 
         .autocomplete-item:hover {
-            background: var(--green-light);
-            color: var(--green)
+            background: var(--indigo-light);
+            color: var(--indigo)
         }
 
         .autocomplete-item .sub {
@@ -633,10 +604,10 @@
             margin-top: 2px
         }
 
-        /* PC section */
+        /* PC grid */
         .pc-section {
-            background: var(--green-light);
-            border: 1px solid var(--green-border);
+            background: var(--indigo-light);
+            border: 1px solid var(--indigo-border);
             border-radius: var(--r-md);
             padding: 18px
         }
@@ -646,7 +617,7 @@
             border-radius: 9px;
             font-size: .75rem;
             font-weight: 700;
-            border: 1px solid var(--green-border);
+            border: 1px solid var(--indigo-border);
             background: white;
             color: #475569;
             cursor: pointer;
@@ -654,17 +625,17 @@
         }
 
         .pc-btn:hover {
-            border-color: var(--green);
-            color: var(--green)
+            border-color: var(--indigo);
+            color: var(--indigo)
         }
 
         .pc-btn.selected {
-            background: var(--green);
+            background: var(--indigo);
             color: white;
-            border-color: var(--green)
+            border-color: var(--indigo)
         }
 
-        /* Submit btn */
+        /* Submit */
         .submit-btn {
             display: flex;
             align-items: center;
@@ -672,7 +643,7 @@
             gap: 8px;
             width: 100%;
             padding: 14px;
-            background: var(--green);
+            background: var(--indigo);
             color: white;
             border-radius: var(--r-sm);
             font-size: .9rem;
@@ -681,19 +652,19 @@
             cursor: pointer;
             font-family: var(--font);
             transition: all var(--ease);
-            box-shadow: 0 4px 12px rgba(21, 128, 61, .28)
+            box-shadow: 0 4px 12px rgba(55, 48, 163, .28)
         }
 
         .submit-btn:hover {
-            background: #14532d;
+            background: #312e81;
             transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(21, 128, 61, .35)
+            box-shadow: 0 6px 18px rgba(55, 48, 163, .35)
         }
 
         .divider {
             border: none;
-            border-top: 1px solid rgba(22, 163, 74, .06);
-            margin: 24px 0
+            border-top: 1px solid rgba(99, 102, 241, .07);
+            margin: 22px 0
         }
 
         /* Flash */
@@ -703,12 +674,12 @@
             gap: 12px;
             margin-bottom: 16px;
             padding: 13px 18px;
-            background: var(--green-light);
-            border: 1px solid var(--green-border);
-            color: var(--green);
+            background: var(--indigo-light);
+            border: 1px solid var(--indigo-border);
+            color: var(--indigo);
             font-weight: 600;
             border-radius: var(--r-md);
-            font-size: .9rem
+            font-size: .875rem
         }
 
         .flash-err {
@@ -722,7 +693,7 @@
             color: #dc2626;
             font-weight: 600;
             border-radius: var(--r-md);
-            font-size: .9rem
+            font-size: .875rem
         }
 
         /* Modal */
@@ -789,7 +760,7 @@
             justify-content: space-between;
             align-items: flex-start;
             padding: 9px 0;
-            border-bottom: 1px solid rgba(22, 163, 74, .06);
+            border-bottom: 1px solid rgba(99, 102, 241, .06);
             gap: 12px
         }
 
@@ -798,7 +769,7 @@
         }
 
         .mrow-label {
-            font-size: .62rem;
+            font-size: .6rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .12em;
@@ -816,8 +787,8 @@
         }
 
         .qr-section {
-            background: var(--green-light);
-            border: 1.5px dashed var(--green-border);
+            background: var(--indigo-light);
+            border: 1.5px dashed var(--indigo-border);
             border-radius: var(--r-md);
             padding: 20px;
             display: flex;
@@ -868,23 +839,18 @@
             animation: slideUp .45s .05s ease both
         }
 
-        @media(max-width:639px) {
-            .main-area {
-                padding: 14px 12px 0
-            }
-        }
-
+        /* Dark mode */
         body.dark {
-            --bg: #031a0a;
-            --card: #061a0e;
-            --green-light: rgba(21, 128, 61, .12);
-            --green-border: rgba(22, 163, 74, .25);
+            --bg: #060e1e;
+            --card: #0b1628;
+            --indigo-light: rgba(55, 48, 163, .12);
+            --indigo-border: rgba(99, 102, 241, .25);
             color: #e2eaf8
         }
 
         body.dark .sidebar-inner {
-            background: #061a0e;
-            border-color: rgba(22, 163, 74, .12)
+            background: #0b1628;
+            border-color: rgba(99, 102, 241, .12)
         }
 
         body.dark .brand-name {
@@ -892,21 +858,21 @@
         }
 
         body.dark .nav-link {
-            color: #6ee7a0
+            color: #a5b4fc
         }
 
         body.dark .nav-link:hover {
-            background: rgba(22, 163, 74, .12);
-            color: #4ade80
+            background: rgba(99, 102, 241, .12);
+            color: #c7d2fe
         }
 
         body.dark .nav-link:not(.active) .nav-icon {
-            background: rgba(22, 163, 74, .1)
+            background: rgba(99, 102, 241, .1)
         }
 
         body.dark .user-card {
-            background: rgba(21, 128, 61, .15);
-            border-color: rgba(22, 163, 74, .2)
+            background: rgba(55, 48, 163, .15);
+            border-color: rgba(99, 102, 241, .2)
         }
 
         body.dark .user-name-txt {
@@ -918,37 +884,37 @@
         }
 
         body.dark .form-card {
-            background: #061a0e;
-            border-color: rgba(22, 163, 74, .1)
+            background: #0b1628;
+            border-color: rgba(99, 102, 241, .1)
         }
 
         body.dark .field-input {
-            background: #0a2e14;
-            border-color: rgba(22, 163, 74, .18);
+            background: #101e35;
+            border-color: rgba(99, 102, 241, .18);
             color: #e2eaf8
         }
 
         body.dark .field-input:focus {
-            background: #061a0e
+            background: #0b1628
         }
 
         body.dark .icon-btn {
-            background: #061a0e;
-            border-color: rgba(22, 163, 74, .15);
-            color: #6ee7a0
+            background: #0b1628;
+            border-color: rgba(99, 102, 241, .15);
+            color: #a5b4fc
         }
 
         body.dark .icon-btn:hover {
-            background: rgba(22, 163, 74, .12)
+            background: rgba(99, 102, 241, .12)
         }
 
         body.dark .modal-card {
-            background: #061a0e;
+            background: #0b1628;
             color: #e2eaf8
         }
 
         body.dark .mrow {
-            border-color: rgba(22, 163, 74, .08)
+            border-color: rgba(99, 102, 241, .08)
         }
 
         body.dark .mrow-value {
@@ -956,54 +922,54 @@
         }
 
         body.dark .pc-section {
-            background: rgba(21, 128, 61, .12);
-            border-color: rgba(22, 163, 74, .2)
+            background: rgba(55, 48, 163, .12);
+            border-color: rgba(99, 102, 241, .2)
         }
 
         body.dark .pc-btn {
-            background: #0a2e14;
-            border-color: rgba(22, 163, 74, .15);
-            color: #6ee7a0
+            background: #101e35;
+            border-color: rgba(99, 102, 241, .15);
+            color: #a5b4fc
         }
 
         body.dark .mobile-nav-pill {
-            background: #061a0e;
-            border-color: rgba(22, 163, 74, .18)
+            background: #0b1628;
+            border-color: rgba(99, 102, 241, .18)
         }
 
         body.dark .mob-nav-item {
-            color: #6ee7a0
+            color: #a5b4fc
         }
 
         body.dark .mob-nav-item.active {
-            background: rgba(22, 163, 74, .18)
+            background: rgba(99, 102, 241, .18)
         }
 
         body.dark .type-toggle {
-            background: #0a2e14
+            background: #101e35
         }
 
         body.dark .autocomplete-list {
-            background: #061a0e;
-            border-color: rgba(22, 163, 74, .2)
+            background: #0b1628;
+            border-color: rgba(99, 102, 241, .2)
         }
 
         body.dark .autocomplete-item:hover {
-            background: rgba(22, 163, 74, .12)
+            background: rgba(99, 102, 241, .12)
         }
 
         body.dark .back-btn {
-            background: #061a0e;
-            border-color: rgba(22, 163, 74, .15);
-            color: #6ee7a0
+            background: #0b1628;
+            border-color: rgba(99, 102, 241, .15);
+            color: #a5b4fc
         }
 
         body.dark .section-head {
-            border-color: rgba(22, 163, 74, .08)
+            border-color: rgba(99, 102, 241, .08)
         }
 
         body.dark .divider {
-            border-color: rgba(22, 163, 74, .06)
+            border-color: rgba(99, 102, 241, .06)
         }
     </style>
 </head>
@@ -1011,94 +977,63 @@
 <body>
     <?php
     $navItems = [
-        ['url' => '/sk/dashboard',       'icon' => 'house',     'label' => 'Dashboard',        'key' => 'dashboard'],
-        ['url' => '/sk/reservations',    'icon' => 'calendar',  'label' => 'All Reservations', 'key' => 'reservations'],
-        ['url' => '/sk/new-reservation', 'icon' => 'plus',      'label' => 'New Reservation',  'key' => 'new-reservation'],
-        ['url' => '/sk/user-requests',   'icon' => 'users',     'label' => 'User Requests',    'key' => 'user-requests'],
-        ['url' => '/sk/my-reservations', 'icon' => 'bookmark',  'label' => 'My Reservations',  'key' => 'my-reservations'],
-        ['url' => '/sk/books',           'icon' => 'book-open', 'label' => 'Library',          'key' => 'books'],
-        ['url' => '/sk/scanner',         'icon' => 'qrcode',    'label' => 'Scanner',          'key' => 'scanner'],
-        ['url' => '/sk/profile',         'icon' => 'user',      'label' => 'Profile',          'key' => 'profile'],
+        ['url' => '/sk/dashboard',       'icon' => 'fa-house',        'label' => 'Dashboard',        'key' => 'dashboard'],
+        ['url' => '/sk/reservations',    'icon' => 'fa-calendar-alt', 'label' => 'All Reservations', 'key' => 'reservations'],
+        ['url' => '/sk/new-reservation', 'icon' => 'fa-plus',         'label' => 'New Reservation',  'key' => 'new-reservation'],
+        ['url' => '/sk/user-requests',   'icon' => 'fa-users',        'label' => 'User Requests',    'key' => 'user-requests'],
+        ['url' => '/sk/my-reservations', 'icon' => 'fa-calendar',     'label' => 'My Reservations',  'key' => 'my-reservations'],
+        ['url' => '/sk/books',           'icon' => 'fa-book-open',    'label' => 'Library',          'key' => 'books'],
+        ['url' => '/sk/scanner',         'icon' => 'fa-qrcode',       'label' => 'Scanner',          'key' => 'scanner'],
+        ['url' => '/sk/profile',         'icon' => 'fa-user',         'label' => 'Profile',          'key' => 'profile'],
     ];
-    $pendingUserCount = $pendingUserCount ?? 0;
-    $sk_name = session()->get('name') ?? 'SK Officer';
-    $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
-
-    function skIcon2($name, $size = 16, $stroke = 'currentColor')
-    {
-        $icons = [
-            'house'    => '<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>',
-            'calendar' => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-            'plus'     => '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
-            'users'    => '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke-linecap="round" stroke-linejoin="round"/>',
-            'bookmark' => '<path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>',
-            'book-open' => '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>',
-            'qrcode'   => '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 17h3" stroke-linecap="round"/>',
-            'user'     => '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>',
-            'logout'   => '<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>',
-            'sun'      => '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
-            'moon'     => '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
-            'chevron-l' => '<polyline points="15 18 9 12 15 6"/>',
-            'id-card'  => '<path d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" stroke-linecap="round" stroke-linejoin="round"/>',
-            'cal-days' => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/>',
-            'eye'      => '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
-            'check'    => '<polyline points="20 6 9 17 4 12"/>',
-            'x'        => '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
-            'download' => '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
-            'person-w' => '<circle cx="12" cy="5" r="2"/><path d="M5 20a7 7 0 0114 0" stroke-linecap="round"/><line x1="12" y1="7" x2="12" y2="14" stroke-linecap="round"/>',
-            'desktop'  => '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
-            'clipboard' => '<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>',
-        ];
-        $d = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
-        return '<svg xmlns="http://www.w3.org/2000/svg" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="' . $stroke . '" stroke-width="1.8">' . $d . '</svg>';
-    }
     ?>
 
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="modal-back" onclick="if(event.target===this)closeModal()">
         <div class="modal-card">
             <div class="sheet-handle"></div>
-            <div style="text-align:center;margin-bottom:20px;">
-                <div style="width:52px;height:52px;background:var(--green-light);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;"><?= skIcon2('clipboard', 22, 'var(--green)') ?></div>
-                <h3 style="font-size:1rem;font-weight:800;color:#0f172a;letter-spacing:-.02em;">Confirm Reservation</h3>
-                <p style="font-size:.78rem;color:#94a3b8;margin-top:4px;">Review details before saving.</p>
+            <div style="text-align:center;margin-bottom:20px">
+                <div style="width:52px;height:52px;background:var(--indigo-light);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><i class="fa-solid fa-clipboard-list" style="font-size:1.3rem;color:var(--indigo)"></i></div>
+                <h3 style="font-size:1rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">Confirm Reservation</h3>
+                <p style="font-size:.78rem;color:#94a3b8;margin-top:4px">Review details before saving.</p>
             </div>
-            <div style="background:#f8fafc;border-radius:var(--r-md);padding:14px 16px;border:1px solid rgba(22,163,74,.08);margin-bottom:14px;" id="modalSummary"></div>
-            <div id="qrWrap" style="display:none;" class="qr-section" style="margin-bottom:14px;">
-                <p style="font-size:.6rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--green);">E-Ticket Preview</p>
-                <canvas id="qrCanvas" style="border-radius:10px;"></canvas>
-                <p id="qrText" style="font-size:.7rem;color:#94a3b8;font-family:var(--mono);text-align:center;word-break:break-all;"></p>
-                <button onclick="downloadQR()" style="display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--green);color:white;border-radius:var(--r-sm);font-size:.78rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font);"><?= skIcon2('download', 13, 'white') ?> Download E-Ticket</button>
+            <div style="background:#f8fafc;border-radius:var(--r-md);padding:14px 16px;border:1px solid rgba(99,102,241,.08);margin-bottom:14px" id="modalSummary"></div>
+            <div id="qrWrap" style="display:none" class="qr-section" style="margin-bottom:14px">
+                <p style="font-size:.6rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--indigo)">E-Ticket Preview</p>
+                <canvas id="qrCanvas" style="border-radius:10px"></canvas>
+                <p id="qrText" style="font-size:.7rem;color:#94a3b8;font-family:var(--mono);text-align:center;word-break:break-all"></p>
+                <button onclick="downloadQR()" style="display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-size:.78rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font)"><i class="fa-solid fa-download" style="font-size:.7rem"></i> Download E-Ticket</button>
             </div>
-            <div id="modalActions" style="display:flex;gap:10px;">
-                <button type="button" onclick="closeModal()" style="flex:1;padding:12px;background:#f8fafc;border-radius:var(--r-sm);font-weight:700;color:#475569;border:1px solid rgba(22,163,74,.1);cursor:pointer;font-size:.82rem;font-family:var(--font);">Cancel</button>
-                <button type="button" id="confirmBtn" onclick="submitReservation()" style="flex:2;padding:12px;background:var(--green);color:white;border-radius:var(--r-sm);font-weight:700;border:none;cursor:pointer;font-size:.82rem;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 12px rgba(21,128,61,.28);"><?= skIcon2('check', 13, 'white') ?> Confirm & Save</button>
+            <div id="modalActions" style="display:flex;gap:10px">
+                <button type="button" onclick="closeModal()" style="flex:1;padding:12px;background:#f8fafc;border-radius:var(--r-sm);font-weight:700;color:#475569;border:1px solid rgba(99,102,241,.1);cursor:pointer;font-size:.82rem;font-family:var(--font)">Cancel</button>
+                <button type="button" id="confirmBtn" onclick="submitReservation()" style="flex:2;padding:12px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-weight:700;border:none;cursor:pointer;font-size:.82rem;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 12px rgba(55,48,163,.28)"><i class="fa-solid fa-check" style="font-size:.8rem"></i> Confirm & Save</button>
             </div>
         </div>
     </div>
 
+    <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-inner">
             <div class="sidebar-top">
-                <div class="brand-tag">SK Officer</div>
-                <div class="brand-name">Portal<em>.</em></div>
-                <div class="brand-sub">Youth Management System</div>
+                <div class="brand-tag">SK Officer Portal</div>
+                <div class="brand-name">my<em>Space.</em></div>
+                <div class="brand-sub">Community Management</div>
             </div>
-            <div class="user-card" style="display:flex;align-items:center;gap:9px;">
-                <div class="user-avatar-sm"><?= $avatarLetter ?></div>
-                <div style="min-width:0;">
-                    <div class="user-name-txt" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= esc($sk_name) ?></div>
+            <div class="user-card">
+                <div class="user-avatar"><?= $avatarLetter ?></div>
+                <div style="min-width:0">
+                    <div class="user-name-txt"><?= esc($sk_name) ?></div>
                     <div class="user-role-txt">SK Officer</div>
                 </div>
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-section-lbl">Menu</div>
                 <?php foreach ($navItems as $item):
-                    $active = (isset($page) && $page == $item['key']);
+                    $active = ($page == $item['key']);
                     $showBadge = ($item['key'] === 'user-requests' && $pendingUserCount > 0);
                 ?>
                     <a href="<?= $item['url'] ?>" class="nav-link <?= $active ? 'active' : '' ?>">
-                        <div class="nav-icon"><?= skIcon2($item['icon'], 16, $active ? 'white' : '#64748b') ?></div>
+                        <div class="nav-icon"><i class="fa-solid <?= $item['icon'] ?>"></i></div>
                         <?= $item['label'] ?>
                         <?php if ($showBadge): ?><span class="nav-badge"><?= $pendingUserCount ?></span><?php endif; ?>
                     </a>
@@ -1106,44 +1041,49 @@
             </nav>
             <div class="sidebar-footer">
                 <a href="/logout" class="logout-link">
-                    <div class="nav-icon" style="background:rgba(239,68,68,.08);"><?= skIcon2('logout', 16, '#f87171') ?></div>
+                    <div class="nav-icon" style="background:rgba(239,68,68,.08)"><i class="fa-solid fa-arrow-right-from-bracket" style="color:#f87171"></i></div>
                     Sign Out
                 </a>
             </div>
         </div>
     </aside>
 
+    <!-- MOBILE NAV -->
     <nav class="mobile-nav-pill">
         <div class="mobile-scroll-container">
             <?php foreach ($navItems as $item):
-                $active = (isset($page) && $page == $item['key']);
+                $active = ($page == $item['key']);
             ?>
                 <a href="<?= $item['url'] ?>" class="mob-nav-item <?= $active ? 'active' : '' ?>" title="<?= esc($item['label']) ?>">
-                    <?= skIcon2($item['icon'], 22, $active ? 'var(--green)' : '#64748b') ?>
+                    <i class="fa-solid <?= $item['icon'] ?>" style="font-size:1.1rem"></i>
                 </a>
             <?php endforeach; ?>
-            <a href="/logout" class="mob-nav-item mob-logout" title="Sign Out"><?= skIcon2('logout', 22, '#f87171') ?></a>
+            <a href="/logout" class="mob-nav-item mob-logout" title="Sign Out"><i class="fa-solid fa-arrow-right-from-bracket" style="font-size:1.1rem;color:#f87171"></i></a>
         </div>
     </nav>
 
+    <!-- MAIN -->
     <main class="main-area">
-        <div class="topbar fade-up">
+        <!-- Topbar -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px" class="fade-up">
             <div>
-                <div class="greeting-eyebrow">SK Portal</div>
-                <div class="greeting-name">New Reservation</div>
-                <div class="greeting-sub">Register a manual entry into the system.</div>
+                <p style="font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">SK Portal</p>
+                <h2 class="greeting-name" style="font-size:1.75rem;font-weight:800;color:#0f172a;letter-spacing:-.04em;line-height:1.1">New Reservation</h2>
+                <p style="font-size:.78rem;color:#94a3b8;font-weight:500;margin-top:4px">Register a manual entry into the system.</p>
             </div>
-            <div class="topbar-right">
-                <div class="icon-btn" onclick="toggleDark()" id="darkBtn"><span id="dark-icon"><?= skIcon2('sun', 14, '#94a3b8') ?></span></div>
-                <a href="/sk/my-reservations" class="back-btn"><?= skIcon2('chevron-l', 14, 'currentColor') ?> Back</a>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+                <div class="icon-btn" onclick="toggleDark()" id="darkBtn" title="Toggle dark mode">
+                    <span id="dark-icon"><i class="fa-regular fa-sun" style="font-size:.85rem"></i></span>
+                </div>
+                <a href="/sk/my-reservations" class="back-btn"><i class="fa-solid fa-chevron-left" style="font-size:.75rem"></i> Back</a>
             </div>
         </div>
 
         <?php if (session()->getFlashdata('error')): ?>
-            <div class="flash-err"><?= skIcon2('x', 15, '#dc2626') ?><?= session()->getFlashdata('error') ?></div>
+            <div class="flash-err"><i class="fa-solid fa-circle-exclamation"></i><?= session()->getFlashdata('error') ?></div>
         <?php endif; ?>
         <?php if (session()->getFlashdata('success')): ?>
-            <div class="flash-ok"><?= skIcon2('check', 15, 'var(--green)') ?><?= session()->getFlashdata('success') ?></div>
+            <div class="flash-ok"><i class="fa-solid fa-circle-check"></i><?= session()->getFlashdata('success') ?></div>
         <?php endif; ?>
 
         <div class="form-card fade-up-1">
@@ -1156,44 +1096,44 @@
                 <input type="hidden" name="purpose" id="finalPurpose">
                 <input type="hidden" name="pcs" id="finalPcs" value="[]">
 
-                <!-- Type toggle -->
-                <div style="margin-bottom:22px;">
-                    <label class="field-label" style="margin-bottom:8px;">Visitor Classification</label>
+                <!-- Visitor type -->
+                <div style="margin-bottom:22px">
+                    <label class="field-label" style="margin-bottom:8px">Visitor Classification</label>
                     <div class="type-toggle">
                         <button type="button" class="type-btn active" id="btnUser" onclick="setType('User')">
-                            <?= skIcon2('user', 14, 'currentColor') ?> Registered User
+                            <i class="fa-solid fa-user" style="font-size:.8rem"></i> Registered User
                         </button>
                         <button type="button" class="type-btn" id="btnVisitor" onclick="setType('Visitor')">
-                            <?= skIcon2('person-w', 14, 'currentColor') ?> Walk-in Visitor
+                            <i class="fa-solid fa-person-walking" style="font-size:.8rem"></i> Walk-in Visitor
                         </button>
                     </div>
                 </div>
 
                 <hr class="divider">
 
-                <!-- Personal Details -->
-                <div style="margin-bottom:22px;">
+                <!-- Personal details -->
+                <div style="margin-bottom:22px">
                     <div class="section-head">
-                        <div class="section-icon"><?= skIcon2('id-card', 16, 'var(--green)') ?></div>
+                        <div class="section-icon"><i class="fa-solid fa-id-badge" style="color:var(--indigo);font-size:.9rem"></i></div>
                         <div>
                             <div class="section-title">Personal Details</div>
                         </div>
                     </div>
-                    <div id="userFields" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div id="userFields" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
                         <div>
                             <label class="field-label">Full Name</label>
                             <div class="autocomplete-wrap">
                                 <input type="text" id="userNameInput" class="field-input" placeholder="Type to search users…" autocomplete="off">
-                                <ul id="autocompleteList" class="autocomplete-list" style="display:none;"></ul>
+                                <ul id="autocompleteList" class="autocomplete-list" style="display:none"></ul>
                             </div>
                         </div>
                         <div>
                             <label class="field-label">Email Address</label>
                             <input type="email" id="userEmailDisplay" class="field-input" placeholder="Auto-filled on selection" readonly>
-                            <p style="font-size:.65rem;color:#94a3b8;margin-top:4px;">Fills automatically when a user is selected</p>
+                            <p style="font-size:.65rem;color:#94a3b8;margin-top:4px">Fills automatically when a user is selected</p>
                         </div>
                     </div>
-                    <div id="visitorFields" style="display:none;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div id="visitorFields" style="display:none;grid-template-columns:1fr 1fr;gap:14px">
                         <div><label class="field-label">Full Name</label><input type="text" id="visitorNameInput" class="field-input" placeholder="Enter visitor's full name"></div>
                         <div><label class="field-label">Email Address</label><input type="email" id="visitorEmailInput" class="field-input" placeholder="Enter email (optional)"></div>
                     </div>
@@ -1202,15 +1142,14 @@
                 <hr class="divider">
 
                 <!-- Resource & Schedule -->
-                <div style="margin-bottom:22px;">
+                <div style="margin-bottom:22px">
                     <div class="section-head">
-                        <div class="section-icon"><?= skIcon2('cal-days', 16, 'var(--green)') ?></div>
+                        <div class="section-icon"><i class="fa-solid fa-calendar-days" style="color:var(--indigo);font-size:.9rem"></i></div>
                         <div>
                             <div class="section-title">Resource & Schedule</div>
                         </div>
                     </div>
-
-                    <div style="margin-bottom:14px;">
+                    <div style="margin-bottom:14px">
                         <label class="field-label">Select Asset / Resource</label>
                         <select id="resourceSelect" name="resource_id" class="field-input" required>
                             <option value="">— Choose a resource —</option>
@@ -1219,23 +1158,20 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-
-                    <div id="pcSection" style="display:none;" class="pc-section" style="margin-bottom:14px;">
-                        <label class="field-label" style="color:var(--green);margin-bottom:10px;display:block;">Assign Workstation(s)</label>
-                        <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;">
+                    <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
+                        <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block">Assign Workstation(s)</label>
+                        <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
                             <?php foreach ($pcs as $pc): ?>
                                 <button type="button" onclick="togglePc('<?= htmlspecialchars($pc['pc_number']) ?>',this)" data-pc="<?= htmlspecialchars($pc['pc_number']) ?>" class="pc-btn"><?= htmlspecialchars($pc['pc_number']) ?></button>
                             <?php endforeach; ?>
                         </div>
-                        <p style="font-size:.72rem;color:var(--green);font-weight:600;margin-top:10px;">Selected: <span id="pcSelectedLabel">None</span></p>
+                        <p style="font-size:.72rem;color:var(--indigo);font-weight:600;margin-top:10px">Selected: <span id="pcSelectedLabel">None</span></p>
                     </div>
-
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px" id="dateTimeGrid">
                         <div><label class="field-label">Date</label><input type="date" name="reservation_date" id="resDate" class="field-input" value="<?= date('Y-m-d') ?>" required></div>
                         <div><label class="field-label">Start Time</label><input type="time" name="start_time" id="startTime" class="field-input" required></div>
                         <div><label class="field-label">End Time</label><input type="time" name="end_time" id="endTime" class="field-input" required></div>
                     </div>
-
                     <div>
                         <label class="field-label">Purpose of Visit</label>
                         <select id="purposeSelect" class="field-input" required>
@@ -1247,14 +1183,14 @@
                             <option>Others</option>
                         </select>
                     </div>
-                    <div id="purposeOtherWrap" style="display:none;margin-top:10px;">
+                    <div id="purposeOtherWrap" style="display:none;margin-top:10px">
                         <label class="field-label">Please Specify</label>
                         <input type="text" id="purposeOther" class="field-input" placeholder="Describe the purpose…">
                     </div>
                 </div>
 
                 <button type="button" onclick="previewReservation()" class="submit-btn">
-                    <?= skIcon2('eye', 16, 'white') ?> Preview & Confirm
+                    <i class="fa-solid fa-eye" style="font-size:.85rem"></i> Preview & Confirm
                 </button>
             </form>
         </div>
@@ -1281,7 +1217,6 @@
             });
             document.getElementById('finalUserId').value = '';
         }
-
         const userNameInput = document.getElementById('userNameInput');
         const autocompleteList = document.getElementById('autocompleteList');
         userNameInput.addEventListener('input', () => {
@@ -1292,9 +1227,7 @@
                 autocompleteList.style.display = 'none';
                 return;
             }
-            const matches = allUsers.filter(u =>
-                (u.name || '').toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)
-            ).slice(0, 8);
+            const matches = allUsers.filter(u => (u.name || '').toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)).slice(0, 8);
             if (!matches.length) {
                 autocompleteList.style.display = 'none';
                 return;
@@ -1303,7 +1236,7 @@
                 const displayName = u.full_name || u.name || '';
                 const li = document.createElement('li');
                 li.className = 'autocomplete-item';
-                li.innerHTML = `<div style="font-weight:600;">${displayName}</div><div class="sub">${u.email}</div>`;
+                li.innerHTML = `<div style="font-weight:600">${displayName}</div><div class="sub">${u.email}</div>`;
                 li.addEventListener('mousedown', () => {
                     selectedUser = u;
                     userNameInput.value = displayName;
@@ -1316,7 +1249,6 @@
             autocompleteList.style.display = 'block';
         });
         userNameInput.addEventListener('blur', () => setTimeout(() => autocompleteList.style.display = 'none', 150));
-
         document.getElementById('resourceSelect').addEventListener('change', function() {
             const name = (this.options[this.selectedIndex]?.dataset.name || '').toLowerCase();
             const showPcs = name.includes('computer') || name.includes('pc') || name.includes('lab');
@@ -1342,7 +1274,6 @@
             document.getElementById('finalPcs').value = JSON.stringify(selectedPcs);
             document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
         }
-
         document.getElementById('purposeSelect').addEventListener('change', function() {
             document.getElementById('purposeOtherWrap').style.display = this.value === 'Others' ? 'block' : 'none';
         });
@@ -1354,13 +1285,12 @@
             const resourceEl = document.getElementById('resourceSelect');
             const resourceName = resourceEl.options[resourceEl.selectedIndex]?.text || '—';
             const showPcs = document.getElementById('pcSection').style.display !== 'none';
-            const date = document.getElementById('resDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const purposeVal = document.getElementById('purposeSelect').value;
-            const purposeOther = document.getElementById('purposeOther').value.trim();
+            const date = document.getElementById('resDate').value,
+                startTime = document.getElementById('startTime').value,
+                endTime = document.getElementById('endTime').value;
+            const purposeVal = document.getElementById('purposeSelect').value,
+                purposeOther = document.getElementById('purposeOther').value.trim();
             const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
-
             if (!name) return alert('Please enter a name.');
             if (!resourceEl.value) return alert('Please select a resource.');
             if (showPcs && !selectedPcs.length) return alert('Please select at least one workstation.');
@@ -1369,11 +1299,9 @@
             if (!endTime) return alert('Please enter an end time.');
             if (!purposeVal) return alert('Please select a purpose.');
             if (isUser && !selectedUser && !document.getElementById('finalUserId').value) return alert('Please select a registered user from the dropdown.');
-
             document.getElementById('finalVisitorName').value = name;
             document.getElementById('finalUserEmail').value = email;
             document.getElementById('finalPurpose').value = purposeFinal;
-
             const rows = [
                 ['Type', isUser ? 'Registered User' : 'Walk-in Visitor'],
                 ['Name', name || '—'],
@@ -1382,11 +1310,9 @@
                 ['Workstations', selectedPcs.length ? selectedPcs.join(', ') : '—'],
                 ['Date', date],
                 ['Time', `${startTime} – ${endTime}`],
-                ['Purpose', purposeFinal || '—'],
+                ['Purpose', purposeFinal || '—']
             ];
-            document.getElementById('modalSummary').innerHTML = rows.map(([l, v]) =>
-                `<div class="mrow"><span class="mrow-label">${l}</span><span class="mrow-value">${v}</span></div>`
-            ).join('');
+            document.getElementById('modalSummary').innerHTML = rows.map(([l, v]) => `<div class="mrow"><span class="mrow-label">${l}</span><span class="mrow-value">${v}</span></div>`).join('');
             document.getElementById('qrWrap').style.display = 'none';
             document.getElementById('confirmBtn').style.display = 'flex';
             openModal();
@@ -1395,7 +1321,7 @@
         function submitReservation() {
             const btn = document.getElementById('confirmBtn');
             btn.disabled = true;
-            btn.innerHTML = 'Saving…';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:.8rem"></i> Saving…';
             const code = `SK-${Date.now()}`;
             document.getElementById('qrText').textContent = code;
             QRCode.toCanvas(document.getElementById('qrCanvas'), code, {
@@ -1440,27 +1366,26 @@
         function toggleDark() {
             const isDark = document.body.classList.toggle('dark');
             const icon = document.getElementById('dark-icon');
-            icon.innerHTML = isDark ?
-                `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>` :
-                `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+            icon.innerHTML = isDark ? '<i class="fa-regular fa-moon" style="font-size:.85rem"></i>' : '<i class="fa-regular fa-sun" style="font-size:.85rem"></i>';
             localStorage.setItem('sk_theme', isDark ? 'dark' : 'light');
         }
         document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('sk_theme') === 'dark') {
                 document.body.classList.add('dark');
-                document.getElementById('dark-icon').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`;
+                const icon = document.getElementById('dark-icon');
+                if (icon) icon.innerHTML = '<i class="fa-regular fa-moon" style="font-size:.85rem"></i>';
             }
             document.documentElement.classList.remove('dark-pre');
-            // Responsive grid for personal details
+
             function checkGrid() {
                 const uf = document.getElementById('userFields'),
-                    vf = document.getElementById('visitorFields');
-                const cols = window.innerWidth < 640 ? '1fr' : '1fr 1fr';
+                    vf = document.getElementById('visitorFields'),
+                    cols = window.innerWidth < 640 ? '1fr' : '1fr 1fr';
                 [uf, vf].forEach(el => {
                     if (el) el.style.gridTemplateColumns = cols;
                 });
-                const dateGrid = document.querySelector('[style*="grid-template-columns:1fr 1fr 1fr"]');
-                if (dateGrid) dateGrid.style.gridTemplateColumns = window.innerWidth < 640 ? '1fr' : '1fr 1fr 1fr';
+                const dg = document.getElementById('dateTimeGrid');
+                if (dg) dg.style.gridTemplateColumns = window.innerWidth < 640 ? '1fr' : '1fr 1fr 1fr';
             }
             checkGrid();
             window.addEventListener('resize', checkGrid);
