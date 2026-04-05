@@ -30,8 +30,10 @@ class AuthController extends BaseController
 
         $userModel = new UserModel();
 
+        // FIX: Explicitly list columns to avoid `is_verified` collision
+        //      between users.* and accounts.is_verified.
         $user = $userModel
-            ->select('users.*, accounts.password, accounts.is_verified')
+            ->select('users.id, users.name, users.email, users.role, users.status, accounts.password, accounts.is_verified')
             ->join('accounts', 'accounts.user_id = users.id')
             ->where('users.email', $email)
             ->first();
@@ -41,7 +43,8 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        $isVerified = in_array($user['is_verified'], [true, 1, 't', 'true', '1'], true);
+        // Handle multiple possible DB representations of boolean true
+        $isVerified = in_array($user['is_verified'], [true, 1, 't', 'true', '1']);
 
         if (!$isVerified) {
             $session->setFlashdata('error', 'Please verify your email address first. Check your inbox for the verification link.');
@@ -66,7 +69,6 @@ class AuthController extends BaseController
             'isLoggedIn' => true,
         ]);
 
-        // ── Close any stale open sessions for this user before creating a new one ──
         $this->closeStaleSessions($user['id']);
 
         $loginLog = new LoginLog();
@@ -83,15 +85,10 @@ class AuthController extends BaseController
         }
     }
 
-    /**
-     * Mark open login_log rows as closed if they are older than 4 hours.
-     * This handles sessions that were never explicitly logged out
-     * (e.g. browser closed, server cold-start on Render free tier).
-     */
     private function closeStaleSessions(int $userId): void
     {
-        $db      = db_connect();
-        $cutoff  = Time::now('Asia/Manila')->subHours(4)->toDateTimeString();
+        $db     = db_connect();
+        $cutoff = Time::now('Asia/Manila')->subHours(4)->toDateTimeString();
 
         $db->table('login_logs')
             ->where('user_id', $userId)
@@ -110,14 +107,18 @@ class AuthController extends BaseController
 
     public function registerAction()
     {
-        $session         = session();
-        $fullName        = trim($this->request->getPost('full_name'));
-        $email           = trim($this->request->getPost('email'));
-        $role            = $this->request->getPost('role');
-        $password        = $this->request->getPost('password');
-        $confirmPassword = $this->request->getPost('confirm_password');
+        $session = session();
 
-        if (!$fullName || !$email || !$role || !$password || !$confirmPassword) {
+        $firstName = trim($this->request->getPost('first_name') ?? '');
+        $lastName  = trim($this->request->getPost('last_name') ?? '');
+        $fullName  = trim($firstName . ' ' . $lastName);
+
+        $email           = trim($this->request->getPost('email') ?? '');
+        $role            = trim($this->request->getPost('role') ?? '');
+        $password        = $this->request->getPost('password') ?? '';
+        $confirmPassword = $this->request->getPost('confirm_password') ?? '';
+
+        if (!$firstName || !$lastName || !$email || !$role || !$password || !$confirmPassword) {
             $session->setFlashdata('error', 'Please fill in all fields.');
             return redirect()->to('/register');
         }
@@ -127,6 +128,7 @@ class AuthController extends BaseController
             return redirect()->to('/register');
         }
 
+        // FIX: compare lowercase so both 'SK' and 'sk' are accepted
         if (!in_array(strtolower($role), ['resident', 'sk'])) {
             $session->setFlashdata('error', 'Invalid role selected.');
             return redirect()->to('/register');
@@ -159,7 +161,10 @@ class AuthController extends BaseController
             return redirect()->to('/register');
         }
 
-        $dbRole = strtolower($role) === 'sk' ? 'sk' : 'user';
+        // Map view role values ('SK' / 'resident') to DB role values ('sk' / 'user')
+        $dbRole   = (strtolower($role) === 'sk') ? 'sk' : 'user';
+        $isSK     = ($dbRole === 'sk');
+        $now      = Time::now('Asia/Manila')->toDateTimeString();
 
         $userModel->insert([
             'name'        => $fullName,
@@ -167,10 +172,11 @@ class AuthController extends BaseController
             'email'       => $email,
             'role'        => $dbRole,
             'status'      => 'pending',
-            'is_approved' => ($dbRole === 'sk') ? false : true,
-            'is_verified' => false,
-            'created_at'  => Time::now('Asia/Manila')->toDateTimeString(),
-            'updated_at'  => Time::now('Asia/Manila')->toDateTimeString(),
+            // FIX: use integer 0/1 instead of PHP bool to be driver-agnostic
+            'is_approved' => $isSK ? 0 : 1,
+            'is_verified' => 0,
+            'created_at'  => $now,
+            'updated_at'  => $now,
         ]);
 
         $userId = $userModel->getInsertID();
@@ -187,9 +193,9 @@ class AuthController extends BaseController
             'user_id'            => $userId,
             'password'           => password_hash($password, PASSWORD_DEFAULT),
             'verification_token' => $verificationToken,
-            'is_verified'        => false,
-            'created_at'         => Time::now('Asia/Manila')->toDateTimeString(),
-            'updated_at'         => Time::now('Asia/Manila')->toDateTimeString(),
+            'is_verified'        => 0,
+            'created_at'         => $now,
+            'updated_at'         => $now,
         ]);
 
         $sent = $this->sendVerificationEmail($email, $fullName, $verificationToken);
@@ -200,7 +206,7 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        if ($dbRole === 'sk') {
+        if ($isSK) {
             $session->setFlashdata('success', '✅ Account created! Please check your email (' . $email . ') and click the verification link. After verification, your account will need approval from the Barangay Chairman.');
         } else {
             $session->setFlashdata('success', '✅ Account created! Please check your email (' . $email . ') and click the verification link to activate your account.');
@@ -224,29 +230,39 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        $alreadyVerified = in_array($account['is_verified'], [true, 1, 't', 'true', '1'], true);
+        // FIX: same broad boolean check used in loginAction
+        $alreadyVerified = in_array($account['is_verified'], [true, 1, 't', 'true', '1']);
 
         if ($alreadyVerified) {
             session()->setFlashdata('info', 'Your email is already verified. You can log in.');
             return redirect()->to('/login');
         }
 
+        $now = Time::now('Asia/Manila')->toDateTimeString();
+
         $accountModel->update($account['id'], [
-            'is_verified'        => true,
+            'is_verified'        => 1,
             'verification_token' => null,
-            'updated_at'         => Time::now('Asia/Manila')->toDateTimeString(),
+            'updated_at'         => $now,
         ]);
 
         $userModel = new UserModel();
         $user      = $userModel->find($account['user_id']);
 
+        if (!$user) {
+            session()->setFlashdata('error', 'Account not found. Please contact support.');
+            return redirect()->to('/login');
+        }
+
+        $isSK = ($user['role'] === 'sk');
+
         $userModel->update($account['user_id'], [
-            'is_verified' => true,
-            'status'      => $user['role'] === 'sk' ? 'pending' : 'approved',
-            'updated_at'  => Time::now('Asia/Manila')->toDateTimeString(),
+            'is_verified' => 1,
+            'status'      => $isSK ? 'pending' : 'approved',
+            'updated_at'  => $now,
         ]);
 
-        if ($user['role'] === 'sk') {
+        if ($isSK) {
             $this->notifyChairmanNewSK($user);
             session()->setFlashdata('info', '✅ Email verified! Your SK account is now pending approval by the Barangay Chairman. You will receive an email notification once a decision has been made.');
             return redirect()->to('/login');
@@ -293,6 +309,10 @@ class AuthController extends BaseController
         }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Private helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
     private function sendVerificationEmail(string $to, string $name, string $token): bool
     {
         $verifyUrl = base_url("verify-email/{$token}");
@@ -309,7 +329,10 @@ class AuthController extends BaseController
         ]);
 
         $payload = json_encode([
-            'sender'      => ['name' => env('EMAIL_FROM_NAME', 'E-Learning System'), 'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph')],
+            'sender'      => [
+                'name'  => env('EMAIL_FROM_NAME', 'E-Learning System'),
+                'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph'),
+            ],
             'to'          => [['email' => $to, 'name' => $name]],
             'subject'     => 'Verify Your Email Address — E-Learning System',
             'htmlContent' => $body,
@@ -334,7 +357,7 @@ class AuthController extends BaseController
         curl_close($ch);
 
         if ($curlError) {
-            log_message('error', '[AuthController] Brevo API curl error: ' . $curlError);
+            log_message('error', '[AuthController] Brevo curl error: ' . $curlError);
             session()->setFlashdata('brevo_error', 'curl: ' . $curlError);
             return false;
         }
@@ -366,7 +389,10 @@ class AuthController extends BaseController
         ]);
 
         $payload = json_encode([
-            'sender'      => ['name' => env('EMAIL_FROM_NAME', 'E-Learning System'), 'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph')],
+            'sender'      => [
+                'name'  => env('EMAIL_FROM_NAME', 'E-Learning System'),
+                'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph'),
+            ],
             'to'          => [['email' => $chairmanEmail]],
             'subject'     => 'New SK Account Awaiting Your Approval — Action Required',
             'htmlContent' => $body,
