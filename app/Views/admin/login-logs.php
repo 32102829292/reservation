@@ -140,7 +140,7 @@
         @keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
         .fade-up   { animation:slideUp .4s ease both; }
         .fade-up-1 { animation:slideUp .45s .05s ease both; }
-
+    
         body.dark { --bg:#060e1e; --card:#0b1628; --indigo-light:rgba(55,48,163,.12); --indigo-border:rgba(99,102,241,.25); color:#e2eaf8; }
         body.dark .sidebar-inner { background:#0b1628; border-color:rgba(99,102,241,.12); }
         body.dark .sidebar-top, body.dark .sidebar-footer { border-color:rgba(99,102,241,.1); }

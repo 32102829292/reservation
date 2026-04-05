@@ -279,6 +279,7 @@
     #adminDebugPanel { display: none; margin-top: 10px; padding: 10px 14px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--r-sm); font-size: .72rem; font-family: var(--mono); color: #991b1b; word-break: break-all; white-space: pre-wrap; max-height: 120px; overflow-y: auto }
 
     /* ════ DARK MODE ════ */
+  
     body.dark {
       --bg: #060e1e; --card: #0b1628;
       --indigo-light: rgba(55,48,163,.12);
