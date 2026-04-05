@@ -975,11 +975,6 @@
                 <div class="page-sub">Book a resource for your upcoming visit.</div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
-                <!-- Notification bell -->
-                <div class="notif-btn" onclick="toggleNotifications()" style="position:relative;">
-                    <i class="fa-regular fa-bell" style="font-size:.9rem;color:var(--text-muted);"></i>
-                    <span class="notif-badge" id="notificationBadge" style="display:none;">0</span>
-                </div>
                 <a href="<?= base_url('/reservation-list') ?>" class="back-btn">
                     <i class="fa-solid fa-chevron-left" style="font-size:11px;"></i> My Reservations
                 </a>
