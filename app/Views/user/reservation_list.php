@@ -267,6 +267,587 @@
         body.dark .flash-err { background:rgba(220,38,38,.1); border-color:rgba(248,113,113,.3); color:#f87171; }
         body.dark .warn-banner { background:rgba(154,52,18,.15); border-color:rgba(234,88,12,.3); color:#fb923c; }
         body.dark .ticket-section { background:rgba(55,48,163,.12); border-color:rgba(99,102,241,.25); }
+        /* ═══════════════════════════════════════════════════
+   COMPREHENSIVE DARK MODE FIX
+   Add this block to the bottom of <style> in every view.
+   It targets hardcoded inline color values that class
+   selectors alone cannot override.
+═══════════════════════════════════════════════════ */
+
+/* ── General text that uses hardcoded #0f172a / #475569 / #64748b ── */
+body.dark h1,
+body.dark h2,
+body.dark h3,
+body.dark h4,
+body.dark h5 {
+    color: #e2eaf8 !important;
+}
+
+body.dark p,
+body.dark span,
+body.dark div {
+    color: inherit;
+}
+
+/* ── Force readable color on common inline-styled text ── */
+body.dark [style*="color:#0f172a"],
+body.dark [style*="color: #0f172a"] {
+    color: #e2eaf8 !important;
+}
+
+body.dark [style*="color:#475569"],
+body.dark [style*="color: #475569"] {
+    color: #94b4d4 !important;
+}
+
+body.dark [style*="color:#64748b"],
+body.dark [style*="color: #64748b"] {
+    color: #7fb3e8 !important;
+}
+
+body.dark [style*="color:#94a3b8"],
+body.dark [style*="color: #94a3b8"] {
+    color: #4a6fa5 !important;
+}
+
+body.dark [style*="color:#cbd5e1"],
+body.dark [style*="color: #cbd5e1"] {
+    color: #2d4a6a !important;
+}
+
+body.dark [style*="color:#334155"],
+body.dark [style*="color: #334155"] {
+    color: #94b4d4 !important;
+}
+
+/* ── Backgrounds: white / light gray surfaces ── */
+body.dark [style*="background:#ffffff"],
+body.dark [style*="background: #ffffff"],
+body.dark [style*="background:white"],
+body.dark [style*="background: white"] {
+    background: #0b1628 !important;
+}
+
+body.dark [style*="background:#f8fafc"],
+body.dark [style*="background: #f8fafc"] {
+    background: #101e35 !important;
+}
+
+body.dark [style*="background:#f1f5f9"],
+body.dark [style*="background: #f1f5f9"] {
+    background: #101e35 !important;
+}
+
+body.dark [style*="background:#f0f2f9"],
+body.dark [style*="background: #f0f2f9"] {
+    background: #060e1e !important;
+}
+
+/* ── Borders that use light colors ── */
+body.dark [style*="border-color:#e2e8f0"],
+body.dark [style*="border-color: #e2e8f0"] {
+    border-color: rgba(99, 102, 241, .12) !important;
+}
+
+body.dark [style*="border:1px solid #e2e8f0"],
+body.dark [style*="border: 1px solid #e2e8f0"] {
+    border-color: rgba(99, 102, 241, .12) !important;
+}
+
+/* ── Info rows (profile page) ── */
+body.dark .info-row {
+    border-color: rgba(99, 102, 241, .08) !important;
+}
+
+body.dark .info-value {
+    color: #e2eaf8 !important;
+}
+
+body.dark .info-label {
+    color: #4a6fa5 !important;
+}
+
+body.dark .info-icon {
+    background: #101e35 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+}
+
+/* ── Profile page specific ── */
+body.dark .profile-avatar {
+    box-shadow: 0 8px 24px rgba(55, 48, 163, .5) !important;
+}
+
+body.dark .profile-status-dot {
+    border-color: #0b1628 !important;
+}
+
+/* ── Stat mini cards (profile) ── */
+body.dark .stat-mini {
+    background: #101e35 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+}
+
+body.dark .stat-mini-val {
+    color: #e2eaf8 !important;
+}
+
+body.dark .stat-mini-lbl,
+body.dark .stat-mini-sub {
+    color: #4a6fa5 !important;
+}
+
+/* ── Quick links (profile) ── */
+body.dark .quick-link {
+    background: #0b1628 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+    color: #a5b4fc !important;
+}
+
+body.dark .quick-link:hover {
+    background: rgba(99, 102, 241, .12) !important;
+    color: #c7d2fe !important;
+}
+
+/* ── Card titles / subtitles ── */
+body.dark .card-title {
+    color: #e2eaf8 !important;
+}
+
+body.dark .card-sub {
+    color: #4a6fa5 !important;
+}
+
+body.dark .section-lbl {
+    color: #4a6fa5 !important;
+}
+
+/* ── Danger zone (profile) ── */
+body.dark .danger-row {
+    border-color: rgba(99, 102, 241, .08) !important;
+}
+
+body.dark .danger-row p[style*="color:#0f172a"],
+body.dark .danger-row p[style*="color: #0f172a"] {
+    color: #e2eaf8 !important;
+}
+
+/* ── Reservation success / submitted page ── */
+body.dark .success-card {
+    background: #0b1628 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+}
+
+body.dark .detail-row {
+    border-color: rgba(99, 102, 241, .08) !important;
+}
+
+body.dark .detail-value {
+    color: #e2eaf8 !important;
+}
+
+body.dark .detail-label {
+    color: #4a6fa5 !important;
+}
+
+body.dark .step-item {
+    border-color: rgba(99, 102, 241, .08) !important;
+}
+
+/* ── Step numbers (reservation submitted) ── */
+body.dark .step-num[style*="background:#f1f5f9"] {
+    background: #101e35 !important;
+    color: #4a6fa5 !important;
+}
+
+body.dark .step-num[style*="background:#fef3c7"] {
+    background: rgba(251, 191, 36, .15) !important;
+}
+
+/* ── Buttons: secondary / cancel ── */
+body.dark .btn-secondary {
+    background: #0b1628 !important;
+    border-color: rgba(99, 102, 241, .18) !important;
+    color: #a5b4fc !important;
+}
+
+body.dark .btn-secondary:hover {
+    background: rgba(99, 102, 241, .12) !important;
+    color: #c7d2fe !important;
+}
+
+/* ── Reservation list: table ── */
+body.dark table thead th {
+    background: #101e35 !important;
+    color: #4a6fa5 !important;
+    border-color: rgba(99, 102, 241, .08) !important;
+}
+
+body.dark table tbody td {
+    color: #e2eaf8 !important;
+    border-color: rgba(99, 102, 241, .05) !important;
+}
+
+body.dark table tbody tr:hover td {
+    background: #101e35 !important;
+}
+
+/* ── Reservation mobile cards ── */
+body.dark .res-card {
+    background: #0b1628 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+}
+
+body.dark .res-card:hover {
+    border-color: rgba(99, 102, 241, .3) !important;
+}
+
+/* ── Booking row (dashboard) ── */
+body.dark .bk-row:hover {
+    background: rgba(99, 102, 241, .08) !important;
+}
+
+body.dark .bk-date {
+    background: #101e35 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+}
+
+body.dark .bk-day {
+    color: #e2eaf8 !important;
+}
+
+body.dark .bk-name {
+    color: #e2eaf8 !important;
+}
+
+/* ── Modal cards (general) ── */
+body.dark .modal-card,
+body.dark .detail-card {
+    background: #0b1628 !important;
+    color: #e2eaf8 !important;
+}
+
+body.dark .modal-card h3,
+body.dark .modal-card h4,
+body.dark .detail-card h3 {
+    color: #e2eaf8 !important;
+}
+
+body.dark .modal-card p,
+body.dark .detail-card p {
+    color: #7fb3e8 !important;
+}
+
+body.dark .sheet-handle {
+    background: #1e3a5f !important;
+}
+
+/* ── Modal action buttons ── */
+body.dark .modal-card button[style*="background:#f8fafc"],
+body.dark .modal-card button[style*="background: #f8fafc"],
+body.dark .modal-card button[style*="background:#f1f5f9"],
+body.dark .modal-card button[style*="background: #f1f5f9"] {
+    background: #101e35 !important;
+    border-color: rgba(99, 102, 241, .2) !important;
+    color: #a5b4fc !important;
+}
+
+/* ── Books page: detail modal cover placeholder ── */
+body.dark .detail-cover {
+    background: rgba(55, 48, 163, .2) !important;
+}
+
+body.dark .detail-cover-ph {
+    color: rgba(165, 180, 252, .25) !important;
+}
+
+/* ── Books info rows ── */
+body.dark .info-row {
+    border-color: #101e35 !important;
+}
+
+/* ── Book cards ── */
+body.dark .book-card {
+    background: #0b1628 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+}
+
+body.dark .book-title-txt {
+    color: #e2eaf8 !important;
+}
+
+body.dark .book-cover {
+    background: rgba(55, 48, 163, .2) !important;
+}
+
+body.dark .cover-ph {
+    color: rgba(165, 180, 252, .18) !important;
+}
+
+/* ── Borrow table (books) ── */
+body.dark .borrow-table thead {
+    background: #101e35 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+}
+
+body.dark .borrow-table thead th {
+    color: #4a6fa5 !important;
+}
+
+body.dark .borrow-table tbody tr {
+    border-color: #101e35 !important;
+}
+
+body.dark .borrow-table tbody tr:hover {
+    background: #101e35 !important;
+}
+
+body.dark .borrow-table td {
+    color: #e2eaf8 !important;
+}
+
+/* ── Borrow card (mobile books) ── */
+body.dark .borrow-card {
+    background: #0b1628 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+}
+
+body.dark .borrow-card-top {
+    border-color: #101e35 !important;
+}
+
+/* ── AI result box ── */
+body.dark .ai-result-box {
+    background: rgba(55, 48, 163, .15) !important;
+    border-color: rgba(99, 102, 241, .25) !important;
+}
+
+body.dark #ragText,
+body.dark #ragText * {
+    color: #a5b4fc !important;
+}
+
+/* ── Search / filter inputs ── */
+body.dark .search-input,
+body.dark .filter-select,
+body.dark .genre-select,
+body.dark .ai-input,
+body.dark .field-input {
+    background: #101e35 !important;
+    border-color: rgba(99, 102, 241, .18) !important;
+    color: #e2eaf8 !important;
+}
+
+body.dark .search-input::placeholder,
+body.dark .ai-input::placeholder,
+body.dark .field-input::placeholder {
+    color: #4a6fa5 !important;
+}
+
+body.dark .search-input:focus,
+body.dark .ai-input:focus,
+body.dark .field-input:focus {
+    background: #0b1628 !important;
+    border-color: #818cf8 !important;
+}
+
+/* ── Flash messages ── */
+body.dark .flash-ok {
+    background: rgba(55, 48, 163, .15) !important;
+    border-color: rgba(99, 102, 241, .3) !important;
+    color: #a5b4fc !important;
+}
+
+body.dark .flash-err {
+    background: rgba(220, 38, 38, .1) !important;
+    border-color: rgba(248, 113, 113, .3) !important;
+    color: #f87171 !important;
+}
+
+body.dark .warn-banner {
+    background: rgba(154, 52, 18, .15) !important;
+    border-color: rgba(234, 88, 12, .3) !important;
+    color: #fb923c !important;
+}
+
+/* ── Tip / gradient banner stays readable ── */
+body.dark .tip-banner {
+    /* gradient banners are already dark-safe, keep as is */
+}
+
+/* ── Status tags (keep their semantic colors, just darken backgrounds) ── */
+body.dark .tag-pending {
+    background: rgba(251, 191, 36, .15) !important;
+    color: #fcd34d !important;
+}
+
+body.dark .tag-approved {
+    background: rgba(16, 185, 129, .12) !important;
+    color: #34d399 !important;
+}
+
+body.dark .tag-claimed {
+    background: rgba(168, 85, 247, .15) !important;
+    color: #c084fc !important;
+}
+
+body.dark .tag-declined,
+body.dark .tag-cancelled {
+    background: rgba(239, 68, 68, .15) !important;
+    color: #f87171 !important;
+}
+
+body.dark .tag-expired {
+    background: rgba(100, 116, 139, .15) !important;
+    color: #94a3b8 !important;
+}
+
+body.dark .tag-unclaimed {
+    background: rgba(249, 115, 22, .12) !important;
+    color: #fb923c !important;
+    border-color: rgba(249, 115, 22, .3) !important;
+}
+
+body.dark .tag-available {
+    background: rgba(16, 185, 129, .12) !important;
+    color: #34d399 !important;
+}
+
+body.dark .tag-out {
+    background: rgba(239, 68, 68, .12) !important;
+    color: #f87171 !important;
+}
+
+body.dark .tag-pending.bg-\[\#fef3c7\],
+body.dark .tag-returned {
+    background: rgba(139, 92, 246, .15) !important;
+    color: #c084fc !important;
+}
+
+body.dark .tag-rejected {
+    background: rgba(239, 68, 68, .15) !important;
+    color: #f87171 !important;
+}
+
+/* ── Cover badges (available/out) on book cards ── */
+body.dark .avail-yes {
+    background: rgba(16, 185, 129, .15) !important;
+    color: #34d399 !important;
+}
+
+body.dark .avail-no {
+    background: rgba(239, 68, 68, .15) !important;
+    color: #f87171 !important;
+}
+
+/* ── Genre badge on book cover ── */
+body.dark .cover-genre-badge {
+    background: rgba(11, 22, 40, .85) !important;
+    border-color: rgba(99, 102, 241, .3) !important;
+    color: #a5b4fc !important;
+}
+
+/* ── Quota pill on reservation list ── */
+body.dark .quota-pill {
+    background: rgba(55, 48, 163, .15) !important;
+    border-color: rgba(99, 102, 241, .25) !important;
+    color: #a5b4fc !important;
+}
+
+/* ── Notice blocks inside reservation modal ── */
+body.dark .notice-pending {
+    background: rgba(180, 83, 9, .12) !important;
+    border-color: rgba(217, 119, 6, .3) !important;
+}
+
+body.dark .notice-pending p {
+    color: #fcd34d !important;
+}
+
+body.dark .notice-declined {
+    background: rgba(185, 28, 28, .12) !important;
+    border-color: rgba(239, 68, 68, .3) !important;
+}
+
+body.dark .notice-declined p {
+    color: #f87171 !important;
+}
+
+body.dark .notice-expired {
+    background: rgba(100, 116, 139, .1) !important;
+    border-color: rgba(100, 116, 139, .2) !important;
+}
+
+body.dark .notice-expired p {
+    color: #94a3b8 !important;
+}
+
+body.dark .notice-unclaimed {
+    background: rgba(194, 65, 12, .1) !important;
+    border-color: rgba(249, 115, 22, .3) !important;
+}
+
+body.dark .notice-unclaimed p {
+    color: #fb923c !important;
+}
+
+body.dark .notice-claimed {
+    background: rgba(126, 34, 206, .12) !important;
+    border-color: rgba(192, 132, 252, .3) !important;
+}
+
+body.dark .notice-claimed p {
+    color: #c084fc !important;
+}
+
+/* ── Ticket section (QR code area) ── */
+body.dark .ticket-section {
+    background: rgba(55, 48, 163, .12) !important;
+    border-color: rgba(99, 102, 241, .25) !important;
+}
+
+body.dark .ticket-section p {
+    color: #a5b4fc !important;
+}
+
+/* ── Library banner stats ── */
+body.dark .lib-stat {
+    background: rgba(255, 255, 255, .06) !important;
+    border-color: rgba(255, 255, 255, .08) !important;
+}
+
+/* ── Pending icon (reservation submitted page) ── */
+body.dark .pending-icon {
+    background: rgba(251, 191, 36, .1) !important;
+    border-color: rgba(253, 224, 71, .3) !important;
+}
+
+/* ── Success card detail boxes ── */
+body.dark .success-card [style*="background:#f8fafc"] {
+    background: #101e35 !important;
+    border-color: rgba(99, 102, 241, .1) !important;
+}
+
+body.dark .success-card [style*="color:#0f172a"] {
+    color: #e2eaf8 !important;
+}
+
+body.dark .success-card [style*="color:#94a3b8"] {
+    color: #4a6fa5 !important;
+}
+
+/* ── User card avatar ── */
+body.dark .user-avatar {
+    box-shadow: 0 2px 8px rgba(55, 48, 163, .5) !important;
+}
+
+/* ── Scrollbar in dark ── */
+body.dark ::-webkit-scrollbar-thumb {
+    background: #1e3a5f !important;
+}
+
+body.dark ::-webkit-scrollbar-track {
+    background: #060e1e !important;
+}
     </style>
 </head>
 

@@ -11,6 +11,11 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#3730a3">
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
+    <script>
+        (function() {
+            if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark-pre');
+        })();
+    </script>
     <style>
         *,
         *::before,
@@ -28,6 +33,12 @@
             --indigo-border: #c7d2fe;
             --bg: #f0f2f9;
             --card: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-sub: #94a3b8;
+            --border: rgba(99, 102, 241, .12);
+            --input-bg: #f8fafc;
+            --input-border: rgba(99, 102, 241, .15);
             --font: 'Plus Jakarta Sans', system-ui, sans-serif;
             --mono: 'JetBrains Mono', monospace;
             --shadow-sm: 0 1px 4px rgba(15, 23, 42, .07), 0 1px 2px rgba(15, 23, 42, .04);
@@ -42,6 +53,21 @@
             --mob-nav-total: calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px));
         }
 
+        /* ── Dark mode variable overrides ── */
+        body.dark {
+            --bg: #060e1e;
+            --card: #0b1628;
+            --indigo-light: rgba(55, 48, 163, .15);
+            --indigo-border: rgba(99, 102, 241, .3);
+            --text: #e2eaf8;
+            --text-muted: #a5b4fc;
+            --text-sub: #4a6fa5;
+            --border: rgba(99, 102, 241, .18);
+            --input-bg: #101e35;
+            --input-border: rgba(99, 102, 241, .22);
+            color: #e2eaf8;
+        }
+
         html {
             height: 100%;
             font-size: 16px;
@@ -50,14 +76,19 @@
         body {
             font-family: var(--font);
             background: var(--bg);
-            color: #0f172a;
+            color: var(--text);
             display: flex;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            transition: background .2s, color .2s;
         }
 
-        /* Sidebar */
+        html.dark-pre body {
+            background: #060e1e;
+        }
+
+        /* ── Sidebar ── */
         .sidebar {
             width: 268px;
             flex-shrink: 0;
@@ -72,17 +103,18 @@
         .sidebar-inner {
             background: var(--card);
             border-radius: var(--r-xl);
-            border: 1px solid rgba(99, 102, 241, .1);
+            border: 1px solid var(--border);
             height: 100%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             box-shadow: var(--shadow-md);
+            transition: background .2s, border-color .2s;
         }
 
         .sidebar-top {
             padding: 22px 18px 16px;
-            border-bottom: 1px solid rgba(99, 102, 241, .07);
+            border-bottom: 1px solid var(--border);
         }
 
         .brand-tag {
@@ -90,14 +122,14 @@
             font-weight: 700;
             letter-spacing: .22em;
             text-transform: uppercase;
-            color: #94a3b8;
+            color: var(--text-sub);
             margin-bottom: 5px;
         }
 
         .brand-name {
             font-size: 1.35rem;
             font-weight: 800;
-            color: #0f172a;
+            color: var(--text);
             letter-spacing: -.03em;
             line-height: 1.1;
         }
@@ -109,7 +141,7 @@
 
         .brand-sub {
             font-size: .7rem;
-            color: #94a3b8;
+            color: var(--text-sub);
             margin-top: 3px;
         }
 
@@ -120,6 +152,7 @@
             display: flex;
             flex-direction: column;
             gap: 3px;
+            scrollbar-width: none;
         }
 
         .sidebar-nav::-webkit-scrollbar {
@@ -136,8 +169,9 @@
             font-weight: 700;
             letter-spacing: .18em;
             text-transform: uppercase;
-            color: #cbd5e1;
+            color: var(--text-sub);
             padding: 10px 10px 5px;
+            opacity: .7;
         }
 
         .nav-link {
@@ -148,7 +182,7 @@
             border-radius: var(--r-sm);
             font-size: .85rem;
             font-weight: 600;
-            color: #64748b;
+            color: var(--text-muted);
             text-decoration: none;
             transition: all var(--ease);
         }
@@ -172,7 +206,7 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            background: #f1f5f9;
+            background: rgba(99, 102, 241, .08);
         }
 
         .nav-link.active .nav-icon {
@@ -180,12 +214,12 @@
         }
 
         .nav-link:hover:not(.active) .nav-icon {
-            background: #e0e7ff;
+            background: var(--indigo-light);
         }
 
         .sidebar-footer {
             padding: 10px 10px 12px;
-            border-top: 1px solid rgba(99, 102, 241, .07);
+            border-top: 1px solid var(--border);
         }
 
         .logout-link {
@@ -196,7 +230,7 @@
             border-radius: var(--r-sm);
             font-size: .85rem;
             font-weight: 600;
-            color: #94a3b8;
+            color: var(--text-sub);
             text-decoration: none;
             transition: all var(--ease);
         }
@@ -206,7 +240,7 @@
             color: #dc2626;
         }
 
-        /* Mobile Nav */
+        /* ── Mobile Nav ── */
         .mobile-nav-pill {
             display: none;
             position: fixed;
@@ -214,8 +248,8 @@
             left: 0;
             right: 0;
             width: 100%;
-            background: white;
-            border-top: 1px solid rgba(99, 102, 241, .1);
+            background: var(--card);
+            border-top: 1px solid var(--border);
             height: var(--mob-nav-total);
             z-index: 200;
             box-shadow: 0 -4px 20px rgba(55, 48, 163, .1);
@@ -237,7 +271,7 @@
             height: 48px;
             border-radius: 14px;
             text-decoration: none;
-            color: #64748b;
+            color: var(--text-muted);
             position: relative;
             transition: background .15s, color .15s;
         }
@@ -261,7 +295,7 @@
         }
 
         .mob-logout {
-            color: #94a3b8;
+            color: var(--text-sub);
         }
 
         .mob-logout:hover {
@@ -293,7 +327,7 @@
             }
         }
 
-        /* Main */
+        /* ── Main ── */
         .main-area {
             flex: 1;
             min-width: 0;
@@ -307,27 +341,27 @@
             }
         }
 
-        /* Page header */
+        /* ── Page header ── */
         .page-eyebrow {
             font-size: .62rem;
             font-weight: 700;
             letter-spacing: .2em;
             text-transform: uppercase;
-            color: #94a3b8;
+            color: var(--text-sub);
             margin-bottom: 4px;
         }
 
         .page-title {
             font-size: 1.75rem;
             font-weight: 800;
-            color: #0f172a;
+            color: var(--text);
             letter-spacing: -.04em;
             line-height: 1.1;
         }
 
         .page-sub {
             font-size: .8rem;
-            color: #94a3b8;
+            color: var(--text-sub);
             margin-top: 4px;
             font-weight: 500;
         }
@@ -338,11 +372,11 @@
             gap: 7px;
             padding: 9px 16px;
             background: var(--card);
-            border: 1px solid rgba(99, 102, 241, .12);
+            border: 1px solid var(--border);
             border-radius: var(--r-sm);
             font-size: .8rem;
             font-weight: 700;
-            color: #64748b;
+            color: var(--text-muted);
             text-decoration: none;
             transition: all var(--ease);
             box-shadow: var(--shadow-sm);
@@ -354,7 +388,7 @@
             color: var(--indigo);
         }
 
-        /* Flash */
+        /* ── Flash ── */
         .flash {
             display: flex;
             align-items: center;
@@ -385,15 +419,34 @@
             color: #92400e;
         }
 
-        /* Form card */
+        body.dark .flash-ok {
+            background: rgba(55, 48, 163, .2);
+            border-color: rgba(99, 102, 241, .3);
+            color: #a5b4fc;
+        }
+
+        body.dark .flash-err {
+            background: rgba(220, 38, 38, .1);
+            border-color: rgba(248, 113, 113, .3);
+            color: #f87171;
+        }
+
+        body.dark .flash-info {
+            background: rgba(180, 83, 9, .15);
+            border-color: rgba(251, 191, 36, .25);
+            color: #fcd34d;
+        }
+
+        /* ── Form card ── */
         .form-card {
             background: var(--card);
             border-radius: var(--r-xl);
-            border: 1px solid rgba(99, 102, 241, .08);
+            border: 1px solid var(--border);
             box-shadow: var(--shadow-sm);
             padding: 28px;
             max-width: 760px;
             margin: 0 auto;
+            transition: background .2s, border-color .2s;
         }
 
         @media(max-width:639px) {
@@ -418,13 +471,19 @@
         .section-title {
             font-size: .95rem;
             font-weight: 700;
-            color: #0f172a;
+            color: var(--text);
             letter-spacing: -.01em;
+        }
+
+        .section-sub {
+            font-size: .7rem;
+            color: var(--text-sub);
+            margin-top: 2px;
         }
 
         .section-divider {
             border: none;
-            border-top: 1px solid rgba(99, 102, 241, .08);
+            border-top: 1px solid var(--border);
             margin: 1.75rem 0;
         }
 
@@ -433,23 +492,24 @@
             font-weight: 700;
             letter-spacing: .16em;
             text-transform: uppercase;
-            color: #94a3b8;
+            color: var(--text-sub);
             display: block;
             margin-bottom: 6px;
         }
 
+        /* ── Inputs — use CSS vars so dark mode works ── */
         input,
         select,
         textarea {
             width: 100%;
             padding: .75rem 1rem;
-            border: 1px solid rgba(99, 102, 241, .15);
+            border: 1px solid var(--input-border);
             font-size: .88rem;
             transition: all var(--ease);
-            background: #f8fafc;
+            background: var(--input-bg);
             border-radius: var(--r-sm);
             font-family: var(--font);
-            color: #0f172a;
+            color: var(--text);
             outline: none;
             -webkit-appearance: none;
         }
@@ -458,21 +518,38 @@
         select:focus,
         textarea:focus {
             border-color: #818cf8;
-            background: white;
+            background: var(--card);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
         }
 
         input[readonly] {
-            background: #f1f5f9;
-            color: #94a3b8;
+            background: var(--input-bg);
+            color: var(--text-sub);
             cursor: not-allowed;
+            opacity: .75;
         }
 
+        select option {
+            background: var(--card);
+            color: var(--text);
+        }
+
+        /* ── PC section ── */
         .pc-section {
             background: var(--indigo-light);
             border: 1px solid var(--indigo-border);
             border-radius: var(--r-md);
             padding: 1.25rem;
+        }
+
+        .pc-section-lbl {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--indigo);
+            display: block;
+            margin-bottom: 10px;
         }
 
         .pc-btn {
@@ -481,8 +558,8 @@
             font-size: .75rem;
             font-weight: 700;
             border: 1px solid var(--indigo-border);
-            background: white;
-            color: #64748b;
+            background: var(--card);
+            color: var(--text-muted);
             transition: all var(--ease);
             cursor: pointer;
             font-family: var(--font);
@@ -500,6 +577,7 @@
             box-shadow: 0 4px 10px rgba(55, 48, 163, .3);
         }
 
+        /* ── Availability badges ── */
         .available {
             background: #dcfce7;
             color: #166534;
@@ -518,6 +596,7 @@
             font-weight: 600;
         }
 
+        /* ── Submit button ── */
         .btn-primary {
             background: var(--indigo);
             color: white;
@@ -542,7 +621,7 @@
             box-shadow: 0 6px 18px rgba(55, 48, 163, .35);
         }
 
-        /* Notification */
+        /* ── Notification elements ── */
         .notif-btn {
             position: fixed;
             top: 24px;
@@ -550,8 +629,8 @@
             z-index: 150;
             width: 44px;
             height: 44px;
-            background: white;
-            border: 1px solid rgba(99, 102, 241, .12);
+            background: var(--card);
+            border: 1px solid var(--border);
             border-radius: var(--r-sm);
             display: flex;
             align-items: center;
@@ -587,9 +666,9 @@
             top: 80px;
             right: 20px;
             width: 320px;
-            background: white;
+            background: var(--card);
             border-radius: var(--r-xl);
-            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99, 102, 241, .09);
+            box-shadow: var(--shadow-lg), 0 0 0 1px var(--border);
             z-index: 1000;
             display: none;
             overflow: hidden;
@@ -600,27 +679,16 @@
             animation: dropIn .15s ease;
         }
 
-        @keyframes dropIn {
-            from {
-                opacity: 0;
-                transform: translateY(-4px) scale(.98)
-            }
-
-            to {
-                opacity: 1;
-                transform: none
-            }
-        }
-
         .notif-item {
             padding: .85rem 1.1rem;
-            border-bottom: 1px solid #f8fafc;
+            border-bottom: 1px solid var(--border);
             transition: background .15s;
             cursor: pointer;
+            color: var(--text);
         }
 
         .notif-item:hover {
-            background: #f8fafc;
+            background: var(--input-bg);
         }
 
         .notif-item.unread {
@@ -641,7 +709,7 @@
             }
         }
 
-        /* Modal */
+        /* ── Modal ── */
         .modal-back {
             display: none;
             position: fixed;
@@ -660,18 +728,8 @@
             animation: fadeIn .15s ease;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0
-            }
-
-            to {
-                opacity: 1
-            }
-        }
-
         .modal-box {
-            background: white;
+            background: var(--card);
             border-radius: var(--r-xl);
             width: 100%;
             max-width: 460px;
@@ -683,24 +741,12 @@
             box-shadow: var(--shadow-lg);
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px)
-            }
-
-            to {
-                opacity: 1;
-                transform: none
-            }
-        }
-
         .mrow {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             padding: .55rem 0;
-            border-bottom: 1px solid rgba(99, 102, 241, .07);
+            border-bottom: 1px solid var(--border);
             gap: 1rem;
         }
 
@@ -713,18 +759,52 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .12em;
-            color: #94a3b8;
+            color: var(--text-sub);
             flex-shrink: 0;
         }
 
         .mrow-value {
             font-weight: 600;
-            color: #0f172a;
+            color: var(--text);
             font-size: .84rem;
             text-align: right;
         }
 
-        /* Toast */
+        .modal-summary-box {
+            background: var(--input-bg);
+            border-radius: var(--r-md);
+            padding: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -.02em;
+        }
+
+        .modal-cancel-btn {
+            flex: 1;
+            padding: .75rem;
+            background: var(--input-bg);
+            border-radius: var(--r-sm);
+            font-weight: 700;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-family: var(--font);
+            font-size: .85rem;
+            transition: background .15s;
+        }
+
+        .modal-cancel-btn:hover {
+            background: var(--indigo-light);
+            color: var(--indigo);
+        }
+
+        /* ── Toast ── */
         .toast-wrap {
             position: fixed;
             top: 80px;
@@ -758,6 +838,7 @@
             animation: slideUp .3s ease;
         }
 
+        /* ── Grid helpers ── */
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -779,6 +860,45 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ── Utility ── */
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes dropIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px) scale(.98)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
     </style>
 </head>
 
@@ -794,6 +914,18 @@
     $avatarLetter = strtoupper(mb_substr(trim($user['name'] ?? 'U'), 0, 1));
     ?>
 
+    <!-- Notification dropdown -->
+    <div id="notificationDropdown" class="notif-dd">
+        <div style="padding:11px 13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:13px;color:var(--text);">Notifications</span>
+            <button onclick="markAllAsRead()" style="font-size:11px;color:var(--indigo);font-weight:600;background:none;border:none;cursor:pointer;">Mark all read</button>
+        </div>
+        <div id="notificationList" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toastContainer" class="toast-wrap"></div>
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-inner">
@@ -806,7 +938,7 @@
                 <div class="nav-lbl">Menu</div>
                 <?php foreach ($navItems as $item): $active = ($page == $item['key']); ?>
                     <a href="<?= base_url($item['url']) ?>" class="nav-link <?= $active ? 'active' : '' ?>">
-                        <div class="nav-icon"><i class="fa-solid <?= $item['icon'] ?>" style="font-size:14px;color:<?= $active ? 'white' : '#64748b' ?>;"></i></div>
+                        <div class="nav-icon"><i class="fa-solid <?= $item['icon'] ?>" style="font-size:14px;color:<?= $active ? 'white' : 'var(--text-muted)' ?>;"></i></div>
                         <?= $item['label'] ?>
                     </a>
                 <?php endforeach; ?>
@@ -829,7 +961,7 @@
                 </a>
             <?php endforeach; ?>
             <a href="<?= base_url('/logout') ?>" class="mob-nav-item mob-logout" title="Sign Out">
-                <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:20px;color:currentColor;"></i>
+                <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:20px;color:#f87171;"></i>
             </a>
         </div>
     </nav>
@@ -842,9 +974,16 @@
                 <div class="page-title">New Reservation</div>
                 <div class="page-sub">Book a resource for your upcoming visit.</div>
             </div>
-            <a href="<?= base_url('/reservation-list') ?>" class="back-btn" style="margin-top:4px;">
-                <i class="fa-solid fa-chevron-left" style="font-size:11px;"></i> My Reservations
-            </a>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+                <!-- Notification bell -->
+                <div class="notif-btn" onclick="toggleNotifications()" style="position:relative;">
+                    <i class="fa-regular fa-bell" style="font-size:.9rem;color:var(--text-muted);"></i>
+                    <span class="notif-badge" id="notificationBadge" style="display:none;">0</span>
+                </div>
+                <a href="<?= base_url('/reservation-list') ?>" class="back-btn">
+                    <i class="fa-solid fa-chevron-left" style="font-size:11px;"></i> My Reservations
+                </a>
+            </div>
         </div>
 
         <?php if (session()->getFlashdata('error')): ?>
@@ -880,7 +1019,7 @@
                         <div class="section-icon"><i class="fa-solid fa-user" style="font-size:14px;"></i></div>
                         <div>
                             <div class="section-title">Your Details</div>
-                            <div style="font-size:.7rem;color:#94a3b8;margin-top:2px;">Auto-filled from your account</div>
+                            <div class="section-sub">Auto-filled from your account</div>
                         </div>
                     </div>
                     <div class="grid-2">
@@ -906,13 +1045,14 @@
                         <div class="section-icon"><i class="fa-solid fa-calendar-days" style="font-size:14px;"></i></div>
                         <div>
                             <div class="section-title">Resource & Schedule</div>
-                            <div style="font-size:.7rem;color:#94a3b8;margin-top:2px;">Choose your resource, date and time</div>
+                            <div class="section-sub">Choose your resource, date and time</div>
                         </div>
                     </div>
 
+                    <!-- Resource select -->
                     <div style="margin-bottom:16px;">
                         <label class="field-label">Select Resource</label>
-                        <select id="resourceSelect" name="resource_id" required>
+                        <select id="resourceSelect" name="resource_id" required onchange="handleResourceChange(this)">
                             <option value="">— Choose a resource —</option>
                             <?php foreach ($resources as $res): ?>
                                 <option value="<?= $res['id'] ?>"
@@ -925,20 +1065,27 @@
                         </select>
                     </div>
 
-                    <div id="pcSection" class="hidden pc-section" style="margin-bottom:16px;">
-                        <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block;">Select Workstation(s)</label>
-                        <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;">
-                            <?php foreach ($pcs ?? [] as $pc): $num = esc($pc['pc_number'] ?? $pc['name'] ?? '');
-                                if (!empty($num)): ?>
-                                    <button type="button" onclick="togglePc('<?= $num ?>',this)" data-pc="<?= $num ?>" class="pc-btn"><?= $num ?></button>
-                            <?php endif;
-                            endforeach; ?>
+                    <!-- PC section — hidden until a computer/lab resource is chosen -->
+                    <div id="pcSection" class="hidden" style="margin-bottom:16px;">
+                        <div class="pc-section">
+                            <label class="pc-section-lbl">
+                                <i class="fa-solid fa-desktop" style="margin-right:5px;"></i>Select Workstation(s)
+                            </label>
+                            <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;">
+                                <?php foreach ($pcs ?? [] as $pc):
+                                    $num = esc($pc['pc_number'] ?? $pc['name'] ?? '');
+                                    if (!empty($num)): ?>
+                                        <button type="button" onclick="togglePc('<?= $num ?>',this)" data-pc="<?= $num ?>" class="pc-btn"><?= $num ?></button>
+                                <?php endif;
+                                endforeach; ?>
+                            </div>
+                            <p style="font-size:.68rem;color:var(--indigo);font-weight:600;margin-top:10px;display:flex;align-items:center;gap:4px;">
+                                <i class="fa-solid fa-circle-info"></i> Selected: <span id="pcSelectedLabel" style="font-family:var(--mono)">None</span>
+                            </p>
                         </div>
-                        <p style="font-size:.68rem;color:var(--indigo);font-weight:600;margin-top:10px;">
-                            <i class="fa-solid fa-circle-info" style="margin-right:3px;"></i>Selected: <span id="pcSelectedLabel">None</span>
-                        </p>
                     </div>
 
+                    <!-- Date & time -->
                     <div class="grid-3" style="margin-bottom:16px;">
                         <div>
                             <label class="field-label">Date</label>
@@ -954,11 +1101,13 @@
                         </div>
                     </div>
 
+                    <!-- Availability message -->
                     <div id="availabilityMsg" class="hidden" style="margin-bottom:14px;padding:10px 14px;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;"></div>
 
+                    <!-- Purpose -->
                     <div style="margin-bottom:16px;">
                         <label class="field-label">Purpose of Visit</label>
-                        <select id="purposeSelect" name="purpose" required>
+                        <select id="purposeSelect" name="purpose" required onchange="handlePurposeChange(this)">
                             <option value="">— Select purpose —</option>
                             <?php foreach ($purposes ?? ['Work', 'Personal', 'Study', 'SK Activity', 'Others'] as $purpose): ?>
                                 <option value="<?= esc($purpose) ?>"><?= esc($purpose) ?></option>
@@ -987,11 +1136,11 @@
                 <div style="width:52px;height:52px;background:#fef3c7;border:2px solid #fde68a;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
                     <i class="fa-solid fa-clock" style="color:#d97706;font-size:1.1rem;"></i>
                 </div>
-                <h3 style="font-size:1.1rem;font-weight:800;color:#0f172a;letter-spacing:-.02em;">Confirm Reservation</h3>
-                <p style="font-size:.78rem;color:#94a3b8;margin-top:4px;">Review your booking details</p>
+                <h3 class="modal-title">Confirm Reservation</h3>
+                <p style="font-size:.78rem;color:var(--text-sub);margin-top:4px;">Review your booking details</p>
                 <p style="font-size:.72rem;color:#d97706;font-weight:700;margin-top:6px;">Your reservation will be pending approval</p>
             </div>
-            <div style="background:#f8fafc;border-radius:var(--r-md);padding:16px;border:1px solid rgba(99,102,241,.08);margin-bottom:16px;">
+            <div class="modal-summary-box">
                 <div class="mrow"><span class="mrow-label">Name</span><span class="mrow-value" id="mName"><?= esc($user['name'] ?? '') ?></span></div>
                 <div class="mrow"><span class="mrow-label">Email</span><span class="mrow-value" id="mEmail"><?= esc($user['email'] ?? '') ?></span></div>
                 <div class="mrow"><span class="mrow-label">Resource</span><span class="mrow-value" id="mAsset"></span></div>
@@ -1002,10 +1151,10 @@
             </div>
             <div style="background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;text-align:center;">
                 <i class="fa-regular fa-bell" style="color:var(--indigo);margin-bottom:6px;font-size:1rem;display:block;"></i>
-                <p style="font-size:.75rem;color:#3730a3;font-weight:500;">You'll receive a notification once your reservation is approved.</p>
+                <p style="font-size:.75rem;color:var(--indigo);font-weight:500;">You'll receive a notification once your reservation is approved.</p>
             </div>
             <div style="display:flex;gap:10px;">
-                <button type="button" onclick="closeModal()" style="flex:1;padding:.75rem;background:#f1f5f9;border-radius:var(--r-sm);font-weight:700;color:#64748b;border:none;cursor:pointer;font-family:var(--font);font-size:.85rem;transition:background .15s;">Cancel</button>
+                <button type="button" onclick="closeModal()" class="modal-cancel-btn">Cancel</button>
                 <button type="button" id="confirmBtn" onclick="submitReservation()" class="btn-primary" style="flex:2;">
                     <i class="fa-solid fa-check"></i> Submit Request
                 </button>
@@ -1016,7 +1165,7 @@
     <script>
         const currentUser = {
             id: <?= $user['id'] ?? 'null' ?>,
-            name: "<?= esc($user['name'] ?? '', 'js') ?>",
+            name: "<?= esc($user['name']  ?? '', 'js') ?>",
             email: "<?= esc($user['email'] ?? '', 'js') ?>"
         };
         let selectedPcs = [],
@@ -1032,6 +1181,10 @@
             checkInterval, lastCheckTime = new Date().toISOString();
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Apply dark mode immediately
+            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+            document.documentElement.classList.remove('dark-pre');
+
             if ('Notification' in window) Notification.requestPermission();
             renderNotifications();
             updateBadge();
@@ -1044,6 +1197,182 @@
             });
         });
 
+        /* ── Resource change — show/hide PC section ── */
+        function handleResourceChange(select) {
+            const opt = select.options[select.selectedIndex];
+            const hasPcs = opt?.dataset?.hasPcs === '1';
+
+            const pcSection = document.getElementById('pcSection');
+            if (hasPcs) {
+                pcSection.classList.remove('hidden');
+            } else {
+                pcSection.classList.add('hidden');
+            }
+
+            // Reset PC selection
+            selectedPcs = [];
+            updatePcHidden();
+            document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected-pc'));
+
+            selectedResource = {
+                id: select.value,
+                name: opt?.dataset?.name || '',
+                hasPcs
+            };
+            checkAvailability();
+        }
+
+        /* ── PC toggle ── */
+        function togglePc(num, btn) {
+            const i = selectedPcs.indexOf(num);
+            if (i === -1) {
+                selectedPcs.push(num);
+                btn.classList.add('selected-pc');
+            } else {
+                selectedPcs.splice(i, 1);
+                btn.classList.remove('selected-pc');
+            }
+            updatePcHidden();
+        }
+
+        function updatePcHidden() {
+            document.getElementById('finalPcs').value = selectedPcs.join(', ');
+            document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
+        }
+
+        /* ── Purpose change ── */
+        function handlePurposeChange(select) {
+            const isOther = select.value === 'Others';
+            const wrap = document.getElementById('purposeOtherWrap');
+            if (isOther) {
+                wrap.classList.remove('hidden');
+            } else {
+                wrap.classList.add('hidden');
+                document.getElementById('purposeOther').value = '';
+            }
+        }
+
+        /* ── Availability check ── */
+        function checkAvailability() {
+            const rid = document.getElementById('resourceSelect').value,
+                date = document.getElementById('resDate').value,
+                st = document.getElementById('startTime').value,
+                et = document.getElementById('endTime').value;
+            const m = document.getElementById('availabilityMsg');
+            if (!rid || !date || !st || !et) {
+                m.classList.add('hidden');
+                return;
+            }
+
+            m.classList.remove('hidden', 'available', 'unavailable');
+            m.textContent = 'Checking availability…';
+            m.style.cssText = 'background:var(--input-bg);color:var(--text-sub);margin-bottom:14px;padding:10px 14px;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;';
+
+            fetch('<?= base_url("reservation/check-availability") ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({
+                    resource_id: rid,
+                    date,
+                    start_time: st,
+                    end_time: et,
+                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                })
+            }).then(r => r.json()).then(data => {
+                m.style.cssText = '';
+                m.textContent = data.message;
+                m.classList.add(data.available ? 'available' : 'unavailable');
+            }).catch(() => {
+                m.textContent = 'Error checking availability';
+                m.classList.add('unavailable');
+            });
+        }
+
+        /* ── Preview ── */
+        function previewReservation() {
+            const re = document.getElementById('resourceSelect'),
+                rid = re.value,
+                rn = re.options[re.selectedIndex]?.text || '—',
+                date = document.getElementById('resDate').value,
+                st = document.getElementById('startTime').value,
+                et = document.getElementById('endTime').value,
+                pv = document.getElementById('purposeSelect').value,
+                po = document.getElementById('purposeOther').value.trim(),
+                pf = pv === 'Others' && po ? `Others - ${po}` : pv,
+                hasPc = !document.getElementById('pcSection').classList.contains('hidden');
+
+            if (!rid) {
+                alert('Please select a resource');
+                return;
+            }
+            if (hasPc && selectedPcs.length === 0) {
+                alert('Please select at least one workstation');
+                return;
+            }
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+            if (!st) {
+                alert('Please enter start time');
+                return;
+            }
+            if (!et) {
+                alert('Please enter end time');
+                return;
+            }
+            if (!pv) {
+                alert('Please select a purpose');
+                return;
+            }
+
+            document.getElementById('finalPurpose').value = pf;
+            document.getElementById('mName').textContent = currentUser.name;
+            document.getElementById('mEmail').textContent = currentUser.email;
+            document.getElementById('mAsset').textContent = rn;
+            document.getElementById('mStation').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
+            document.getElementById('mDate').textContent = date;
+            document.getElementById('mTime').textContent = `${st} – ${et}`;
+            document.getElementById('mPurpose').textContent = pf;
+            openModal();
+        }
+
+        function submitReservation() {
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting…';
+            document.getElementById('reservationForm').submit();
+        }
+
+        function openModal() {
+            document.getElementById('confirmModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+            document.body.style.overflow = '';
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Submit Request';
+        }
+
+        function handleBackdrop(e) {
+            if (e.target === document.getElementById('confirmModal')) closeModal();
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        document.getElementById('resDate').setAttribute('min', new Date().toISOString().split('T')[0]);
+        window.addEventListener('beforeunload', () => {
+            if (checkInterval) clearInterval(checkInterval);
+        });
+
+        /* ── Notifications ── */
         function checkForNewApprovals() {
             fetch('<?= base_url("reservation/check-new-approvals") ?>', {
                 method: 'POST',
@@ -1078,10 +1407,11 @@
         }
 
         function showPush(n) {
-            if ('Notification' in window && Notification.permission === 'granted') new Notification(n.title, {
-                body: n.message,
-                icon: '/favicon.ico'
-            });
+            if ('Notification' in window && Notification.permission === 'granted')
+                new Notification(n.title, {
+                    body: n.message,
+                    icon: '/favicon.ico'
+                });
         }
 
         function showToast(n) {
@@ -1130,25 +1460,24 @@
         function renderNotifications() {
             const l = document.getElementById('notificationList');
             if (!notifications.length) {
-                l.innerHTML = '<div style="text-align:center;padding:24px;font-size:.8rem;color:#94a3b8;">All caught up!</div>';
+                l.innerHTML = '<div style="text-align:center;padding:24px;font-size:.8rem;color:var(--text-sub);">All caught up!</div>';
                 return;
             }
             l.innerHTML = notifications.sort((a, b) => new Date(b.time) - new Date(a.time)).map(n => `
-        <div class="notif-item ${!n.read?'unread':''}" onclick="markAsRead(${n.id})">
-            <div style="display:flex;align-items:flex-start;gap:9px;">
-                <div style="width:28px;height:28px;background:var(--indigo-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="fa-solid fa-check" style="color:var(--indigo);font-size:10px;"></i>
-                </div>
-                <div style="flex:1;min-width:0;">
-                    <p style="font-weight:700;font-size:.8rem;color:#0f172a;">${n.title}</p>
-                    <p style="font-size:.7rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.message}</p>
-                    <p style="font-size:.62rem;color:#94a3b8;margin-top:2px;">${timeAgo(n.time)}</p>
-                </div>
-                ${!n.read?'<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>':''}
-            </div>
-        </div>`).join('');
+                <div class="notif-item ${!n.read?'unread':''}" onclick="markAsRead(${n.id})">
+                    <div style="display:flex;align-items:flex-start;gap:9px;">
+                        <div style="width:28px;height:28px;background:var(--indigo-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-check" style="color:var(--indigo);font-size:10px;"></i>
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <p style="font-weight:700;font-size:.8rem;color:var(--text);">${n.title}</p>
+                            <p style="font-size:.7rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.message}</p>
+                            <p style="font-size:.62rem;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
+                        </div>
+                        ${!n.read?'<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>':''}
+                    </div>
+                </div>`).join('');
         }
-
         const timeAgo = t => {
             const s = Math.floor((Date.now() - new Date(t)) / 1000);
             if (s < 60) return 'Just now';
@@ -1156,168 +1485,10 @@
             if (s < 86400) return `${Math.floor(s/3600)}h ago`;
             return `${Math.floor(s/86400)}d ago`;
         };
-
         document.addEventListener('click', e => {
             const dd = document.getElementById('notificationDropdown'),
                 bell = document.querySelector('.notif-btn');
-            if (!bell.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('show');
-        });
-
-        document.getElementById('finalUserId').value = currentUser.id;
-        document.getElementById('finalVisitorName').value = currentUser.name;
-        document.getElementById('finalUserEmail').value = currentUser.email;
-
-        document.getElementById('resourceSelect').addEventListener('change', function() {
-            const o = this.options[this.selectedIndex],
-                hasPcs = o.dataset.hasPcs === '1';
-            selectedResource = {
-                id: this.value,
-                name: o.dataset.name || '',
-                hasPcs
-            };
-            document.getElementById('pcSection').classList.toggle('hidden', !hasPcs);
-            selectedPcs = [];
-            updatePcHidden();
-            document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected-pc'));
-            checkAvailability();
-        });
-
-        function togglePc(num, btn) {
-            const i = selectedPcs.indexOf(num);
-            if (i === -1) {
-                selectedPcs.push(num);
-                btn.classList.add('selected-pc');
-            } else {
-                selectedPcs.splice(i, 1);
-                btn.classList.remove('selected-pc');
-            }
-            updatePcHidden();
-        }
-
-        function updatePcHidden() {
-            document.getElementById('finalPcs').value = selectedPcs.join(', ');
-            document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
-        }
-
-        document.getElementById('purposeSelect').addEventListener('change', function() {
-            const isO = this.value === 'Others';
-            document.getElementById('purposeOtherWrap').classList.toggle('hidden', !isO);
-            if (!isO) document.getElementById('purposeOther').value = '';
-        });
-
-        function checkAvailability() {
-            const rid = document.getElementById('resourceSelect').value,
-                date = document.getElementById('resDate').value,
-                st = document.getElementById('startTime').value,
-                et = document.getElementById('endTime').value;
-            if (!rid || !date || !st || !et) {
-                document.getElementById('availabilityMsg').classList.add('hidden');
-                return;
-            }
-            const m = document.getElementById('availabilityMsg');
-            m.classList.remove('hidden', 'available', 'unavailable');
-            m.textContent = 'Checking availability...';
-            m.style.background = '#f1f5f9';
-            m.style.color = '#64748b';
-            fetch('<?= base_url("reservation/check-availability") ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: new URLSearchParams({
-                    resource_id: rid,
-                    date,
-                    start_time: st,
-                    end_time: et,
-                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-                })
-            }).then(r => r.json()).then(data => {
-                m.style.background = '';
-                m.style.color = '';
-                m.textContent = data.message;
-                m.classList.add(data.available ? 'available' : 'unavailable');
-            }).catch(() => {
-                m.textContent = 'Error checking availability';
-                m.classList.add('unavailable');
-            });
-        }
-
-        function previewReservation() {
-            const re = document.getElementById('resourceSelect'),
-                rid = re.value,
-                rn = re.options[re.selectedIndex]?.text || '—',
-                date = document.getElementById('resDate').value,
-                st = document.getElementById('startTime').value,
-                et = document.getElementById('endTime').value,
-                pv = document.getElementById('purposeSelect').value,
-                po = document.getElementById('purposeOther').value.trim(),
-                pf = pv === 'Others' && po ? `Others - ${po}` : pv,
-                hasPc = !document.getElementById('pcSection').classList.contains('hidden');
-            if (!rid) {
-                alert('Please select a resource');
-                return;
-            }
-            if (hasPc && selectedPcs.length === 0) {
-                alert('Please select at least one workstation');
-                return;
-            }
-            if (!date) {
-                alert('Please select a date');
-                return;
-            }
-            if (!st) {
-                alert('Please enter start time');
-                return;
-            }
-            if (!et) {
-                alert('Please enter end time');
-                return;
-            }
-            if (!pv) {
-                alert('Please select a purpose');
-                return;
-            }
-            document.getElementById('finalPurpose').value = pf;
-            document.getElementById('mName').textContent = currentUser.name;
-            document.getElementById('mEmail').textContent = currentUser.email;
-            document.getElementById('mAsset').textContent = rn;
-            document.getElementById('mStation').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
-            document.getElementById('mDate').textContent = date;
-            document.getElementById('mTime').textContent = `${st} – ${et}`;
-            document.getElementById('mPurpose').textContent = pf;
-            openModal();
-        }
-
-        function submitReservation() {
-            const btn = document.getElementById('confirmBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
-            document.getElementById('reservationForm').submit();
-        }
-
-        function openModal() {
-            document.getElementById('confirmModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            document.getElementById('confirmModal').classList.remove('show');
-            document.body.style.overflow = '';
-            const btn = document.getElementById('confirmBtn');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> Submit Request';
-        }
-
-        function handleBackdrop(e) {
-            if (e.target === document.getElementById('confirmModal')) closeModal();
-        }
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeModal();
-        });
-        document.getElementById('resDate').setAttribute('min', new Date().toISOString().split('T')[0]);
-        window.addEventListener('beforeunload', () => {
-            if (checkInterval) clearInterval(checkInterval);
+            if (bell && !bell.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('show');
         });
     </script>
 </body>
