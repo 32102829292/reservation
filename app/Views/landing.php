@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>mySpace · Sangguniang Kabataan — Brgy. F. De Jesus</title>
+    <link rel="manifest" href="/manifest.json">
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
+    <meta name="theme-color" content="#1e1b4b">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -482,7 +485,7 @@
                 <div id="nav-fallback" style="display:none;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#c0392b,#3730a3);align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:white;border:2px solid rgba(212,160,23,.4);">SK</div>
                 <div class="nav-brand-text">
                     <div class="nav-brand-name">my<em>Space.</em></div>
-                    <div class="nav-brand-sub">SK Portal · Brgy. F. De Jesus</div>
+                    <div class="nav-brand-sub">Community Portal · Brgy. F. De Jesus</div>
                 </div>
             </a>
             <div class="nav-actions">
@@ -522,7 +525,7 @@
             </p>
 
             <p class="hero-org">
-                <strong>Sangguniang Kabataan</strong> · Brgy. F. De Jesus · Lucena City
+                <strong>Sangguniang Kabataan</strong> · Brgy. F. De Jesus · Unisan Quezon
             </p>
 
             <div class="cta-group">
@@ -603,7 +606,7 @@
         <!-- ══ FOOTER ══ -->
         <footer>
             <div class="footer-left">
-                &copy; 2025 <strong>mySpace · SK Brgy. F. De Jesus</strong> · All rights reserved.
+                &copy; 2026 <strong>mySpace · SK Brgy. F. De Jesus</strong> · All rights reserved.
             </div>
             <div class="footer-right">
                 <span class="footer-badge"><i class="fa-solid fa-shield-halved" style="font-size:.55rem;"></i> Secure Portal</span>
