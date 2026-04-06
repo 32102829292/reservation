@@ -15,8 +15,7 @@ class RegisterController extends Controller
     public function store()
     {
         $rules = [
-            'first_name'       => 'required|min_length[2]',
-            'last_name'        => 'required|min_length[2]',
+            'name'             => 'required|min_length[3]',
             'email'            => 'required|valid_email|is_unique[users.email]',
             'role'             => 'required',
             'password'         => 'required|min_length[8]',
@@ -31,22 +30,18 @@ class RegisterController extends Controller
 
         $userModel = new UserModel();
 
-        // combine name
-        $fullName = $this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name');
-
         $userModel->save([
-            'name'               => $fullName,
+            'name'               => $this->request->getPost('name'),
             'email'              => $this->request->getPost('email'),
             'role'               => $this->request->getPost('role'),
             'password'           => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'is_approved'        => false,
-            'is_verified'        => false,
-
+            'is_approved'        => 0,
+            'is_verified'        => 0,
             'verification_token' => bin2hex(random_bytes(32)),
             'created_at'         => date('Y-m-d H:i:s'),
         ]);
 
         return redirect()->to('/login')
-            ->with('success', 'Account created! Please verify your email and wait for approval.');
+            ->with('success', 'Account created! Please wait for approval.');
     }
 }
