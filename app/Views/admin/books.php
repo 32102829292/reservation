@@ -1,5 +1,3 @@
-<?php
-?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,13 +10,8 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#3730a3">
   <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
-  {{-- Tailwind CDN (provides responsive utilities md:hidden, lg:hidden, etc.) --}}
   <script src="https://cdn.tailwindcss.com"></script>
-
-  {{-- PDF.js (used for client-side text extraction) --}}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-  {{-- admin_app.css and Font Awesome are injected by layout.php below --}}
 </head>
 
 <body>
