@@ -21,15 +21,31 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
       try { if (localStorage.getItem('sk_theme') === 'dark') document.documentElement.classList.add('dark-pre'); } catch(e) {}
     })();
   </script>
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
   <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
+  <style>
+    /* ── Responsive: desktop table vs mobile cards ── */
+    #desktopTable  { display: none; }
+    #bookCardList  { display: flex; flex-direction: column; gap: 10px; }
+    #desktopBorrowTable { display: none; }
+    #borrowCardList { display: flex; flex-direction: column; gap: 10px; }
+
+    @media (min-width: 768px) {
+      #desktopTable       { display: block; }
+      #bookCardList       { display: none !important; }
+      #desktopBorrowTable { display: block; }
+      #borrowCardList     { display: none !important; }
+    }
+  </style>
 </head>
 <body>
 
 <?php include APPPATH . 'Views/partials/sk_layout.php'; ?>
 
+<!-- ═══════════════════════════════════════════
+     DELETE MODAL
+═══════════════════════════════════════════ -->
 <div id="deleteModal" class="modal-back" onclick="if(event.target===this)closeModal('deleteModal')">
   <div class="modal-card sm">
     <div style="text-align:center;margin-bottom:16px;">
@@ -51,6 +67,9 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     ADD MODAL
+═══════════════════════════════════════════ -->
 <div id="addModal" class="modal-back" onclick="if(event.target===this)closeModal('addModal')">
   <div class="modal-card">
     <div class="modal-head">
@@ -84,6 +103,9 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     PDF / AI MODAL
+═══════════════════════════════════════════ -->
 <div id="pdfModal" class="modal-back" onclick="if(event.target===this)closeModal('pdfModal')">
   <div class="modal-card wide">
     <div class="modal-head">
@@ -175,6 +197,9 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     EDIT MODAL
+═══════════════════════════════════════════ -->
 <div id="editModal" class="modal-back" onclick="if(event.target===this)closeModal('editModal')">
   <div class="modal-card">
     <div class="modal-head">
@@ -213,6 +238,9 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════ -->
 <main class="main-area">
 
   <div class="topbar fade-up">
@@ -296,6 +324,9 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     </button>
   </div>
 
+  <!-- ══════════════════════════════════
+       BOOKS PANE
+  ══════════════════════════════════ -->
   <div id="paneBooks" class="fade-up-2">
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
       <div class="search-wrap">
@@ -316,7 +347,8 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
       </div>
     <?php else: ?>
 
-      <div class="tbl-wrap hidden md:block">
+      <!-- FIX: Desktop table — no Tailwind hidden/block classes, controlled by CSS media query -->
+      <div class="tbl-wrap" id="desktopTable">
         <div style="overflow-x:auto;">
           <table id="booksTable">
             <thead>
@@ -378,7 +410,8 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
         </div>
       </div>
 
-      <div class="md:hidden" style="display:flex;flex-direction:column;gap:10px;" id="bookCardList">
+      <!-- FIX: Mobile cards — no Tailwind classes, controlled by CSS media query -->
+      <div id="bookCardList">
         <?php foreach ($books as $b):
           $avail  = (int)($b['available_copies'] ?? 0);
           $total  = (int)($b['total_copies'] ?? 1);
@@ -424,14 +457,14 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
         <?php endforeach; ?>
       </div>
 
-      <div id="noResultsMsg" class="hidden" style="margin-top:16px;">
+      <div id="noResultsMsg" style="display:none;margin-top:16px;">
         <div class="empty-state">
           <i class="fa-solid fa-magnifying-glass" style="font-size:1.5rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
           <p style="font-size:.85rem;font-weight:600;color:#94a3b8;">No books match your search.</p>
         </div>
       </div>
 
-      <div id="paginationControls" class="hidden" style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div id="paginationControls" style="display:none;margin-top:16px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <p id="pageInfo" style="font-size:.72rem;font-weight:700;color:#94a3b8;"></p>
         <div id="pageButtons" style="display:flex;align-items:center;gap:6px;"></div>
       </div>
@@ -439,6 +472,9 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     <?php endif; ?>
   </div>
 
+  <!-- ══════════════════════════════════
+       BORROWINGS PANE
+  ══════════════════════════════════ -->
   <div id="paneBorrowings" style="display:none;" class="fade-up-2">
 
     <?php if (empty($borrowings)): ?>
@@ -455,8 +491,8 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
           <i class="fa-solid fa-magnifying-glass"></i>
           <input id="borrowSearch" type="text" class="search-input" placeholder="Search resident or book…" oninput="applyBorrowFilter()">
         </div>
-        <button class="fpill active" id="bpill-all" onclick="filterBorrowings('all')">All</button>
-        <button class="fpill fp-pending" id="bpill-pending" onclick="filterBorrowings('pending')">
+        <button class="fpill active" id="bpill-all"      onclick="filterBorrowings('all')">All</button>
+        <button class="fpill fp-pending"  id="bpill-pending"  onclick="filterBorrowings('pending')">
           Pending <?php if ($pendingBorrows > 0): ?><span style="background:rgba(245,158,11,.25);color:#92400e;font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:999px;margin-left:3px;"><?= $pendingBorrows ?></span><?php endif; ?>
         </button>
         <button class="fpill fp-approved" id="bpill-approved" onclick="filterBorrowings('approved')">Approved</button>
@@ -464,7 +500,8 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
         <button class="fpill fp-rejected" id="bpill-rejected" onclick="filterBorrowings('rejected')">Rejected</button>
       </div>
 
-      <div class="tbl-wrap hidden md:block">
+      <!-- FIX: Desktop borrow table — CSS media query controlled -->
+      <div class="tbl-wrap" id="desktopBorrowTable">
         <div style="overflow-x:auto;">
           <table id="borrowingsTable">
             <thead>
@@ -512,7 +549,8 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
         </div>
       </div>
 
-      <div class="md:hidden" style="display:flex;flex-direction:column;gap:10px;" id="borrowCardList">
+      <!-- FIX: Mobile borrow cards — CSS media query controlled -->
+      <div id="borrowCardList">
         <?php foreach ($borrowings as $bw): $s = strtolower($bw['status'] ?? 'pending'); ?>
           <div class="borrow-card" data-status="<?= $s ?>" data-search="<?= strtolower(htmlspecialchars(($bw['resident_name'] ?? '') . ' ' . ($bw['book_title'] ?? ''), ENT_QUOTES)) ?>">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid rgba(99,102,241,.05);margin-bottom:10px;">
@@ -550,7 +588,7 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
         <?php endforeach; ?>
       </div>
 
-      <div id="noBorrowResultsMsg" class="hidden" style="margin-top:16px;">
+      <div id="noBorrowResultsMsg" style="display:none;margin-top:16px;">
         <div class="empty-state">
           <p style="font-size:.85rem;font-weight:600;color:#94a3b8;">No borrowings match your filter.</p>
         </div>
@@ -562,16 +600,20 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
 </main>
 
 <script>
-  if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
 
+  /* ── Tab switching ── */
   function switchTab(t) {
-    document.getElementById('paneBooks').style.display        = t === 'books'      ? '' : 'none';
-    document.getElementById('paneBorrowings').style.display   = t === 'borrowings' ? '' : 'none';
-    document.getElementById('tabBooks').className             = 'tab-btn' + (t === 'books'      ? ' active' : '');
-    document.getElementById('tabBorrowings').className        = 'tab-btn' + (t === 'borrowings' ? ' active' : '');
+    document.getElementById('paneBooks').style.display       = t === 'books'      ? '' : 'none';
+    document.getElementById('paneBorrowings').style.display  = t === 'borrowings' ? '' : 'none';
+    document.getElementById('tabBooks').className            = 'tab-btn' + (t === 'books'      ? ' active' : '');
+    document.getElementById('tabBorrowings').className       = 'tab-btn' + (t === 'borrowings' ? ' active' : '');
   }
   if (window.location.hash === '#borrowings') switchTab('borrowings');
 
+  /* ── Modals ── */
   function openModal(id)  { document.getElementById(id).classList.add('show');    document.body.style.overflow = 'hidden'; }
   function closeModal(id) { document.getElementById(id).classList.remove('show'); document.body.style.overflow = ''; }
   document.addEventListener('keydown', e => {
@@ -597,8 +639,9 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     openModal('editModal');
   }
 
+  /* ── Books search & filter ── */
   function applyFilter() {
-    const q = document.getElementById('bookSearch')?.value?.toLowerCase().trim() || '';
+    const q = (document.getElementById('bookSearch')?.value || '').toLowerCase().trim();
     let visible = 0;
     document.querySelectorAll('#booksTable tbody tr').forEach(r => {
       const m = !q || r.dataset.search.includes(q);
@@ -609,20 +652,22 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
       c.style.display = (!q || c.dataset.search.includes(q)) ? '' : 'none';
     });
     const noMsg = document.getElementById('noResultsMsg');
-    if (noMsg) noMsg.classList.toggle('hidden', !q || visible > 0);
+    if (noMsg) noMsg.style.display = (q && visible === 0) ? 'block' : 'none';
     initPagination(q);
   }
 
+  /* ── Pagination ── */
   let _currentPage = 1;
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE  = 20;
 
   function initPagination(f) {
-    const rows = Array.from(document.querySelectorAll('#booksTable tbody tr')).filter(r => r.style.display !== 'none');
-    const total = rows.length, totalPages = Math.ceil(total / PAGE_SIZE);
-    const ctrl = document.getElementById('paginationControls');
+    const rows       = Array.from(document.querySelectorAll('#booksTable tbody tr')).filter(r => r.style.display !== 'none');
+    const total      = rows.length;
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const ctrl       = document.getElementById('paginationControls');
     if (!ctrl) return;
-    if (totalPages <= 1) { ctrl.classList.add('hidden'); showPage(1, rows); return; }
-    ctrl.classList.remove('hidden');
+    if (totalPages <= 1) { ctrl.style.display = 'none'; showPage(1, rows); return; }
+    ctrl.style.display = 'flex';
     _currentPage = Math.min(_currentPage, totalPages);
     showPage(_currentPage, rows);
     const btns = document.getElementById('pageButtons');
@@ -634,7 +679,8 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     paginationRange(_currentPage, totalPages).forEach(p => {
       const btn = document.createElement('button');
       btn.className = 'page-btn' + (p === _currentPage ? ' active' : '');
-      btn.textContent = p; btn.style.pointerEvents = p === '…' ? 'none' : '';
+      btn.textContent = p;
+      btn.style.pointerEvents = p === '…' ? 'none' : '';
       if (p !== '…') btn.onclick = () => goToPage(p, f);
       btns.appendChild(btn);
     });
@@ -664,12 +710,13 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
 
   document.addEventListener('DOMContentLoaded', () => initPagination(''));
 
+  /* ── Adjust copies ── */
   function adjustCopies(bookId, delta, btn) {
     const sels = [`#copiesVal-${bookId}`, `#copiesVal-${bookId}-m`];
-    const els = sels.map(s => document.querySelector(s)).filter(Boolean);
+    const els  = sels.map(s => document.querySelector(s)).filter(Boolean);
     if (!els.length) return;
     const cur = parseInt(els[0].textContent) || 0;
-    const nv = Math.max(0, cur + delta);
+    const nv  = Math.max(0, cur + delta);
     els.forEach(el => el.textContent = nv);
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     btn.disabled = true;
@@ -685,6 +732,7 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     }).catch(() => { els.forEach(el => el.textContent = cur); btn.disabled = false; });
   }
 
+  /* ── Borrowings filter ── */
   let _borrowStatus = 'all';
 
   function filterBorrowings(status) {
@@ -692,8 +740,7 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     ['all','pending','approved','returned','rejected'].forEach(s => {
       const p = document.getElementById('bpill-' + s);
       if (!p) return;
-      p.classList.remove('active');
-      if (s === status) p.classList.add('active');
+      p.classList.toggle('active', s === status);
     });
     applyBorrowFilter();
   }
@@ -709,9 +756,10 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
       c.style.display = matches(c) ? '' : 'none';
     });
     const noMsg = document.getElementById('noBorrowResultsMsg');
-    if (noMsg) noMsg.classList.toggle('hidden', (_borrowStatus === 'all' && !q) || visible > 0);
+    if (noMsg) noMsg.style.display = ((_borrowStatus !== 'all' || q) && visible === 0) ? 'block' : 'none';
   }
 
+  /* ── PDF / AI extraction ── */
   let _aPdfText = null, _aPI = null;
 
   if (typeof pdfjsLib !== 'undefined') {
@@ -738,12 +786,12 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     const reader = new FileReader();
     reader.onload = async ev => {
       try {
-        const arr = new Uint8Array(ev.target.result);
-        const pdf = await pdfjsLib.getDocument({ data: arr }).promise;
+        const arr  = new Uint8Array(ev.target.result);
+        const pdf  = await pdfjsLib.getDocument({ data: arr }).promise;
         const pages = [];
         for (let p = 1; p <= Math.min(pdf.numPages, 8); p++) {
           const page = await pdf.getPage(p);
-          const c = await page.getTextContent();
+          const c    = await page.getTextContent();
           pages.push(c.items.map(s => s.str).join(' '));
         }
         _aPdfText = pages.join('\n\n');
@@ -806,12 +854,12 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     aSetStep(2); aShowPanel('aPdfStep2'); aAnimProgress(40, 2000);
     const msgs = ['Sending text to AI…','Extracting title and author…','Identifying genre and year…','Generating description…','Finalizing…'];
     let mi = 0;
-    const me = document.getElementById('aAiStatusText');
+    const me   = document.getElementById('aAiStatusText');
     const mint = setInterval(() => { mi = (mi + 1) % msgs.length; me.textContent = msgs[mi]; }, 2200);
     try {
       aAnimProgress(75, 8000);
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-      const response = await fetch('/sk/books/extract-pdf', {
+      const response  = await fetch('/sk/books/extract-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify({ pdf_text: _aPdfText })
@@ -822,9 +870,10 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
       aAnimProgress(95, 500);
       const ct = response.headers.get('Content-Type') || '';
       if (!ct.includes('application/json')) {
-        const rb = await response.text();
+        const rb      = await response.text();
         const snippet = rb.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,300);
-        aShowError({419:'CSRF expired — refresh and try again.',403:'Access forbidden.',401:'Session expired.',404:'Route not found.',500:'Server error.'}[response.status] || 'HTTP ' + response.status, snippet);
+        const errMap  = {419:'CSRF expired — refresh and try again.',403:'Access forbidden.',401:'Session expired.',404:'Route not found.',500:'Server error.'};
+        aShowError(errMap[response.status] || 'HTTP ' + response.status, snippet);
         return;
       }
       const rb = await response.text();
@@ -848,11 +897,18 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     };
     let anyMissing = false;
     Object.entries(fields).forEach(([elId, cfg]) => {
-      const el = document.getElementById(elId), badge = document.getElementById(cfg.badge);
-      const val = (data[cfg.key] || '').trim();
+      const el    = document.getElementById(elId);
+      const badge = document.getElementById(cfg.badge);
+      const val   = (data[cfg.key] || '').trim();
       el.value = val;
-      if (val) { el.classList.add('filled'); if (badge) badge.style.display = 'inline-flex'; }
-      else { el.classList.remove('filled'); if (badge) badge.style.display = 'none'; if (['title','author'].includes(cfg.key)) anyMissing = true; }
+      if (val) {
+        el.classList.add('filled');
+        if (badge) badge.style.display = 'inline-flex';
+      } else {
+        el.classList.remove('filled');
+        if (badge) badge.style.display = 'none';
+        if (['title','author'].includes(cfg.key)) anyMissing = true;
+      }
     });
     const note = document.getElementById('aAiConfidenceNote');
     if (note) note.classList.toggle('hidden', !anyMissing);
@@ -865,8 +921,8 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
     document.getElementById('aExtractBtn').disabled = true;
     document.getElementById('aDropZone').style.borderColor = '';
     document.getElementById('aAiProgressFill').style.width = '0%';
-    document.getElementById('aAiStatusText').textContent = 'Extracting text…';
-    document.getElementById('skDebugPanel').style.display = 'none';
+    document.getElementById('aAiStatusText').textContent   = 'Extracting text…';
+    document.getElementById('skDebugPanel').style.display  = 'none';
     ['aPdfTitle','aPdfAuthor','aPdfGenre','aPdfYear','aPdfIsbn','aPdfCallNumber','aPdfPreface'].forEach(id => {
       const el = document.getElementById(id); if (el) { el.value = ''; el.classList.remove('filled'); }
     });

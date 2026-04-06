@@ -25,7 +25,6 @@ $allReservations = $reservationModel
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
     <style>
         body { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
-
         .cam-status { display: flex; align-items: center; gap: 6px; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #94a3b8; }
         .cam-dot { width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; transition: background .3s; flex-shrink: 0; }
         .cam-dot.live { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.6); animation: livePulse 1.5s infinite; }
