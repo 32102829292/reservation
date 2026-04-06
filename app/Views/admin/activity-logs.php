@@ -402,7 +402,6 @@
                 <p style="font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;font-family:var(--mono)"><?= $claimCount ?? 0 ?></p>
             </div>
         </div>
-        @media(max-width:639px){[style*="grid-template-columns:repeat(5"]{grid-template-columns:repeat(2,1fr)!important}}
 
         <!-- Table / Card container -->
         <div class="tbl-wrap">
