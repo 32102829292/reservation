@@ -503,11 +503,15 @@ body.dark .l-mobile-nav__item--logout:hover { background: rgba(239,68,68,.12); c
 
 /* ──────────────────────────────────────────────────────────────
    8. RESPONSIVE BREAKPOINTS
+   Sidebar toggle  : 1024px  (sidebar ↔ mobile bottom nav)
+   Table/card toggle:  768px (desktop table ↔ mobile cards)
 ────────────────────────────────────────────────────────────────  */
+
+/* ── Sidebar hidden below 1024px ── */
 @media (max-width: 1023px) {
   .l-sidebar    { display: none !important; }
   .l-mobile-nav { display: block !important; }
-  .main-area    {
+  .main-area {
     padding-bottom: calc(var(--mob-nav-total) + 16px) !important;
     scrollbar-width: none;
   }
@@ -522,6 +526,25 @@ body.dark .l-mobile-nav__item--logout:hover { background: rgba(239,68,68,.12); c
   body.dark .main-area::-webkit-scrollbar-thumb { background: #1e3a5f; }
 }
 
+/* ── Desktop table visible / mobile cards hidden above 768px ── */
+@media (min-width: 768px) {
+  #desktopTable    { display: block !important; }
+  #mobileCardList  { display: none  !important; }
+  #mobileEmpty     { display: none  !important; }
+  #bookCardList    { display: none  !important; }
+  #borrowCardList  { display: none  !important; }
+}
+
+/* ── Mobile cards visible / desktop table hidden below 768px ── */
+@media (max-width: 767px) {
+  #desktopTable    { display: none !important; }
+  #mobileCardList  { display: flex !important; flex-direction: column; gap: 10px; }
+  #bookCardList    { display: flex !important; flex-direction: column; gap: 10px; }
+  #borrowCardList  { display: flex !important; flex-direction: column; gap: 10px; }
+  .tbl-wrap        { display: none !important; }
+}
+
+/* ── Small phone padding ── */
 @media (max-width: 639px) {
   .main-area { padding: 14px 12px 0; }
 }
