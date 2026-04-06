@@ -7,7 +7,7 @@
     <title>Activity Logs | Admin</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#3730a3">
-    <link rel="stylesheet" href="<?= base_url('assets/css/admin_app.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
         (function() {
@@ -315,7 +315,7 @@
     date_default_timezone_set('Asia/Manila');
     $page = 'activity-logs';
 
-    include APPPATH . 'Views/admin/partials/layout.php';
+    include APPPATH . 'Views/partials/layout.php';
 
     $actionLabel = function (string $a): string {
         return match ($a) {

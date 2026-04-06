@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>New Reservation | Admin</title>
-    <link rel="stylesheet" href="<?= base_url('assets/css/admin_app.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link rel="manifest" href="/manifest.json">
@@ -394,7 +394,7 @@
 <body>
 
     <?php $page = 'new-reservation';
-    include APPPATH . 'Views/admin/partials/layout.php'; ?>
+    include APPPATH . 'Views/partials/layout.php';?>
 
     <!-- ── Main ── -->
     <main class="main-area">
