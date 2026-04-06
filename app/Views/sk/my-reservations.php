@@ -5,9 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>My Reservations | SK Officer</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#3730a3">
-    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />

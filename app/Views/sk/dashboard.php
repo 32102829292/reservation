@@ -167,9 +167,6 @@ foreach ($myRes as $r) {
     <title>Dashboard | SK Officer</title>
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#3730a3">
-    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>

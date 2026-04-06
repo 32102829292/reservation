@@ -9,6 +9,7 @@
   <meta name="csrf-name" content="<?= csrf_token() ?>">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#3730a3">
+  <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
   <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>

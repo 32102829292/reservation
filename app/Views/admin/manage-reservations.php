@@ -56,6 +56,7 @@ $pendingCount = $counts['pending'];
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
     <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <meta name="csrf-name" content="<?= csrf_token() ?>">

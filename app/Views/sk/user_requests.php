@@ -20,9 +20,7 @@ $statusIcons = ['pending'=>'fa-clock','approved'=>'fa-circle-check','declined'=>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#3730a3">
-    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <title>User Requests | SK Officer</title>
     <style>
         body { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }

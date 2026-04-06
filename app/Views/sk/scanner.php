@@ -24,9 +24,7 @@ $allReservations = $reservationModel
     <title>Scanner | SK Officer</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#3730a3">
-    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <style>
         body {
             display: flex;

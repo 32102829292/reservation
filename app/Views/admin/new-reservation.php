@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link rel="manifest" href="/manifest.json">
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <meta name="theme-color" content="#3730a3">
     <script>
         (function() {
@@ -392,7 +393,7 @@
 </head>
 
 <body>
-    
+
     <?php include APPPATH . 'Views/partials/admin_layout.php'; ?>
 
     <!-- ── Main ── -->

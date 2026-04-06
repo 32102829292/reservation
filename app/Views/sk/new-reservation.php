@@ -13,9 +13,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>New Reservation | SK</title>
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#3730a3">
-    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">

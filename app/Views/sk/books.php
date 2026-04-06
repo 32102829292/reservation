@@ -15,9 +15,7 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Library | SK Officer</title>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#3730a3">
-  <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
+  <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
   <meta name="csrf-token" content="<?= csrf_hash() ?>">
   <meta name="csrf-name" content="<?= csrf_token() ?>">
   <script>
