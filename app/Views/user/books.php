@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
     <style>
-        /* ── AI Card ── */
         .ai-card {
             background: var(--card);
             border-radius: var(--r-lg);
@@ -93,8 +92,14 @@
             flex-shrink: 0;
         }
 
-        .find-btn:hover { background: #312e81; }
-        .find-btn:disabled { opacity: .55; cursor: not-allowed; }
+        .find-btn:hover {
+            background: #312e81;
+        }
+
+        .find-btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
 
         .ai-result-box {
             display: none;
@@ -110,7 +115,6 @@
             animation: l-slide-up .3s ease;
         }
 
-        /* ── Controls Row ── */
         .controls-row {
             display: flex;
             gap: 10px;
@@ -202,7 +206,6 @@
             color: var(--indigo);
         }
 
-        /* ── Books Grid ── */
         .books-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -216,7 +219,6 @@
             }
         }
 
-        /* ── Book Card ── */
         .book-card {
             background: var(--card);
             border-radius: var(--r-md);
@@ -235,7 +237,9 @@
             border-color: var(--indigo-border);
         }
 
-        .book-card:hover .cover-overlay { opacity: 1; }
+        .book-card:hover .cover-overlay {
+            opacity: 1;
+        }
 
         .book-card.rag-hl {
             border-color: var(--indigo);
@@ -345,6 +349,7 @@
             margin-bottom: 2px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -401,7 +406,6 @@
             text-align: center;
         }
 
-        /* ── My Borrowings ── */
         .borrow-table {
             width: 100%;
             border-collapse: collapse;
@@ -428,8 +432,13 @@
             transition: background .12s;
         }
 
-        .borrow-table tbody tr:last-child { border-bottom: none; }
-        .borrow-table tbody tr:hover { background: var(--input-bg); }
+        .borrow-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .borrow-table tbody tr:hover {
+            background: var(--input-bg);
+        }
 
         .borrow-table td {
             padding: .7rem 1rem;
@@ -465,7 +474,6 @@
             color: var(--text-sub);
         }
 
-        /* ── Detail Modal ── */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -513,7 +521,9 @@
                 animation: l-sheet-up .28s cubic-bezier(.32, .72, 0, 1) both;
             }
 
-            .sheet-handle { display: block; }
+            .sheet-handle {
+                display: block;
+            }
         }
 
         .detail-cover {
@@ -541,7 +551,9 @@
             color: rgba(55, 48, 163, .18);
         }
 
-        .detail-body { padding: 1.5rem 1.5rem 2rem; }
+        .detail-body {
+            padding: 1.5rem 1.5rem 2rem;
+        }
 
         .info-row {
             display: flex;
@@ -551,7 +563,9 @@
             border-bottom: 1px solid var(--input-bg);
         }
 
-        .info-row:last-of-type { border-bottom: none; }
+        .info-row:last-of-type {
+            border-bottom: none;
+        }
 
         .info-icon {
             width: 30px;
@@ -600,7 +614,6 @@
             color: #c4b5fd;
         }
 
-        /* ── Empty State ── */
         .empty-state {
             padding: 48px 20px;
             text-align: center;
@@ -618,7 +631,6 @@
             border: 1px solid var(--border);
         }
 
-        /* ── Icon button (legacy alias) ── */
         .icon-btn {
             width: 44px;
             height: 44px;
@@ -699,10 +711,6 @@
     ?>
 
     <div class="l-shell">
-
-        <!-- ═══════════════════════════════════════════
-         SIDEBAR
-    ════════════════════════════════════════════ -->
         <aside class="l-sidebar">
             <div class="l-sidebar__inner">
                 <div class="l-sidebar__top">
@@ -767,9 +775,6 @@
             </div>
         </aside>
 
-        <!-- ═══════════════════════════════════════════
-         MOBILE NAV
-    ════════════════════════════════════════════ -->
         <nav class="l-mobile-nav">
             <?php foreach ($navItems as $item):
                 $active = ($page === $item['key']);
@@ -785,9 +790,6 @@
             </a>
         </nav>
 
-        <!-- ═══════════════════════════════════════════
-         BOOK DETAIL MODAL
-    ════════════════════════════════════════════ -->
         <div class="modal-backdrop" id="bookDetailModal" onclick="onDetailBackdrop(event)">
             <div class="detail-card">
                 <div class="sheet-handle"></div>
@@ -855,9 +857,6 @@
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════
-         BORROW CONFIRM MODAL
-    ════════════════════════════════════════════ -->
         <div class="modal-backdrop" id="borrowModal" onclick="onBorrowBackdrop(event)">
             <div class="modal-card">
                 <div class="sheet-handle"></div>
@@ -891,12 +890,7 @@
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════
-         MAIN
-    ════════════════════════════════════════════ -->
         <main class="main-area">
-
-            <!-- Topbar -->
             <div class="topbar fade-up">
                 <div>
                     <div class="greeting-eyebrow">Resident Portal</div>
@@ -958,8 +952,6 @@
                     <div id="ragChips" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
                 </div>
             </div>
-
-            <!-- Controls -->
             <div class="controls-row fade-up-1">
                 <div class="search-wrap">
                     <span class="search-icon-pos"><?= svgIcon('search', 13, 'currentColor') ?></span>
@@ -983,7 +975,6 @@
                 </div>
             </div>
 
-            <!-- ── Browse Tab ── -->
             <div id="paneBrowse">
                 <?php if (empty($books)): ?>
                     <div class="card">
@@ -1044,7 +1035,6 @@
                 <?php endif; ?>
             </div>
 
-            <!-- ── My Borrowings Tab ── -->
             <div id="paneMine" style="display:none;">
                 <?php if (empty($myBorrowings)): ?>
                     <div class="card">
@@ -1096,8 +1086,6 @@
                             </table>
                         </div>
                     </div>
-
-                    <!-- Mobile cards -->
                     <div id="borrowCardsWrap" style="display:flex;flex-direction:column;gap:10px;">
                         <div style="display:flex;align-items:center;gap:9px;margin-bottom:2px;">
                             <div style="width:28px;height:28px;background:var(--indigo-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -1137,9 +1125,9 @@
                 <?php endif; ?>
             </div>
 
-        </main><!-- /main -->
+        </main>
 
-    </div><!-- /.l-shell -->
+    </div>
 
     <script>
         const BASE_URL = "<?= base_url() ?>";
@@ -1164,9 +1152,9 @@
         function updateDarkIcon(isDark) {
             const el = document.getElementById('dark-icon');
             if (!el) return;
-            el.innerHTML = isDark
-                ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`
-                : `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+            el.innerHTML = isDark ?
+                `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>` :
+                `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1188,9 +1176,9 @@
         /* ── Tab switching ── */
         function switchTab(t) {
             document.getElementById('paneBrowse').style.display = t === 'browse' ? '' : 'none';
-            document.getElementById('paneMine').style.display   = t === 'mine'   ? '' : 'none';
+            document.getElementById('paneMine').style.display = t === 'mine' ? '' : 'none';
             document.getElementById('tabBrowse').className = 'tab-btn' + (t === 'browse' ? ' active' : '');
-            document.getElementById('tabMine').className   = 'tab-btn' + (t === 'mine'   ? ' active' : '');
+            document.getElementById('tabMine').className = 'tab-btn' + (t === 'mine' ? ' active' : '');
         }
         switchTab('browse');
 
@@ -1212,8 +1200,8 @@
             const avail = b.available_copies > 0;
 
             const coverEl = document.getElementById('detailCover');
-            const phEl    = document.getElementById('detailCoverPh');
-            const oldImg  = coverEl.querySelector('img');
+            const phEl = document.getElementById('detailCoverPh');
+            const oldImg = coverEl.querySelector('img');
             if (oldImg) oldImg.remove();
             if (b.cover_image) {
                 phEl.style.display = 'none';
@@ -1227,13 +1215,13 @@
             }
 
             document.getElementById('detailGenrePill').textContent = b.genre || '';
-            document.getElementById('detailTitle').textContent     = b.title;
-            document.getElementById('detailAuthor').textContent    = 'by ' + b.author;
-            document.getElementById('detailCopies').textContent    = b.available_copies + ' available of ' + b.total_copies + ' total';
+            document.getElementById('detailTitle').textContent = b.title;
+            document.getElementById('detailAuthor').textContent = 'by ' + b.author;
+            document.getElementById('detailCopies').textContent = b.available_copies + ' available of ' + b.total_copies + ' total';
 
             const tag = document.getElementById('detailAvailTag');
             tag.textContent = avail ? 'Available' : 'Not Available';
-            tag.className   = 'tag ' + (avail ? 'tag-available' : 'tag-out');
+            tag.className = 'tag ' + (avail ? 'tag-available' : 'tag-out');
 
             const prefBox = document.getElementById('detailPrefaceBox');
             if (b.preface) {
@@ -1244,20 +1232,28 @@
             }
 
             const yr = document.getElementById('detailYearRow');
-            if (b.published_year) { document.getElementById('detailYear').textContent = b.published_year; yr.style.display = ''; }
-            else yr.style.display = 'none';
+            if (b.published_year) {
+                document.getElementById('detailYear').textContent = b.published_year;
+                yr.style.display = '';
+            } else yr.style.display = 'none';
 
             const gr = document.getElementById('detailGenreRow');
-            if (b.genre) { document.getElementById('detailGenreVal').textContent = b.genre; gr.style.display = ''; }
-            else gr.style.display = 'none';
+            if (b.genre) {
+                document.getElementById('detailGenreVal').textContent = b.genre;
+                gr.style.display = '';
+            } else gr.style.display = 'none';
 
             const cr = document.getElementById('detailCallRow');
-            if (b.call_number) { document.getElementById('detailCallVal').innerHTML = '<span class="call-number-badge">' + b.call_number + '</span>'; cr.style.display = ''; }
-            else cr.style.display = 'none';
+            if (b.call_number) {
+                document.getElementById('detailCallVal').innerHTML = '<span class="call-number-badge">' + b.call_number + '</span>';
+                cr.style.display = '';
+            } else cr.style.display = 'none';
 
             const ir = document.getElementById('detailIsbnRow');
-            if (b.isbn) { document.getElementById('detailIsbnVal').textContent = b.isbn; ir.style.display = ''; }
-            else ir.style.display = 'none';
+            if (b.isbn) {
+                document.getElementById('detailIsbnVal').textContent = b.isbn;
+                ir.style.display = '';
+            } else ir.style.display = 'none';
 
             const acts = document.getElementById('detailActions');
             if (avail) {
@@ -1318,7 +1314,10 @@
         }
 
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') { closeDetailModal(); closeBorrowModal(); }
+            if (e.key === 'Escape') {
+                closeDetailModal();
+                closeBorrowModal();
+            }
         });
 
         /* ── RAG ── */
@@ -1326,26 +1325,31 @@
             const query = document.getElementById('ragQuery').value.trim();
             if (query.length < 2) return;
             const skel = document.getElementById('ragSkel');
-            const err  = document.getElementById('ragErr');
-            const res  = document.getElementById('ragRes');
-            const btn  = document.getElementById('ragBtn');
+            const err = document.getElementById('ragErr');
+            const res = document.getElementById('ragRes');
+            const btn = document.getElementById('ragBtn');
             res.classList.remove('show');
-            err.style.display  = 'none';
+            err.style.display = 'none';
             skel.style.display = 'block';
             btn.disabled = true;
             document.querySelectorAll('.book-card').forEach(c => c.classList.remove('rag-hl'));
             try {
                 const r = await fetch('/rag/suggest', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                    body: JSON.stringify({ query })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        query
+                    })
                 });
                 const d = await r.json();
                 skel.style.display = 'none';
                 btn.disabled = false;
                 if (!d.suggestion) {
-                    err.textContent    = d.error || d.message || 'No suggestion found.';
-                    err.style.display  = 'block';
+                    err.textContent = d.error || d.message || 'No suggestion found.';
+                    err.style.display = 'block';
                     return;
                 }
                 document.getElementById('ragText').textContent = d.suggestion;
@@ -1353,14 +1357,20 @@
                 chips.innerHTML = '';
                 (d.books || []).forEach(b => {
                     const avail = (b.available_copies || 0) > 0;
-                    const chip  = document.createElement('button');
+                    const chip = document.createElement('button');
                     chip.style.cssText = `display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:9px;font-size:.72rem;font-weight:600;border:1px solid;cursor:pointer;font-family:var(--font);transition:all .15s;${avail ? 'background:var(--card);border-color:var(--indigo-border);color:var(--indigo);' : 'background:var(--input-bg);border-color:var(--border);color:var(--text-sub);border-style:dashed;'}`;
-                    chip.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-                        + b.title + (avail ? '' : ' <span style="opacity:.55">(out)</span>');
+                    chip.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
+                        b.title + (avail ? '' : ' <span style="opacity:.55">(out)</span>');
                     chip.onclick = () => {
                         openBookDetail(b.id);
                         const card = document.getElementById('book-' + b.id);
-                        if (card) { card.classList.add('rag-hl'); card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                        if (card) {
+                            card.classList.add('rag-hl');
+                            card.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }
                     };
                     chips.appendChild(chip);
                     const card = document.getElementById('book-' + b.id);
@@ -1370,11 +1380,12 @@
             } catch (e) {
                 skel.style.display = 'none';
                 btn.disabled = false;
-                err.textContent   = 'Network error. Please try again.';
+                err.textContent = 'Network error. Please try again.';
                 err.style.display = 'block';
             }
         }
     </script>
 
 </body>
+
 </html>
