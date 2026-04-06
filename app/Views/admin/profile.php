@@ -5,8 +5,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>My Profile | Admin</title>
+    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
     <link rel="manifest" href="/manifest.json">
-    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
+    <meta name="theme-color" content="#3730a3">
     <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script>

@@ -37,8 +37,10 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Login Logs | Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3730a3">
     <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
-    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         @keyframes livePulse {
