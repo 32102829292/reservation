@@ -1,10 +1,4 @@
 <?php
-/* ═══════════════════════════════════════════════════════════════
-   SK OFFICER DASHBOARD — Data Preparation
-   All PHP logic runs before <!DOCTYPE html> (mirrors user dashboard).
-════════════════════════════════════════════════════════════════ */
-
-// ── Helper: inline SVG icons (same pattern as user dashboard) ──
 function sk_icon(string $name, int $size = 16, string $stroke = 'currentColor', string $extra = ''): string
 {
     $icons = [
@@ -173,6 +167,9 @@ foreach ($myRes as $r) {
     <title>Dashboard | SK Officer</title>
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3730a3">
+    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
@@ -437,19 +434,8 @@ foreach ($myRes as $r) {
 
 <body>
 
-<?php
-/* ═══════════════════════════════════════════════════════════════
-   SHARED LAYOUT PARTIAL
-   Renders: sidebar, mobile bottom nav, global CSS link,
-   dark-mode toggle JS, and exposes layoutToggleDark().
-════════════════════════════════════════════════════════════════ */
-$page = 'dashboard';
-include(APPPATH . 'Views/partials/sk_layout.php');
-?>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     NOTIFICATION DROPDOWN
-════════════════════════════════════════════════════════════════ -->
+<?php $page = 'dashboard';
+include(APPPATH . 'Views/partials/sk_layout.php');?>
 <div id="notifDD" class="notif-dd">
     <div style="padding:11px 13px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;">
         <span style="font-weight:700;font-size:13px;color:var(--text);">Notifications</span>

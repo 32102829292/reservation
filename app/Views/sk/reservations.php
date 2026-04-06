@@ -12,6 +12,9 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3730a3">
+    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
     <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <meta name="csrf-name" content="<?= csrf_token() ?>">
     <style>
