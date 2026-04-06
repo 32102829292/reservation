@@ -1304,7 +1304,7 @@
         <div class="stats-grid fade-up-2">
             <div class="stat-card" style="border-left-color:var(--indigo);">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-                    <div class="stat-icon" style="background:#eef2ff;"><i class="fa-solid fa-layer-group" style="color:var(--indigo);font-size:.9rem;"></i></div>
+                    <div class="card-icon" style="background:#eef2ff;"><i class="fa-solid fa-layer-group" style="color:var(--indigo);font-size:.9rem;"></i></div>
                     <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--indigo);">+<?= $monthlyTotal ?> mo</span>
                 </div>
                 <div class="stat-lbl">Total</div>
@@ -1313,7 +1313,7 @@
             </div>
             <div class="stat-card" style="border-left-color:#16a34a;">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-                    <div class="stat-icon" style="background:#dcfce7;"><i class="fa-solid fa-circle-check" style="color:#16a34a;font-size:.9rem;"></i></div>
+                    <div class="card-icon" style="background:#dcfce7;"><i class="fa-solid fa-circle-check" style="color:#16a34a;font-size:.9rem;"></i></div>
                     <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#16a34a;"><?= $approvalRate ?>%</span>
                 </div>
                 <div class="stat-lbl">Approved</div>
@@ -1325,7 +1325,7 @@
             </div>
             <div class="stat-card" style="border-left-color:#d97706;">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-                    <div class="stat-icon" style="background:#fef3c7;"><i class="fa-regular fa-clock" style="color:#d97706;font-size:.9rem;"></i></div>
+                    <div class="card-icon" style="background:#fef3c7;"><i class="fa-regular fa-clock" style="color:#d97706;font-size:.9rem;"></i></div>
                     <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#d97706;"><?= $todayTotal ?? 0 ?> today</span>
                 </div>
                 <div class="stat-lbl" style="margin-bottom:8px;">Today</div>
@@ -1346,7 +1346,7 @@
             </div>
             <div class="stat-card" style="border-left-color:#7c3aed;">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-                    <div class="stat-icon" style="background:#ede9fe;"><i class="fa-solid fa-check-double" style="color:#7c3aed;font-size:.9rem;"></i></div>
+                    <div class="card-icon" style="background:#ede9fe;"><i class="fa-solid fa-check-double" style="color:#7c3aed;font-size:.9rem;"></i></div>
                     <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed;"><?= $utilizationRate ?>%</span>
                 </div>
                 <div class="stat-lbl">Claimed</div>
