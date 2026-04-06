@@ -1,223 +1,400 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>New Reservation | Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="<?= base_url('assets/css/admin_app.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#3730a3">
-    <script>(function(){if(localStorage.getItem('admin_theme')==='dark')document.documentElement.classList.add('dark-pre')})();</script>
+    <script>
+        (function() {
+            if (localStorage.getItem('admin_theme') === 'dark') document.documentElement.classList.add('dark-pre')
+        })();
+    </script>
     <style>
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-
-        :root{
-            --indigo:#3730a3;--indigo-mid:#4338ca;--indigo-light:#eef2ff;--indigo-border:#c7d2fe;
-            --bg:#f0f2f9;--card:#ffffff;
-            --font:'Plus Jakarta Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
-            --shadow-sm:0 1px 4px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);
-            --shadow-md:0 4px 16px rgba(15,23,42,.09),0 2px 4px rgba(15,23,42,.04);
-            --shadow-lg:0 12px 40px rgba(15,23,42,.12),0 4px 8px rgba(15,23,42,.06);
-            --r-sm:10px;--r-md:14px;--r-lg:20px;--r-xl:24px;
-            --sidebar-w:268px;--ease:.18s cubic-bezier(.4,0,.2,1);
-            --mob-nav-h:60px;--mob-nav-total:calc(var(--mob-nav-h) + env(safe-area-inset-bottom,0px));
+        /* ── Form Styles ── */
+        .form-card {
+            background: var(--card);
+            border-radius: var(--r-xl);
+            border: 1px solid rgba(99, 102, 241, .08);
+            box-shadow: var(--shadow-sm);
+            padding: 32px;
+            max-width: 760px;
+            margin: 0 auto
         }
 
-        html{height:100%;height:100dvh;font-size:16px}
-        body{font-family:var(--font);background:var(--bg);color:#0f172a;display:flex;height:100vh;height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased;}
-        html.dark-pre body{background:#060e1e}
+        @media(max-width:639px) {
+            .form-card {
+                padding: 20px 16px
+            }
+        }
 
-        /* ── Sidebar ── */
-        .sidebar{width:var(--sidebar-w);flex-shrink:0;padding:18px 14px;height:100vh;height:100dvh;display:flex;flex-direction:column}
-        .sidebar-inner{background:var(--card);border-radius:var(--r-xl);border:1px solid rgba(99,102,241,.1);height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-md)}
-        .sidebar-top{padding:22px 18px 16px;border-bottom:1px solid rgba(99,102,241,.07)}
-        .sidebar-nav{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:3px;scrollbar-width:none}
-        .sidebar-nav::-webkit-scrollbar{display:none}
-        .sidebar-footer{flex-shrink:0;padding:10px 10px 12px;border-top:1px solid rgba(99,102,241,.07)}
-        .nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:#64748b;text-decoration:none;transition:all var(--ease)}
-        .nav-link:hover{background:var(--indigo-light);color:var(--indigo)}
-        .nav-link.active{background:var(--indigo);color:#fff;box-shadow:0 4px 14px rgba(55,48,163,.32)}
-        .nav-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem}
-        .nav-link:not(.active) .nav-icon{background:#f1f5f9}
-        .nav-link:hover:not(.active) .nav-icon{background:#e0e7ff}
-        .nav-link.active .nav-icon{background:rgba(255,255,255,.15)}
-        .logout-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:#94a3b8;text-decoration:none;transition:all var(--ease)}
-        .logout-link:hover{background:#fef2f2;color:#dc2626}
-        .logout-link:hover .nav-icon{background:#fee2e2}
-
-        /* ── Mobile Nav ── */
-        .mobile-nav-pill{display:none;position:fixed;bottom:0;left:0;right:0;width:100%;background:white;border-top:1px solid rgba(99,102,241,.1);height:var(--mob-nav-total);z-index:200;box-shadow:0 -4px 20px rgba(55,48,163,.1)}
-        .mobile-scroll-container{display:flex;justify-content:space-evenly;align-items:center;height:var(--mob-nav-h);width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 4px}
-        .mobile-scroll-container::-webkit-scrollbar{display:none}
-        .mob-nav-item{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 10px;border-radius:12px;cursor:pointer;text-decoration:none;color:#64748b;transition:background .15s,color .15s;font-size:.62rem;font-weight:700;gap:2px}
-        .mob-nav-item:hover,.mob-nav-item.active{background:var(--indigo-light);color:var(--indigo)}
-
-        @media(max-width:1023px){.sidebar{display:none!important}.mobile-nav-pill{display:flex!important}.main-area{padding-bottom:calc(var(--mob-nav-total) + 16px)!important}}
-        @media(min-width:1024px){.sidebar{display:flex!important}.mobile-nav-pill{display:none!important}}
-
-        /* ── Main ── */
-        .main-area{flex:1;min-width:0;height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:24px 28px 40px}
-        @media(max-width:1023px){.main-area::-webkit-scrollbar{display:none}.main-area{scrollbar-width:none}}
-        @media(min-width:1024px){.main-area::-webkit-scrollbar{width:4px}.main-area::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}}
-        @media(max-width:639px){.main-area{padding:14px 12px 20px}}
-
-        /* ── Cards ── */
-        .card{background:var(--card);border-radius:var(--r-lg);border:1px solid rgba(99,102,241,.08);box-shadow:var(--shadow-sm)}
-
-        /* ── Form Styles ── */
-        .form-card{background:var(--card);border-radius:var(--r-xl);border:1px solid rgba(99,102,241,.08);box-shadow:var(--shadow-sm);padding:32px;max-width:760px;margin:0 auto}
-        @media(max-width:639px){.form-card{padding:20px 16px}}
-
-        .field-label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px}
-        .field-input{width:100%;padding:.875rem 1rem;border:1px solid rgba(99,102,241,.15);font-size:.88rem;transition:all .2s;background:#f8fafc;border-radius:var(--r-sm);font-family:var(--font);color:#0f172a;outline:none}
-        .field-input:focus{border-color:var(--indigo);background:white;box-shadow:0 0 0 4px rgba(55,48,163,.08)}
-        .field-input[readonly]{background:#f1f5f9;color:#64748b;cursor:not-allowed}
-        select.field-input{cursor:pointer}
-
-        .section-divider{border:none;border-top:1px solid rgba(99,102,241,.08);margin:1.75rem 0}
+        .section-divider {
+            border: none;
+            border-top: 1px solid rgba(99, 102, 241, .08);
+            margin: 1.75rem 0
+        }
 
         /* ── Type Toggle ── */
-        .type-toggle{display:flex;background:#f1f5f9;padding:5px;border-radius:14px;gap:4px}
-        .type-btn{flex:1;text-align:center;padding:.7rem 1rem;border-radius:10px;cursor:pointer;font-weight:700;font-size:.82rem;transition:all .18s;color:#64748b;border:none;background:transparent;font-family:var(--font)}
-        .type-btn.active{background:var(--indigo);color:white;box-shadow:0 4px 14px rgba(55,48,163,.3)}
+        .type-toggle {
+            display: flex;
+            background: #f1f5f9;
+            padding: 5px;
+            border-radius: 14px;
+            gap: 4px
+        }
+
+        .type-btn {
+            flex: 1;
+            text-align: center;
+            padding: .7rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: .82rem;
+            transition: all .18s;
+            color: #64748b;
+            border: none;
+            background: transparent;
+            font-family: var(--font)
+        }
+
+        .type-btn.active {
+            background: var(--indigo);
+            color: white;
+            box-shadow: 0 4px 14px rgba(55, 48, 163, .3)
+        }
 
         /* ── Autocomplete ── */
-        .autocomplete-wrap{position:relative}
-        .autocomplete-list{position:absolute;z-index:50;background:white;border:1px solid rgba(99,102,241,.15);border-radius:var(--r-md);box-shadow:var(--shadow-md);max-height:220px;overflow-y:auto;width:100%;top:calc(100% + 4px);left:0}
-        .autocomplete-item{padding:11px 14px;cursor:pointer;font-size:.85rem;transition:background .12s}
-        .autocomplete-item:hover{background:var(--indigo-light);color:var(--indigo)}
-        .autocomplete-item .sub{font-size:.72rem;color:#94a3b8;margin-top:2px}
+        .autocomplete-wrap {
+            position: relative
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            z-index: 50;
+            background: white;
+            border: 1px solid rgba(99, 102, 241, .15);
+            border-radius: var(--r-md);
+            box-shadow: var(--shadow-md);
+            max-height: 220px;
+            overflow-y: auto;
+            width: 100%;
+            top: calc(100% + 4px);
+            left: 0
+        }
+
+        .autocomplete-item {
+            padding: 11px 14px;
+            cursor: pointer;
+            font-size: .85rem;
+            transition: background .12s
+        }
+
+        .autocomplete-item:hover {
+            background: var(--indigo-light);
+            color: var(--indigo)
+        }
+
+        .autocomplete-item .sub {
+            font-size: .72rem;
+            color: #94a3b8;
+            margin-top: 2px
+        }
 
         /* ── PC Section ── */
-        .pc-section{background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:var(--r-md);padding:16px}
+        .pc-section {
+            background: var(--indigo-light);
+            border: 1px solid var(--indigo-border);
+            border-radius: var(--r-md);
+            padding: 16px
+        }
 
         /* ── Button ── */
-        .btn-primary{background:var(--indigo);color:white;border:none;padding:.875rem 1.75rem;border-radius:var(--r-md);font-weight:800;font-size:.85rem;letter-spacing:.04em;cursor:pointer;transition:all .2s;font-family:var(--font);display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(55,48,163,.28)}
-        .btn-primary:hover{background:var(--indigo-mid);transform:translateY(-2px);box-shadow:0 8px 20px rgba(55,48,163,.35)}
-        .btn-primary:active{transform:translateY(0)}
+        .btn-primary {
+            background: var(--indigo);
+            color: white;
+            border: none;
+            padding: .875rem 1.75rem;
+            border-radius: var(--r-md);
+            font-weight: 800;
+            font-size: .85rem;
+            letter-spacing: .04em;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: var(--font);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(55, 48, 163, .28)
+        }
+
+        .btn-primary:hover {
+            background: var(--indigo-mid);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(55, 48, 163, .35)
+        }
+
+        .btn-primary:active {
+            transform: translateY(0)
+        }
 
         /* ── Flash ── */
-        .flash-err{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:13px 18px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-weight:700;border-radius:var(--r-md);font-size:.875rem}
+        .flash-err {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 13px 18px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            font-weight: 700;
+            border-radius: var(--r-md);
+            font-size: .875rem
+        }
 
         /* ── Icon helper ── */
-        .section-icon{width:36px;height:36px;border-radius:10px;background:var(--indigo-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--indigo-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0
+        }
 
         /* ── Modal ── */
-        .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(7px);z-index:200;padding:1.5rem;overflow-y:auto;align-items:center;justify-content:center}
-        .modal-backdrop.show{display:flex;animation:fadeIn .15s ease}
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        .modal-box{background:white;border-radius:var(--r-xl);width:100%;max-width:460px;padding:28px;margin:auto;animation:slideUp .2s ease;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
-        @keyframes slideUp{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .55);
+            backdrop-filter: blur(7px);
+            z-index: 200;
+            padding: 1.5rem;
+            overflow-y: auto;
+            align-items: center;
+            justify-content: center
+        }
 
-        .mrow{display:flex;justify-content:space-between;align-items:flex-start;padding:.55rem 0;border-bottom:1px solid rgba(99,102,241,.07);gap:1rem}
-        .mrow:last-child{border-bottom:none}
-        .mrow-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:#94a3b8;flex-shrink:0}
-        .mrow-value{font-weight:700;color:#0f172a;font-size:.83rem;text-align:right}
+        .modal-backdrop.show {
+            display: flex;
+            animation: fadeIn .15s ease
+        }
 
-        .sheet-handle{display:none;width:36px;height:4px;background:#e2e8f0;border-radius:999px;margin:0 auto 16px}
-        @media(max-width:639px){.modal-backdrop{padding:0;align-items:flex-end!important}.modal-box{border-radius:var(--r-xl) var(--r-xl) 0 0;max-width:100%;animation:sheetUp .25s cubic-bezier(.34,1.2,.64,1) both}.sheet-handle{display:block}}
-        @keyframes sheetUp{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
+        @keyframes fadeIn {
+            from {
+                opacity: 0
+            }
 
-        /* ── Dark Mode ── */
-        body.dark{--bg:#060e1e;--card:#0b1628;--indigo-light:rgba(55,48,163,.12);--indigo-border:rgba(99,102,241,.25);color:#e2eaf8}
-        body.dark .sidebar-inner{background:#0b1628;border-color:rgba(99,102,241,.12)}
-        body.dark .sidebar-top,.body.dark .sidebar-footer{border-color:rgba(99,102,241,.1)}
-        body.dark .nav-link{color:#7fb3e8}
-        body.dark .nav-link:hover{background:rgba(99,102,241,.12);color:#a5b4fc}
-        body.dark .nav-link:not(.active) .nav-icon{background:rgba(99,102,241,.1)}
-        body.dark .nav-link:hover:not(.active) .nav-icon{background:rgba(99,102,241,.2)}
-        body.dark .logout-link{color:#4a6fa5}
-        body.dark .logout-link:hover{background:rgba(239,68,68,.1);color:#f87171}
-        body.dark .logout-link:hover .nav-icon{background:rgba(239,68,68,.12)}
-        body.dark .mobile-nav-pill{background:#0b1628;border-color:rgba(99,102,241,.18)}
-        body.dark .mob-nav-item{color:#7fb3e8}
-        body.dark .mob-nav-item.active{background:rgba(99,102,241,.18)}
-        body.dark .form-card{background:#0b1628;border-color:rgba(99,102,241,.1)}
-        body.dark .field-input{background:#101e35;border-color:rgba(99,102,241,.18);color:#e2eaf8}
-        body.dark .field-input:focus{background:#0b1628;border-color:var(--indigo)}
-        body.dark .field-input[readonly]{background:#060e1e;color:#4a6fa5}
-        body.dark .type-toggle{background:#101e35}
-        body.dark .type-btn{color:#7fb3e8}
-        body.dark .section-divider{border-color:rgba(99,102,241,.1)}
-        body.dark .section-icon{background:rgba(55,48,163,.2)}
-        body.dark .pc-section{background:rgba(55,48,163,.1);border-color:rgba(99,102,241,.2)}
-        body.dark .flash-err{background:rgba(220,38,38,.1);border-color:rgba(248,113,113,.3);color:#f87171}
-        body.dark .autocomplete-list{background:#0b1628;border-color:rgba(99,102,241,.18)}
-        body.dark .autocomplete-item:hover{background:rgba(99,102,241,.12);color:#a5b4fc}
-        body.dark .autocomplete-item .sub{color:#4a6fa5}
-        body.dark .modal-box{background:#0b1628;color:#e2eaf8}
-        body.dark .mrow-label{color:#4a6fa5}
-        body.dark .mrow-value{color:#e2eaf8}
-        body.dark .mrow{border-color:rgba(99,102,241,.08)}
-        body.dark .sheet-handle{background:#1e3a5f}
-        body.dark .modal-box .bg-slate-50{background:#101e35!important;border-color:rgba(99,102,241,.1)!important}
-        body.dark input[placeholder]{color:#4a6fa5}
-        body.dark .field-input::placeholder{color:#4a6fa5}
-        body.dark select.field-input option{background:#0b1628;color:#e2eaf8}
+            to {
+                opacity: 1
+            }
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: var(--r-xl);
+            width: 100%;
+            max-width: 460px;
+            padding: 28px;
+            margin: auto;
+            animation: slideUp .2s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg)
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(14px);
+                opacity: 0
+            }
+
+            to {
+                transform: none;
+                opacity: 1
+            }
+        }
+
+        .mrow {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: .55rem 0;
+            border-bottom: 1px solid rgba(99, 102, 241, .07);
+            gap: 1rem
+        }
+
+        .mrow:last-child {
+            border-bottom: none
+        }
+
+        .mrow-label {
+            font-size: .6rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .14em;
+            color: #94a3b8;
+            flex-shrink: 0
+        }
+
+        .mrow-value {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: .83rem;
+            text-align: right
+        }
+
+        .sheet-handle {
+            display: none;
+            width: 36px;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            margin: 0 auto 16px
+        }
+
+        @media(max-width:639px) {
+            .modal-backdrop {
+                padding: 0;
+                align-items: flex-end !important
+            }
+
+            .modal-box {
+                border-radius: var(--r-xl) var(--r-xl) 0 0;
+                max-width: 100%;
+                animation: sheetUp .25s cubic-bezier(.34, 1.2, .64, 1) both
+            }
+
+            .sheet-handle {
+                display: block
+            }
+        }
+
+        @keyframes sheetUp {
+            from {
+                opacity: 0;
+                transform: translateY(60px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        /* ── Dark Mode extras ── */
+        body.dark .form-card {
+            background: #0b1628;
+            border-color: rgba(99, 102, 241, .1)
+        }
+
+        body.dark .field-input {
+            background: #101e35;
+            border-color: rgba(99, 102, 241, .18);
+            color: #e2eaf8
+        }
+
+        body.dark .field-input:focus {
+            background: #0b1628;
+            border-color: var(--indigo)
+        }
+
+        body.dark .field-input[readonly] {
+            background: #060e1e;
+            color: #4a6fa5
+        }
+
+        body.dark .type-toggle {
+            background: #101e35
+        }
+
+        body.dark .type-btn {
+            color: #7fb3e8
+        }
+
+        body.dark .section-divider {
+            border-color: rgba(99, 102, 241, .1)
+        }
+
+        body.dark .section-icon {
+            background: rgba(55, 48, 163, .2)
+        }
+
+        body.dark .pc-section {
+            background: rgba(55, 48, 163, .1);
+            border-color: rgba(99, 102, 241, .2)
+        }
+
+        body.dark .flash-err {
+            background: rgba(220, 38, 38, .1);
+            border-color: rgba(248, 113, 113, .3);
+            color: #f87171
+        }
+
+        body.dark .autocomplete-list {
+            background: #0b1628;
+            border-color: rgba(99, 102, 241, .18)
+        }
+
+        body.dark .autocomplete-item:hover {
+            background: rgba(99, 102, 241, .12);
+            color: #a5b4fc
+        }
+
+        body.dark .autocomplete-item .sub {
+            color: #4a6fa5
+        }
+
+        body.dark .modal-box {
+            background: #0b1628;
+            color: #e2eaf8
+        }
+
+        body.dark .mrow-label {
+            color: #4a6fa5
+        }
+
+        body.dark .mrow-value {
+            color: #e2eaf8
+        }
+
+        body.dark .mrow {
+            border-color: rgba(99, 102, 241, .08)
+        }
+
+        body.dark .sheet-handle {
+            background: #1e3a5f
+        }
+
+        body.dark .modal-box .bg-slate-50 {
+            background: #101e35 !important;
+            border-color: rgba(99, 102, 241, .1) !important
+        }
+
+        body.dark .field-input::placeholder {
+            color: #4a6fa5
+        }
+
+        body.dark select.field-input option {
+            background: #0b1628;
+            color: #e2eaf8
+        }
     </style>
 </head>
-<body class="flex">
 
-    <!-- ── Sidebar ── -->
-    <aside class="sidebar">
-        <div class="sidebar-inner">
-            <div class="sidebar-top">
-                <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#94a3b8;margin-bottom:5px">Admin Control Room</div>
-                <div style="font-size:1.35rem;font-weight:800;color:#0f172a;letter-spacing:-.03em">my<span style="color:var(--indigo)">Space.</span></div>
-                <div style="font-size:.7rem;color:#94a3b8;margin-top:3px">Administration Panel</div>
-            </div>
-            <nav class="sidebar-nav">
-                <?php
-                $navItems = [
-                    ['url'=>'/admin/dashboard',           'icon'=>'fa-house',           'label'=>'Dashboard',       'key'=>'dashboard'],
-                    ['url'=>'/admin/new-reservation',     'icon'=>'fa-plus',            'label'=>'New Reservation', 'key'=>'new-reservation'],
-                    ['url'=>'/admin/manage-reservations', 'icon'=>'fa-calendar',        'label'=>'Reservations',    'key'=>'manage-reservations'],
-                    ['url'=>'/admin/manage-pcs',          'icon'=>'fa-desktop',         'label'=>'Manage PCs',      'key'=>'manage-pcs'],
-                    ['url'=>'/admin/manage-sk',           'icon'=>'fa-user-shield',     'label'=>'Manage SK',       'key'=>'manage-sk'],
-                    ['url'=>'/admin/books',               'icon'=>'fa-book-open',       'label'=>'Library',         'key'=>'books'],
-                    ['url'=>'/admin/login-logs',          'icon'=>'fa-clock',           'label'=>'Login Logs',      'key'=>'login-logs'],
-                    ['url'=>'/admin/scanner',             'icon'=>'fa-qrcode',          'label'=>'Scanner',         'key'=>'scanner'],
-                    ['url'=>'/admin/activity-logs',       'icon'=>'fa-list',            'label'=>'Activity Logs',   'key'=>'activity-logs'],
-                    ['url'=>'/admin/profile',             'icon'=>'fa-user',            'label'=>'Profile',         'key'=>'profile'],
-                ];
-                foreach ($navItems as $item):
-                    $active = (isset($page) && $page == $item['key']) ? 'active' : '';
-                ?>
-                    <a href="<?= $item['url'] ?>" class="nav-link <?= $active ?>">
-                        <div class="nav-icon"><i class="fa-solid <?= $item['icon'] ?>" style="font-size:.85rem"></i></div>
-                        <?= $item['label'] ?>
-                    </a>
-                <?php endforeach; ?>
-            </nav>
-            <div class="sidebar-footer">
-                <a href="/logout" class="logout-link">
-                    <div class="nav-icon" style="background:rgba(239,68,68,.08)"><i class="fa-solid fa-arrow-right-from-bracket" style="font-size:.85rem;color:#f87171"></i></div>
-                    Sign Out
-                </a>
-            </div>
-        </div>
-    </aside>
+<body>
 
-    <!-- ── Mobile Nav ── -->
-    <nav class="mobile-nav-pill">
-        <div class="mobile-scroll-container">
-            <?php foreach ($navItems as $item):
-                $active = (isset($page) && $page == $item['key']) ? 'active' : '';
-            ?>
-                <a href="<?= $item['url'] ?>" class="mob-nav-item <?= $active ?>" title="<?= $item['label'] ?>">
-                    <i class="fa-solid <?= $item['icon'] ?>" style="font-size:1.05rem"></i>
-                    <span><?= $item['label'] ?></span>
-                </a>
-            <?php endforeach; ?>
-            <a href="/logout" class="mob-nav-item" style="color:#f87171" title="Sign Out">
-                <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:1.05rem"></i>
-                <span>Logout</span>
-            </a>
-        </div>
-    </nav>
+    <?php $page = 'new-reservation';
+    include APPPATH . 'Views/admin/partials/layout.php'; ?>
 
     <!-- ── Main ── -->
     <main class="main-area">
@@ -230,7 +407,7 @@
                     <p style="font-size:.78rem;color:#94a3b8;font-weight:500;margin-top:4px">Register a manual entry into the system.</p>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
-                    <div onclick="toggleDark()" id="darkBtn" title="Toggle dark mode" style="width:44px;height:44px;background:white;border:1px solid rgba(99,102,241,.12);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:#64748b;cursor:pointer;transition:all var(--ease);box-shadow:var(--shadow-sm)">
+                    <div onclick="adminToggleDark()" title="Toggle dark mode" style="width:44px;height:44px;background:white;border:1px solid rgba(99,102,241,.12);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:#64748b;cursor:pointer;transition:all var(--ease);box-shadow:var(--shadow-sm)">
                         <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem"></i></span>
                     </div>
                     <a href="/admin/manage-reservations" style="display:flex;align-items:center;gap:7px;padding:10px 18px;background:white;border:1px solid rgba(99,102,241,.15);border-radius:var(--r-sm);font-size:.85rem;font-weight:700;color:#475569;text-decoration:none;transition:all var(--ease);box-shadow:var(--shadow-sm)">
@@ -329,7 +506,7 @@
                         </select>
                     </div>
 
-                    <div id="pcSection" style="display:none" class="pc-section" style="margin-bottom:16px">
+                    <div id="pcSection" style="display:none;margin-bottom:16px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo)">Assign Workstation</label>
                         <select id="pcSelect" name="pc_number" class="field-input" style="margin-top:6px">
                             <option value="">— No specific station —</option>
@@ -425,33 +602,16 @@
         let currentType = 'User';
         let selectedUser = null;
 
-        /* Dark mode */
-        function toggleDark(){
-            const isDark = document.body.classList.toggle('dark');
-            document.getElementById('darkIcon').innerHTML = isDark
-                ? '<i class="fa-regular fa-moon" style="font-size:.85rem"></i>'
-                : '<i class="fa-regular fa-sun" style="font-size:.85rem"></i>';
-            localStorage.setItem('admin_theme', isDark ? 'dark' : 'light');
-        }
-        (function(){
-            if(localStorage.getItem('admin_theme')==='dark'){
-                document.body.classList.add('dark');
-                document.getElementById('darkIcon').innerHTML='<i class="fa-regular fa-moon" style="font-size:.85rem"></i>';
-            }
-            document.documentElement.classList.remove('dark-pre');
-        })();
-
         /* Responsive user fields grid */
-        function setFieldGridCols(){
-            const g1=document.getElementById('userFields'),g2=document.getElementById('visitorFields');
-            const cols=window.innerWidth<640?'1fr':'1fr 1fr';
-            g1.style.gridTemplateColumns=cols;g2.style.gridTemplateColumns=cols;
+        function setFieldGridCols() {
+            const g1 = document.getElementById('userFields'),
+                g2 = document.getElementById('visitorFields');
+            const cols = window.innerWidth < 640 ? '1fr' : '1fr 1fr';
+            g1.style.gridTemplateColumns = cols;
+            g2.style.gridTemplateColumns = cols;
         }
-        setFieldGridCols();window.addEventListener('resize',setFieldGridCols);
-        function setDateGridCols(){
-            const g=document.querySelector('[data-date-grid]');
-            if(g)g.style.gridTemplateColumns=window.innerWidth<640?'1fr':' 1fr 1fr 1fr';
-        }
+        setFieldGridCols();
+        window.addEventListener('resize', setFieldGridCols);
 
         function setType(type) {
             currentType = type;
@@ -476,13 +636,19 @@
             const q = userNameInput.value.toLowerCase().trim();
             autocompleteList.innerHTML = '';
             selectedUser = null;
-            if (!q) { autocompleteList.classList.add('hidden'); return; }
+            if (!q) {
+                autocompleteList.classList.add('hidden');
+                return;
+            }
             const matches = allUsers.filter(u =>
                 (u.name && u.name.toLowerCase().includes(q)) ||
                 (u.full_name && u.full_name.toLowerCase().includes(q)) ||
                 (u.email && u.email.toLowerCase().includes(q))
             ).slice(0, 8);
-            if (!matches.length) { autocompleteList.classList.add('hidden'); return; }
+            if (!matches.length) {
+                autocompleteList.classList.add('hidden');
+                return;
+            }
             matches.forEach(u => {
                 const displayName = u.full_name || u.name || '';
                 const li = document.createElement('li');
@@ -526,14 +692,33 @@
             const purposeOther = document.getElementById('purposeOther').value.trim();
             const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
 
-            if (!name) { alert('Please enter a name.'); return; }
-            if (!resourceId) { alert('Please select a resource.'); return; }
-            if (!date) { alert('Please select a date.'); return; }
-            if (!startTime) { alert('Please enter a start time.'); return; }
-            if (!endTime) { alert('Please enter an end time.'); return; }
-            if (!purposeVal) { alert('Please select a purpose.'); return; }
+            if (!name) {
+                alert('Please enter a name.');
+                return;
+            }
+            if (!resourceId) {
+                alert('Please select a resource.');
+                return;
+            }
+            if (!date) {
+                alert('Please select a date.');
+                return;
+            }
+            if (!startTime) {
+                alert('Please enter a start time.');
+                return;
+            }
+            if (!endTime) {
+                alert('Please enter an end time.');
+                return;
+            }
+            if (!purposeVal) {
+                alert('Please select a purpose.');
+                return;
+            }
             if (isUser && !selectedUser && !document.getElementById('finalUserId').value) {
-                alert('Please select a registered user from the dropdown.'); return;
+                alert('Please select a registered user from the dropdown.');
+                return;
             }
 
             document.getElementById('finalVisitorName').value = name;
@@ -561,7 +746,12 @@
             const code = `ACCESS-${Date.now()}`;
             document.getElementById('qrText').textContent = code;
             QRCode.toCanvas(document.getElementById('qrCanvas'), code, {
-                width: 150, margin: 1, color: { dark: '#0f172a', light: '#ffffff' }
+                width: 150,
+                margin: 1,
+                color: {
+                    dark: '#0f172a',
+                    light: '#ffffff'
+                }
             }, () => {
                 document.getElementById('qrWrap').style.display = 'flex';
                 btn.style.display = 'none';
@@ -578,16 +768,27 @@
             link.click();
         }
 
-        function openModal() { document.getElementById('confirmModal').classList.add('show'); document.body.style.overflow = 'hidden'; }
+        function openModal() {
+            document.getElementById('confirmModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
         function closeModal() {
             document.getElementById('confirmModal').classList.remove('show');
             document.body.style.overflow = '';
             const btn = document.getElementById('confirmBtn');
-            btn.disabled = false; btn.style.display = '';
+            btn.disabled = false;
+            btn.style.display = '';
             btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:.75rem"></i> Confirm & Save';
         }
-        function handleBackdrop(e) { if (e.target === document.getElementById('confirmModal')) closeModal(); }
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        function handleBackdrop(e) {
+            if (e.target === document.getElementById('confirmModal')) closeModal();
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal();
+        });
     </script>
 </body>
+
 </html>

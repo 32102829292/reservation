@@ -1,8 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-/* ──────────────────────────────────────────────────────────────
-   1. DESIGN TOKENS — LIGHT
-────────────────────────────────────────────────────────────────  */
 :root {
   --indigo:        #3730a3;
   --indigo-mid:    #4338ca;
@@ -55,9 +51,6 @@
   --ease: .18s cubic-bezier(.4, 0, .2, 1);
 }
 
-/* ──────────────────────────────────────────────────────────────
-   2. DESIGN TOKENS — DARK
-────────────────────────────────────────────────────────────────  */
 body.dark {
   --indigo-light:  rgba(55, 48, 163, 0.14);
   --indigo-border: rgba(99, 102, 241, 0.28);
@@ -80,9 +73,6 @@ body.dark {
   --shadow-lg: 0 12px 40px rgba(0,0,0,.5);
 }
 
-/* ──────────────────────────────────────────────────────────────
-   3. RESET & BASE
-────────────────────────────────────────────────────────────────  */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -117,9 +107,6 @@ img, svg { display: block; }
 a { color: inherit; text-decoration: none; }
 button { font-family: var(--font); }
 
-/* ──────────────────────────────────────────────────────────────
-   4. SIDEBAR
-────────────────────────────────────────────────────────────────  */
 .l-sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
@@ -340,9 +327,6 @@ body.dark .l-nav__link:hover:not(.is-active) .l-nav__icon { background: rgba(99,
   transition: background var(--ease);
 }
 
-/* ──────────────────────────────────────────────────────────────
-   5. MOBILE BOTTOM NAV
-────────────────────────────────────────────────────────────────  */
 .l-mobile-nav {
   display: none;
   position: fixed;
@@ -430,9 +414,6 @@ body.dark .l-nav__link:hover:not(.is-active) .l-nav__icon { background: rgba(99,
   pointer-events: none;
 }
 
-/* ──────────────────────────────────────────────────────────────
-   6. MAIN CONTENT AREA
-────────────────────────────────────────────────────────────────  */
 .main-area {
   flex: 1;
   min-width: 0;
@@ -445,9 +426,6 @@ body.dark .l-nav__link:hover:not(.is-active) .l-nav__icon { background: rgba(99,
   overscroll-behavior-y: contain;
 }
 
-/* ──────────────────────────────────────────────────────────────
-   7. RESPONSIVE
-────────────────────────────────────────────────────────────────  */
 @media (max-width: 1023px) {
   .l-sidebar     { display: none !important; }
   .l-mobile-nav  { display: block !important; }
@@ -540,9 +518,6 @@ body.dark .l-nav__link:hover:not(.is-active) .l-nav__icon { background: rgba(99,
   flex-shrink: 0;
 }
 
-/* ──────────────────────────────────────────────────────────────
-   9. BUTTONS
-────────────────────────────────────────────────────────────────  */
 .icon-btn {
   width: 44px;
   height: 44px;
