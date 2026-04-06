@@ -211,7 +211,7 @@
       font-family: var(--font); font-size: 14px;
       background: rgba(255,255,255,.04);
       color: var(--text);
-      transition: all .2s; outline: none;
+      transition: all .2s; outline: none; appearance: none;
     }
     .field-input:focus {
       border-color: rgba(99,132,255,.5);
