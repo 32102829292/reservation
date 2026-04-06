@@ -7,7 +7,6 @@
     <title>Dashboard | Admin</title>
     <meta name="csrf-token" content="<?= csrf_token() ?>">
     <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
-
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
@@ -1169,7 +1168,7 @@
     ?>
 
     <!-- ★ Shared layout: sidebar + mobile nav + dark-mode script -->
-    <?php include APPPATH . 'Views/partials/layout.php'; ?>
+    <?php include APPPATH . 'Views/partials/admin_layout.php'; ?>
 
     <!-- ════════ MODALS ════════ -->
     <div id="dateModal" class="modal-back" onclick="if(event.target===this)closeDateModal()">
