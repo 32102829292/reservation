@@ -23,18 +23,18 @@ $routes->setAutoRoute(false);
 // Auth routes
 $routes->get('login', 'AuthController::login');
 $routes->get('auth/login', 'AuthController::login');
-$routes->get('login-action', 'AuthController::login');        // prevent 404 on Render wakeup
+$routes->get('login-action', 'AuthController::login');
 $routes->post('login-action', 'AuthController::loginAction');
 $routes->post('auth/login-action', 'AuthController::loginAction');
 $routes->get('register', 'AuthController::register');
 $routes->get('auth/register', 'AuthController::register');
-$routes->get('register-action', 'AuthController::register');  // prevent 404 on Render wakeup
+$routes->get('register-action', 'AuthController::register');
 $routes->post('register-action', 'AuthController::registerAction');
 $routes->post('auth/register-action', 'AuthController::registerAction');
 $routes->get('logout', 'AuthController::logout');
 $routes->get('auth/logout', 'AuthController::logout');
 $routes->get('verify-email/(:segment)', 'AuthController::verifyEmail/$1');
-$routes->get('/', 'AuthController::redirectDashboard');
+$routes->get('/', 'LandingController::index');
 
 // Forgot Password routes
 $routes->post('forgot-password/send-otp',       'ForgotPasswordController::sendOtp');
