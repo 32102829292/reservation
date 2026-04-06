@@ -674,8 +674,15 @@ class SkController extends BaseController
     $status = $this->request->getGet('status');
     $date   = $this->request->getGet('date');
 
-    if ($status) $model->where('status', $status);
-    if ($date)   $model->where('reservation_date', $date);
+    $allowedStatuses = ['pending', 'approved', 'rejected'];
+
+    if ($status && in_array($status, $allowedStatuses)) {
+        $model->where('status', $status);
+    }
+
+    if ($date) {
+        $model->where('reservation_date', $date);
+    }
 
     $reservations = $model
         ->select('reservations.*, resources.name as resource_name')
@@ -684,29 +691,9 @@ class SkController extends BaseController
         ->orderBy('reservation_date', 'DESC')
         ->findAll();
 
-    // ── Monthly quota (current month only, active statuses) ──
-    $maxMonthlySlots = 3;
-    $usedThisMonth   = (new ReservationModel())
-        ->where('user_id', $userId)
-        ->whereIn('status', ['pending', 'approved', 'claimed'])
-        ->where('MONTH(reservation_date)', date('n'))
-        ->where('YEAR(reservation_date)',  date('Y'))
-        ->countAllResults();
-    $remainingReservations = max(0, $maxMonthlySlots - $usedThisMonth);
-
-    $pendingUserCount = (new ReservationModel())
-        ->where('status', 'pending')
-        ->where('user_id !=', $userId)
-        ->countAllResults();
-
     return view('sk/my-reservations', [
-        'page'                  => 'my-reservations',
-        'user_name'             => session()->get('name') ?? session()->get('username'),
-        'reservations'          => $reservations,
-        'remainingReservations' => $remainingReservations,
-        'usedThisMonth'         => $usedThisMonth,
-        'maxMonthlySlots'       => $maxMonthlySlots,
-        'pendingUserCount'      => $pendingUserCount,
+        'page'         => 'my-reservations',
+        'reservations' => $reservations,
     ]);
 }
 
