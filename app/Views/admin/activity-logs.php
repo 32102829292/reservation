@@ -315,7 +315,7 @@
     date_default_timezone_set('Asia/Manila');
     $page = 'activity-logs';
 
-    include APPPATH . 'Views/partials/layout.php';
+    include APPPATH . 'Views/partials/admin_layout.php';
 
     $actionLabel = function (string $a): string {
         return match ($a) {

@@ -501,7 +501,7 @@
         ->orderBy('reservations.created_at', 'DESC')
         ->findAll();
 
-    include APPPATH . 'Views/partials/layout.php';
+    include APPPATH . 'Views/partials/admin_layout.php';
     ?>
 
     <div id="debugPanel">

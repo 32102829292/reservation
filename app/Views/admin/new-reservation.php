@@ -392,9 +392,8 @@
 </head>
 
 <body>
-
-    <?php $page = 'new-reservation';
-    include APPPATH . 'Views/partials/layout.php';?>
+    
+    <?php include APPPATH . 'Views/partials/admin_layout.php'; ?>
 
     <!-- ── Main ── -->
     <main class="main-area">

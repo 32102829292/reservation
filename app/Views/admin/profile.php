@@ -512,7 +512,7 @@
     $memberSince  = isset($user['created_at']) ? date('F j, Y', strtotime($user['created_at'])) : '—';
     $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_at'])) : date('Y');
 
-    include APPPATH . 'Views/partials/layout.php';
+    include APPPATH . 'Views/partials/admin_layout.php';
     ?>
 
     <!-- ── Edit Modal ── -->
