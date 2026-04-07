@@ -850,6 +850,18 @@ class AdminController extends Controller
         return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid E-Ticket code.']);
     }
 
+    public function deleteProfile()
+{
+    $userId = session()->get('user_id');
+    
+    $userModel = new \App\Models\UserModel();
+    $userModel->delete($userId);
+    
+    session()->destroy();
+    
+    return redirect()->to('/login')->with('success', 'Account deleted successfully.');
+}
+
     public function profile()
     {
         $userId = session()->get('user_id');

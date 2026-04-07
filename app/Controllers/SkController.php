@@ -562,6 +562,18 @@ class SkController extends BaseController
         return view('sk/profile', ['user' => $user, 'page' => 'profile']);
     }
 
+    public function deleteProfile()
+{
+    $userId = session()->get('user_id');
+    
+    $userModel = new \App\Models\UserModel();
+    $userModel->delete($userId);
+    
+    session()->destroy();
+    
+    return redirect()->to('/login')->with('success', 'Account deleted successfully.');
+}
+
     public function scanner()
     {
         $reservationModel = new ReservationModel();

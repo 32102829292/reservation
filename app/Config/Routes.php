@@ -55,6 +55,7 @@ $routes->group('', ['filter' => 'role:user'], function($routes) {
     $routes->get('reservation/success/(:num)', 'UserController::reservationSuccess/$1');
     $routes->get('profile', 'UserController::profile');
     $routes->post('profile/update', 'UserController::updateProfile');
+    $routes->post('profile/delete',      'UserController::deleteProfile');
     $routes->get('e-ticket', 'UserController::eTicket');
     $routes->get('ticket', 'UserController::ticket');
     $routes->get('books', 'BookController::index');
@@ -79,16 +80,13 @@ $routes->group('sk', ['filter' => 'role:sk'], function($routes) {
     $routes->get('activity-logs',        'SkController::activityLogs');
     $routes->get('profile',              'SkController::profile');
     $routes->post('profile/update',      'SkController::updateProfile');
+    $routes->post('profile/delete',      'SkController::deleteProfile');
     $routes->get('scanner',              'SkController::scanner');
     $routes->post('log-print',           'SkController::logPrint');
-
-    // User requests
     $routes->get('user-requests',            'SkController::userRequests');
     $routes->post('check-new-user-requests', 'SkController::checkNewUserRequests');
     $routes->get('get-pending-count',        'SkController::getPendingCount');
     $routes->post('check-new-reservations',  'SkController::checkNewReservations');
-
-    // Books — SK manage
     $routes->get('books',                        'BookController::manage');
     $routes->get('books/create',                 'BookController::create');
     $routes->post('books/store',                 'BookController::store');
@@ -96,9 +94,7 @@ $routes->group('sk', ['filter' => 'role:sk'], function($routes) {
     $routes->get('books/edit/(:num)',            'BookController::edit/$1');
     $routes->post('books/update/(:num)',         'BookController::update/$1');
     $routes->post('books/delete/(:num)',         'BookController::delete/$1');
-    $routes->post('books/update-copies/(:num)', 'BookController::updateCopies/$1');  // ★ inline copies
-
-    // Borrowings — SK manage
+    $routes->post('books/update-copies/(:num)', 'BookController::updateCopies/$1');
     $routes->get('borrowings',                'BookController::borrowings');
     $routes->post('borrowings/approve/(:num)','BookController::approveBorrowing/$1');
     $routes->post('borrowings/return/(:num)', 'BookController::returnBook/$1');
@@ -125,6 +121,7 @@ $routes->group('admin', ['filter' => 'role:chairman'], function($routes) {
     $routes->get('activity-logs',         'AdminController::activityLogs');
     $routes->get('profile',               'AdminController::profile');
     $routes->post('profile/update',       'AdminController::profileUpdate');
+    $routes->post('profile/delete',       'AdminController::profileDelete');
     $routes->get('manage-pcs',            'AdminController::managePCs');
     $routes->post('add-pc',               'AdminController::addPC');
     $routes->post('update-pc-status',     'AdminController::updatePCStatus');
