@@ -1,27 +1,6 @@
 <?php
 /**
  * Views/admin/partials/layout.php
- *
- * Shared layout partial for all Admin views.
- *
- * USAGE
- * ─────
- * 1. Set $page to the current route key before including:
- *      $page = 'dashboard';
- *
- * 2. Include immediately after <body>:
- *      <?php include APPPATH . 'Views/admin/partials/layout.php'; ?>
- *
- * 3. Wrap page content in:
- *      <main class="main-area"> ... </main>
- *
- * VARIABLES (all optional with defaults)
- * ───────────────────────────────────────
- *   $page              string   active nav key
- *   $user_name         string   display name  (falls back to session)
- *   $pendingCount      int      badge for Reservations nav item
- *   $pendingSkCount    int      badge for Manage SK nav item
- *   $pendingBorrowings int      badge for Library nav item
  */
 
 $page     = $page     ?? '';
@@ -50,30 +29,64 @@ $navItems = [
     ['url' => '/admin/profile',             'icon' => 'fa-user',         'label' => 'Profile',         'key' => 'profile'],
 ];
 
-// Mobile nav: 3 pinned items (Dashboard, New Reservation, Profile)
-// Everything else goes in the "More" drawer
-$mobilePin  = ['dashboard', 'new-reservation', 'profile'];
-$mobileMore = array_filter($navItems, fn($i) => !in_array($i['key'], $mobilePin));
+// First 4 items go on the bottom bar, rest go in the drawer
+$primaryTabs = array_slice($navItems, 0, 4);
+$drawerItems = array_slice($navItems, 4);
 
-// Check if the current page is in the "More" drawer
-$moreIsActive = !in_array($page, $mobilePin) && $page !== '';
+// Is the active page in the drawer?
+$activeInDrawer = in_array($page, array_column($drawerItems, 'key'));
+
+// Helper: get badge count for a nav key
+$getBadge = function(string $key) use ($pendingCount, $pendingSkCount, $pendingBorrowings): int {
+    if ($key === 'manage-reservations') return $pendingCount;
+    if ($key === 'manage-sk')           return $pendingSkCount;
+    if ($key === 'books')               return $pendingBorrowings;
+    return 0;
+};
 ?>
 
+<!-- ═══════════════════════════════════════════════════════════
+     DARK MODE FOUC GUARD
+═══════════════════════════════════════════════════════════════ -->
 <script>
-(function () {
+(function(){
     try {
         if (localStorage.getItem('admin_theme') === 'dark') {
             document.documentElement.classList.add('dark-pre');
             document.body.classList.add('dark');
         }
-    } catch (e) {}
+    } catch(e){}
 })();
 </script>
 
-<link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- ═══════════════════════════════════════════════════════════
+     FONTS — loaded via <link> (faster than @import in CSS)
+═══════════════════════════════════════════════════════════════ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 
-<!-- ══ SIDEBAR ══ -->
+<!-- ═══════════════════════════════════════════════════════════
+     STYLESHEETS
+═══════════════════════════════════════════════════════════════ -->
+<link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<!-- Ensure font propagates to all form elements -->
+<style>
+  input, button, select, textarea, optgroup {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SHELL OPEN
+═══════════════════════════════════════════════════════════════ -->
+<div class="l-shell">
+
+<!-- ═══════════════════════════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════════════════════════════ -->
 <aside class="l-sidebar" role="navigation" aria-label="Admin navigation">
     <div class="l-sidebar__inner">
 
@@ -93,34 +106,30 @@ $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
 
         <nav class="l-nav" aria-label="Sidebar navigation">
             <div class="l-nav__section">Menu</div>
-
             <?php foreach ($navItems as $item):
                 $isActive   = ($page === $item['key']);
-                $badgeCount = 0;
-                if ($item['key'] === 'manage-reservations') $badgeCount = $pendingCount;
-                if ($item['key'] === 'manage-sk')           $badgeCount = $pendingSkCount;
-                if ($item['key'] === 'books')               $badgeCount = $pendingBorrowings;
+                $badgeCount = $getBadge($item['key']);
             ?>
-                <a href="<?= $item['url'] ?>"
-                   class="l-nav__link<?= $isActive ? ' is-active' : '' ?>"
-                   <?= $isActive ? 'aria-current="page"' : '' ?>>
-                    <div class="l-nav__icon" aria-hidden="true">
-                        <i class="fa-solid <?= $item['icon'] ?>" style="font-size:.85rem;"></i>
-                    </div>
-                    <?= htmlspecialchars($item['label']) ?>
-                    <?php if ($badgeCount > 0): ?>
-                        <span class="l-nav__badge" aria-label="<?= $badgeCount ?> pending">
-                            <?= $badgeCount ?>
-                        </span>
-                    <?php endif; ?>
-                </a>
+            <a href="<?= $item['url'] ?>"
+               class="l-nav__link<?= $isActive ? ' is-active' : '' ?>"
+               <?= $isActive ? 'aria-current="page"' : '' ?>>
+                <div class="l-nav__icon" aria-hidden="true">
+                    <i class="fa-solid <?= $item['icon'] ?>"></i>
+                </div>
+                <?= htmlspecialchars($item['label']) ?>
+                <?php if ($badgeCount > 0): ?>
+                    <span class="l-nav__badge" aria-label="<?= $badgeCount ?> pending">
+                        <?= $badgeCount ?>
+                    </span>
+                <?php endif; ?>
+            </a>
             <?php endforeach; ?>
         </nav>
 
         <div class="l-sidebar__footer">
             <a href="/logout" class="l-logout">
                 <div class="l-logout__icon" aria-hidden="true">
-                    <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:.85rem;color:#f87171;"></i>
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 </div>
                 Sign Out
             </a>
@@ -129,154 +138,173 @@ $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
     </div>
 </aside>
 
-<!-- ══ MOBILE NAV ══ -->
+<!-- ═══════════════════════════════════════════════════════════
+     MOBILE BOTTOM NAV
+═══════════════════════════════════════════════════════════════ -->
 <nav class="l-mobile-nav" aria-label="Mobile navigation">
     <div class="l-mobile-nav__inner">
 
-        <?php foreach ($navItems as $item):
-            if (!in_array($item['key'], $mobilePin)) continue;
+        <?php foreach ($primaryTabs as $item):
             $isActive   = ($page === $item['key']);
-            $badgeCount = 0;
-            if ($item['key'] === 'manage-reservations') $badgeCount = $pendingCount;
-            if ($item['key'] === 'manage-sk')           $badgeCount = $pendingSkCount;
-            if ($item['key'] === 'books')               $badgeCount = $pendingBorrowings;
+            $badgeCount = $getBadge($item['key']);
         ?>
-            <a href="<?= $item['url'] ?>"
-               class="l-mobile-nav__item<?= $isActive ? ' is-active' : '' ?>"
-               aria-current="<?= $isActive ? 'page' : 'false' ?>">
-                <div class="l-mobile-nav__icon-wrap">
-                    <i class="fa-solid <?= $item['icon'] ?>"></i>
-                    <?php if ($badgeCount > 0): ?>
-                        <span class="l-mobile-nav__dot" aria-hidden="true"></span>
-                    <?php endif; ?>
-                </div>
-                <span class="l-mobile-nav__label"><?= htmlspecialchars($item['label']) ?></span>
-            </a>
-        <?php endforeach; ?>
-
-        <!-- More button -->
-        <button type="button"
-                class="l-mobile-nav__item l-mobile-nav__more-btn<?= $moreIsActive ? ' is-active' : '' ?>"
-                aria-haspopup="true"
-                aria-expanded="false"
-                aria-controls="mobileMoreDrawer"
-                onclick="adminToggleMoreDrawer()">
-            <div class="l-mobile-nav__icon-wrap">
-                <i class="fa-solid fa-ellipsis"></i>
-                <?php
-                    $moreBadgeTotal = $pendingCount + $pendingSkCount + $pendingBorrowings;
-                    if ($moreBadgeTotal > 0 && !in_array($page, ['manage-reservations','manage-sk','books'])):
-                ?>
-                    <span class="l-mobile-nav__dot" aria-hidden="true"></span>
+        <a href="<?= $item['url'] ?>"
+           class="l-mn__tab<?= $isActive ? ' is-active' : '' ?>"
+           <?= $isActive ? 'aria-current="page"' : '' ?>>
+            <div class="l-mn__icon-wrap">
+                <i class="fa-solid <?= $item['icon'] ?>"></i>
+                <?php if ($badgeCount > 0): ?>
+                    <span class="l-mn__dot" aria-hidden="true"></span>
                 <?php endif; ?>
             </div>
-            <span class="l-mobile-nav__label">More</span>
+            <span class="l-mn__label"><?= htmlspecialchars($item['label']) ?></span>
+        </a>
+        <?php endforeach; ?>
+
+        <!-- More tab — opens the drawer -->
+        <button type="button"
+                class="l-mn__tab<?= $activeInDrawer ? ' is-active' : '' ?>"
+                onclick="lDrawerOpen()"
+                aria-haspopup="true"
+                aria-expanded="false"
+                id="l-more-btn">
+            <div class="l-mn__icon-wrap">
+                <i class="fa-solid fa-ellipsis"></i>
+                <?php
+                    // Show dot on More if the active page is in the drawer
+                    $drawerBadgeTotal = 0;
+                    foreach ($drawerItems as $di) $drawerBadgeTotal += $getBadge($di['key']);
+                    if ($drawerBadgeTotal > 0):
+                ?>
+                    <span class="l-mn__dot" aria-hidden="true"></span>
+                <?php endif; ?>
+            </div>
+            <span class="l-mn__label">More</span>
         </button>
 
     </div>
 </nav>
 
-<!-- ══ MORE DRAWER ══ -->
-<div id="mobileMoreDrawer"
-     class="l-more-drawer"
-     role="dialog"
-     aria-modal="true"
-     aria-label="More navigation options"
-     hidden>
+<!-- ═══════════════════════════════════════════════════════════
+     DRAWER BACKDROP
+═══════════════════════════════════════════════════════════════ -->
+<div class="l-drawer-backdrop" id="l-drawer-backdrop" onclick="lDrawerClose()"></div>
 
-    <div class="l-more-drawer__backdrop" onclick="adminToggleMoreDrawer()"></div>
+<!-- ═══════════════════════════════════════════════════════════
+     DRAWER PANEL
+═══════════════════════════════════════════════════════════════ -->
+<div class="l-drawer" id="l-drawer" role="dialog" aria-modal="true" aria-label="More navigation">
+    <div class="l-drawer__handle"></div>
 
-    <div class="l-more-drawer__sheet">
-        <div class="l-more-drawer__handle" aria-hidden="true"></div>
-        <div class="l-more-drawer__title">More</div>
+    <div class="l-drawer__section-label">More</div>
 
-        <div class="l-more-drawer__grid">
-            <?php foreach ($mobileMore as $item):
-                $isActive   = ($page === $item['key']);
-                $badgeCount = 0;
-                if ($item['key'] === 'manage-reservations') $badgeCount = $pendingCount;
-                if ($item['key'] === 'manage-sk')           $badgeCount = $pendingSkCount;
-                if ($item['key'] === 'books')               $badgeCount = $pendingBorrowings;
-            ?>
-                <a href="<?= $item['url'] ?>"
-                   class="l-more-drawer__item<?= $isActive ? ' is-active' : '' ?>"
-                   <?= $isActive ? 'aria-current="page"' : '' ?>>
-                    <div class="l-more-drawer__icon-wrap">
-                        <i class="fa-solid <?= $item['icon'] ?>"></i>
-                        <?php if ($badgeCount > 0): ?>
-                            <span class="l-more-drawer__badge" aria-label="<?= $badgeCount ?> pending">
-                                <?= $badgeCount > 9 ? '9+' : $badgeCount ?>
-                            </span>
-                        <?php endif; ?>
-                    </div>
-                    <span class="l-more-drawer__label"><?= htmlspecialchars($item['label']) ?></span>
-                </a>
-            <?php endforeach; ?>
-
-            <a href="/logout" class="l-more-drawer__item l-more-drawer__item--logout">
-                <div class="l-more-drawer__icon-wrap">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                </div>
-                <span class="l-more-drawer__label">Sign Out</span>
-            </a>
+    <?php foreach ($drawerItems as $item):
+        $isActive   = ($page === $item['key']);
+        $badgeCount = $getBadge($item['key']);
+    ?>
+    <a href="<?= $item['url'] ?>"
+       class="l-drawer__item<?= $isActive ? ' is-active' : '' ?>"
+       <?= $isActive ? 'aria-current="page"' : '' ?>>
+        <div class="l-drawer__icon">
+            <i class="fa-solid <?= $item['icon'] ?>"></i>
         </div>
-    </div>
+        <span class="l-drawer__name"><?= htmlspecialchars($item['label']) ?></span>
+        <?php if ($badgeCount > 0): ?>
+            <span class="l-drawer__badge" aria-label="<?= $badgeCount ?> pending">
+                <?= $badgeCount > 9 ? '9+' : $badgeCount ?>
+            </span>
+        <?php endif; ?>
+        <i class="fa-solid fa-chevron-right l-drawer__chev"></i>
+    </a>
+    <?php endforeach; ?>
+
+    <div class="l-drawer__divider"></div>
+
+    <div class="l-drawer__section-label">Account</div>
+
+    <a href="/logout" class="l-drawer__item l-drawer__item--logout">
+        <div class="l-drawer__icon l-drawer__icon--logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </div>
+        <span class="l-drawer__name">Sign Out</span>
+        <i class="fa-solid fa-chevron-right l-drawer__chev"></i>
+    </a>
 </div>
 
-<!-- ══ DARK MODE + DRAWER JS ══ -->
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════════ -->
 <script>
-(function () {
+(function(){
     'use strict';
 
-    var MOON = '<i class="fa-regular fa-moon" style="font-size:.85rem;"></i>';
-    var SUN  = '<i class="fa-regular fa-sun"  style="font-size:.85rem;"></i>';
+    /* ── Dark mode ── */
+    var MOON = '<i class="fa-regular fa-moon"  style="font-size:.85rem;"></i>';
+    var SUN  = '<i class="fa-regular fa-sun"   style="font-size:.85rem;"></i>';
 
     function applyDark(isDark) {
         document.body.classList.toggle('dark', isDark);
         document.documentElement.classList.remove('dark-pre');
-        document.querySelectorAll('#darkIcon, [data-dark-icon]').forEach(function (el) {
+        document.querySelectorAll('#darkIcon, [data-dark-icon]').forEach(function(el){
             el.innerHTML = isDark ? MOON : SUN;
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function(){
         applyDark(localStorage.getItem('admin_theme') === 'dark');
     });
 
-    window.adminToggleDark = function () {
+    window.adminToggleDark = function(){
         var isDark = !document.body.classList.contains('dark');
-        localStorage.setItem('admin_theme', isDark ? 'dark' : 'light');
+        try { localStorage.setItem('admin_theme', isDark ? 'dark' : 'light'); } catch(e){}
         applyDark(isDark);
     };
 
-    window.toggleDark = window.adminToggleDark;
+    /* Keep both names working in case any page calls either */
+    window.toggleDark        = window.adminToggleDark;
+    window.layoutToggleDark  = window.adminToggleDark;
 
-    /* ── More drawer ── */
-    var _drawerOpen = false;
+    /* ── Drawer (identical logic to SK layout) ── */
+    var drawer   = null;
+    var backdrop = null;
+    var moreBtn  = null;
 
-    window.adminToggleMoreDrawer = function () {
-        var drawer  = document.getElementById('mobileMoreDrawer');
-        var btn     = document.querySelector('.l-mobile-nav__more-btn');
-        if (!drawer) return;
+    function initDrawer() {
+        drawer   = document.getElementById('l-drawer');
+        backdrop = document.getElementById('l-drawer-backdrop');
+        moreBtn  = document.getElementById('l-more-btn');
+    }
 
-        _drawerOpen = !_drawerOpen;
-        drawer.hidden = !_drawerOpen;
-        if (btn) btn.setAttribute('aria-expanded', _drawerOpen ? 'true' : 'false');
-
-        // Animate in on next frame
-        if (_drawerOpen) {
-            requestAnimationFrame(function () {
-                drawer.classList.add('is-open');
-            });
-            document.addEventListener('keydown', _drawerEscHandler);
-        } else {
-            drawer.classList.remove('is-open');
-            document.removeEventListener('keydown', _drawerEscHandler);
-        }
+    window.lDrawerOpen = function() {
+        if (!drawer) initDrawer();
+        drawer.classList.add('is-open');
+        backdrop.classList.add('show');
+        if (moreBtn) moreBtn.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
     };
 
-    function _drawerEscHandler(e) {
-        if (e.key === 'Escape') window.adminToggleMoreDrawer();
-    }
+    window.lDrawerClose = function() {
+        if (!drawer) return;
+        drawer.classList.remove('is-open');
+        backdrop.classList.remove('show');
+        if (moreBtn) moreBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+    };
+
+    /* Close on Escape */
+    document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') window.lDrawerClose();
+    });
+
+    /* Swipe-down to close */
+    var touchStartY = 0;
+    document.addEventListener('touchstart', function(e){
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', function(e){
+        if (!drawer || !drawer.classList.contains('is-open')) return;
+        if (e.changedTouches[0].clientY - touchStartY > 60) window.lDrawerClose();
+    }, { passive: true });
+
 })();
 </script>

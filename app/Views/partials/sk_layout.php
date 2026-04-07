@@ -44,8 +44,26 @@ $activeInDrawer = in_array($page, array_column($drawerItems, 'key'));
     } catch(e){}
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FONTS — loaded via <link> (faster than @import in CSS)
+═══════════════════════════════════════════════════════════════ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<!-- ═══════════════════════════════════════════════════════════
+     STYLESHEETS
+═══════════════════════════════════════════════════════════════ -->
 <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<!-- Ensure font propagates to all form elements -->
+<style>
+  input, button, select, textarea, optgroup {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+</style>
 
 <!-- ═══════════════════════════════════════════════════════════
      SHELL OPEN
@@ -204,6 +222,10 @@ $activeInDrawer = in_array($page, array_column($drawerItems, 'key'));
         <i class="fa-solid fa-chevron-right l-drawer__chev"></i>
     </a>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════════ -->
 <script>
 (function(){
     'use strict';
