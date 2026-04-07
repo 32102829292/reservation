@@ -1056,10 +1056,22 @@
         }
         @media(max-width:639px) {
     .lib-banner { padding: 16px; }
-    .lib-stat-item { flex: 1 1 0; min-width: 0; padding: 6px 8px; }
-    .lib-stat-lbl  { font-size: .48rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .lib-stat-val  { font-size: .85rem; line-height: 1.1; }
+    .lib-stat-item {
+    flex: 1 1 calc(50% - 4px);   /* 2-column fallback on very narrow */
+    min-width: 0;
+    padding: 6px 8px;
+}
+.lib-stat-lbl {
+    font-size: .46rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.lib-stat-val { font-size: .82rem; line-height: 1.1; }
     .grid-lib      { grid-template-columns: 1fr !important; }
+}
+@media(max-width:900px) {
+    .grid-main, .grid-three, .grid-lib { grid-template-columns: 1fr; }
 }
         @media(max-width:639px) {
             .greeting-name {
@@ -1534,7 +1546,7 @@
                         <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
                         <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;"><?= $bookAvailCount ?> <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span></div>
                         <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:16px;"><?= $bookTotalCount ?> total titles</div>
-                        <div style="display:flex;gap:8px;">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
                             <div class="lib-stat-item">
                                 <div class="lib-stat-lbl">Borrow Reqs</div>
                                 <div class="lib-stat-val"><?= $pendingBorrowings ?></div>

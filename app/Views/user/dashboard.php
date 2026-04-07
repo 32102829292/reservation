@@ -384,7 +384,9 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         .lib-stat-lbl { font-size:.52rem; font-weight:600; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .lib-stat-val { font-size:.88rem; font-weight:800; color:white; font-family:var(--mono); line-height:1.2; }
         body.dark .lib-stat { background:rgba(255,255,255,.06) !important; border-color:rgba(255,255,255,.08) !important; }
-
+        @media(max-width:900px) {
+    .grid-main, .grid-three, .grid-lib { grid-template-columns: 1fr; }
+}
         @media(max-width:639px) {
             .lib-banner { padding:16px 16px 14px; }
             .lib-banner > div[style] { flex-direction:column; align-items:flex-start !important; gap:10px !important; }
@@ -393,8 +395,13 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
             .lib-stats { flex-direction:row; flex-wrap:nowrap; gap:5px; margin-top:10px; }
             .lib-stat { flex:1; min-width:0; padding:6px; gap:4px; border-radius:8px; flex-direction:column; align-items:flex-start; }
             .lib-stat-icon { display:none; }
-            .lib-stat-lbl { font-size:.48rem; letter-spacing:.04em; white-space:nowrap; }
-            .lib-stat-val { font-size:.88rem; line-height:1; }
+            .lib-stat-lbl {
+    font-size: .46rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.lib-stat-val { font-size: .82rem; line-height: 1.1; }
             .main-area { padding:14px 12px 0; }
         }
 

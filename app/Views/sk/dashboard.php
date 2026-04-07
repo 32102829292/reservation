@@ -38,6 +38,8 @@ function sk_icon(string $name, int $size = 16, string $stroke = 'currentColor', 
         'triangle'       => '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
         'qrcode'         => '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="5" y="5" width="3" height="3"/><rect x="16" y="5" width="3" height="3"/><rect x="5" y="16" width="3" height="3"/><line x1="14" y1="14" x2="17" y2="14"/><line x1="14" y1="17" x2="14" y2="20"/><line x1="17" y1="17" x2="20" y2="17"/><line x1="20" y1="14" x2="20" y2="20"/>',
         'refresh'        => '<path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke-linecap="round" stroke-linejoin="round"/>',
+        'sun'  => '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+        'moon' => '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
         'logout'         => '<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>',
     ];
     $d  = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
@@ -277,7 +279,9 @@ foreach ($myRes as $r) {
         .kpi-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
         .kpi-num { font-size:1.6rem; font-weight:800; font-family:var(--mono); line-height:1; margin-top:6px; }
         @media(max-width:639px) { .kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-
+    @media(max-width:900px) {
+    .grid-main, .grid-three, .grid-lib { grid-template-columns: 1fr; }
+}
         /* ── Chart wrappers ── */
         .chart-wrap { position:relative; height:200px; width:100%; }
         @media(max-width:639px) { .chart-wrap { height:160px; } }
@@ -294,9 +298,18 @@ foreach ($myRes as $r) {
         @media(max-width:900px) { .grid-main,.grid-three,.grid-lib { grid-template-columns:1fr; } }
         @media(max-width:639px) {
     .lib-banner { padding: 16px; }
-    .lib-stat-item { flex: 1 1 0; min-width: 0; padding: 6px 8px; }
-    .lib-stat-lbl  { font-size: .48rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .lib-stat-val  { font-size: .85rem; line-height: 1.1; }
+    .lib-stat-item {
+    flex: 1 1 calc(50% - 4px);   /* 2-column fallback on very narrow */
+    min-width: 0;
+    padding: 6px 8px;
+}
+.lib-stat-lbl {
+    font-size: .46rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.lib-stat-val { font-size: .82rem; line-height: 1.1; }
     .grid-lib      { grid-template-columns: 1fr !important; }
 }
         @media(max-width:639px) { .grid-two,.grid-four { grid-template-columns:repeat(2,minmax(0,1fr)); } .main-area { padding:14px 12px 0; } }
@@ -515,7 +528,7 @@ include(APPPATH . 'Views/partials/sk_layout.php');?>
                 </a>
             <?php endif; ?>
             <button class="icon-btn" onclick="layoutToggleDark()" id="darkBtn" title="Toggle dark mode">
-                <span id="darkIcon"><?= sk_icon('bell', 15, 'currentColor') ?></span>
+                <span id="darkIcon"><?= sk_icon('sun', 15, 'currentColor') ?></span>
             </button>
             <div class="notif-bell" onclick="toggleNotifications()">
                 <div class="icon-btn"><?= sk_icon('bell', 16, 'currentColor') ?></div>
@@ -821,7 +834,7 @@ include(APPPATH . 'Views/partials/sk_layout.php');?>
                     <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
                     <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;"><?= $availableCount ?> <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span></div>
                     <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:16px;"><?= $totalBooks ?> total titles</div>
-                    <div style="display:flex;gap:8px;flex-wrap:nowrap;">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
                         <div class="lib-stat-item">
                             <div class="lib-stat-lbl">My Borrows</div>
                             <div class="lib-stat-val"><?= count($myBorrowings) ?></div>
@@ -1109,7 +1122,7 @@ window.layoutToggleDark = function () {
     syncDarkIcon();
     updateChartsForTheme();
 };
-function syncDarkIcon () {
+function syncDarkIcon() {
     const dark = document.body.classList.contains('dark');
     const el   = document.getElementById('darkIcon');
     if (!el) return;
