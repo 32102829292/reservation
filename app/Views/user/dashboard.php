@@ -108,7 +108,7 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
     <link rel="manifest" href="/manifest.json">
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <meta name="theme-color" content="#1e1b4b">
-    <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
@@ -384,66 +384,20 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         .lib-stat-lbl { font-size:.52rem; font-weight:600; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .lib-stat-val { font-size:.88rem; font-weight:800; color:white; font-family:var(--mono); line-height:1.2; }
         body.dark .lib-stat { background:rgba(255,255,255,.06) !important; border-color:rgba(255,255,255,.08) !important; }
-.banner-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-@media(max-width:479px) {
-    .banner-top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    .banner-top .lib-browse {
-        width: 100%;
-        justify-content: center;
-    }
-}
-.lib-banner > div[style] {
-    flex-wrap: wrap !important;
-    gap: 10px !important;
-}
 
-@media(max-width:639px) {
-    .lib-banner { padding: 16px; }
+        @media(max-width:639px) {
+            .lib-banner { padding:16px 16px 14px; }
+            .lib-banner > div[style] { flex-direction:column; align-items:flex-start !important; gap:10px !important; }
+            .lib-browse { width:100%; justify-content:center; padding:9px 12px; font-size:.75rem; }
+            .lib-title { font-size:1.25rem; }
+            .lib-stats { flex-direction:row; flex-wrap:nowrap; gap:5px; margin-top:10px; }
+            .lib-stat { flex:1; min-width:0; padding:6px; gap:4px; border-radius:8px; flex-direction:column; align-items:flex-start; }
+            .lib-stat-icon { display:none; }
+            .lib-stat-lbl { font-size:.48rem; letter-spacing:.04em; white-space:nowrap; }
+            .lib-stat-val { font-size:.88rem; line-height:1; }
+            .main-area { padding:14px 12px 0; }
+        }
 
-    /* Keep stats in a row but hide icons to save space */
-    .lib-stats {
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 5px;
-        margin-top: 10px;
-        overflow: hidden;
-    }
-    .lib-stat {
-        flex: 1 1 0 !important;
-        min-width: 0 !important;
-        padding: 6px 7px !important;
-        gap: 4px !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-    }
-    .lib-stat-icon { display: none !important; }
-    .lib-stat-lbl  { font-size: .48rem !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .lib-stat-val  { font-size: .85rem !important; line-height: 1; }
-    .lib-title     { font-size: 1.25rem !important; }
-    .lib-browse    { width: 100%; justify-content: center; padding: 9px 12px; font-size: .75rem; }
-
-    /* Banner top row: stack title + browse button */
-    .lib-banner .banner-top,
-    .lib-banner > div[style*="display:flex"],
-    .lib-banner > div[style*="display: flex"] {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
-    }
-
-    /* Grid: single column on mobile */
-    .grid-lib { grid-template-columns: 1fr !important; }
-}
         /* ── Book list items ── */
         .book-letter { width:34px; height:34px; border-radius:9px; background:var(--indigo-light); color:var(--indigo); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; letter-spacing:-.02em; }
         .book-title  { font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -802,7 +756,7 @@ include(APPPATH . 'Views/partials/layout.php');
         <div style="display:flex;flex-direction:column;gap:14px;">
             <!-- Library banner -->
             <div class="lib-banner">
-                <div class="banner-top" style="position:relative;z-index:1;">
+                <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
                     <div>
                         <div class="lib-eyebrow">Community Library</div>
                         <div class="lib-title"><?= $availableCount ?> books available</div>
