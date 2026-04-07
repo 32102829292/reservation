@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#3730a3">
-    <link rel="stylesheet" href="<?= base_url('assets/css/admin_app.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
