@@ -84,7 +84,7 @@ function _layout_icon(string $name, int $size = 16, string $stroke = 'currentCol
      Link your compiled app.css here. The file is output alongside
      this partial. Adjust the path to match your public asset folder.
 ════════════════════════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
+<link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
 
 <!-- ═══════════════════════════════════════════════════════════════════
      SIDEBAR

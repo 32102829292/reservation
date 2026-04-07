@@ -67,7 +67,7 @@ $navItems = [
     } catch(e){}
 })();
 </script>
-
+<link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
 <!-- Font Awesome — loaded once here, remove from individual pages -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 
