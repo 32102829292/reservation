@@ -104,7 +104,7 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title>Dashboard | <?= esc($user_name) ?></title>
+    <title>Dashboard | <?= esc($userName ?? session()->get('name') ?? session()->get('username') ?? 'Admin') ?></title>
     <link rel="manifest" href="/manifest.json">
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <meta name="theme-color" content="#1e1b4b">
