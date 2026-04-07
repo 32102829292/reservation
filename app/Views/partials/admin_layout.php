@@ -49,6 +49,14 @@ $navItems = [
     ['url' => '/admin/activity-logs',       'icon' => 'fa-list',         'label' => 'Activity Logs',   'key' => 'activity-logs'],
     ['url' => '/admin/profile',             'icon' => 'fa-user',         'label' => 'Profile',         'key' => 'profile'],
 ];
+
+// Mobile nav: 3 pinned items (Dashboard, New Reservation, Profile)
+// Everything else goes in the "More" drawer
+$mobilePin  = ['dashboard', 'new-reservation', 'profile'];
+$mobileMore = array_filter($navItems, fn($i) => !in_array($i['key'], $mobilePin));
+
+// Check if the current page is in the "More" drawer
+$moreIsActive = !in_array($page, $mobilePin) && $page !== '';
 ?>
 
 <script>
@@ -126,6 +134,7 @@ $navItems = [
     <div class="l-mobile-nav__inner">
 
         <?php foreach ($navItems as $item):
+            if (!in_array($item['key'], $mobilePin)) continue;
             $isActive   = ($page === $item['key']);
             $badgeCount = 0;
             if ($item['key'] === 'manage-reservations') $badgeCount = $pendingCount;
@@ -134,27 +143,87 @@ $navItems = [
         ?>
             <a href="<?= $item['url'] ?>"
                class="l-mobile-nav__item<?= $isActive ? ' is-active' : '' ?>"
-               title="<?= htmlspecialchars($item['label']) ?>"
-               <?= $isActive ? 'aria-current="page"' : '' ?>>
-                <i class="fa-solid <?= $item['icon'] ?>" style="font-size:1.05rem;"></i>
-                <?php if ($badgeCount > 0): ?>
-                    <span class="l-mobile-nav__badge" aria-label="<?= $badgeCount ?> pending">
-                        <?= $badgeCount > 9 ? '9+' : $badgeCount ?>
-                    </span>
-                <?php endif; ?>
+               aria-current="<?= $isActive ? 'page' : 'false' ?>">
+                <div class="l-mobile-nav__icon-wrap">
+                    <i class="fa-solid <?= $item['icon'] ?>"></i>
+                    <?php if ($badgeCount > 0): ?>
+                        <span class="l-mobile-nav__dot" aria-hidden="true"></span>
+                    <?php endif; ?>
+                </div>
+                <span class="l-mobile-nav__label"><?= htmlspecialchars($item['label']) ?></span>
             </a>
         <?php endforeach; ?>
 
-        <a href="/logout"
-           class="l-mobile-nav__item l-mobile-nav__item--logout"
-           title="Sign Out">
-            <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:1.05rem;color:#f87171;"></i>
-        </a>
+        <!-- More button -->
+        <button type="button"
+                class="l-mobile-nav__item l-mobile-nav__more-btn<?= $moreIsActive ? ' is-active' : '' ?>"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="mobileMoreDrawer"
+                onclick="adminToggleMoreDrawer()">
+            <div class="l-mobile-nav__icon-wrap">
+                <i class="fa-solid fa-ellipsis"></i>
+                <?php
+                    $moreBadgeTotal = $pendingCount + $pendingSkCount + $pendingBorrowings;
+                    if ($moreBadgeTotal > 0 && !in_array($page, ['manage-reservations','manage-sk','books'])):
+                ?>
+                    <span class="l-mobile-nav__dot" aria-hidden="true"></span>
+                <?php endif; ?>
+            </div>
+            <span class="l-mobile-nav__label">More</span>
+        </button>
 
     </div>
 </nav>
 
-<!-- ══ DARK MODE JS ══ -->
+<!-- ══ MORE DRAWER ══ -->
+<div id="mobileMoreDrawer"
+     class="l-more-drawer"
+     role="dialog"
+     aria-modal="true"
+     aria-label="More navigation options"
+     hidden>
+
+    <div class="l-more-drawer__backdrop" onclick="adminToggleMoreDrawer()"></div>
+
+    <div class="l-more-drawer__sheet">
+        <div class="l-more-drawer__handle" aria-hidden="true"></div>
+        <div class="l-more-drawer__title">More</div>
+
+        <div class="l-more-drawer__grid">
+            <?php foreach ($mobileMore as $item):
+                $isActive   = ($page === $item['key']);
+                $badgeCount = 0;
+                if ($item['key'] === 'manage-reservations') $badgeCount = $pendingCount;
+                if ($item['key'] === 'manage-sk')           $badgeCount = $pendingSkCount;
+                if ($item['key'] === 'books')               $badgeCount = $pendingBorrowings;
+            ?>
+                <a href="<?= $item['url'] ?>"
+                   class="l-more-drawer__item<?= $isActive ? ' is-active' : '' ?>"
+                   <?= $isActive ? 'aria-current="page"' : '' ?>>
+                    <div class="l-more-drawer__icon-wrap">
+                        <i class="fa-solid <?= $item['icon'] ?>"></i>
+                        <?php if ($badgeCount > 0): ?>
+                            <span class="l-more-drawer__badge" aria-label="<?= $badgeCount ?> pending">
+                                <?= $badgeCount > 9 ? '9+' : $badgeCount ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    <span class="l-more-drawer__label"><?= htmlspecialchars($item['label']) ?></span>
+                </a>
+            <?php endforeach; ?>
+
+            <a href="/logout" class="l-more-drawer__item l-more-drawer__item--logout">
+                <div class="l-more-drawer__icon-wrap">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </div>
+                <span class="l-more-drawer__label">Sign Out</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ══ DARK MODE + DRAWER JS ══ -->
 <script>
 (function () {
     'use strict';
@@ -180,7 +249,34 @@ $navItems = [
         applyDark(isDark);
     };
 
-    /* Legacy alias used in older views */
     window.toggleDark = window.adminToggleDark;
+
+    /* ── More drawer ── */
+    var _drawerOpen = false;
+
+    window.adminToggleMoreDrawer = function () {
+        var drawer  = document.getElementById('mobileMoreDrawer');
+        var btn     = document.querySelector('.l-mobile-nav__more-btn');
+        if (!drawer) return;
+
+        _drawerOpen = !_drawerOpen;
+        drawer.hidden = !_drawerOpen;
+        if (btn) btn.setAttribute('aria-expanded', _drawerOpen ? 'true' : 'false');
+
+        // Animate in on next frame
+        if (_drawerOpen) {
+            requestAnimationFrame(function () {
+                drawer.classList.add('is-open');
+            });
+            document.addEventListener('keydown', _drawerEscHandler);
+        } else {
+            drawer.classList.remove('is-open');
+            document.removeEventListener('keydown', _drawerEscHandler);
+        }
+    };
+
+    function _drawerEscHandler(e) {
+        if (e.key === 'Escape') window.adminToggleMoreDrawer();
+    }
 })();
 </script>

@@ -6,8 +6,8 @@
  *   • Dark-mode FOUC-prevention script
  *   • Opens <div class="l-shell">  ← pages MUST close this with </div>
  *   • Sidebar (desktop)
- *   • Mobile bottom nav
- *   • Layout JS (dark-mode toggle)
+ *   • Mobile bottom nav  (3 pinned + More drawer)
+ *   • Layout JS (dark-mode toggle + drawer)
  *
  * ─────────────────────────────────────────────────────────────
  * USAGE IN EVERY PAGE
@@ -53,6 +53,13 @@ $navItems = [
     ['url' => '/sk/scanner',         'icon' => 'fa-qrcode',       'label' => 'Scanner',          'key' => 'scanner'],
     ['url' => '/sk/profile',         'icon' => 'fa-user',         'label' => 'Profile',          'key' => 'profile'],
 ];
+
+// Mobile nav: 3 pinned items (Dashboard, New Reservation, Profile)
+$mobilePin  = ['dashboard', 'new-reservation', 'profile'];
+$mobileMore = array_filter($navItems, fn($i) => !in_array($i['key'], $mobilePin));
+
+// Is the active page inside the "More" drawer?
+$moreIsActive = !in_array($page, $mobilePin) && $page !== '';
 ?>
 <!-- ═══════════════════════════════════════════════════════════
      DARK MODE FOUC GUARD — must run synchronously
@@ -68,7 +75,6 @@ $navItems = [
 })();
 </script>
 <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
-<!-- Font Awesome — loaded once here, remove from individual pages -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -82,14 +88,12 @@ $navItems = [
 <aside class="l-sidebar" role="navigation" aria-label="Main navigation">
     <div class="l-sidebar__inner">
 
-        <!-- Brand -->
         <div class="l-sidebar__top">
             <div class="l-brand-tag">SK Officer Portal</div>
             <div class="l-brand-name">my<em>Space.</em></div>
             <div class="l-brand-sub">Community Management</div>
         </div>
 
-        <!-- User card -->
         <div class="l-user-card">
             <div class="l-user-avatar"><?= htmlspecialchars($avatarLetter) ?></div>
             <div class="l-user-info">
@@ -98,7 +102,6 @@ $navItems = [
             </div>
         </div>
 
-        <!-- Nav -->
         <nav class="l-nav" aria-label="Sidebar navigation">
             <div class="l-nav__section">Menu</div>
             <?php foreach ($navItems as $item):
@@ -119,7 +122,6 @@ $navItems = [
             <?php endforeach; ?>
         </nav>
 
-        <!-- Quota widget -->
         <?php if ($remaining !== null): ?>
         <div class="l-quota">
             <div class="l-quota__row">
@@ -138,7 +140,6 @@ $navItems = [
         </div>
         <?php endif; ?>
 
-        <!-- Logout -->
         <div class="l-sidebar__footer">
             <a href="/logout" class="l-logout">
                 <div class="l-logout__icon">
@@ -148,37 +149,100 @@ $navItems = [
             </a>
         </div>
 
-    </div><!-- /.l-sidebar__inner -->
-</aside><!-- /.l-sidebar -->
+    </div>
+</aside>
 
 <!-- ═══════════════════════════════════════════════════════════
      MOBILE BOTTOM NAV
 ═══════════════════════════════════════════════════════════════ -->
 <nav class="l-mobile-nav" aria-label="Mobile navigation">
     <div class="l-mobile-nav__inner">
+
         <?php foreach ($navItems as $item):
+            if (!in_array($item['key'], $mobilePin)) continue;
             $isActive = ($page === $item['key']);
             $hasBadge = ($item['key'] === 'user-requests' && $pendingUserCount > 0);
         ?>
-        <a href="<?= $item['url'] ?>"
-           class="l-mobile-nav__item<?= $isActive ? ' is-active' : '' ?>"
-           title="<?= htmlspecialchars($item['label']) ?>"
-           <?= $isActive ? 'aria-current="page"' : '' ?>>
-            <i class="fa-solid <?= $item['icon'] ?>"></i>
-            <?php if ($hasBadge): ?>
-                <span class="l-mobile-nav__badge"><?= $pendingUserCount > 9 ? '9+' : $pendingUserCount ?></span>
-            <?php endif; ?>
-        </a>
+            <a href="<?= $item['url'] ?>"
+               class="l-mobile-nav__item<?= $isActive ? ' is-active' : '' ?>"
+               aria-current="<?= $isActive ? 'page' : 'false' ?>">
+                <div class="l-mobile-nav__icon-wrap">
+                    <i class="fa-solid <?= $item['icon'] ?>"></i>
+                    <?php if ($hasBadge): ?>
+                        <span class="l-mobile-nav__dot" aria-hidden="true"></span>
+                    <?php endif; ?>
+                </div>
+                <span class="l-mobile-nav__label"><?= htmlspecialchars($item['label']) ?></span>
+            </a>
         <?php endforeach; ?>
-        <a href="/logout" class="l-mobile-nav__item l-mobile-nav__item--logout" title="Sign Out">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-        </a>
+
+        <!-- More button -->
+        <button type="button"
+                class="l-mobile-nav__item l-mobile-nav__more-btn<?= $moreIsActive ? ' is-active' : '' ?>"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="mobileMoreDrawer"
+                onclick="skToggleMoreDrawer()">
+            <div class="l-mobile-nav__icon-wrap">
+                <i class="fa-solid fa-ellipsis"></i>
+                <?php if ($pendingUserCount > 0 && !in_array($page, ['user-requests'])): ?>
+                    <span class="l-mobile-nav__dot" aria-hidden="true"></span>
+                <?php endif; ?>
+            </div>
+            <span class="l-mobile-nav__label">More</span>
+        </button>
+
     </div>
-</nav><!-- /.l-mobile-nav -->
+</nav>
 
 <!-- ═══════════════════════════════════════════════════════════
-     LAYOUT JS — dark-mode toggle
-     Call  layoutToggleDark()  from topbar buttons
+     MORE DRAWER
+═══════════════════════════════════════════════════════════════ -->
+<div id="mobileMoreDrawer"
+     class="l-more-drawer"
+     role="dialog"
+     aria-modal="true"
+     aria-label="More navigation options"
+     hidden>
+
+    <div class="l-more-drawer__backdrop" onclick="skToggleMoreDrawer()"></div>
+
+    <div class="l-more-drawer__sheet">
+        <div class="l-more-drawer__handle" aria-hidden="true"></div>
+        <div class="l-more-drawer__title">More</div>
+
+        <div class="l-more-drawer__grid">
+            <?php foreach ($mobileMore as $item):
+                $isActive = ($page === $item['key']);
+                $hasBadge = ($item['key'] === 'user-requests' && $pendingUserCount > 0);
+            ?>
+                <a href="<?= $item['url'] ?>"
+                   class="l-more-drawer__item<?= $isActive ? ' is-active' : '' ?>"
+                   <?= $isActive ? 'aria-current="page"' : '' ?>>
+                    <div class="l-more-drawer__icon-wrap">
+                        <i class="fa-solid <?= $item['icon'] ?>"></i>
+                        <?php if ($hasBadge): ?>
+                            <span class="l-more-drawer__badge" aria-label="<?= $pendingUserCount ?> pending">
+                                <?= $pendingUserCount > 9 ? '9+' : $pendingUserCount ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    <span class="l-more-drawer__label"><?= htmlspecialchars($item['label']) ?></span>
+                </a>
+            <?php endforeach; ?>
+
+            <a href="/logout" class="l-more-drawer__item l-more-drawer__item--logout">
+                <div class="l-more-drawer__icon-wrap">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </div>
+                <span class="l-more-drawer__label">Sign Out</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LAYOUT JS — dark-mode toggle + drawer
 ═══════════════════════════════════════════════════════════════ -->
 <script>
 (function(){
@@ -204,5 +268,32 @@ $navItems = [
         try { localStorage.setItem('sk_theme', isDark ? 'dark' : 'light'); } catch(e){}
         applyDark(isDark);
     };
+
+    /* ── More drawer ── */
+    var _drawerOpen = false;
+
+    window.skToggleMoreDrawer = function () {
+        var drawer = document.getElementById('mobileMoreDrawer');
+        var btn    = document.querySelector('.l-mobile-nav__more-btn');
+        if (!drawer) return;
+
+        _drawerOpen = !_drawerOpen;
+        drawer.hidden = !_drawerOpen;
+        if (btn) btn.setAttribute('aria-expanded', _drawerOpen ? 'true' : 'false');
+
+        if (_drawerOpen) {
+            requestAnimationFrame(function () {
+                drawer.classList.add('is-open');
+            });
+            document.addEventListener('keydown', _escHandler);
+        } else {
+            drawer.classList.remove('is-open');
+            document.removeEventListener('keydown', _escHandler);
+        }
+    };
+
+    function _escHandler(e) {
+        if (e.key === 'Escape') window.skToggleMoreDrawer();
+    }
 })();
 </script>
