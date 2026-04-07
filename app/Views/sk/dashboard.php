@@ -188,7 +188,13 @@ foreach ($myRes as $r) {
     <?php /* Dashboard-specific styles only. All global tokens, sidebar, nav, cards,
              tags, modals, dark-mode overrides and utilities live in app.css. */ ?>
     <style>
-        /* ── Force font on everything ── */
+        html, body {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif !important;
+}
+:root {
+    --font: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
 *, *::before, *::after {
     font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     box-sizing: border-box;
