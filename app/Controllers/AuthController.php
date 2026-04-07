@@ -30,8 +30,6 @@ class AuthController extends BaseController
 
         $userModel = new UserModel();
 
-        // FIX: Explicitly list columns to avoid `is_verified` collision
-        //      between users.* and accounts.is_verified.
         $user = $userModel
             ->select('users.id, users.name, users.email, users.role, users.status, accounts.password, accounts.is_verified')
             ->join('accounts', 'accounts.user_id = users.id')
@@ -43,7 +41,6 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        // Handle multiple possible DB representations of boolean true
         $isVerified = in_array($user['is_verified'], [true, 1, 't', 'true', '1']);
 
         if (!$isVerified) {
@@ -128,7 +125,6 @@ class AuthController extends BaseController
             return redirect()->to('/register');
         }
 
-        // FIX: compare lowercase so both 'SK' and 'sk' are accepted
         if (!in_array(strtolower($role), ['resident', 'sk'])) {
             $session->setFlashdata('error', 'Invalid role selected.');
             return redirect()->to('/register');
@@ -161,7 +157,6 @@ class AuthController extends BaseController
             return redirect()->to('/register');
         }
 
-        // Map view role values ('SK' / 'resident') to DB role values ('sk' / 'user')
         $dbRole   = (strtolower($role) === 'sk') ? 'sk' : 'user';
         $isSK     = ($dbRole === 'sk');
         $now      = Time::now('Asia/Manila')->toDateTimeString();
@@ -172,9 +167,8 @@ class AuthController extends BaseController
             'email'       => $email,
             'role'        => $dbRole,
             'status'      => 'pending',
-            // FIX: use integer 0/1 instead of PHP bool to be driver-agnostic
-            'is_approved' => $isSK ? 0 : 1,
-            'is_verified' => 0,
+            'is_approved' => $isSK ? 'false' : 'true',
+            'is_verified' => 'false',
             'created_at'  => $now,
             'updated_at'  => $now,
         ]);
@@ -193,7 +187,7 @@ class AuthController extends BaseController
             'user_id'            => $userId,
             'password'           => password_hash($password, PASSWORD_DEFAULT),
             'verification_token' => $verificationToken,
-            'is_verified'        => 0,
+            'is_verified'        => 'false',
             'created_at'         => $now,
             'updated_at'         => $now,
         ]);
@@ -230,7 +224,6 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        // FIX: same broad boolean check used in loginAction
         $alreadyVerified = in_array($account['is_verified'], [true, 1, 't', 'true', '1']);
 
         if ($alreadyVerified) {
@@ -241,7 +234,7 @@ class AuthController extends BaseController
         $now = Time::now('Asia/Manila')->toDateTimeString();
 
         $accountModel->update($account['id'], [
-            'is_verified'        => 1,
+            'is_verified'        => 'true',
             'verification_token' => null,
             'updated_at'         => $now,
         ]);
@@ -257,7 +250,7 @@ class AuthController extends BaseController
         $isSK = ($user['role'] === 'sk');
 
         $userModel->update($account['user_id'], [
-            'is_verified' => 1,
+            'is_verified' => 'true',
             'status'      => $isSK ? 'pending' : 'approved',
             'updated_at'  => $now,
         ]);
@@ -308,10 +301,6 @@ class AuthController extends BaseController
             default:         return redirect()->to('/dashboard');
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Private helpers
-    // ─────────────────────────────────────────────────────────────────────────
 
     private function sendVerificationEmail(string $to, string $name, string $token): bool
     {
