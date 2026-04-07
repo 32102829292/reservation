@@ -62,7 +62,7 @@ $navItems = [
 })();
 </script>
 
-<link rel="stylesheet" href="<?= base_url('assets/css/admin_app.css') ?>">
+<link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <!-- ══ SIDEBAR ══ -->
