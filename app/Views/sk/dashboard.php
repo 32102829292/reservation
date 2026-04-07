@@ -169,8 +169,6 @@ foreach ($myRes as $r) {
     <title>Dashboard | SK Officer</title>
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
@@ -188,20 +186,6 @@ foreach ($myRes as $r) {
     <?php /* Dashboard-specific styles only. All global tokens, sidebar, nav, cards,
              tags, modals, dark-mode overrides and utilities live in app.css. */ ?>
     <style>
-        html, body {
-    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif !important;
-}
-:root {
-    --font: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
-    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-}
-*, *::before, *::after {
-    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    box-sizing: border-box;
-}
-code, pre, .mono, [class*="mono"], [style*="var(--mono)"] {
-    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace;
-}
         /* ── Layout shell ── */
         body { display:flex; height:100vh; height:100dvh; overflow:hidden; }
         html.dark-pre body { background:#060e1e; }
@@ -459,23 +443,8 @@ code, pre, .mono, [class*="mono"], [style*="var(--mono)"] {
         .login-toast { position:fixed; bottom:calc(var(--mob-nav-total) + 8px); right:16px; z-index:400; max-width:280px; background:#0f172a; border-radius:14px; padding:12px 14px; display:flex; align-items:flex-start; gap:10px; box-shadow:0 8px 32px rgba(0,0,0,.3); transform:translateY(8px); opacity:0; pointer-events:none; transition:all .35s cubic-bezier(.34,1.56,.64,1); }
         .login-toast.show { transform:none; opacity:1; pointer-events:auto; }
         @media(min-width:1024px) { .login-toast { bottom:24px; } }
-            @media(max-width:639px) { .topbar { margin-bottom:14px; } .greeting-name { font-size:1.35rem; } }
 
-/* ── Lib banner mobile overflow fix ── */
-.lib-banner { max-width:100%; overflow:hidden; box-sizing:border-box; }
-@media(max-width:639px) {
-    .lib-banner { padding:14px; }
-    .lib-stat-item {
-        flex:1 1 calc(50% - 4px);
-        min-width:0;
-        padding:6px 8px;
-        box-sizing:border-box;
-    }
-    .lib-stat-lbl { font-size:.46rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .lib-stat-val { font-size:.82rem; line-height:1.1; }
-    .grid-lib { grid-template-columns:1fr !important; }
-}
-        
+        @media(max-width:639px) { .topbar { margin-bottom:14px; } .greeting-name { font-size:1.35rem; } }
     </style>
 </head>
 
