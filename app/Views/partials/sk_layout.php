@@ -204,10 +204,6 @@ $activeInDrawer = in_array($page, array_column($drawerItems, 'key'));
         <i class="fa-solid fa-chevron-right l-drawer__chev"></i>
     </a>
 </div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     LAYOUT JS
-═══════════════════════════════════════════════════════════════ -->
 <script>
 (function(){
     'use strict';
