@@ -274,4 +274,3 @@ $activeInDrawer = in_array($page, array_column($drawerItems, 'key'));
 
 })();
 </script>
-</div>
