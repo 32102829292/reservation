@@ -3168,10 +3168,11 @@ $flashInfo = session()->getFlashdata('info');
 </div>
 
 <script>
-  const FLASH_ERROR = <?= json_encode($flashError) ?>;
-  const FLASH_SUCCESS = <?= json_encode($flashSuccess) ?>;
-  const FLASH_INFO = <?= json_encode($flashInfo) ?>;
-
+<?php
+$flashError   = session()->getFlashdata('error');
+$flashSuccess = session()->getFlashdata('success');
+$flashInfo    = session()->getFlashdata('info');
+?>
   function onRoleChange(v) {
     document.getElementById('skNotice').classList.toggle('show', v === 'SK');
   }
