@@ -2168,11 +2168,12 @@
   </script>
 </body>
 
-</html> $flashError = session()->getFlashdata('error');
+</html> 
+<?php
+$flashError   = session()->getFlashdata('error');
 $flashSuccess = session()->getFlashdata('success');
-$flashInfo = session()->getFlashdata('info');
+$flashInfo    = session()->getFlashdata('info');
 ?>
-
 <!-- SK notice -->
 <div class="sk-notice" id="skNotice">
   <i class="fa-solid fa-shield-halved"></i>
@@ -2491,7 +2492,11 @@ $flashInfo = session()->getFlashdata('info');
     </div>
   </div>
 </div>
-
+<?php
+$flashError   = session()->getFlashdata('error');
+$flashSuccess = session()->getFlashdata('success');
+$flashInfo    = session()->getFlashdata('info');
+?>
 <script>
   const FLASH_ERROR = <?= json_encode($flashError) ?>;
   const FLASH_SUCCESS = <?= json_encode($flashSuccess) ?>;
@@ -3841,7 +3846,11 @@ $flashInfo    = session()->getFlashdata('info');
     </div>
   </div>
 </div>
-
+<?php
+$flashError   = session()->getFlashdata('error');
+$flashSuccess = session()->getFlashdata('success');
+$flashInfo    = session()->getFlashdata('info');
+?>
 <script>
   const FLASH_ERROR = <?= json_encode($flashError) ?>;
   const FLASH_SUCCESS = <?= json_encode($flashSuccess) ?>;
