@@ -1054,21 +1054,21 @@
             gap: 8px;
             flex-wrap: wrap;
         }
-        @media(max-width:639px) {
-    .lib-banner { padding: 16px; }
+        @media(max-width:639px) { .topbar { margin-bottom:14px; } .greeting-name { font-size:1.35rem; } }
+
+/* ── Lib banner mobile overflow fix ── */
+.lib-banner { max-width:100%; overflow:hidden; box-sizing:border-box; }
+@media(max-width:639px) {
+    .lib-banner { padding:14px; }
     .lib-stat-item {
-    flex: 1 1 calc(50% - 4px);   /* 2-column fallback on very narrow */
-    min-width: 0;
-    padding: 6px 8px;
-}
-.lib-stat-lbl {
-    font-size: .46rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.lib-stat-val { font-size: .82rem; line-height: 1.1; }
-    .grid-lib      { grid-template-columns: 1fr !important; }
+        flex:1 1 calc(50% - 4px);
+        min-width:0;
+        padding:6px 8px;
+        box-sizing:border-box;
+    }
+    .lib-stat-lbl { font-size:.46rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lib-stat-val { font-size:.82rem; line-height:1.1; }
+    .grid-lib { grid-template-columns:1fr !important; }
 }
 @media(max-width:900px) {
     .grid-main, .grid-three, .grid-lib { grid-template-columns: 1fr; }
