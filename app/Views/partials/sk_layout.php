@@ -54,9 +54,9 @@ $navItems = [
     ['url' => '/sk/profile',         'icon' => 'fa-user',         'label' => 'Profile',          'key' => 'profile'],
 ];
 
-// Mobile nav: 3 pinned items (Dashboard, New Reservation, Profile)
+// Pinned items always visible in the bottom bar
 $mobilePin  = ['dashboard', 'new-reservation', 'profile'];
-$mobileMore = array_filter($navItems, fn($i) => !in_array($i['key'], $mobilePin));
+$mobileMore = array_values(array_filter($navItems, fn($i) => !in_array($i['key'], $mobilePin)));
 
 // Is the active page inside the "More" drawer?
 $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
@@ -83,7 +83,7 @@ $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
 <div class="l-shell">
 
 <!-- ═══════════════════════════════════════════════════════════
-     SIDEBAR
+     SIDEBAR (desktop only)
 ═══════════════════════════════════════════════════════════════ -->
 <aside class="l-sidebar" role="navigation" aria-label="Main navigation">
     <div class="l-sidebar__inner">
@@ -133,8 +133,8 @@ $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
                      style="width:<?= $quotaPct ?>%"></div>
             </div>
             <p class="l-quota__note<?= $remaining === 0 ? ' is-err' : ($remaining === 1 ? ' is-warn' : '') ?>">
-                <?php if ($remaining === 0): ?>⚠ No slots left this month
-                <?php elseif ($remaining === 1): ?>⚡ Only 1 slot remaining
+                <?php if ($remaining === 0): ?>&#9888; No slots left this month
+                <?php elseif ($remaining === 1): ?>&#9889; Only 1 slot remaining
                 <?php else: ?><?= $remaining ?> slots remaining<?php endif; ?>
             </p>
         </div>
@@ -153,7 +153,7 @@ $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
 </aside>
 
 <!-- ═══════════════════════════════════════════════════════════
-     MOBILE BOTTOM NAV
+     MOBILE BOTTOM NAV — 3 pinned + More button
 ═══════════════════════════════════════════════════════════════ -->
 <nav class="l-mobile-nav" aria-label="Mobile navigation">
     <div class="l-mobile-nav__inner">
@@ -196,7 +196,7 @@ $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
 </nav>
 
 <!-- ═══════════════════════════════════════════════════════════
-     MORE DRAWER
+     MORE DRAWER — slides up from bottom
 ═══════════════════════════════════════════════════════════════ -->
 <div id="mobileMoreDrawer"
      class="l-more-drawer"
@@ -242,7 +242,7 @@ $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
-     LAYOUT JS — dark-mode toggle + drawer
+     LAYOUT JS — dark-mode toggle + More drawer
 ═══════════════════════════════════════════════════════════════ -->
 <script>
 (function(){
@@ -272,7 +272,7 @@ $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
     /* ── More drawer ── */
     var _drawerOpen = false;
 
-    window.skToggleMoreDrawer = function () {
+    window.skToggleMoreDrawer = function() {
         var drawer = document.getElementById('mobileMoreDrawer');
         var btn    = document.querySelector('.l-mobile-nav__more-btn');
         if (!drawer) return;
@@ -282,8 +282,11 @@ $moreIsActive = !in_array($page, $mobilePin) && $page !== '';
         if (btn) btn.setAttribute('aria-expanded', _drawerOpen ? 'true' : 'false');
 
         if (_drawerOpen) {
-            requestAnimationFrame(function () {
-                drawer.classList.add('is-open');
+            /* tiny delay so `hidden` removal is painted before class triggers transition */
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    drawer.classList.add('is-open');
+                });
             });
             document.addEventListener('keydown', _escHandler);
         } else {

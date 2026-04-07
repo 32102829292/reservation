@@ -321,22 +321,27 @@ button   { font-family: var(--font); }
   flex-shrink: 0;
   transition: background var(--ease);
 }
+/* =============================================================
+   MOBILE BOTTOM NAV + MORE DRAWER
+   Add this block to both admin_app.css and sk_app.css
+   ============================================================= */
 
-/* ═══════════════════════════════════════════════════
-   MOBILE BOTTOM NAV — Claude style
-═══════════════════════════════════════════════════ */
+/* ── Bottom nav bar ─────────────────────────────────────────── */
 .l-mobile-nav {
-    display: none;
+    display: none; /* shown only via media query below */
     position: fixed;
-    bottom: 0; left: 0; right: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 200;
-    background: var(--nav-bg, #fff);
-    border-top: 0.5px solid rgba(0, 0, 0, .09);
+    background: #ffffff;
+    border-top: 0.5px solid rgba(0, 0, 0, 0.09);
+    /* respect iPhone home indicator */
     padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 body.dark .l-mobile-nav {
     background: #1a1a1a;
-    border-top-color: rgba(255,255,255,.08);
+    border-top-color: rgba(255, 255, 255, 0.08);
 }
 
 .l-mobile-nav__inner {
@@ -346,31 +351,36 @@ body.dark .l-mobile-nav {
     padding: 6px 8px 10px;
 }
 
-/* Individual nav item / button */
+/* ── Nav item (both <a> and <button>) ────────────────────────── */
 .l-mobile-nav__item {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 3px;
     text-decoration: none;
-    color: var(--mnav-muted, #888);
+    color: #888888;
     background: none;
     border: none;
     cursor: pointer;
     min-width: 56px;
     padding: 5px 8px;
     border-radius: 12px;
-    transition: color .15s;
+    transition: color 0.15s;
     font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+}
+body.dark .l-mobile-nav__item {
+    color: #777777;
 }
 
 .l-mobile-nav__item.is-active {
-    color: var(--mnav-active, #4f46e5);
+    color: #4f46e5;
 }
-body.dark .l-mobile-nav__item { color: #888; }
-body.dark .l-mobile-nav__item.is-active { color: #818cf8; }
+body.dark .l-mobile-nav__item.is-active {
+    color: #818cf8;
+}
 
-/* Icon wrapper — handles the red dot badge */
+/* ── Icon wrapper ────────────────────────────────────────────── */
 .l-mobile-nav__icon-wrap {
     position: relative;
     width: 24px;
@@ -381,30 +391,34 @@ body.dark .l-mobile-nav__item.is-active { color: #818cf8; }
     font-size: 1.05rem;
 }
 
-/* Active item: small pill behind the icon */
+/* Soft pill highlight behind active icon */
 .l-mobile-nav__item.is-active .l-mobile-nav__icon-wrap::before {
     content: '';
     position: absolute;
     inset: -4px -10px;
-    background: rgba(79, 70, 229, .10);
+    background: rgba(79, 70, 229, 0.10);
     border-radius: 20px;
 }
 body.dark .l-mobile-nav__item.is-active .l-mobile-nav__icon-wrap::before {
-    background: rgba(129, 140, 248, .12);
+    background: rgba(129, 140, 248, 0.12);
 }
 
-/* Red notification dot */
+/* ── Red notification dot ────────────────────────────────────── */
 .l-mobile-nav__dot {
     position: absolute;
-    top: -2px; right: -3px;
-    width: 7px; height: 7px;
+    top: -2px;
+    right: -3px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: #ef4444;
-    border: 1.5px solid #fff;
+    border: 1.5px solid #ffffff;
 }
-body.dark .l-mobile-nav__dot { border-color: #1a1a1a; }
+body.dark .l-mobile-nav__dot {
+    border-color: #1a1a1a;
+}
 
-/* Label */
+/* ── Label ───────────────────────────────────────────────────── */
 .l-mobile-nav__label {
     font-size: 10px;
     font-weight: 500;
@@ -412,15 +426,21 @@ body.dark .l-mobile-nav__dot { border-color: #1a1a1a; }
     white-space: nowrap;
 }
 
-/* Show only on mobile */
+/* ── Show on mobile only ─────────────────────────────────────── */
 @media (max-width: 768px) {
-    .l-mobile-nav { display: block; }
+    .l-mobile-nav {
+        display: block;
+    }
+    /* push page content up so it isn't hidden behind the nav bar */
+    .main-area {
+        padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    }
 }
 
 
-/* ═══════════════════════════════════════════════════
-   MORE DRAWER — slides up from bottom
-═══════════════════════════════════════════════════ */
+/* =============================================================
+   MORE DRAWER — slides up from the bottom
+   ============================================================= */
 .l-more-drawer {
     position: fixed;
     inset: 0;
@@ -428,133 +448,166 @@ body.dark .l-mobile-nav__dot { border-color: #1a1a1a; }
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    /* `hidden` attr sets display:none; we override only when NOT hidden */
 }
-.l-more-drawer[hidden] { display: none; }
-.l-more-drawer.is-open .l-more-drawer__backdrop { opacity: 1; }
-.l-more-drawer.is-open .l-more-drawer__sheet { transform: translateY(0); }
+.l-more-drawer[hidden] {
+    display: none !important;
+}
 
 /* Backdrop */
 .l-more-drawer__backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,.35);
+    background: rgba(0, 0, 0, 0.40);
     opacity: 0;
-    transition: opacity .25s ease;
+    transition: opacity 0.25s ease;
+}
+.l-more-drawer.is-open .l-more-drawer__backdrop {
+    opacity: 1;
 }
 
 /* Sheet */
 .l-more-drawer__sheet {
     position: relative;
-    background: #fff;
+    background: #ffffff;
     border-radius: 20px 20px 0 0;
     padding: 12px 20px 32px;
     transform: translateY(100%);
-    transition: transform .28s cubic-bezier(.32,1,.32,1);
+    transition: transform 0.28s cubic-bezier(0.32, 1, 0.32, 1);
     max-height: 80vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
-body.dark .l-more-drawer__sheet { background: #1e1e1e; }
+.l-more-drawer.is-open .l-more-drawer__sheet {
+    transform: translateY(0);
+}
+body.dark .l-more-drawer__sheet {
+    background: #1e1e1e;
+}
 
 /* Drag handle */
 .l-more-drawer__handle {
-    width: 36px; height: 4px;
+    width: 36px;
+    height: 4px;
     border-radius: 2px;
-    background: rgba(0,0,0,.15);
+    background: rgba(0, 0, 0, 0.15);
     margin: 0 auto 16px;
 }
-body.dark .l-more-drawer__handle { background: rgba(255,255,255,.15); }
-
-/* Sheet title */
-.l-more-drawer__title {
-    font-size: 13px;
-    font-weight: 500;
-    color: #888;
-    margin-bottom: 16px;
-    text-transform: uppercase;
-    letter-spacing: .05em;
+body.dark .l-more-drawer__handle {
+    background: rgba(255, 255, 255, 0.15);
 }
 
-/* Grid of items */
+/* Section title */
+.l-more-drawer__title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #aaaaaa;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* 4-column icon grid */
 .l-more-drawer__grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px 4px;
+    gap: 4px;
 }
 
-/* Individual drawer item */
+/* Individual grid item */
 .l-more-drawer__item {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
     text-decoration: none;
-    color: #444;
-    padding: 10px 6px;
+    color: #333333;
+    padding: 10px 4px;
     border-radius: 14px;
-    transition: background .15s, color .15s;
+    transition: background 0.15s, color 0.15s;
+    -webkit-tap-highlight-color: transparent;
 }
-body.dark .l-more-drawer__item { color: #ccc; }
+body.dark .l-more-drawer__item {
+    color: #cccccc;
+}
 
 .l-more-drawer__item:active,
-.l-more-drawer__item:hover { background: rgba(0,0,0,.05); }
-body.dark .l-more-drawer__item:hover { background: rgba(255,255,255,.06); }
+.l-more-drawer__item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+body.dark .l-more-drawer__item:active,
+body.dark .l-more-drawer__item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
 
+/* Active state */
 .l-more-drawer__item.is-active {
     color: #4f46e5;
-    background: rgba(79,70,229,.08);
 }
 body.dark .l-more-drawer__item.is-active {
     color: #818cf8;
-    background: rgba(129,140,248,.10);
 }
 
-.l-more-drawer__item--logout { color: #ef4444; }
-body.dark .l-more-drawer__item--logout { color: #f87171; }
+/* Logout item */
+.l-more-drawer__item--logout {
+    color: #ef4444 !important;
+}
+body.dark .l-more-drawer__item--logout {
+    color: #f87171 !important;
+}
 
-/* Icon wrapper inside drawer */
+/* Icon box */
 .l-more-drawer__icon-wrap {
     position: relative;
-    width: 44px; height: 44px;
-    border-radius: 12px;
-    background: rgba(0,0,0,.05);
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.05);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    transition: background 0.15s;
 }
-body.dark .l-more-drawer__icon-wrap { background: rgba(255,255,255,.07); }
+body.dark .l-more-drawer__icon-wrap {
+    background: rgba(255, 255, 255, 0.07);
+}
 
 .l-more-drawer__item.is-active .l-more-drawer__icon-wrap {
-    background: rgba(79,70,229,.12);
+    background: rgba(79, 70, 229, 0.12);
 }
 body.dark .l-more-drawer__item.is-active .l-more-drawer__icon-wrap {
-    background: rgba(129,140,248,.14);
+    background: rgba(129, 140, 248, 0.14);
 }
 
 .l-more-drawer__item--logout .l-more-drawer__icon-wrap {
-    background: rgba(239,68,68,.08);
+    background: rgba(239, 68, 68, 0.08);
 }
 
-/* Badge inside drawer */
+/* Numbered badge inside drawer */
 .l-more-drawer__badge {
     position: absolute;
-    top: -4px; right: -4px;
+    top: -4px;
+    right: -4px;
     background: #ef4444;
-    color: #fff;
+    color: #ffffff;
     font-size: 10px;
-    font-weight: 600;
-    min-width: 16px;
-    height: 16px;
-    border-radius: 8px;
+    font-weight: 700;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 4px;
-    border: 1.5px solid #fff;
+    border: 2px solid #ffffff;
+    line-height: 1;
 }
-body.dark .l-more-drawer__badge { border-color: #1e1e1e; }
+body.dark .l-more-drawer__badge {
+    border-color: #1e1e1e;
+}
 
-/* Drawer label */
+/* Item label */
 .l-more-drawer__label {
     font-size: 11px;
     font-weight: 500;
@@ -563,7 +616,7 @@ body.dark .l-more-drawer__badge { border-color: #1e1e1e; }
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 64px;
+    max-width: 68px;
 }
 /* ══════════════════════════════════════════════════════════════
    6. MAIN AREA

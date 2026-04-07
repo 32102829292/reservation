@@ -260,7 +260,6 @@
         <?php if ($pendingBorrows > 0): ?>
           <div class="pending-pill"><i class="fa-solid fa-clock" style="font-size:.75rem;"></i><?= $pendingBorrows ?> pending borrow<?= $pendingBorrows > 1 ? 's' : '' ?></div>
         <?php endif; ?>
-        {{-- toggleDark is defined by layout.php (window.toggleDark = window.adminToggleDark) --}}
         <div class="icon-btn" onclick="toggleDark()" id="darkBtn" title="Toggle dark mode">
           <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem;"></i></span>
         </div>
