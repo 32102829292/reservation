@@ -215,6 +215,7 @@ body.dark .l-user-role { color: #818cf8; }
 .l-nav {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -426,6 +427,9 @@ body.dark .l-nav__link:hover:not(.is-active) .l-nav__icon { background: rgba(99,
   overscroll-behavior-y: contain;
 }
 
+/* ──────────────────────────────────────────────────────────────
+   7. RESPONSIVE
+────────────────────────────────────────────────────────────────  */
 @media (max-width: 1023px) {
   .l-sidebar     { display: none !important; }
   .l-mobile-nav  { display: block !important; }
