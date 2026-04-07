@@ -15,7 +15,8 @@ class RegisterController extends Controller
     public function store()
     {
         $rules = [
-            'name'             => 'required|min_length[3]',
+            'first_name'       => 'required|min_length[2]',
+            'last_name'        => 'required|min_length[2]',
             'email'            => 'required|valid_email|is_unique[users.email]',
             'role'             => 'required',
             'password'         => 'required|min_length[8]',
@@ -31,12 +32,12 @@ class RegisterController extends Controller
         $userModel = new UserModel();
 
         $userModel->save([
-            'name'               => $this->request->getPost('name'),
+            'name'               => trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name')),
             'email'              => $this->request->getPost('email'),
             'role'               => $this->request->getPost('role'),
             'password'           => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'is_approved'        => 0,
-            'is_verified'        => 0,
+            'is_approved'        => false,
+            'is_verified'        => false,
             'verification_token' => bin2hex(random_bytes(32)),
             'created_at'         => date('Y-m-d H:i:s'),
         ]);
