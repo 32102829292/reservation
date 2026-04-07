@@ -36,8 +36,8 @@ class RegisterController extends Controller
             'email'              => $this->request->getPost('email'),
             'role'               => $this->request->getPost('role'),
             'password'           => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'is_approved'        => false,
-            'is_verified'        => false,
+            'is_approved'        => 'false',
+            'is_verified'        => 'false',
             'verification_token' => bin2hex(random_bytes(32)),
             'created_at'         => date('Y-m-d H:i:s'),
         ]);
