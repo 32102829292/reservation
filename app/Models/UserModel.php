@@ -21,31 +21,4 @@ class UserModel extends Model {
     ];
 
     protected $useTimestamps = false;
-    
-    protected $fieldData = [
-        'is_approved' => ['type' => 'boolean'],
-        'is_verified' => ['type' => 'boolean'],
-    ];
-    
-    protected function beforeInsert(array $data)
-    {
-        if (isset($data['data']['is_approved'])) {
-            $data['data']['is_approved'] = $data['data']['is_approved'] ? true : false;
-        }
-        if (isset($data['data']['is_verified'])) {
-            $data['data']['is_verified'] = $data['data']['is_verified'] ? true : false;
-        }
-        return $data;
-    }
-    
-    protected function beforeUpdate(array $data)
-    {
-        if (isset($data['data']['is_approved'])) {
-            $data['data']['is_approved'] = $data['data']['is_approved'] ? true : false;
-        }
-        if (isset($data['data']['is_verified'])) {
-            $data['data']['is_verified'] = $data['data']['is_verified'] ? true : false;
-        }
-        return $data;
-    }
 }

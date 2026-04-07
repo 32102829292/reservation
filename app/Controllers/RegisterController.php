@@ -29,17 +29,18 @@ class RegisterController extends Controller
                 ->with('error', implode(' ', $this->validator->getErrors()));
         }
 
-        $userModel = new UserModel();
-
-        $userModel->save([
-            'name'               => trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name')),
-            'email'              => $this->request->getPost('email'),
-            'role'               => $this->request->getPost('role'),
-            'password'           => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'is_approved'        => 'false',
-            'is_verified'        => 'false',
-            'verification_token' => bin2hex(random_bytes(32)),
-            'created_at'         => date('Y-m-d H:i:s'),
+        $db = \Config\Database::connect();
+        
+        $sql = "INSERT INTO users (name, email, role, password, is_approved, is_verified, verification_token, created_at) 
+                VALUES (?, ?, ?, ?, FALSE, FALSE, ?, ?)";
+        
+        $db->query($sql, [
+            trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name')),
+            $this->request->getPost('email'),
+            $this->request->getPost('role'),
+            password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            bin2hex(random_bytes(32)),
+            date('Y-m-d H:i:s')
         ]);
 
         return redirect()->to('/login')
