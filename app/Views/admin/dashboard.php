@@ -1054,7 +1054,13 @@
             gap: 8px;
             flex-wrap: wrap;
         }
-
+        @media(max-width:639px) {
+    .lib-banner { padding: 16px; }
+    .lib-stat-item { flex: 1 1 0; min-width: 0; padding: 6px 8px; }
+    .lib-stat-lbl  { font-size: .48rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lib-stat-val  { font-size: .85rem; line-height: 1.1; }
+    .grid-lib      { grid-template-columns: 1fr !important; }
+}
         @media(max-width:639px) {
             .greeting-name {
                 font-size: 1.35rem;

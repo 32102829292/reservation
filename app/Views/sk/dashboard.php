@@ -292,6 +292,13 @@ foreach ($myRes as $r) {
         .grid-lib   { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-bottom:16px; }
         .side-col   { display:flex; flex-direction:column; gap:14px; }
         @media(max-width:900px) { .grid-main,.grid-three,.grid-lib { grid-template-columns:1fr; } }
+        @media(max-width:639px) {
+    .lib-banner { padding: 16px; }
+    .lib-stat-item { flex: 1 1 0; min-width: 0; padding: 6px 8px; }
+    .lib-stat-lbl  { font-size: .48rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lib-stat-val  { font-size: .85rem; line-height: 1.1; }
+    .grid-lib      { grid-template-columns: 1fr !important; }
+}
         @media(max-width:639px) { .grid-two,.grid-four { grid-template-columns:repeat(2,minmax(0,1fr)); } .main-area { padding:14px 12px 0; } }
 
         /* ── Card sub-elements ── */
