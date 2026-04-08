@@ -846,6 +846,16 @@ button {
     display: block !important;
 }
 
+.grid-lib > div {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.grid-lib > div > * {
+    min-width: 0;
+    max-width: 100%;
+}
+
 .lib-stat-val {
     font-size: .92rem !important;
     font-weight: 800 !important;
