@@ -129,25 +129,26 @@ button {
 
 /* 5. SIDEBAR */
 .l-sidebar {
-    width: var(--sidebar-w);
-    flex-shrink: 0;
-    padding: 18px 14px;
-    height: 100vh;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  padding: 18px 14px;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
 }
 
 .l-sidebar__inner {
-    background: var(--card);
-    border-radius: var(--r-xl);
-    border: 1px solid rgba(99, 102, 241, .1);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    transition: background var(--ease), border-color var(--ease);
+  background: var(--card);
+  border-radius: var(--r-xl); /* 24px */
+  border: 1px solid rgba(99,102,241,.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: background var(--ease), border-color var(--ease);
 }
 
 .l-sidebar__top {
