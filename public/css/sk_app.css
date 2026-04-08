@@ -119,11 +119,7 @@ button {
 /* 4. LAYOUT SHELL */
 .l-shell {
     display: flex;
-    flex: 1;
-    min-width: 0;
     width: 100%;
-    height: 100vh;
-    height: 100dvh;
     overflow: hidden;
 }
 
@@ -669,17 +665,12 @@ button {
     margin: 8px 0;
 }
 
-/* 7. MAIN AREA */
 .main-area {
-    flex: 1;
-    min-width: 0;
-    padding: 24px 28px 40px;
-    height: 100vh;
-    height: 100dvh;
-    overflow-y: auto;
+    flex: 1 1 0%;      /* grow, shrink, basis 0 — never wider than remaining space */
+    min-width: 0;      /* CRITICAL: allows flex child to shrink below content size */
     overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 /* 8. RESPONSIVE */
@@ -745,7 +736,16 @@ button {
     margin-top: 4px;
     flex-wrap: wrap;
 }
-
+.grid-lib {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+    margin-bottom: 16px !important;
+    align-items: start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
 .greeting-eyebrow,
 .page-eyebrow {
     font-size: .7rem;
