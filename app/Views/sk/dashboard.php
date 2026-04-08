@@ -1998,37 +1998,27 @@ foreach ($myRes as $r) {
             Library
             <a href="/sk/books" class="link-sm" style="margin-left:auto;">Browse All →</a>
         </p>
-        <!-- Banner -->
-<div class="lib-banner">
-    <div style="position:relative;z-index:1;">
-        <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
-        <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;">
-            <?= $availableCount ?>
-            <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span>
-        </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:14px;"><?= $totalBooks ?> total titles</div>
-
-        <div class="lib-stats">
-            <div class="lib-stat-item">
-                <span class="lib-stat-lbl">My Borrows</span>
-                <span class="lib-stat-val"><?= count($myBorrowings) ?></span>
-            </div>
-            <div class="lib-stat-item">
-                <?php $bpct = $totalBooks > 0 ? round($availableCount / $totalBooks * 100) : 0; ?>
-                <span class="lib-stat-lbl">In Stock</span>
-                <span class="lib-stat-val"><?= min($bpct, 100) ?>%</span>
-            </div>
-            <div class="lib-stat-item">
-                <span class="lib-stat-lbl">Borrowed</span>
-                <span class="lib-stat-val"><?= max(0, $totalBooks - $availableCount) ?></span>
-            </div>
-        </div>
-
-        <a href="/sk/books" class="lib-browse" style="margin-top:14px;display:inline-flex;">
-            <?= sk_icon('book-open', 13, 'white') ?> Browse Library
-        </a>
-    </div>
-</div>
+        <div class="grid-lib fade-up-4">
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <!-- Banner -->
+                <div class="lib-banner">
+                    <div style="position:relative;z-index:1;">
+                        <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
+                        <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;"><?= $availableCount ?> <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span></div>
+                        <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:16px;"><?= $totalBooks ?> total titles</div>
+                        <div style="display:flex;gap:8px;flex-wrap:nowrap;overflow:hidden;width:100%;box-sizing:border-box;">
+                            <div class="lib-stat-item">
+                                <div class="lib-stat-lbl">My Borrows</div>
+                                <div class="lib-stat-val"><?= count($myBorrowings) ?></div>
+                            </div>
+                            <div class="lib-stat-item">
+                                <?php $bpct = $totalBooks > 0 ? round($availableCount / $totalBooks * 100) : 0; ?>
+                                <div class="lib-stat-lbl">In Stock</div>
+                                <div class="lib-stat-val"><?= $bpct ?>%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- AI Finder -->
                 <div class="card card-p">
