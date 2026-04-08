@@ -666,11 +666,13 @@ button {
 }
 
 .main-area {
-    flex: 1 1 0%;      /* grow, shrink, basis 0 — never wider than remaining space */
-    min-width: 0;      /* CRITICAL: allows flex child to shrink below content size */
+    flex: 1 1 0%;
+    min-width: 0;
     overflow-x: hidden;
     overflow-y: auto;
     box-sizing: border-box;
+    padding: 24px 28px;          /* ← ADD THIS */
+    max-width: 100%;             /* ← ADD THIS */
 }
 
 /* 8. RESPONSIVE */
@@ -737,14 +739,27 @@ button {
     flex-wrap: wrap;
 }
 .grid-lib {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 16px !important;
-    margin-bottom: 16px !important;
-    align-items: start !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: start;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+    .grid-lib {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 639px) {
+    .grid-lib {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
 }
 .greeting-eyebrow,
 .page-eyebrow {
@@ -3408,4 +3423,17 @@ body.dark ::-webkit-scrollbar-track {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+@media (max-width: 1023px) {
+    .main-area {
+        padding: 20px 20px calc(var(--mob-nav-total) + 16px) !important;
+        scrollbar-width: none;
+    }
+}
+
+@media (max-width: 639px) {
+    .main-area {
+        padding: 14px 12px calc(var(--mob-nav-total) + 16px) !important;
+    }
 }
