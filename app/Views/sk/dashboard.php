@@ -1308,11 +1308,6 @@ foreach ($myRes as $r) {
             }
         }
 
-        .lib-banner div[style*="flex-wrap:wrap"] {
-            flex-wrap: nowrap !important;
-            overflow: hidden !important;
-        }
-
         .tl-toast-icon {
             width: 30px;
             height: 30px;
@@ -1398,9 +1393,7 @@ foreach ($myRes as $r) {
             pointer-events: none !important;
         }
 
-        .lib-stats,
-        .lib-banner>div[style*="display:flex"][style*="gap:8px"],
-        .lib-banner>div>div[style*="display:flex"][style*="gap:8px"] {
+        .lib-stats {
             display: flex !important;
             gap: 8px !important;
             flex-wrap: nowrap !important;
@@ -1485,17 +1478,9 @@ foreach ($myRes as $r) {
             background: rgba(255, 255, 255, .28) !important;
         }
 
-        .lib-banner>div {
+        .lib-banner > div {
             position: relative !important;
             z-index: 1 !important;
-        }
-
-        .lib-banner [style*="display:flex"][style*="gap:8px"],
-        .lib-banner>div>[style*="display:flex"][style*="gap:8px"] {
-            flex-wrap: nowrap !important;
-            overflow: hidden !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
         }
 
         @media (max-width: 639px) {
@@ -1507,15 +1492,7 @@ foreach ($myRes as $r) {
                 padding: 14px 14px 12px !important;
             }
 
-            .lib-stats,
-            .lib-banner>div[style*="display:flex"][style*="gap:8px"],
-            .lib-banner>div>div[style*="display:flex"][style*="gap:8px"] {
-                gap: 5px !important;
-                margin-top: 10px !important;
-            }
-
-            .lib-banner [style*="display:flex"][style*="gap:8px"],
-            .lib-banner>div>[style*="display:flex"][style*="gap:8px"] {
+            .lib-stats {
                 gap: 5px !important;
                 margin-top: 10px !important;
             }
@@ -1538,14 +1515,6 @@ foreach ($myRes as $r) {
                 display: none !important;
             }
 
-            .lib-title {
-                font-size: 1.3rem !important;
-            }
-
-            .lib-sub {
-                font-size: .7rem !important;
-            }
-
             .lib-browse {
                 width: 100% !important;
                 justify-content: center !important;
@@ -1557,7 +1526,7 @@ foreach ($myRes as $r) {
                 flex-wrap: wrap;
             }
 
-            .grid-lib a[style*="display:flex"]>div[style*="flex:1"] {
+            .grid-lib a[style*="display:flex"] > div[style*="flex:1"] {
                 min-width: 0;
             }
 
@@ -2000,23 +1969,36 @@ foreach ($myRes as $r) {
         </p>
         <div class="grid-lib fade-up-4">
             <div style="display:flex;flex-direction:column;gap:14px;">
-                <!-- Banner -->
+
+                <!-- ── Banner (FIXED) ── -->
                 <div class="lib-banner">
-                    <div style="position:relative;z-index:1;">
+                    <div>
                         <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
-                        <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;"><?= $availableCount ?> <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span></div>
-                        <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:16px;"><?= $totalBooks ?> total titles</div>
-                        <div style="display:flex;gap:8px;flex-wrap:nowrap;overflow:hidden;width:100%;box-sizing:border-box;">
+                        <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;">
+                            <?= $availableCount ?>
+                            <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span>
+                        </div>
+                        <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:14px;"><?= $totalBooks ?> total titles</div>
+
+                        <div class="lib-stats">
                             <div class="lib-stat-item">
-                                <div class="lib-stat-lbl">My Borrows</div>
-                                <div class="lib-stat-val"><?= count($myBorrowings) ?></div>
+                                <span class="lib-stat-lbl">My Borrows</span>
+                                <span class="lib-stat-val"><?= count($myBorrowings) ?></span>
                             </div>
                             <div class="lib-stat-item">
-                                <?php $bpct = $totalBooks > 0 ? round($availableCount / $totalBooks * 100) : 0; ?>
-                                <div class="lib-stat-lbl">In Stock</div>
-                                <div class="lib-stat-val"><?= $bpct ?>%</div>
+                                <?php $bpct = $totalBooks > 0 ? min(100, round($availableCount / $totalBooks * 100)) : 0; ?>
+                                <span class="lib-stat-lbl">In Stock</span>
+                                <span class="lib-stat-val"><?= $bpct ?>%</span>
+                            </div>
+                            <div class="lib-stat-item">
+                                <span class="lib-stat-lbl">Borrowed</span>
+                                <span class="lib-stat-val"><?= max(0, $totalBooks - $availableCount) ?></span>
                             </div>
                         </div>
+
+                        <a href="/sk/books" class="lib-browse" style="margin-top:14px;">
+                            <?= sk_icon('book-open', 13, 'white') ?> Browse Library
+                        </a>
                     </div>
                 </div>
 
