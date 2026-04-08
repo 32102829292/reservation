@@ -295,21 +295,69 @@ foreach ($myRes as $r) {
         .grid-lib   { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-bottom:16px; }
         .side-col   { display:flex; flex-direction:column; gap:14px; }
         @media(max-width:900px) { .grid-main,.grid-three,.grid-lib { grid-template-columns:1fr; } }
-        @media(max-width:639px) {
-    .lib-banner { padding: 16px; }
+        /* ── Library section mobile fixes ── */
+@media (max-width: 767px) {
+    .grid-lib {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 639px) {
+    /* Section label with "Browse All" link */
+    .section-lbl {
+        flex-wrap: wrap;
+    }
+
+    /* Library banner */
+    .lib-banner {
+        padding: 16px 16px 14px;
+    }
+
+    /* Stat items row inside banner */
+    .lib-banner > div > div[style*="display:flex;gap:8px"] {
+        gap: 6px;
+    }
+
     .lib-stat-item {
-    flex: 1 1 calc(50% - 4px);   /* 2-column fallback on very narrow */
-    min-width: 0;
-    padding: 6px 8px;
-}
-.lib-stat-lbl {
-    font-size: .46rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.lib-stat-val { font-size: .82rem; line-height: 1.1; }
-    .grid-lib      { grid-template-columns: 1fr !important; }
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 7px 8px;
+    }
+
+    .lib-stat-lbl {
+        font-size: .5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .lib-stat-val {
+        font-size: .88rem;
+        line-height: 1.1;
+    }
+
+    /* Book list item — critical: prevent title overflow */
+    .grid-lib a[style*="display:flex"] > div[style*="flex:1"] {
+        min-width: 0;
+    }
+
+    /* Insights 4-col → 2-col earlier */
+    .grid-four {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    /* Heatmap — fewer columns on tiny screens */
+    #insHeatmap {
+        grid-template-columns: repeat(12, 1fr) !important;
+    }
+    .heatmap-cell {
+        height: 22px;
+    }
+
+    /* Bottom padding for mobile nav */
+    .main-area {
+        padding-bottom: calc(var(--mob-nav-total) + 24px) !important;
+    }
 }
         @media(max-width:639px) { .grid-two,.grid-four { grid-template-columns:repeat(2,minmax(0,1fr)); } .main-area { padding:14px 12px 0; } }
 
@@ -903,7 +951,7 @@ include(APPPATH . 'Views/partials/sk_layout.php');?>
                             $ac = $av === 0 ? 'avail-off' : ($av <= 1 ? 'avail-low' : 'avail-on');
                             $at = $av === 0 ? 'Out' : ($av <= 1 ? '1 left' : $av . ' left');
                         ?>
-                            <a href="/sk/books" style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;" onmouseover="this.style.background='var(--indigo-light)'" onmouseout="this.style.background='transparent'">
+                            <a href="/sk/books" style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;min-width:0;">
                                 <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= esc($book['title']) ?></div>
