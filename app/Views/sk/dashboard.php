@@ -1308,6 +1308,11 @@ foreach ($myRes as $r) {
             }
         }
 
+        .lib-banner div[style*="flex-wrap:wrap"] {
+            flex-wrap: nowrap !important;
+            overflow: hidden !important;
+        }
+
         .tl-toast-icon {
             width: 30px;
             height: 30px;
@@ -2001,7 +2006,8 @@ foreach ($myRes as $r) {
                         <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
                         <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;"><?= $availableCount ?> <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span></div>
                         <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:16px;"><?= $totalBooks ?> total titles</div>
-                        <div style="display:flex;gap:8px;flex-wrap:nowrap;overflow:hidden;width:100%;box-sizing:border-box;">                            <div class="lib-stat-item">
+                        <div style="display:flex;gap:8px;flex-wrap:nowrap;overflow:hidden;width:100%;box-sizing:border-box;">
+                            <div class="lib-stat-item">
                                 <div class="lib-stat-lbl">My Borrows</div>
                                 <div class="lib-stat-val"><?= count($myBorrowings) ?></div>
                             </div>
