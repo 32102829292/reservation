@@ -1361,16 +1361,24 @@ foreach ($myRes as $r) {
 
         .grid-lib {
             display: grid !important;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             gap: 16px !important;
             margin-bottom: 16px !important;
             align-items: start !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            min-width: 0 !important;
         }
 
         @media (max-width: 900px) {
             .grid-lib {
                 grid-template-columns: 1fr !important;
             }
+        }
+
+        .main-area {
+            min-width: 0;
+            overflow-x: hidden;
         }
 
         .lib-banner {
@@ -1478,7 +1486,7 @@ foreach ($myRes as $r) {
             background: rgba(255, 255, 255, .28) !important;
         }
 
-        .lib-banner > div {
+        .lib-banner>div {
             position: relative !important;
             z-index: 1 !important;
         }
@@ -1526,7 +1534,7 @@ foreach ($myRes as $r) {
                 flex-wrap: wrap;
             }
 
-            .grid-lib a[style*="display:flex"] > div[style*="flex:1"] {
+            .grid-lib a[style*="display:flex"]>div[style*="flex:1"] {
                 min-width: 0;
             }
 
