@@ -293,22 +293,10 @@
             transform: translateY(-1px);
         }
 
-        .tl-session-card.tl-ok {
-            border-left-color: #10b981;
-        }
-
-        .tl-session-card.tl-warning {
-            border-left-color: #f59e0b;
-        }
-
-        .tl-session-card.tl-critical {
-            border-left-color: #ef4444;
-        }
-
-        .tl-session-card.tl-ended {
-            border-left-color: #94a3b8;
-            opacity: .6;
-        }
+        .tl-session-card.tl-ok      { border-left-color: #10b981; }
+        .tl-session-card.tl-warning  { border-left-color: #f59e0b; }
+        .tl-session-card.tl-critical { border-left-color: #ef4444; }
+        .tl-session-card.tl-ended   { border-left-color: #94a3b8; opacity: .6; }
 
         body.dark .tl-session-card {
             background: #101e35;
@@ -327,25 +315,10 @@
             white-space: nowrap;
         }
 
-        .tl-ok .tl-countdown {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .tl-warning .tl-countdown {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .tl-critical .tl-countdown {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .tl-ended .tl-countdown {
-            background: #f1f5f9;
-            color: #64748b;
-        }
+        .tl-ok .tl-countdown      { background: #dcfce7; color: #166534; }
+        .tl-warning .tl-countdown  { background: #fef3c7; color: #92400e; }
+        .tl-critical .tl-countdown { background: #fee2e2; color: #991b1b; }
+        .tl-ended .tl-countdown   { background: #f1f5f9; color: #64748b; }
 
         body.dark .tl-ended .tl-countdown {
             background: #1a2a42;
@@ -366,21 +339,10 @@
             transition: width 1s linear;
         }
 
-        .tl-ok .tl-prog-fill {
-            background: #10b981;
-        }
-
-        .tl-warning .tl-prog-fill {
-            background: #f59e0b;
-        }
-
-        .tl-critical .tl-prog-fill {
-            background: #ef4444;
-        }
-
-        .tl-ended .tl-prog-fill {
-            background: #94a3b8;
-        }
+        .tl-ok .tl-prog-fill      { background: #10b981; }
+        .tl-warning .tl-prog-fill  { background: #f59e0b; }
+        .tl-critical .tl-prog-fill { background: #ef4444; }
+        .tl-ended .tl-prog-fill   { background: #94a3b8; }
 
         body.dark .tl-prog-track {
             background: rgba(99, 102, 241, .15);
@@ -420,27 +382,15 @@
             animation: toastIn .3s cubic-bezier(.34, 1.56, .64, 1) both;
         }
 
-        .tl-toast.dismissing {
-            animation: toastOut .2s ease forwards;
-        }
+        .tl-toast.dismissing { animation: toastOut .2s ease forwards; }
 
         @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(16px) scale(.96);
-            }
-
-            to {
-                opacity: 1;
-                transform: none;
-            }
+            from { opacity: 0; transform: translateX(16px) scale(.96); }
+            to   { opacity: 1; transform: none; }
         }
 
         @keyframes toastOut {
-            to {
-                opacity: 0;
-                transform: translateX(20px) scale(.96);
-            }
+            to { opacity: 0; transform: translateX(20px) scale(.96); }
         }
 
         .tl-toast-icon {
@@ -463,20 +413,9 @@
             flex-shrink: 0;
         }
 
-        .avail-on {
-            background: #dcfce7;
-            color: #166634;
-        }
-
-        .avail-off {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .avail-low {
-            background: #fef3c7;
-            color: #92400e;
-        }
+        .avail-on  { background: #dcfce7; color: #166634; }
+        .avail-off { background: #fee2e2; color: #991b1b; }
+        .avail-low { background: #fef3c7; color: #92400e; }
 
         /* ══ Booking rows ══ */
         .bk-row {
@@ -490,13 +429,9 @@
             transition: background var(--ease);
         }
 
-        .bk-row:hover {
-            background: var(--indigo-light);
-        }
+        .bk-row:hover { background: var(--indigo-light); }
 
-        body.dark .bk-row:hover {
-            background: rgba(99, 102, 241, .08);
-        }
+        body.dark .bk-row:hover { background: rgba(99, 102, 241, .08); }
 
         .bk-date {
             width: 38px;
@@ -552,7 +487,10 @@
             background: linear-gradient(135deg, var(--indigo) 0%, #4338ca 60%, #6366f1 100%);
             border-radius: var(--r-lg);
             padding: 22px;
+            /* FIX 3: mobile overflow fix */
+            max-width: 100%;
             overflow: hidden;
+            box-sizing: border-box;
             position: relative;
         }
 
@@ -579,6 +517,24 @@
             font-family: var(--mono);
         }
 
+        /* FIX 3: lib-banner mobile responsive */
+        @media(max-width:639px) {
+            .lib-banner { padding: 14px; }
+            .lib-stat-item {
+                flex: 1 1 calc(50% - 4px);
+                min-width: 0;
+                padding: 6px 8px;
+                box-sizing: border-box;
+            }
+            .lib-stat-lbl { font-size: .46rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .lib-stat-val { font-size: .82rem; line-height: 1.1; }
+            .grid-lib { grid-template-columns: 1fr !important; }
+        }
+
+        @media(max-width:900px) {
+            .grid-main, .grid-three, .grid-lib { grid-template-columns: 1fr; }
+        }
+
         /* ══ Book rows ══ */
         .book-spine {
             width: 3px;
@@ -599,13 +555,9 @@
             transition: background .15s;
         }
 
-        .book-row:hover {
-            background: var(--indigo-light);
-        }
+        .book-row:hover { background: var(--indigo-light); }
 
-        body.dark .book-row:hover {
-            background: rgba(99, 102, 241, .08);
-        }
+        body.dark .book-row:hover { background: rgba(99, 102, 241, .08); }
 
         /* ══ Pending items ══ */
         .pending-item {
@@ -619,19 +571,14 @@
             display: block;
         }
 
-        .pending-item:hover {
-            background: #fef3c7;
-            border-color: #fbbf24;
-        }
+        .pending-item:hover { background: #fef3c7; border-color: #fbbf24; }
 
         body.dark .pending-item {
             background: rgba(180, 83, 9, .12);
             border-color: rgba(180, 83, 9, .2);
         }
 
-        body.dark .pending-item:hover {
-            background: rgba(180, 83, 9, .2);
-        }
+        body.dark .pending-item:hover { background: rgba(180, 83, 9, .2); }
 
         /* ══ Borrow request ══ */
         .borrow-req {
@@ -645,9 +592,7 @@
             transition: all .18s;
         }
 
-        .borrow-req:hover {
-            background: var(--indigo-border);
-        }
+        .borrow-req:hover { background: var(--indigo-border); }
 
         body.dark .borrow-req {
             background: rgba(55, 48, 163, .12);
@@ -668,9 +613,7 @@
             min-height: 34px;
         }
 
-        .btn-approve:hover {
-            background: #312e81;
-        }
+        .btn-approve:hover { background: #312e81; }
 
         .btn-reject {
             font-size: .65rem;
@@ -686,9 +629,7 @@
             min-height: 34px;
         }
 
-        .btn-reject:hover {
-            background: #fecaca;
-        }
+        .btn-reject:hover { background: #fecaca; }
 
         /* ══ Insight cards ══ */
         .insight-mini {
@@ -731,13 +672,9 @@
             position: relative;
         }
 
-        .ins-heatmap-cell:hover {
-            transform: scaleY(1.1);
-        }
+        .ins-heatmap-cell:hover { transform: scaleY(1.1); }
 
-        body.dark .ins-heatmap-cell {
-            opacity: .85;
-        }
+        body.dark .ins-heatmap-cell { opacity: .85; }
 
         /* ══ Date Modal ══ */
         .date-row {
@@ -751,31 +688,15 @@
             cursor: pointer;
         }
 
-        .date-row:hover {
-            background: var(--input-bg);
-        }
+        .date-row:hover { background: var(--input-bg); }
+        .date-row:last-child { border-bottom: none; }
 
-        .date-row:last-child {
-            border-bottom: none;
-        }
-
-        body.dark .date-row {
-            border-color: #101e35;
-        }
-
-        body.dark .date-row:hover {
-            background: #101e35;
-        }
+        body.dark .date-row { border-color: #101e35; }
+        body.dark .date-row:hover { background: #101e35; }
 
         @media(max-width:479px) {
-            .modal-back {
-                padding: .75rem;
-            }
-
-            .modal-card {
-                padding: 18px 16px;
-                border-radius: var(--r-lg);
-            }
+            .modal-back  { padding: .75rem; }
+            .modal-card  { padding: 18px 16px; border-radius: var(--r-lg); }
         }
 
         /* ══ Print Modal ══ */
@@ -807,9 +728,7 @@
             box-shadow: var(--shadow-lg);
         }
 
-        body.dark .print-modal-card {
-            background: var(--card);
-        }
+        body.dark .print-modal-card { background: var(--card); }
 
         .tl-print-toggle {
             display: flex;
@@ -912,14 +831,8 @@
             box-shadow: 0 4px 14px rgba(55, 48, 163, .28);
         }
 
-        .tl-save-btn:hover {
-            background: #312e81;
-        }
-
-        .tl-save-btn:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
+        .tl-save-btn:hover    { background: #312e81; }
+        .tl-save-btn:disabled { opacity: .6; cursor: not-allowed; }
 
         .tl-skip-btn {
             width: 100%;
@@ -936,9 +849,7 @@
             font-family: var(--font);
         }
 
-        .tl-skip-btn:hover {
-            color: var(--text-muted);
-        }
+        .tl-skip-btn:hover { color: var(--text-muted); }
 
         /* ══ Notification dropdown ══ */
         .notif-dd {
@@ -955,9 +866,7 @@
             animation: dropIn .15s ease;
         }
 
-        .notif-dd.show {
-            display: block;
-        }
+        .notif-dd.show { display: block; }
 
         .notif-item {
             padding: .85rem 1.1rem;
@@ -966,17 +875,9 @@
             cursor: pointer;
         }
 
-        .notif-item:hover {
-            background: var(--input-bg);
-        }
-
-        .notif-item.unread {
-            background: var(--indigo-light);
-        }
-
-        .notif-item:last-child {
-            border-bottom: none;
-        }
+        .notif-item:hover  { background: var(--input-bg); }
+        .notif-item.unread { background: var(--indigo-light); }
+        .notif-item:last-child { border-bottom: none; }
 
         body.dark .notif-dd {
             background: var(--card);
@@ -984,30 +885,15 @@
             box-shadow: 0 20px 48px -8px rgba(0, 0, 0, .5);
         }
 
-        body.dark .notif-item {
-            border-color: #101e35;
-        }
-
-        body.dark .notif-item.unread {
-            background: rgba(55, 48, 163, .18);
-        }
-
-        body.dark .notif-item:hover {
-            background: #101e35;
-        }
+        body.dark .notif-item        { border-color: #101e35; }
+        body.dark .notif-item.unread { background: rgba(55, 48, 163, .18); }
+        body.dark .notif-item:hover  { background: #101e35; }
 
         @media(max-width:479px) {
-            .notif-dd {
-                left: 12px;
-                right: 12px;
-                width: auto;
-                top: 72px;
-            }
+            .notif-dd { left: 12px; right: 12px; width: auto; top: 72px; }
         }
 
-        .notif-bell {
-            position: relative;
-        }
+        .notif-bell { position: relative; }
 
         .notif-badge-dot {
             position: absolute;
@@ -1054,29 +940,10 @@
             gap: 8px;
             flex-wrap: wrap;
         }
-        @media(max-width:639px) { .topbar { margin-bottom:14px; } .greeting-name { font-size:1.35rem; } }
 
-/* ── Lib banner mobile overflow fix ── */
-.lib-banner { max-width:100%; overflow:hidden; box-sizing:border-box; }
-@media(max-width:639px) {
-    .lib-banner { padding:14px; }
-    .lib-stat-item {
-        flex:1 1 calc(50% - 4px);
-        min-width:0;
-        padding:6px 8px;
-        box-sizing:border-box;
-    }
-    .lib-stat-lbl { font-size:.46rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .lib-stat-val { font-size:.82rem; line-height:1.1; }
-    .grid-lib { grid-template-columns:1fr !important; }
-}
-@media(max-width:900px) {
-    .grid-main, .grid-three, .grid-lib { grid-template-columns: 1fr; }
-}
         @media(max-width:639px) {
-            .greeting-name {
-                font-size: 1.35rem;
-            }
+            .topbar { margin-bottom: 14px; }
+            .greeting-name { font-size: 1.35rem; }
         }
 
         .sync-badge {
@@ -1108,9 +975,7 @@
             transition: all var(--ease);
         }
 
-        .borrow-pill:hover {
-            background: var(--indigo-border);
-        }
+        .borrow-pill:hover { background: var(--indigo-border); }
 
         body.dark .borrow-pill {
             background: rgba(55, 48, 163, .2);
@@ -1119,16 +984,148 @@
         }
 
         @keyframes dropIn {
-            from {
-                opacity: 0;
-                transform: translateY(-4px) scale(.98);
-            }
-
-            to {
-                opacity: 1;
-                transform: none;
-            }
+            from { opacity: 0; transform: translateY(-4px) scale(.98); }
+            to   { opacity: 1; transform: none; }
         }
+
+        /* ══════════════════════════════════════════════════════
+           FIX 2: Additional dark-mode overrides (patch applied)
+           ══════════════════════════════════════════════════════ */
+
+        /* KPI cards */
+        body.dark .kpi-card {
+            background: var(--card) !important;
+            border-color: rgba(99, 102, 241, .15) !important;
+        }
+        body.dark .kpi-card .stat-lbl { color: var(--text-sub) !important; }
+
+        /* Insight mini cards */
+        body.dark .insight-mini {
+            background: var(--card) !important;
+            border-color: rgba(99, 102, 241, .1) !important;
+        }
+
+        /* Live session cards */
+        body.dark .tl-session-card {
+            background: #101e35 !important;
+            border-color: rgba(99, 102, 241, .12) !important;
+        }
+        body.dark .tl-prog-track { background: rgba(99, 102, 241, .15) !important; }
+        body.dark .tl-ok .tl-countdown       { background: rgba(16,185,129,.15) !important; color: #34d399 !important; }
+        body.dark .tl-warning .tl-countdown   { background: rgba(245,158,11,.15) !important; color: #fcd34d !important; }
+        body.dark .tl-critical .tl-countdown  { background: rgba(239,68,68,.15) !important;  color: #f87171 !important; }
+        body.dark .tl-ended .tl-countdown     { background: rgba(100,116,139,.15) !important; color: #94a3b8 !important; }
+
+        /* Calendar dark fixes */
+        body.dark .fc-theme-standard td,
+        body.dark .fc-theme-standard th,
+        body.dark .fc-theme-standard .fc-scrollgrid { border-color: #101e35 !important; }
+        body.dark .fc-daygrid-day             { background: var(--card) !important; }
+        body.dark .fc-daygrid-day:hover       { background-color: rgba(99, 102, 241, .08) !important; }
+        body.dark .fc-toolbar-title           { color: var(--text) !important; }
+        body.dark .fc-day-today               { background: rgba(55, 48, 163, .15) !important; }
+        body.dark .fc-daygrid-day-number      { color: #7fb3e8; }
+        body.dark .fc-col-header-cell-cushion { color: var(--text-sub); }
+
+        /* Availability pills dark */
+        body.dark .avail-on  { background: rgba(16,185,129,.15) !important; color: #34d399 !important; }
+        body.dark .avail-off { background: rgba(239,68,68,.15) !important;  color: #f87171 !important; }
+        body.dark .avail-low { background: rgba(245,158,11,.15) !important; color: #fcd34d !important; }
+
+        /* Book row dark */
+        body.dark .book-row:hover { background: rgba(99,102,241,.08) !important; }
+        body.dark .book-spine     { opacity: .85; }
+
+        /* Borrow request dark */
+        body.dark .borrow-req {
+            background: rgba(55, 48, 163, .12) !important;
+            border-color: rgba(99, 102, 241, .2) !important;
+        }
+        body.dark .btn-approve { background: var(--indigo) !important; }
+        body.dark .btn-reject  { background: rgba(239,68,68,.15) !important; color: #f87171 !important; }
+
+        /* Bk rows dark */
+        body.dark .bk-row:hover { background: rgba(99,102,241,.08) !important; }
+        body.dark .bk-date {
+            background: #101e35 !important;
+            border-color: rgba(99,102,241,.12) !important;
+        }
+
+        /* Notification dropdown dark */
+        body.dark .notif-dd {
+            background: var(--card) !important;
+            box-shadow: 0 20px 48px -8px rgba(0,0,0,.5), 0 0 0 1px rgba(99,102,241,.12) !important;
+        }
+        body.dark .notif-item          { border-color: #101e35 !important; }
+        body.dark .notif-item.unread   { background: rgba(55,48,163,.18) !important; }
+        body.dark .notif-item:hover    { background: #101e35 !important; }
+
+        /* Sync badge dark */
+        body.dark .sync-badge {
+            background: rgba(29,78,216,.2) !important;
+            border-color: rgba(59,130,246,.25) !important;
+            color: #7fb3e8 !important;
+        }
+
+        /* Borrow pill dark */
+        body.dark .borrow-pill {
+            background: rgba(55,48,163,.2) !important;
+            border-color: rgba(99,102,241,.3) !important;
+            color: #a5b4fc !important;
+        }
+
+        /* Toast dark */
+        body.dark .tl-toast {
+            background: #0d1a2e !important;
+            border: 1px solid rgba(99,102,241,.2) !important;
+        }
+
+        /* Print modal dark */
+        body.dark .print-modal-card  { background: var(--card) !important; }
+        body.dark .tl-print-toggle   { background: #101e35 !important; border-color: rgba(99,102,241,.15) !important; }
+        body.dark .tl-print-toggle button { color: var(--text-sub) !important; }
+        body.dark .tl-page-counter   { background: #101e35 !important; border-color: rgba(99,102,241,.12) !important; }
+        body.dark .tl-page-counter button {
+            background: var(--card) !important;
+            color: #818cf8 !important;
+            border-color: rgba(99,102,241,.18) !important;
+        }
+        body.dark .tl-page-num  { color: var(--text) !important; }
+        body.dark .tl-skip-btn  { color: var(--text-sub) !important; }
+
+        /* Smart suggestion box dark */
+        body.dark [style*="background:var(--indigo-light)"],
+        body.dark [style*="background: var(--indigo-light)"] { background: rgba(55,48,163,.12) !important; }
+        body.dark [style*="border:1px solid var(--indigo-border)"],
+        body.dark [style*="border: 1px solid var(--indigo-border)"] { border-color: rgba(99,102,241,.25) !important; }
+        body.dark [style*="color:#312e81"],
+        body.dark [style*="color:#3730a3"],
+        body.dark [style*="color: #312e81"],
+        body.dark [style*="color: #3730a3"] { color: #a5b4fc !important; }
+
+        /* Section labels dark */
+        body.dark .section-label,
+        body.dark .section-lbl { color: var(--text-sub) !important; }
+        body.dark .section-label::before,
+        body.dark .section-lbl::before { background: #818cf8 !important; }
+
+        /* Date modal dark */
+        body.dark .date-row       { border-color: #101e35 !important; }
+        body.dark .date-row:hover { background: #101e35 !important; }
+
+        /* Progress bars dark */
+        body.dark .prog-bar { background: rgba(99,102,241,.12) !important; }
+
+        /* Greeting dark */
+        body.dark .greeting-eyebrow { color: var(--text-sub) !important; }
+        body.dark .greeting-name    { color: var(--text) !important; }
+        body.dark .greeting-date    { color: var(--text-sub) !important; }
+
+        /* Leg items dark */
+        body.dark .leg-lbl { color: var(--text-sub) !important; }
+
+        /* Heatmap cells dark */
+        body.dark .ins-heatmap-cell { opacity: .85; }
     </style>
 </head>
 
@@ -1524,7 +1521,7 @@
                         <?php endforeach;
                         $pc = count($pl);
                         if ($pc > 4): ?><div style="text-align:center;padding:6px;"><a href="/admin/manage-reservations?status=pending" style="font-size:.75rem;font-weight:700;color:var(--indigo);">+<?= $pc - 4 ?> more →</a></div><?php endif;
-                                                                                                                                                                                                                            else: ?>
+                    else: ?>
                         <div style="text-align:center;padding:20px 12px;">
                             <i class="fa-regular fa-circle-check" style="font-size:1.8rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
                             <p style="font-size:12px;color:var(--text-sub);">All caught up!</p>
@@ -1535,168 +1532,174 @@
         </div>
 
         <!-- ── SECTION 4: LIBRARY ── -->
-<p class="section-label fade-up-4">
-    Library
-    <a href="/admin/books" class="link-sm" style="margin-left:auto;">Browse All →</a>
-</p>
-<div class="grid-lib fade-up-4">
+        <p class="section-label fade-up-4">
+            Library
+            <a href="/admin/books" class="link-sm" style="margin-left:auto;">Browse All →</a>
+        </p>
+        <div class="grid-lib fade-up-4">
 
-    <!-- Left column: banner + borrow requests -->
-    <div style="display:flex;flex-direction:column;gap:14px;">
+            <!-- Left column: banner + borrow requests -->
+            <div style="display:flex;flex-direction:column;gap:14px;">
 
-        <!-- Banner -->
-        <div class="lib-banner">
-            <div style="position:relative;z-index:1;">
-                <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
-                <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;">
-                    <?= $bookAvailCount ?>
-                    <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span>
+                <!-- Banner -->
+                <div class="lib-banner">
+                    <div style="position:relative;z-index:1;">
+                        <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
+                        <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;">
+                            <?= $bookAvailCount ?>
+                            <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span>
+                        </div>
+                        <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:16px;"><?= $bookTotalCount ?> total titles</div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <div class="lib-stat-item">
+                                <div class="lib-stat-lbl">Borrow Reqs</div>
+                                <div class="lib-stat-val"><?= $pendingBorrowings ?></div>
+                            </div>
+                            <?php
+                            // FIX 1: clamp to 0–100% so data inconsistencies never overflow
+                            $bpct = $bookTotalCount > 0
+                                ? min(100, max(0, round($bookAvailCount / $bookTotalCount * 100)))
+                                : 0;
+                            ?>
+                            <div class="lib-stat-item">
+                                <div class="lib-stat-lbl">In Stock</div>
+                                <div class="lib-stat-val"><?= $bpct ?>%</div>
+                            </div>
+                            <div class="lib-stat-item">
+                                <div class="lib-stat-lbl">Borrowed</div>
+                                <div class="lib-stat-val"><?= max(0, $bookTotalCount - $bookAvailCount) ?></div>
+                            </div>
+                        </div>
+                        <a href="/admin/books" class="lib-browse" style="margin-top:14px;">
+                            <i class="fa-solid fa-book-open" style="font-size:.75rem;"></i> Browse Library
+                        </a>
+                    </div>
                 </div>
-                <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:16px;"><?= $bookTotalCount ?> total titles</div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <div class="lib-stat-item">
-                        <div class="lib-stat-lbl">Borrow Reqs</div>
-                        <div class="lib-stat-val"><?= $pendingBorrowings ?></div>
+
+                <!-- Borrow Requests -->
+                <div class="card card-p" style="flex:1;">
+                    <div class="card-head">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div class="card-icon" style="background:#fef3c7;">
+                                <i class="fa-solid fa-clipboard-list" style="color:#d97706;font-size:.9rem;"></i>
+                            </div>
+                            <div>
+                                <div class="card-title">Borrow Requests</div>
+                                <div class="card-sub">Pending approval</div>
+                            </div>
+                        </div>
+                        <?php if ($pendingBorrowings > 0): ?>
+                            <a href="/admin/books#borrowings" class="link-sm">All <?= $pendingBorrowings ?> →</a>
+                        <?php endif; ?>
                     </div>
-                    <?php $bpct = $bookTotalCount > 0 ? round($bookAvailCount / $bookTotalCount * 100) : 0; ?>
-                    <div class="lib-stat-item">
-                        <div class="lib-stat-lbl">In Stock</div>
-                        <div class="lib-stat-val"><?= $bpct ?>%</div>
-                    </div>
-                    <div class="lib-stat-item">
-                        <div class="lib-stat-lbl">Borrowed</div>
-                        <div class="lib-stat-val"><?= max(0, $bookTotalCount - $bookAvailCount) ?></div>
-                    </div>
+                    <?php
+                    $sr = array_slice(
+                        array_values(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending')),
+                        0, 4
+                    );
+                    if (!empty($sr)): ?>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <?php foreach ($sr as $bw): ?>
+                                <div class="borrow-req">
+                                    <div class="book-letter" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;">
+                                        <?= mb_strtoupper(mb_substr($bw['book_title'] ?? 'B', 0, 1)) ?>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <p style="font-weight:700;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($bw['book_title'] ?? 'Unknown Book') ?></p>
+                                        <p style="font-size:.68rem;color:var(--text-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($bw['resident_name'] ?? 'Unknown') ?></p>
+                                    </div>
+                                    <div style="display:flex;gap:5px;flex-shrink:0;">
+                                        <form method="post" action="/admin/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-approve" title="Approve">✓</button></form>
+                                        <form method="post" action="/admin/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-reject" title="Reject">✕</button></form>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div style="text-align:center;padding:24px 12px;">
+                            <i class="fa-regular fa-circle-check" style="font-size:1.8rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
+                            <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No pending requests</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
-                <a href="/admin/books" class="lib-browse" style="margin-top:14px;">
-                    <i class="fa-solid fa-book-open" style="font-size:.75rem;"></i> Browse Library
-                </a>
             </div>
-        </div>
 
-        <!-- Borrow Requests -->
-        <div class="card card-p" style="flex:1;">
-            <div class="card-head">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div class="card-icon" style="background:#fef3c7;">
-                        <i class="fa-solid fa-clipboard-list" style="color:#d97706;font-size:.9rem;"></i>
+            <!-- Right column: books catalog -->
+            <div class="card card-p-lg">
+                <div class="card-head">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div class="card-icon" style="background:var(--indigo-light);color:var(--indigo);">
+                            <i class="fa-solid fa-book" style="font-size:.9rem;"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">Books Catalog</div>
+                            <div class="card-sub">Availability at a glance</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="card-title">Borrow Requests</div>
-                        <div class="card-sub">Pending approval</div>
-                    </div>
+                    <a href="/admin/books" class="action-btn" style="padding:7px 14px;font-size:.75rem;">
+                        <i class="fa-solid fa-plus" style="font-size:.7rem;"></i> Add Book
+                    </a>
                 </div>
-                <?php if ($pendingBorrowings > 0): ?>
-                    <a href="/admin/books#borrowings" class="link-sm">All <?= $pendingBorrowings ?> →</a>
+
+                <?php if (!empty($dashBooks)):
+                    $gc = [
+                        'fiction'   => '#3730a3',
+                        'fantasy'   => '#7c3aed',
+                        'poetry'    => '#ec4899',
+                        'humor'     => '#f59e0b',
+                        'history'   => '#64748b',
+                        'science'   => '#06b6d4',
+                        'romance'   => '#f43f5e',
+                        'academic'  => '#0369a1',
+                    ];
+                ?>
+                    <!-- column headers -->
+                    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;padding:0 6px 8px;border-bottom:1px solid rgba(99,102,241,.07);margin-bottom:4px;">
+                        <span class="stat-lbl" style="letter-spacing:.1em;">Title / Author</span>
+                        <span class="stat-lbl" style="letter-spacing:.1em;">Stock</span>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:2px;">
+                        <?php foreach (array_slice($dashBooks, 0, 10) as $book):
+                            $g  = strtolower($book['genre'] ?? '');
+                            $sc = $gc[$g] ?? '#3730a3';
+                            $av = (int)($book['available_copies'] ?? 0);
+                            $ac = $av === 0 ? 'avail-off' : ($av <= 1 ? 'avail-low' : 'avail-on');
+                            $at = $av === 0 ? 'Out' : ($av <= 1 ? '1 left' : $av . ' left');
+                        ?>
+                            <a href="/admin/books" class="book-row">
+                                <div class="book-spine" style="background:<?= $sc ?>"></div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($book['title']) ?></div>
+                                    <div style="font-size:.7rem;color:var(--text-sub);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                        <?= htmlspecialchars($book['author'] ?? '—') ?>
+                                        <?= !empty($book['genre']) ? ' · ' . htmlspecialchars($book['genre']) : '' ?>
+                                    </div>
+                                </div>
+                                <span class="avail-pill <?= $ac ?>"><?= $at ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <?php if (count($dashBooks) > 10): ?>
+                        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(99,102,241,.07);text-align:center;">
+                            <a href="/admin/books" class="link-sm">+<?= count($dashBooks) - 10 ?> more books →</a>
+                        </div>
+                    <?php endif; ?>
+
+                <?php else: ?>
+                    <div style="text-align:center;padding:48px 12px;">
+                        <i class="fa-solid fa-book-open" style="font-size:2.5rem;color:#e2e8f0;display:block;margin-bottom:10px;"></i>
+                        <p style="font-size:.85rem;color:var(--text-sub);font-weight:600;margin-bottom:14px;">No books yet</p>
+                        <a href="/admin/books" class="action-btn" style="display:inline-flex;padding:9px 18px;font-size:.82rem;">
+                            <i class="fa-solid fa-plus" style="font-size:.75rem;"></i> Add the first book
+                        </a>
+                    </div>
                 <?php endif; ?>
             </div>
-            <?php
-            $sr = array_slice(
-                array_values(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending')),
-                0, 4
-            );
-            if (!empty($sr)): ?>
-                <div style="display:flex;flex-direction:column;gap:8px;">
-                    <?php foreach ($sr as $bw): ?>
-                        <div class="borrow-req">
-                            <div class="book-letter" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;">
-                                <?= mb_strtoupper(mb_substr($bw['book_title'] ?? 'B', 0, 1)) ?>
-                            </div>
-                            <div style="flex:1;min-width:0;">
-                                <p style="font-weight:700;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($bw['book_title'] ?? 'Unknown Book') ?></p>
-                                <p style="font-size:.68rem;color:var(--text-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($bw['resident_name'] ?? 'Unknown') ?></p>
-                            </div>
-                            <div style="display:flex;gap:5px;flex-shrink:0;">
-                                <form method="post" action="/admin/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-approve" title="Approve">✓</button></form>
-                                <form method="post" action="/admin/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-reject" title="Reject">✕</button></form>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div style="text-align:center;padding:24px 12px;">
-                    <i class="fa-regular fa-circle-check" style="font-size:1.8rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
-                    <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No pending requests</p>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
 
-    <!-- Right column: books catalog -->
-    <div class="card card-p-lg">
-        <div class="card-head">
-            <div style="display:flex;align-items:center;gap:10px;">
-                <div class="card-icon" style="background:var(--indigo-light);color:var(--indigo);">
-                    <i class="fa-solid fa-book" style="font-size:.9rem;"></i>
-                </div>
-                <div>
-                    <div class="card-title">Books Catalog</div>
-                    <div class="card-sub">Availability at a glance</div>
-                </div>
-            </div>
-            <a href="/admin/books" class="action-btn" style="padding:7px 14px;font-size:.75rem;">
-                <i class="fa-solid fa-plus" style="font-size:.7rem;"></i> Add Book
-            </a>
         </div>
 
-        <?php if (!empty($dashBooks)):
-            $gc = [
-                'fiction'   => '#3730a3',
-                'fantasy'   => '#7c3aed',
-                'poetry'    => '#ec4899',
-                'humor'     => '#f59e0b',
-                'history'   => '#64748b',
-                'science'   => '#06b6d4',
-                'romance'   => '#f43f5e',
-                'academic'  => '#0369a1',
-            ];
-        ?>
-            <!-- column headers -->
-            <div style="display:grid;grid-template-columns:1fr auto;gap:8px;padding:0 6px 8px;border-bottom:1px solid rgba(99,102,241,.07);margin-bottom:4px;">
-                <span class="stat-lbl" style="letter-spacing:.1em;">Title / Author</span>
-                <span class="stat-lbl" style="letter-spacing:.1em;">Stock</span>
-            </div>
-
-            <div style="display:flex;flex-direction:column;gap:2px;">
-                <?php foreach (array_slice($dashBooks, 0, 10) as $book):
-                    $g  = strtolower($book['genre'] ?? '');
-                    $sc = $gc[$g] ?? '#3730a3';
-                    $av = (int)($book['available_copies'] ?? 0);
-                    $ac = $av === 0 ? 'avail-off' : ($av <= 1 ? 'avail-low' : 'avail-on');
-                    $at = $av === 0 ? 'Out' : ($av <= 1 ? '1 left' : $av . ' left');
-                ?>
-                    <a href="/admin/books" class="book-row">
-                        <div class="book-spine" style="background:<?= $sc ?>"></div>
-                        <div style="flex:1;min-width:0;">
-                            <div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($book['title']) ?></div>
-                            <div style="font-size:.7rem;color:var(--text-sub);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                <?= htmlspecialchars($book['author'] ?? '—') ?>
-                                <?= !empty($book['genre']) ? ' · ' . htmlspecialchars($book['genre']) : '' ?>
-                            </div>
-                        </div>
-                        <span class="avail-pill <?= $ac ?>"><?= $at ?></span>
-                    </a>
-                <?php endforeach; ?>
-            </div>
-
-            <?php if (count($dashBooks) > 10): ?>
-                <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(99,102,241,.07);text-align:center;">
-                    <a href="/admin/books" class="link-sm">+<?= count($dashBooks) - 10 ?> more books →</a>
-                </div>
-            <?php endif; ?>
-
-        <?php else: ?>
-            <div style="text-align:center;padding:48px 12px;">
-                <i class="fa-solid fa-book-open" style="font-size:2.5rem;color:#e2e8f0;display:block;margin-bottom:10px;"></i>
-                <p style="font-size:.85rem;color:var(--text-sub);font-weight:600;margin-bottom:14px;">No books yet</p>
-                <a href="/admin/books" class="action-btn" style="display:inline-flex;padding:9px 18px;font-size:.82rem;">
-                    <i class="fa-solid fa-plus" style="font-size:.75rem;"></i> Add the first book
-                </a>
-            </div>
-        <?php endif; ?>
-    </div>
-
-</div>
         <!-- ── SECTION 5: INSIGHTS ── -->
         <p class="section-label fade-up-4">
             Insights
@@ -1769,23 +1772,17 @@
                     <div style="display:flex;flex-direction:column;gap:12px;">
                         <div>
                             <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:5px;"><span style="font-weight:600;color:var(--text-muted);">No-show rate</span><span style="font-weight:700;color:#dc2626;"><?= $insNS ?>%</span></div>
-                            <div class="prog-bar">
-                                <div class="prog-fill" style="width:<?= $insNS ?>%;background:#f87171;"></div>
-                            </div>
+                            <div class="prog-bar"><div class="prog-fill" style="width:<?= $insNS ?>%;background:#f87171;"></div></div>
                             <p style="font-size:.65rem;color:var(--text-sub);margin-top:3px;">Approved but never claimed</p>
                         </div>
                         <div>
                             <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:5px;"><span style="font-weight:600;color:var(--text-muted);">Decline rate</span><span style="font-weight:700;color:#d97706;"><?= $insDR ?>%</span></div>
-                            <div class="prog-bar">
-                                <div class="prog-fill" style="width:<?= $insDR ?>%;background:#f59e0b;"></div>
-                            </div>
+                            <div class="prog-bar"><div class="prog-fill" style="width:<?= $insDR ?>%;background:#f59e0b;"></div></div>
                             <p style="font-size:.65rem;color:var(--text-sub);margin-top:3px;">Of all reservations rejected</p>
                         </div>
                         <div>
                             <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:5px;"><span style="font-weight:600;color:var(--text-muted);">Claim rate</span><span style="font-weight:700;color:#16a34a;"><?= $utilizationRate ?>%</span></div>
-                            <div class="prog-bar">
-                                <div class="prog-fill" style="width:<?= $utilizationRate ?>%;background:#10b981;"></div>
-                            </div>
+                            <div class="prog-bar"><div class="prog-fill" style="width:<?= $utilizationRate ?>%;background:#10b981;"></div></div>
                             <p style="font-size:.65rem;color:var(--text-sub);margin-top:3px;">Approved slots used</p>
                         </div>
                     </div>
@@ -1840,54 +1837,48 @@
         const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         const PRINT_EP = '/admin/log-print';
         const INS = {
-            hourArr: <?= json_encode(array_values($insHourArr)) ?>,
-            dowArr: <?= json_encode(array_values($insDowArr)) ?>,
-            monthArr: <?= json_encode(array_values($insMonArr)) ?>,
-            peakHourIdx: <?= (int)$insPH ?>,
-            peakDowIdx: <?= (int)$insPD ?>,
+            hourArr:      <?= json_encode(array_values($insHourArr)) ?>,
+            dowArr:       <?= json_encode(array_values($insDowArr)) ?>,
+            monthArr:     <?= json_encode(array_values($insMonArr)) ?>,
+            peakHourIdx:  <?= (int)$insPH ?>,
+            peakDowIdx:   <?= (int)$insPD ?>,
             peakMonthIdx: <?= (int)$insPM ?>,
-            noShowRate: <?= (int)$insNS ?>,
-            declineRate: <?= (int)$insDR ?>,
-            trendPct: <?= (int)$insTrP ?>,
-            trendDir: '<?= $insTrD ?>',
-            topResource: <?= json_encode($insTopRes) ?>,
+            noShowRate:   <?= (int)$insNS ?>,
+            declineRate:  <?= (int)$insDR ?>,
+            trendPct:     <?= (int)$insTrP ?>,
+            trendDir:     '<?= $insTrD ?>',
+            topResource:  <?= json_encode($insTopRes) ?>,
             peakDayLabel: <?= json_encode($insPDL) ?>,
-            resourceMap: <?= json_encode($insResMap) ?>,
-            totalCount: <?= (int)($total ?? 0) ?>
+            resourceMap:  <?= json_encode($insResMap) ?>,
+            totalCount:   <?= (int)($total ?? 0) ?>
         };
 
         const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-        const pct = (v, max) => max > 0 ? clamp(Math.round(v / max * 100), 0, 100) : 0;
+        const pct   = (v, max)    => max > 0 ? clamp(Math.round(v / max * 100), 0, 100) : 0;
         const isMob = () => window.innerWidth < 640;
         const isClaimed = r => [true, 1, 't', 'true', '1'].includes(r.claimed);
         const timeAgo = t => {
             const s = Math.floor((Date.now() - new Date(t)) / 1000);
-            if (s < 60) return 'Just now';
-            if (s < 3600) return `${Math.floor(s/60)}m ago`;
+            if (s < 60)    return 'Just now';
+            if (s < 3600)  return `${Math.floor(s/60)}m ago`;
             if (s < 86400) return `${Math.floor(s/3600)}h ago`;
             return `${Math.floor(s/86400)}d ago`;
         };
 
         /* ── Notifications ── */
         let readIds = JSON.parse(localStorage.getItem('admin_read_notifs') || '[]'),
-            notifs = [];
+            notifs  = [];
 
         function loadNotifications() {
             allRes.filter(r => r.status === 'pending' && !readIds.includes(String(r.id))).slice(0, 10).forEach(r =>
-                notifs.push({
-                    id: r.id,
-                    msg: `${r.visitor_name||'User'} → ${r.resource_name||'Resource'}`,
-                    time: r.created_at || new Date().toISOString()
-                })
+                notifs.push({ id: r.id, msg: `${r.visitor_name||'User'} → ${r.resource_name||'Resource'}`, time: r.created_at || new Date().toISOString() })
             );
             updateNotifBadge();
             renderNotifs();
         }
 
         function markAllRead() {
-            notifs.forEach(n => {
-                if (!readIds.includes(String(n.id))) readIds.push(String(n.id));
-            });
+            notifs.forEach(n => { if (!readIds.includes(String(n.id))) readIds.push(String(n.id)); });
             notifs = [];
             localStorage.setItem('admin_read_notifs', JSON.stringify(readIds));
             updateNotifBadge();
@@ -1895,10 +1886,9 @@
         }
 
         function updateNotifBadge() {
-            const b = document.getElementById('notifBadge'),
-                n = notifs.length;
+            const b = document.getElementById('notifBadge'), n = notifs.length;
             b.style.display = n > 0 ? 'block' : 'none';
-            b.textContent = n > 9 ? '9+' : n;
+            b.textContent   = n > 9 ? '9+' : n;
         }
 
         function renderNotifs() {
@@ -1907,49 +1897,33 @@
                 l.innerHTML = `<div style="text-align:center;padding:24px;"><i class="fa-regular fa-bell-slash" style="font-size:1.5rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i><p style="font-size:.78rem;color:var(--text-sub);">No notifications</p></div>`;
                 return;
             }
-            l.innerHTML = notifs.map(n => `<div class="notif-item unread" onclick="location='/admin/manage-reservations?id=${n.id}'"><div style="display:flex;align-items:flex-start;gap:9px;"><div style="width:30px;height:30px;background:#fef3c7;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-clock" style="font-size:.7rem;color:#d97706;"></i></div><div style="flex:1;min-width:0;"><p style="font-weight:700;font-size:.78rem;">New Pending Request</p><p style="font-size:.68rem;color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p><p style="font-size:.62rem;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p></div><span style="width:7px;height:7px;border-radius:50%;background:var(--indigo);flex-shrink:0;margin-top:4px;"></span></div></div>`).join('');
+            l.innerHTML = notifs.map(n =>
+                `<div class="notif-item unread" onclick="location='/admin/manage-reservations?id=${n.id}'"><div style="display:flex;align-items:flex-start;gap:9px;"><div style="width:30px;height:30px;background:#fef3c7;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-clock" style="font-size:.7rem;color:#d97706;"></i></div><div style="flex:1;min-width:0;"><p style="font-weight:700;font-size:.78rem;">New Pending Request</p><p style="font-size:.68rem;color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p><p style="font-size:.62rem;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p></div><span style="width:7px;height:7px;border-radius:50%;background:var(--indigo);flex-shrink:0;margin-top:4px;"></span></div></div>`
+            ).join('');
         }
 
-        function toggleNotifications() {
-            document.getElementById('notifDD').classList.toggle('show');
-        }
+        function toggleNotifications() { document.getElementById('notifDD').classList.toggle('show'); }
         document.addEventListener('click', e => {
-            const dd = document.getElementById('notifDD'),
-                bell = document.querySelector('.notif-bell');
+            const dd = document.getElementById('notifDD'), bell = document.querySelector('.notif-bell');
             if (!bell?.contains(e.target) && !dd?.contains(e.target)) dd?.classList.remove('show');
         });
 
         /* ── Date modal ── */
         function openDateModal(dateStr, list) {
-            const fmt = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-            });
+            const fmt = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
             document.getElementById('modalDateTitle').textContent = fmt;
-            document.getElementById('modalDateSub').textContent = list?.length ? `${list.length} reservation${list.length>1?'s':''}` : '';
-            const c = document.getElementById('modalList'),
-                empty = document.getElementById('modalEmpty');
+            document.getElementById('modalDateSub').textContent  = list?.length ? `${list.length} reservation${list.length>1?'s':''}` : '';
+            const c = document.getElementById('modalList'), empty = document.getElementById('modalEmpty');
             c.innerHTML = '';
-            if (!list?.length) {
-                empty.classList.remove('hidden');
-                return;
-            }
+            if (!list?.length) { empty.classList.remove('hidden'); return; }
             empty.classList.add('hidden');
-            [...list].sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')).forEach(r => {
-                const st = isClaimed(r) ? 'claimed' : (r.status || 'pending');
-                const clr = {
-                    approved: 'background:#dcfce7;color:#166534',
-                    pending: 'background:#fef3c7;color:#92400e',
-                    declined: 'background:#fee2e2;color:#991b1b',
-                    claimed: 'background:#ede9fe;color:#5b21b6'
-                };
-                const t = r.start_time ? r.start_time.slice(0, 5) : '—',
-                    et = r.end_time ? r.end_time.slice(0, 5) : '';
+            [...list].sort((a, b) => (a.start_time||'').localeCompare(b.start_time||'')).forEach(r => {
+                const st  = isClaimed(r) ? 'claimed' : (r.status || 'pending');
+                const clr = { approved:'background:#dcfce7;color:#166534', pending:'background:#fef3c7;color:#92400e', declined:'background:#fee2e2;color:#991b1b', claimed:'background:#ede9fe;color:#5b21b6' };
+                const t   = r.start_time ? r.start_time.slice(0,5) : '—', et = r.end_time ? r.end_time.slice(0,5) : '';
                 const row = document.createElement('div');
                 row.className = 'date-row';
-                row.onclick = () => location = `/admin/manage-reservations?id=${r.id}`;
+                row.onclick   = () => location = `/admin/manage-reservations?id=${r.id}`;
                 row.innerHTML = `<div style="width:30px;height:30px;background:#eef2ff;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-desktop" style="font-size:.7rem;color:#3730a3;"></i></div><div style="flex:1;min-width:0;"><p style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name||'Resource'}</p><p style="font-size:.7rem;color:var(--text-sub);">${r.visitor_name||r.full_name||'Guest'} · ${t}${et?'–'+et:''}</p></div><span style="padding:2px 8px;border-radius:999px;font-size:.6rem;font-weight:700;text-transform:uppercase;${clr[st]||'background:#f1f5f9;color:#64748b'};flex-shrink:0;">${st}</span>`;
                 c.appendChild(row);
             });
@@ -1961,44 +1935,24 @@
             document.getElementById('dateModal').classList.remove('show');
             document.body.style.overflow = '';
         }
+
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') {
-                closeDateModal();
-                tlClosePrintModal();
-            }
+            if (e.key === 'Escape') { closeDateModal(); tlClosePrintModal(); }
         });
 
         /* ── Print modal ── */
         const TL_LOGGED_KEY = 'tl_admin_print_logged';
-        let tlSessions = {},
-            tlPrintQueue = [],
-            tlCurrentPrint = null,
-            tlPageCount = 1,
-            tlPrinted = true;
+        let tlSessions = {}, tlPrintQueue = [], tlCurrentPrint = null, tlPageCount = 1, tlPrinted = true;
 
-        const tlGetLogged = () => {
-            try {
-                return JSON.parse(localStorage.getItem(TL_LOGGED_KEY) || '[]');
-            } catch (e) {
-                return [];
-            }
-        };
-        const tlMarkLogged = id => {
-            const ids = tlGetLogged();
-            if (!ids.includes(id)) {
-                ids.push(id);
-                localStorage.setItem(TL_LOGGED_KEY, JSON.stringify(ids.slice(-500)));
-            }
-        };
-        const tlIsLogged = id => tlGetLogged().includes(id);
+        const tlGetLogged  = () => { try { return JSON.parse(localStorage.getItem(TL_LOGGED_KEY) || '[]'); } catch(e) { return []; } };
+        const tlMarkLogged = id => { const ids = tlGetLogged(); if (!ids.includes(id)) { ids.push(id); localStorage.setItem(TL_LOGGED_KEY, JSON.stringify(ids.slice(-500))); } };
+        const tlIsLogged   = id => tlGetLogged().includes(id);
 
         function tlOpenPrintModal(r) {
-            tlCurrentPrint = r;
-            tlPageCount = 1;
-            tlPrinted = true;
+            tlCurrentPrint = r; tlPageCount = 1; tlPrinted = true;
             document.getElementById('tl-modal-title').textContent = r.visitor_name || r.full_name || 'User';
-            document.getElementById('tl-modal-sub').textContent = `${r.resource_name||'Resource'} · Session ended`;
-            document.getElementById('tl-page-num').textContent = '1';
+            document.getElementById('tl-modal-sub').textContent   = `${r.resource_name||'Resource'} · Session ended`;
+            document.getElementById('tl-page-num').textContent    = '1';
             document.getElementById('tl-page-section').style.display = 'block';
             document.getElementById('tl-yes-btn').classList.add('active');
             document.getElementById('tl-no-btn').classList.remove('active');
@@ -2026,159 +1980,95 @@
             try {
                 const r = await fetch(PRINT_EP, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': CSRF_TOKEN
-                    },
-                    body: JSON.stringify({
-                        reservation_id: tlCurrentPrint.id,
-                        printed: tlPrinted,
-                        pages: tlPrinted ? tlPageCount : 0
-                    })
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
+                    body: JSON.stringify({ reservation_id: tlCurrentPrint.id, printed: tlPrinted, pages: tlPrinted ? tlPageCount : 0 })
                 });
                 if (r.ok) tlMarkLogged(tlCurrentPrint.id);
-            } catch (e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right:8px;"></i>Save & Log';
             tlClosePrintModal();
             tlNextPrintModal();
         }
 
-        function tlSkipPrint() {
-            if (tlCurrentPrint) tlMarkLogged(tlCurrentPrint.id);
-            tlClosePrintModal();
-            tlNextPrintModal();
-        }
-
-        function tlClosePrintModal() {
-            document.getElementById('tl-print-modal').classList.remove('show');
-            document.body.style.overflow = '';
-            tlCurrentPrint = null;
-        }
-
-        function tlNextPrintModal() {
-            if (tlPrintQueue.length > 0) setTimeout(() => tlOpenPrintModal(tlPrintQueue.shift()), 400);
-        }
+        function tlSkipPrint()    { if (tlCurrentPrint) tlMarkLogged(tlCurrentPrint.id); tlClosePrintModal(); tlNextPrintModal(); }
+        function tlClosePrintModal() { document.getElementById('tl-print-modal').classList.remove('show'); document.body.style.overflow = ''; tlCurrentPrint = null; }
+        function tlNextPrintModal()  { if (tlPrintQueue.length > 0) setTimeout(() => tlOpenPrintModal(tlPrintQueue.shift()), 400); }
 
         /* ── Live sessions ── */
-        const TL_WARN = 5 * 60 * 1000,
-            TL_CRIT = 2 * 60 * 1000;
+        const TL_WARN = 5 * 60 * 1000, TL_CRIT = 2 * 60 * 1000;
 
         function tlGetActiveSessions() {
-            const today = new Date().toISOString().split('T')[0],
-                nowMs = Date.now();
+            const today = new Date().toISOString().split('T')[0], nowMs = Date.now();
             return allRes.filter(r => {
                 if (!r.start_time || !r.end_time || !r.reservation_date || r.reservation_date !== today) return false;
-                if ((r.status || '').toLowerCase() !== 'approved') return false;
+                if ((r.status||'').toLowerCase() !== 'approved') return false;
                 if (!isClaimed(r)) return false;
                 const s = new Date(r.reservation_date + 'T' + r.start_time).getTime(),
-                    e = new Date(r.reservation_date + 'T' + r.end_time).getTime();
+                      e = new Date(r.reservation_date + 'T' + r.end_time).getTime();
                 return s <= nowMs && e >= nowMs;
             });
         }
 
-        const tlFmt = ms => {
-            if (ms <= 0) return 'Ended';
-            const s = Math.floor(ms / 1000),
-                m = Math.floor(s / 60),
-                h = Math.floor(m / 60);
-            if (h > 0) return `${h}h ${m%60}m`;
-            if (m > 0) return `${m}m ${s%60}s`;
-            return `${s}s`;
-        };
+        const tlFmt   = ms => { if (ms <= 0) return 'Ended'; const s = Math.floor(ms/1000), m = Math.floor(s/60), h = Math.floor(m/60); if (h>0) return `${h}h ${m%60}m`; if (m>0) return `${m}m ${s%60}s`; return `${s}s`; };
         const tlState = ms => ms <= 0 ? 'tl-ended' : ms <= TL_CRIT ? 'tl-critical' : ms <= TL_WARN ? 'tl-warning' : 'tl-ok';
 
         function tlToast(type, title, sub) {
-            const c = document.getElementById('tl-toast-container'),
-                t = document.createElement('div');
+            const c = document.getElementById('tl-toast-container'), t = document.createElement('div');
             t.className = 'tl-toast';
             const ic = type === 'warning' ? 'fa-triangle-exclamation' : 'fa-clock-rotate-left';
             const bg = type === 'warning' ? 'rgba(245,158,11,.2)' : 'rgba(239,68,68,.2)';
             t.innerHTML = `<div class="tl-toast-icon" style="background:${bg};"><i class="fa-solid ${ic}" style="color:${type==='warning'?'#f59e0b':'#ef4444'};font-size:.8rem;"></i></div><div style="flex:1;min-width:0;"><p style="font-weight:700;font-size:.75rem;color:white;">${title}</p><p style="font-size:.68rem;color:#94a3b8;margin-top:2px;">${sub}</p></div><button onclick="this.closest('.tl-toast').remove()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:.75rem;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>`;
             c.appendChild(t);
-            setTimeout(() => {
-                t.classList.add('dismissing');
-                setTimeout(() => t.remove(), 220);
-            }, 7000);
+            setTimeout(() => { t.classList.add('dismissing'); setTimeout(() => t.remove(), 220); }, 7000);
         }
 
         function tlRender() {
-            const sessions = tlGetActiveSessions(),
-                grid = document.getElementById('tl-sessions-grid'),
-                noS = document.getElementById('tl-no-sessions'),
-                nowMs = Date.now();
-            if (!sessions.length) {
-                grid.innerHTML = '';
-                noS.classList.remove('hidden');
-                return;
-            }
+            const sessions = tlGetActiveSessions(), grid = document.getElementById('tl-sessions-grid'),
+                  noS = document.getElementById('tl-no-sessions'), nowMs = Date.now();
+            if (!sessions.length) { grid.innerHTML = ''; noS.classList.remove('hidden'); return; }
             noS.classList.add('hidden');
             sessions.forEach(r => {
                 const eMs = new Date(r.reservation_date + 'T' + r.end_time).getTime(),
-                    sMs = new Date(r.reservation_date + 'T' + r.start_time).getTime(),
-                    totMs = eMs - sMs,
-                    remMs = eMs - nowMs,
-                    elMs = nowMs - sMs;
+                      sMs = new Date(r.reservation_date + 'T' + r.start_time).getTime(),
+                      totMs = eMs - sMs, remMs = eMs - nowMs, elMs = nowMs - sMs;
                 const prog = Math.min(100, Math.max(0, (elMs / totMs) * 100)),
-                    state = tlState(remMs),
-                    name = r.visitor_name || r.full_name || 'Guest',
-                    res = r.resource_name || 'Resource';
-                if (!tlSessions[r.id]) tlSessions[r.id] = {
-                    warned: false,
-                    expired: false
-                };
+                      state = tlState(remMs),
+                      name  = r.visitor_name || r.full_name || 'Guest',
+                      res   = r.resource_name || 'Resource';
+                if (!tlSessions[r.id]) tlSessions[r.id] = { warned: false, expired: false };
                 const s = tlSessions[r.id];
-                if (!s.warned && remMs > 0 && remMs <= TL_WARN) {
-                    s.warned = true;
-                    tlToast('warning', `${name} — 5 min left`, `${res} ending soon`);
-                }
+                if (!s.warned  && remMs > 0 && remMs <= TL_WARN) { s.warned  = true; tlToast('warning', `${name} — 5 min left`, `${res} ending soon`); }
                 if (!s.expired && remMs <= 0) {
                     s.expired = true;
                     tlToast('expired', `${name}'s session ended`, `${res} time limit reached`);
-                    if (!tlIsLogged(r.id)) {
-                        if (!tlCurrentPrint) setTimeout(() => tlOpenPrintModal(r), 1200);
-                        else tlPrintQueue.push(r);
-                    }
+                    if (!tlIsLogged(r.id)) { if (!tlCurrentPrint) setTimeout(() => tlOpenPrintModal(r), 1200); else tlPrintQueue.push(r); }
                 }
                 let card = document.getElementById(`tl-card-${r.id}`);
-                if (!card) {
-                    card = document.createElement('div');
-                    card.id = `tl-card-${r.id}`;
-                    grid.appendChild(card);
-                }
-                const sf = r.start_time?.substring(0, 5) || '–',
-                    ef = r.end_time?.substring(0, 5) || '–',
-                    usedMin = Math.max(0, Math.floor(elMs / 60000)),
-                    logged = tlIsLogged(r.id);
+                if (!card) { card = document.createElement('div'); card.id = `tl-card-${r.id}`; grid.appendChild(card); }
+                const sf = r.start_time?.substring(0,5)||'–', ef = r.end_time?.substring(0,5)||'–',
+                      usedMin = Math.max(0, Math.floor(elMs/60000)), logged = tlIsLogged(r.id);
                 card.className = `tl-session-card ${state}`;
                 card.innerHTML = `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;"><div style="min-width:0;flex:1;"><p style="font-weight:700;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</p><p style="font-size:.68rem;color:var(--text-sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${res}</p></div><span class="tl-countdown"><i class="fa-regular fa-clock" style="font-size:.6rem;"></i>${tlFmt(remMs)}</span></div><div class="tl-prog-track"><div class="tl-prog-fill" style="width:${prog}%"></div></div><div style="display:flex;justify-content:space-between;margin-top:7px;"><span style="font-size:.65rem;color:var(--text-sub);font-family:var(--mono);">${sf}–${ef}</span><span style="font-size:.65rem;font-weight:600;color:var(--text-muted);">${usedMin}m used</span></div>${logged&&remMs<=0?'<div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check" style="font-size:.6rem;"></i>Logged</div>':''}`;
             });
             const ids = sessions.map(r => `tl-card-${r.id}`);
-            Array.from(grid.children).forEach(c => {
-                if (!ids.includes(c.id)) c.remove();
-            });
+            Array.from(grid.children).forEach(c => { if (!ids.includes(c.id)) c.remove(); });
         }
 
         /* ── Charts ── */
-        let trendChartInst = null,
-            monthChartInst = null;
+        let trendChartInst = null, monthChartInst = null;
 
         function getChartColors(isDark) {
-            return {
-                grid: isDark ? '#101e35' : '#f1f5f9',
-                tick: isDark ? '#4a6fa5' : '#94a3b8'
-            };
+            return { grid: isDark ? '#101e35' : '#f1f5f9', tick: isDark ? '#4a6fa5' : '#94a3b8' };
         }
 
         function updateChartsForTheme(isDark) {
             const c = getChartColors(isDark);
             [trendChartInst, monthChartInst].forEach(chart => {
                 if (!chart) return;
-                chart.options.scales.x.grid.color = c.grid;
+                chart.options.scales.x.grid.color  = c.grid;
                 chart.options.scales.x.ticks.color = c.tick;
-                chart.options.scales.y.grid.color = c.grid;
+                chart.options.scales.y.grid.color  = c.grid;
                 chart.options.scales.y.ticks.color = c.tick;
                 chart.update('none');
             });
@@ -2190,12 +2080,9 @@
             setInterval(tlRender, 1000);
             loadNotifications();
 
-            const mob = isMob();
+            const mob    = isMob();
             const isDark = document.body.classList.contains('dark');
-            const chartFont = {
-                family: 'Plus Jakarta Sans',
-                size: mob ? 9 : 11
-            };
+            const chartFont = { family: 'Plus Jakarta Sans', size: mob ? 9 : 11 };
             const cc = getChartColors(isDark);
 
             /* Trend Chart */
@@ -2204,60 +2091,15 @@
                 trendChartInst = new Chart(tCtx, {
                     type: 'line',
                     data: {
-                        labels: <?= json_encode($chartLabels ?? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) ?>,
-                        datasets: [{
-                            data: <?= json_encode($chartData ?? [0, 0, 0, 0, 0, 0, 0]) ?>,
-                            borderColor: '#3730a3',
-                            backgroundColor: 'rgba(55,48,163,0.07)',
-                            borderWidth: 2.5,
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: '#3730a3',
-                            pointRadius: mob ? 3 : 4,
-                            pointHoverRadius: mob ? 5 : 6
-                        }]
+                        labels:   <?= json_encode($chartLabels ?? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']) ?>,
+                        datasets: [{ data: <?= json_encode($chartData ?? [0,0,0,0,0,0,0]) ?>, borderColor:'#3730a3', backgroundColor:'rgba(55,48,163,0.07)', borderWidth:2.5, tension:0.4, fill:true, pointBackgroundColor:'#3730a3', pointRadius: mob?3:4, pointHoverRadius: mob?5:6 }]
                     },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: '#0f172a',
-                                titleFont: {
-                                    family: 'Plus Jakarta Sans',
-                                    weight: '700'
-                                },
-                                bodyFont: {
-                                    family: 'Plus Jakarta Sans'
-                                },
-                                padding: 10,
-                                cornerRadius: 10
-                            }
-                        },
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend:{display:false}, tooltip:{ backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10 } },
                         scales: {
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    font: chartFont,
-                                    color: cc.tick
-                                }
-                            },
-                            y: {
-                                grid: {
-                                    color: cc.grid
-                                },
-                                ticks: {
-                                    font: chartFont,
-                                    color: cc.tick,
-                                    stepSize: 1
-                                },
-                                beginAtZero: true
-                            }
+                            x: { grid:{display:false}, ticks:{font:chartFont, color:cc.tick} },
+                            y: { grid:{color:cc.grid}, ticks:{font:chartFont, color:cc.tick, stepSize:1}, beginAtZero:true }
                         }
                     }
                 });
@@ -2266,126 +2108,54 @@
             /* Resource donut */
             const rCtx = document.getElementById('resourceChart')?.getContext('2d');
             const rL = <?= json_encode($resourceLabels ?? ['No Data']) ?>,
-                rD = <?= json_encode($resourceData ?? [1]) ?>,
-                pal = ['#3730a3', '#7c3aed', '#16a34a', '#d97706', '#ec4899'];
+                  rD = <?= json_encode($resourceData   ?? [1]) ?>,
+                  pal = ['#3730a3','#7c3aed','#16a34a','#d97706','#ec4899'];
             if (rCtx) {
                 new Chart(rCtx, {
                     type: 'doughnut',
-                    data: {
-                        labels: rL,
-                        datasets: [{
-                            data: rD,
-                            backgroundColor: pal,
-                            borderWidth: 0,
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: false,
-                        animation: false,
-                        cutout: '65%',
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: '#0f172a',
-                                titleFont: {
-                                    family: 'Plus Jakarta Sans',
-                                    weight: '700'
-                                },
-                                bodyFont: {
-                                    family: 'Plus Jakarta Sans'
-                                },
-                                padding: 10,
-                                cornerRadius: 10
-                            }
-                        }
-                    }
+                    data: { labels: rL, datasets: [{ data:rD, backgroundColor:pal, borderWidth:0, hoverOffset:4 }] },
+                    options: { responsive:false, animation:false, cutout:'65%', plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10 } } }
                 });
                 const leg = document.getElementById('resourceLegend');
-                if (leg) leg.innerHTML = rL.map((l, i) => `<div style="display:flex;align-items:center;gap:8px;min-width:0;"><span style="width:9px;height:9px;border-radius:50%;background:${pal[i]||'#94a3b8'};flex-shrink:0;"></span><span style="font-size:.78rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;">${l}</span><span style="font-size:.78rem;font-weight:800;flex-shrink:0;">${rD[i]}</span></div>`).join('');
+                if (leg) leg.innerHTML = rL.map((l,i) => `<div style="display:flex;align-items:center;gap:8px;min-width:0;"><span style="width:9px;height:9px;border-radius:50%;background:${pal[i]||'#94a3b8'};flex-shrink:0;"></span><span style="font-size:.78rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;">${l}</span><span style="font-size:.78rem;font-weight:800;flex-shrink:0;">${rD[i]}</span></div>`).join('');
             }
 
             /* Calendar */
             const byDate = {};
-            allRes.forEach(r => {
-                if (!r.reservation_date) return;
-                (byDate[r.reservation_date] = byDate[r.reservation_date] || []).push(r);
-            });
+            allRes.forEach(r => { if (!r.reservation_date) return; (byDate[r.reservation_date] = byDate[r.reservation_date]||[]).push(r); });
             const events = allRes.filter(r => r.reservation_date).map(r => {
-                const st = isClaimed(r) ? 'claimed' : (r.status || 'pending');
-                const clr = {
-                    approved: '#10b981',
-                    pending: '#fbbf24',
-                    declined: '#f87171',
-                    claimed: '#a855f7'
-                };
-                return {
-                    title: (r.visitor_name || r.full_name || 'Guest') + ' · ' + (r.resource_name || 'Res'),
-                    start: r.reservation_date + (r.start_time ? 'T' + r.start_time : ''),
-                    end: r.reservation_date + (r.end_time ? 'T' + r.end_time : ''),
-                    backgroundColor: clr[st] || '#94a3b8',
-                    borderColor: 'transparent',
-                    textColor: '#fff'
-                };
+                const st  = isClaimed(r) ? 'claimed' : (r.status || 'pending');
+                const clr = { approved:'#10b981', pending:'#fbbf24', declined:'#f87171', claimed:'#a855f7' };
+                return { title: (r.visitor_name||r.full_name||'Guest') + ' · ' + (r.resource_name||'Res'), start: r.reservation_date+(r.start_time?'T'+r.start_time:''), end: r.reservation_date+(r.end_time?'T'+r.end_time:''), backgroundColor: clr[st]||'#94a3b8', borderColor:'transparent', textColor:'#fff' };
             });
             new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next',
-                    center: 'title',
-                    right: 'today'
-                },
-                events,
-                height: mob ? 260 : 380,
-                eventDisplay: 'block',
-                eventMaxStack: mob ? 1 : 2,
-                dateClick: info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
-                eventClick: info => openDateModal(info.event.startStr.split('T')[0], byDate[info.event.startStr.split('T')[0]] || []),
+                headerToolbar: { left:'prev,next', center:'title', right:'today' },
+                events, height: mob ? 260 : 380,
+                eventDisplay: 'block', eventMaxStack: mob ? 1 : 2,
+                dateClick:  info => openDateModal(info.dateStr, byDate[info.dateStr]||[]),
+                eventClick: info => openDateModal(info.event.startStr.split('T')[0], byDate[info.event.startStr.split('T')[0]]||[]),
                 dayCellDidMount: info => {
-                    const d = info.date.toISOString().split('T')[0],
-                        cnt = (byDate[d] || []).length;
-                    if (cnt) {
-                        const b = document.createElement('div');
-                        b.style.cssText = 'font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;font-family:var(--mono);';
-                        b.textContent = cnt;
-                        info.el.querySelector('.fc-daygrid-day-top')?.appendChild(b);
-                    }
+                    const d = info.date.toISOString().split('T')[0], cnt = (byDate[d]||[]).length;
+                    if (cnt) { const b = document.createElement('div'); b.style.cssText='font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;font-family:var(--mono);'; b.textContent = cnt; info.el.querySelector('.fc-daygrid-day-top')?.appendChild(b); }
                 }
             }).render();
 
             /* Insights */
             (function() {
-                const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                const {
-                    hourArr,
-                    dowArr,
-                    monthArr,
-                    peakHourIdx,
-                    peakDowIdx,
-                    peakMonthIdx,
-                    noShowRate,
-                    declineRate,
-                    trendPct,
-                    trendDir,
-                    topResource,
-                    peakDayLabel,
-                    resourceMap,
-                    totalCount
-                } = INS;
-                const maxH = Math.max(...hourArr, 1),
-                    maxD = Math.max(...dowArr, 1);
+                const DOW   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                const MONTH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const { hourArr, dowArr, monthArr, peakHourIdx, peakDowIdx, peakMonthIdx, noShowRate, declineRate, trendPct, trendDir, topResource, peakDayLabel, resourceMap, totalCount } = INS;
+                const maxH = Math.max(...hourArr, 1), maxD = Math.max(...dowArr, 1);
 
                 const sg = document.getElementById('ins-suggestion');
                 if (sg) {
                     let t = '';
-                    if (noShowRate > 30) t = `High no-show rate (${noShowRate}%). Consider sending session reminders.`;
-                    else if (declineRate > 25) t = `Decline rate elevated (${declineRate}%). Review approval rules or add more resources.`;
-                    else if (trendDir === 'up' && trendPct > 20) t = `Reservations up ${trendPct}% this week — keep "${topResource}" available.`;
+                    if (noShowRate > 30)                       t = `High no-show rate (${noShowRate}%). Consider sending session reminders.`;
+                    else if (declineRate > 25)                 t = `Decline rate elevated (${declineRate}%). Review approval rules or add more resources.`;
+                    else if (trendDir === 'up'   && trendPct > 20)          t = `Reservations up ${trendPct}% this week — keep "${topResource}" available.`;
                     else if (trendDir === 'down' && Math.abs(trendPct) > 20) t = `Bookings dropped ${Math.abs(trendPct)}% vs last week. Consider community outreach.`;
-                    else t = `${peakDayLabel}s are your busiest day. Keep "${topResource}" free and well-resourced.`;
+                    else                                       t = `${peakDayLabel}s are your busiest day. Keep "${topResource}" free and well-resourced.`;
                     sg.textContent = t;
                 }
 
@@ -2396,24 +2166,22 @@
                     for (let h = 0; h < 24; h++) {
                         const cell = document.createElement('div');
                         cell.className = 'ins-heatmap-cell';
-                        cell.style.cssText = `background:rgba(55,48,163,${(0.06 + (pct(hourArr[h],maxH)/100)*0.9).toFixed(2)});${h===peakHourIdx?'box-shadow:0 0 0 2px #3730a3;':''}`;
+                        cell.style.cssText = `background:rgba(55,48,163,${(0.06+(pct(hourArr[h],maxH)/100)*0.9).toFixed(2)});${h===peakHourIdx?'box-shadow:0 0 0 2px #3730a3;':''}`;
                         cell.title = `${f12(h)}: ${hourArr[h]} reservations`;
                         hm.appendChild(cell);
                     }
                 }
 
-                const be = document.getElementById('ins-dow-bars'),
-                    le = document.getElementById('ins-dow-labels');
+                const be = document.getElementById('ins-dow-bars'), le = document.getElementById('ins-dow-labels');
                 if (be && le) {
                     be.innerHTML = le.innerHTML = '';
                     dowArr.forEach((cnt, i) => {
                         const bar = document.createElement('div');
                         bar.style.cssText = `flex:1;border-radius:5px 5px 0 0;background:${i===peakDowIdx?'#3730a3':'#c7d2fe'};height:${Math.max(pct(cnt,maxD),4)}%;min-height:4px;`;
-                        bar.title = `${DOW[i]}: ${cnt}`;
-                        be.appendChild(bar);
+                        bar.title = `${DOW[i]}: ${cnt}`; be.appendChild(bar);
                         const lbl = document.createElement('div');
                         lbl.style.cssText = `flex:1;text-align:center;font-size:${mob?'8px':'9px'};font-weight:${i===peakDowIdx?'800':'600'};color:${i===peakDowIdx?'#3730a3':'#94a3b8'};`;
-                        lbl.textContent = mob ? DOW[i][0] : DOW[i].slice(0, 3);
+                        lbl.textContent = mob ? DOW[i][0] : DOW[i].slice(0,3);
                         le.appendChild(lbl);
                     });
                 }
@@ -2432,65 +2200,13 @@
                 if (mCtx) {
                     monthChartInst = new Chart(mCtx, {
                         type: 'bar',
-                        data: {
-                            labels: MONTH,
-                            datasets: [{
-                                data: monthArr,
-                                backgroundColor: monthArr.map((_, i) => i === peakMonthIdx ? '#3730a3' : 'rgba(55,48,163,.15)'),
-                                borderRadius: 5,
-                                borderSkipped: false
-                            }]
-                        },
+                        data: { labels: MONTH, datasets: [{ data: monthArr, backgroundColor: monthArr.map((_,i) => i===peakMonthIdx?'#3730a3':'rgba(55,48,163,.15)'), borderRadius:5, borderSkipped:false }] },
                         options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    backgroundColor: '#0f172a',
-                                    titleFont: {
-                                        family: 'Plus Jakarta Sans',
-                                        weight: '700'
-                                    },
-                                    bodyFont: {
-                                        family: 'Plus Jakarta Sans'
-                                    },
-                                    padding: 10,
-                                    cornerRadius: 10,
-                                    callbacks: {
-                                        label: ctx => ` ${ctx.raw} reservations`
-                                    }
-                                }
-                            },
+                            responsive:true, maintainAspectRatio:false,
+                            plugins: { legend:{display:false}, tooltip:{ backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10, callbacks:{ label: ctx => ` ${ctx.raw} reservations` } } },
                             scales: {
-                                x: {
-                                    grid: {
-                                        display: false
-                                    },
-                                    ticks: {
-                                        font: {
-                                            family: 'Plus Jakarta Sans',
-                                            size: mob ? 8 : 10
-                                        },
-                                        color: cc.tick
-                                    }
-                                },
-                                y: {
-                                    grid: {
-                                        color: cc.grid
-                                    },
-                                    beginAtZero: true,
-                                    ticks: {
-                                        font: {
-                                            family: 'Plus Jakarta Sans',
-                                            size: mob ? 8 : 10
-                                        },
-                                        color: cc.tick,
-                                        stepSize: 1
-                                    }
-                                }
+                                x: { grid:{display:false}, ticks:{font:{family:'Plus Jakarta Sans',size:mob?8:10}, color:cc.tick} },
+                                y: { grid:{color:cc.grid}, beginAtZero:true, ticks:{font:{family:'Plus Jakarta Sans',size:mob?8:10}, color:cc.tick, stepSize:1} }
                             }
                         }
                     });
@@ -2506,15 +2222,15 @@
 
                 const rk = document.getElementById('ins-resource-ranking');
                 if (rk) {
-                    const entries = Object.entries(resourceMap).sort((a, b) => b[1] - a[1]),
-                        topMax = entries[0]?.[1] || 1,
-                        colors = ['#3730a3', '#d97706', '#7c3aed', '#16a34a', '#ec4899', '#06b6d4', '#f87171'];
-                    rk.innerHTML = !entries.length ? '<p style="font-size:.75rem;color:var(--text-sub);text-align:center;padding:16px;">No data yet</p>' : entries.slice(0, 7).map(([name, cnt], i) => {
-                        const w = pct(cnt, topMax),
-                            c = colors[i] || '#94a3b8',
-                            share = totalCount > 0 ? Math.round(cnt / totalCount * 100) : 0;
-                        return `<div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px;"><div style="display:flex;align-items:center;gap:8px;min-width:0;"><span style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:white;background:${c};flex-shrink:0;">${i+1}</span><span style="font-size:.78rem;font-weight:600;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</span></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span style="font-size:.65rem;color:var(--text-sub);">${share}%</span><span style="font-size:.78rem;font-weight:800;">${cnt}</span></div></div><div class="prog-bar"><div class="prog-fill" style="width:${w}%;background:${c};"></div></div></div>`;
-                    }).join('');
+                    const entries  = Object.entries(resourceMap).sort((a,b) => b[1]-a[1]),
+                          topMax   = entries[0]?.[1] || 1,
+                          colors   = ['#3730a3','#d97706','#7c3aed','#16a34a','#ec4899','#06b6d4','#f87171'];
+                    rk.innerHTML = !entries.length
+                        ? '<p style="font-size:.75rem;color:var(--text-sub);text-align:center;padding:16px;">No data yet</p>'
+                        : entries.slice(0,7).map(([name,cnt],i) => {
+                            const w = pct(cnt,topMax), c = colors[i]||'#94a3b8', share = totalCount>0?Math.round(cnt/totalCount*100):0;
+                            return `<div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px;"><div style="display:flex;align-items:center;gap:8px;min-width:0;"><span style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:white;background:${c};flex-shrink:0;">${i+1}</span><span style="font-size:.78rem;font-weight:600;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</span></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span style="font-size:.65rem;color:var(--text-sub);">${share}%</span><span style="font-size:.78rem;font-weight:800;">${cnt}</span></div></div><div class="prog-bar"><div class="prog-fill" style="width:${w}%;background:${c};"></div></div></div>`;
+                          }).join('');
                 }
             })();
         });
