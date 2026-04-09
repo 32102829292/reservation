@@ -32,10 +32,7 @@ if (!empty($reservations)) {
     foreach ($reservations as $r) {
         if (($r['status'] ?? '') === 'approved' && empty($r['claimed'])) {
             $dt = strtotime($r['reservation_date'] . ' ' . ($r['end_time'] ?? '23:59'));
-            if ($dt > $now) {
-                $upcoming = $r;
-                break;
-            }
+            if ($dt > $now) { $upcoming = $r; break; }
         }
     }
 }
@@ -54,14 +51,13 @@ if ($pending > 0) {
 }
 
 $nextColors = [
-    'amber'  => ['bg' => 'rgba(251,191,36,.08)',   'border' => 'rgba(251,191,36,.25)',  'icon_bg' => 'rgba(251,191,36,.15)',  'icon_fg' => '#d97706', 'btn_bg' => '#d97706', 'icon' => 'clock'],
-    'blue'   => ['bg' => 'rgba(99,102,241,.06)',   'border' => 'rgba(99,102,241,.2)',   'icon_bg' => 'rgba(99,102,241,.12)', 'icon_fg' => '#4338ca', 'btn_bg' => '#4338ca', 'icon' => 'ticket'],
-    'orange' => ['bg' => 'rgba(234,88,12,.06)',    'border' => 'rgba(234,88,12,.2)',    'icon_bg' => 'rgba(234,88,12,.1)',   'icon_fg' => '#ea580c', 'btn_bg' => '#ea580c', 'icon' => 'triangle'],
-    'slate'  => ['bg' => 'rgba(100,116,139,.05)',  'border' => 'rgba(100,116,139,.15)', 'icon_bg' => 'rgba(100,116,139,.1)','icon_fg' => '#64748b', 'btn_bg' => '#64748b', 'icon' => 'calendar-x'],
+    'amber'  => ['bg' => 'rgba(251,191,36,.08)',  'border' => 'rgba(251,191,36,.25)',  'icon_bg' => 'rgba(251,191,36,.15)',  'icon_fg' => '#d97706', 'btn_bg' => '#d97706', 'icon' => 'clock'],
+    'blue'   => ['bg' => 'rgba(99,102,241,.06)',  'border' => 'rgba(99,102,241,.2)',   'icon_bg' => 'rgba(99,102,241,.12)', 'icon_fg' => '#4338ca', 'btn_bg' => '#4338ca', 'icon' => 'ticket'],
+    'orange' => ['bg' => 'rgba(234,88,12,.06)',   'border' => 'rgba(234,88,12,.2)',    'icon_bg' => 'rgba(234,88,12,.1)',   'icon_fg' => '#ea580c', 'btn_bg' => '#ea580c', 'icon' => 'triangle'],
+    'slate'  => ['bg' => 'rgba(100,116,139,.05)', 'border' => 'rgba(100,116,139,.15)', 'icon_bg' => 'rgba(100,116,139,.1)','icon_fg' => '#64748b', 'btn_bg' => '#64748b', 'icon' => 'calendar-x'],
 ];
 
-function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
-{
+function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
     $icons = [
         'house'         => '<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>',
         'plus'          => '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
@@ -113,11 +109,7 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script>
     (function () {
-        try {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.documentElement.classList.add('dark-pre');
-            }
-        } catch (e) {}
+        try { if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark-pre'); } catch (e) {}
     })();
     </script>
     <style>
@@ -294,9 +286,9 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         .status-guide-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border-subtle); }
         .status-guide-row:last-child { border-bottom:none; }
 
-        /* ════════════════════════════════════════════
-           LIBRARY SECTION — complete rewrite
-        ════════════════════════════════════════════ */
+        /* ══════════════════════════════════════════
+           LIBRARY SECTION
+        ══════════════════════════════════════════ */
         .grid-lib {
             display: grid;
             grid-template-columns: minmax(0,1fr) minmax(0,1fr);
@@ -304,9 +296,8 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
             margin-bottom: 16px;
             align-items: start;
         }
-        @media(max-width:900px) { .grid-lib { grid-template-columns:1fr; } }
 
-        /* Banner */
+        /* ── Banner ── */
         .lib-banner {
             background: linear-gradient(135deg,#3730a3 0%,#4338ca 60%,#6366f1 100%);
             border-radius: var(--r-lg);
@@ -322,97 +313,39 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
             opacity:.4; pointer-events:none;
         }
         .lib-banner-inner { position:relative; z-index:1; }
-
-        /* Banner top row: eyebrow + number + sub + browse btn */
-        .lib-banner-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 14px;
-        }
+        .lib-banner-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
         .lib-eyebrow { font-size:.6rem; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-bottom:4px; }
         .lib-title   { font-size:1.6rem; font-weight:800; color:white; letter-spacing:-.04em; line-height:1.1; font-family:var(--mono); }
         .lib-sub     { font-size:.72rem; color:rgba(255,255,255,.5); margin-top:3px; font-weight:500; }
-
         .lib-browse {
-            display: inline-flex; align-items:center; gap:6px;
-            padding: 9px 13px;
-            background: rgba(255,255,255,.18); color:white;
-            border-radius: 9px; font-size:.75rem; font-weight:700;
-            text-decoration:none; border:1px solid rgba(255,255,255,.2);
-            transition:background var(--ease); white-space:nowrap;
-            flex-shrink: 0; touch-action:manipulation;
+            display:inline-flex; align-items:center; gap:6px; padding:9px 13px;
+            background:rgba(255,255,255,.18); color:white; border-radius:9px;
+            font-size:.75rem; font-weight:700; text-decoration:none;
+            border:1px solid rgba(255,255,255,.2); transition:background var(--ease);
+            white-space:nowrap; flex-shrink:0; touch-action:manipulation;
         }
         .lib-browse:hover { background:rgba(255,255,255,.28); }
 
-        /* Stats row */
-        .lib-stats {
-            display: flex;
-            gap: 6px;
-            width: 100%;
-            box-sizing: border-box;
-        }
+        /* ── Stats pills ── */
+        .lib-stats { display:flex; gap:6px; width:100%; box-sizing:border-box; }
         .lib-stat {
-            flex: 1 1 0;
-            min-width: 0;
-            background: rgba(255,255,255,.1);
-            border: 1px solid rgba(255,255,255,.1);
-            border-radius: 9px;
-            padding: 7px 8px;
-            box-sizing: border-box;
-            overflow: hidden;
+            flex:1 1 0; min-width:0;
+            background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.1);
+            border-radius:9px; padding:7px 8px; box-sizing:border-box; overflow:hidden;
         }
-        .lib-stat-lbl {
-            font-size: .5rem; font-weight:600;
-            color: rgba(255,255,255,.55); text-transform:uppercase;
-            letter-spacing:.06em; white-space:nowrap;
-            overflow:hidden; text-overflow:ellipsis; display:block;
-        }
-        .lib-stat-val {
-            font-size: .9rem; font-weight:800; color:white;
-            font-family:var(--mono); line-height:1.2; display:block;
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-        }
+        .lib-stat-lbl { font-size:.5rem; font-weight:600; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+        .lib-stat-val { font-size:.9rem; font-weight:800; color:white; font-family:var(--mono); line-height:1.2; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-        
-        @media(max-width:380px) {
-            .lib-stat-lbl { font-size:.4rem; }
-            .lib-stat-val { font-size:.75rem; }
-            .lib-stat { padding:5px 6px; }
-        }
-
-        @media(max-width:639px) {
-    .grid-lib {
-        grid-template-columns: 1fr !important;
-        gap: 12px;
-    }
-    .grid-lib > div {
-        width: 100%;
-        min-width: 0;
-    }
-}
-
-@media(max-width:479px) {
-    .lib-stats {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 4px;
-    }
-    .lib-stat-lbl { font-size: .42rem; letter-spacing: 0; }
-    .lib-stat-val { font-size: .78rem; }
-    .lib-browse   { padding: 7px 9px; font-size: .68rem; }
-}
-        /* Book rows */
+        /* ── Book rows ── */
         .book-letter { width:34px; height:34px; border-radius:9px; background:var(--indigo-light); color:var(--indigo); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; }
         .book-title  { font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .book-author { font-size:.7rem; color:var(--text-sub); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         body.dark .book-letter { background:rgba(55,48,163,.2); color:#818cf8; }
 
-        /* Active borrow rows */
+        /* ── Active borrow rows ── */
         .borrow-row { display:flex; align-items:center; gap:9px; background:var(--input-bg); border-radius:10px; padding:9px 12px; border:1px solid var(--border-subtle); }
 
-        /* AI finder */
+        /* ── AI finder ── */
         .rag-wrap { position:relative; margin-top:12px; }
         .rag-icon-pos { position:absolute; left:11px; top:50%; transform:translateY(-50%); pointer-events:none; }
         .search-input { width:100%; padding:11px 12px 11px 34px; border-radius:var(--r-sm); border:1px solid rgba(99,102,241,.15); font-size:1rem; font-family:var(--font); background:var(--input-bg); color:var(--text); transition:all var(--ease); outline:none; -webkit-appearance:none; }
@@ -428,20 +361,139 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         body.dark .ai-result-box { background:rgba(55,48,163,.15) !important; border-color:rgba(99,102,241,.25) !important; }
         body.dark #ragText, body.dark #ragText * { color:#a5b4fc !important; }
 
-        /* Login toast */
+        /* ── Login toast ── */
         .login-toast { position:fixed; bottom:calc(var(--mob-nav-total) + 8px); right:16px; z-index:400; max-width:280px; background:#0f172a; border-radius:14px; padding:12px 14px; display:flex; align-items:flex-start; gap:10px; box-shadow:0 8px 32px rgba(0,0,0,.3); transform:translateY(8px); opacity:0; pointer-events:none; transition:all .35s cubic-bezier(.34,1.56,.64,1); }
         .login-toast.show { transform:none; opacity:1; pointer-events:auto; }
         .toast-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .toast-close { background:rgba(255,255,255,.08); border:none; border-radius:6px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin-top:1px; touch-action:manipulation; }
         @media(min-width:1024px) { .login-toast { bottom:24px; } }
         @media(max-width:479px) { .login-toast { bottom:calc(var(--mob-nav-total) + 6px); left:12px; right:12px; max-width:none; } }
+
+        /* ══════════════════════════════════════════
+           MOBILE BOTTOM NAV — FULL REWRITE
+           Shows icon + label, 6 items, no overflow
+        ══════════════════════════════════════════ */
+        .l-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            z-index: 200;
+            box-shadow: 0 -4px 24px rgba(55,48,163,.12);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            transition: background var(--ease);
+        }
+        .l-mobile-nav__inner {
+            display: flex;
+            justify-content: space-around;
+            align-items: stretch;
+            height: 60px;
+            width: 100%;
+            padding: 0 2px;
+        }
+        .l-mobile-nav__item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 6px 2px 4px;
+            border-radius: 0;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text-sub);
+            position: relative;
+            transition: color .15s, background .15s;
+            font-size: .55rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-width: 0;
+        }
+        .l-mobile-nav__item svg { flex-shrink: 0; }
+        .l-mobile-nav__item span.nav-lbl { line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-align: center; display: block; }
+        .l-mobile-nav__item.is-active { color: var(--indigo); }
+        .l-mobile-nav__item.is-active::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 20%; right: 20%;
+            height: 2px;
+            background: var(--indigo);
+            border-radius: 0 0 3px 3px;
+        }
+        .l-mobile-nav__item--logout { color: var(--text-sub); }
+        .l-mobile-nav__item--logout.is-active { color: var(--text-sub); }
+        .l-mobile-nav__item--logout.is-active::after { display: none; }
+        .l-mobile-nav__badge {
+            position: absolute; top: 4px; right: calc(50% - 18px);
+            background: #ef4444; color: #fff;
+            font-size: .5rem; font-weight: 700;
+            width: 14px; height: 14px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid var(--card); pointer-events: none;
+        }
+        /* Active icon bg pill */
+        .l-mobile-nav__item.is-active .nav-icon-wrap {
+            background: var(--indigo-light);
+            border-radius: 8px;
+        }
+        .nav-icon-wrap {
+            width: 32px; height: 24px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px;
+            transition: background .15s;
+        }
+        /* dark nav */
+        body.dark .l-mobile-nav { background: var(--card); border-color: rgba(99,102,241,.18); box-shadow: 0 -4px 24px rgba(0,0,0,.3); }
+        body.dark .l-mobile-nav__item { color: var(--text-sub); }
+        body.dark .l-mobile-nav__item.is-active { color: #818cf8; }
+        body.dark .l-mobile-nav__item.is-active::after { background: #818cf8; }
+        body.dark .l-mobile-nav__item.is-active .nav-icon-wrap { background: rgba(99,102,241,.15); }
+        body.dark .l-mobile-nav__badge { border-color: var(--card); }
+
+        /* Very narrow phones: shrink label font */
+        @media(max-width:360px) {
+            .l-mobile-nav__item { font-size: .48rem; padding: 6px 1px 4px; }
+            .nav-icon-wrap { width: 28px; }
+        }
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE — Library grid
+        ══════════════════════════════════════════ */
+        /* Collapse to 1 col at ≤900px */
+        @media(max-width:900px) {
+            .grid-lib { grid-template-columns: 1fr; }
+        }
+        /* Extra mobile tweaks ≤639px */
         @media(max-width:639px) {
-  .grid-lib {
-    grid-template-columns: 1fr !important;
-    gap: 12px;
-  }
-}
-        @media(max-width:639px) { .topbar { margin-bottom:14px; } .greeting-name { font-size:1.35rem; } }
+            .grid-lib { grid-template-columns: 1fr !important; gap: 12px; }
+            .grid-lib > div { width: 100%; min-width: 0; }
+            .topbar { margin-bottom: 14px; }
+            .lib-banner { padding: 14px 14px 12px; }
+            .lib-banner-top { gap: 10px; }
+            .lib-title { font-size: 1.35rem; }
+            .lib-browse { padding: 8px 11px; font-size: .72rem; }
+            .lib-stats { gap: 5px; }
+            .lib-stat { padding: 6px 7px; border-radius: 8px; }
+            .lib-stat-lbl { font-size: .44rem; letter-spacing: 0; }
+            .lib-stat-val { font-size: .82rem; }
+        }
+        /* Very narrow phones ≤479px */
+        @media(max-width:479px) {
+            .lib-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 4px; }
+            .lib-stat-lbl { font-size: .42rem; letter-spacing: 0; }
+            .lib-stat-val { font-size: .78rem; }
+            .lib-browse { padding: 7px 9px; font-size: .68rem; gap: 4px; }
+        }
+        @media(max-width:380px) {
+            .lib-stat-lbl { font-size: .4rem; }
+            .lib-stat-val { font-size: .75rem; }
+            .lib-stat { padding: 5px 6px; }
+        }
     </style>
 </head>
 
@@ -747,13 +799,11 @@ include(APPPATH . 'Views/partials/layout.php');
         </div>
     <?php endif; ?>
 
-    <!-- ═══════════════════════════════════════════════════
-         LIBRARY SECTION
-    ════════════════════════════════════════════════════ -->
+    <!-- LIBRARY SECTION -->
     <div class="grid-lib fade-up-4">
 
         <!-- LEFT COL: banner + AI finder -->
-        <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0;">
 
             <!-- Banner -->
             <div class="lib-banner">
@@ -825,7 +875,7 @@ include(APPPATH . 'Views/partials/layout.php');
         </div>
 
         <!-- RIGHT COL: books catalog + my borrows -->
-        <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0;">
 
             <!-- Available Now -->
             <div class="card card-p" style="flex:1;">
@@ -847,9 +897,7 @@ include(APPPATH . 'Views/partials/layout.php');
                             $avail = (int)($book['available_copies'] ?? 0);
                             $pillStyle = $avail === 0
                                 ? 'background:#fee2e2;color:#991b1b;'
-                                : ($avail <= 1
-                                    ? 'background:#fef3c7;color:#92400e;'
-                                    : 'background:#dcfce7;color:#166634;');
+                                : ($avail <= 1 ? 'background:#fef3c7;color:#92400e;' : 'background:#dcfce7;color:#166634;');
                             $pillText = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
                         ?>
                             <a href="<?= base_url('/books') ?>"
@@ -867,16 +915,12 @@ include(APPPATH . 'Views/partials/layout.php');
                     </div>
                     <?php if (count($featuredBooks) > 6): ?>
                         <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-subtle);text-align:center;">
-                            <a href="<?= base_url('/books') ?>" class="link-sm">
-                                +<?= count($featuredBooks) - 6 ?> more →
-                            </a>
+                            <a href="<?= base_url('/books') ?>" class="link-sm">+<?= count($featuredBooks) - 6 ?> more →</a>
                         </div>
                     <?php endif; ?>
                 <?php else: ?>
                     <div style="text-align:center;padding:32px 12px;">
-                        <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);">
-                            <?= icon('book-open', 28, 'currentColor') ?>
-                        </div>
+                        <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('book-open', 28, 'currentColor') ?></div>
                         <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No books available</p>
                     </div>
                 <?php endif; ?>
@@ -892,9 +936,7 @@ include(APPPATH . 'Views/partials/layout.php');
                 <div class="card card-p">
                     <div class="card-head">
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div class="card-icon" style="background:#dcfce7;">
-                                <?= icon('bookmark', 16, '#16a34a') ?>
-                            </div>
+                            <div class="card-icon" style="background:#dcfce7;"><?= icon('bookmark', 16, '#16a34a') ?></div>
                             <div>
                                 <div class="card-title">My Active Borrows</div>
                                 <div class="card-sub">Currently checked out</div>
@@ -932,9 +974,7 @@ include(APPPATH . 'Views/partials/layout.php');
                 </div>
             <?php else: ?>
                 <div class="card card-p" style="text-align:center;padding:28px 20px;">
-                    <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);">
-                        <?= icon('bookmark', 26, 'currentColor') ?>
-                    </div>
+                    <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('bookmark', 26, 'currentColor') ?></div>
                     <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
                     <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
                         <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
@@ -1004,8 +1044,7 @@ function loadNotifications() {
 function markAllRead() {
     saveSeenIds([...new Set([...getSeenIds(), ...notifications.map(n => n.id)])]);
     notifications.forEach(n => n.read = true);
-    updateBadge();
-    renderNotifs();
+    updateBadge(); renderNotifs();
 }
 
 function markRead(id) {
@@ -1192,10 +1231,10 @@ function showLoginToast() {
     });
     if (!td) return;
     const toast = document.getElementById('loginToast');
-    document.getElementById('toastIcon').innerHTML   = td.icon;
+    document.getElementById('toastIcon').innerHTML        = td.icon;
     document.getElementById('toastIcon').style.background = td.bg;
-    document.getElementById('toastTitle').textContent = td.title;
-    document.getElementById('toastBody').textContent  = td.body;
+    document.getElementById('toastTitle').textContent     = td.title;
+    document.getElementById('toastBody').textContent      = td.body;
     setTimeout(() => toast.classList.add('show'),    900);
     setTimeout(() => toast.classList.remove('show'), 7500);
 }
@@ -1307,6 +1346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
 <?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 </body>
 </html>
