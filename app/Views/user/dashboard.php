@@ -111,13 +111,6 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
     <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-
-    <?php
-    /*
-     * Dark-mode pre-init: eliminates flash of wrong theme.
-     * Mirrors the snippet in layout.php — must run before <body>.
-     */
-    ?>
     <script>
     (function () {
         try {
@@ -127,141 +120,75 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         } catch (e) {}
     })();
     </script>
-
-    <?php
-    /*
-     * Dashboard-specific styles only.
-     * Global tokens, sidebar, mobile-nav, cards, tags, modals,
-     * dark-mode overrides, and utility classes all live in app.css.
-     */
-    ?>
     <style>
         /* ── Layout shell ── */
-        body {
-            display: flex;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-        }
-
+        body { display:flex; height:100vh; height:100dvh; overflow:hidden; }
         html.dark-pre body,
         html.dark-pre .sidebar-inner,
-        html.dark-pre .mobile-nav-pill { background: #060e1e; }
+        html.dark-pre .mobile-nav-pill { background:#060e1e; }
 
-        /* ── Reserve button (topbar) ── */
+        /* ── Reserve button ── */
         .reserve-btn {
-            display: none;
-            align-items: center;
-            gap: 7px;
-            padding: 10px 18px;
-            background: var(--indigo);
-            color: #fff;
-            border-radius: var(--r-sm);
-            font-size: .85rem;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            font-family: var(--font);
-            letter-spacing: -.01em;
-            transition: all var(--ease);
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(55,48,163,.28);
-            touch-action: manipulation;
+            display:none; align-items:center; gap:7px; padding:10px 18px;
+            background:var(--indigo); color:#fff; border-radius:var(--r-sm);
+            font-size:.85rem; font-weight:700; border:none; cursor:pointer;
+            font-family:var(--font); letter-spacing:-.01em; transition:all var(--ease);
+            text-decoration:none; box-shadow:0 4px 12px rgba(55,48,163,.28);
+            touch-action:manipulation;
         }
-        @media(min-width:480px) { .reserve-btn { display: flex; } }
+        @media(min-width:480px) { .reserve-btn { display:flex; } }
         .reserve-btn:hover { background:#312e81; transform:translateY(-1px); box-shadow:0 6px 18px rgba(55,48,163,.35); }
-
-        .btn-text { display: none; }
+        .btn-text { display:none; }
 
         /* ── Notification dropdown ── */
-        .notif-bell { position: relative; }
+        .notif-bell { position:relative; }
         .notif-badge {
-            position: absolute; top: -5px; right: -5px;
-            background: #ef4444; color: white;
-            font-size: .55rem; font-weight: 700;
-            padding: 2px 5px; border-radius: 999px;
-            min-width: 17px; text-align: center;
-            border: 2px solid var(--bg); line-height: 1.3;
-            pointer-events: none;
+            position:absolute; top:-5px; right:-5px;
+            background:#ef4444; color:white; font-size:.55rem; font-weight:700;
+            padding:2px 5px; border-radius:999px; min-width:17px; text-align:center;
+            border:2px solid var(--bg); line-height:1.3; pointer-events:none;
         }
         .notif-dd {
-            position: fixed; top: 80px; right: 20px;
-            width: 320px; background: var(--card);
-            border-radius: var(--r-xl);
-            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99,102,241,.09);
-            z-index: 200; display: none; overflow: hidden;
-            animation: l-fade-in .15s ease;
+            position:fixed; top:80px; right:20px; width:320px; background:var(--card);
+            border-radius:var(--r-xl);
+            box-shadow:var(--shadow-lg), 0 0 0 1px rgba(99,102,241,.09);
+            z-index:200; display:none; overflow:hidden;
         }
-        .notif-dd.show { display: block; }
-        .notif-item {
-            padding: .85rem 1.1rem;
-            border-bottom: 1px solid var(--border-subtle);
-            transition: background .15s; cursor: pointer;
-            touch-action: manipulation;
-        }
-        .notif-item:hover { background: var(--input-bg); }
-        .notif-item.unread { background: var(--indigo-light); }
-        .notif-item:last-child { border-bottom: none; }
+        .notif-dd.show { display:block; animation:l-fade-in .15s ease; }
+        .notif-item { padding:.85rem 1.1rem; border-bottom:1px solid var(--border-subtle); transition:background .15s; cursor:pointer; touch-action:manipulation; }
+        .notif-item:hover { background:var(--input-bg); }
+        .notif-item.unread { background:var(--indigo-light); }
+        .notif-item:last-child { border-bottom:none; }
         @media(max-width:479px) { .notif-dd { left:12px; right:12px; width:auto; top:72px; } }
 
         /* ── Next-action card ── */
-        .next-card {
-            display: flex; align-items: flex-start; gap: 14px;
-            border-radius: var(--r-md); padding: 16px 18px;
-            border: 1px solid; margin-bottom: 20px;
-            animation: l-slide-up .4s ease both;
-        }
-        .next-icon-wrap {
-            width: 36px; height: 36px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
+        .next-card { display:flex; align-items:flex-start; gap:14px; border-radius:var(--r-md); padding:16px 18px; border:1px solid; margin-bottom:20px; animation:l-slide-up .4s ease both; }
+        .next-icon-wrap { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .next-eyebrow { font-size:.6rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; margin-bottom:4px; }
-        .next-msg { font-size:.83rem; color: var(--text-muted); line-height:1.6; }
-        .next-cta {
-            display: inline-flex; align-items: center; gap: 6px;
-            margin-top: 10px; padding: 9px 16px; border-radius: 9px;
-            font-size: .75rem; font-weight: 700; color: #fff;
-            text-decoration: none; font-family: var(--font);
-            transition: opacity var(--ease); touch-action: manipulation;
-        }
-        .next-cta:hover { opacity: .85; }
+        .next-msg { font-size:.83rem; color:var(--text-muted); line-height:1.6; }
+        .next-cta { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:9px 16px; border-radius:9px; font-size:.75rem; font-weight:700; color:#fff; text-decoration:none; font-family:var(--font); transition:opacity var(--ease); touch-action:manipulation; }
+        .next-cta:hover { opacity:.85; }
 
         /* ── Countdown timer banner ── */
-        .timer-banner {
-            display: none; border-radius: var(--r-md);
-            padding: 14px 18px; margin-bottom: 18px; border: 1px solid;
-            animation: l-slide-up .35s cubic-bezier(.34,1.56,.64,1) both;
-        }
+        .timer-banner { display:none; border-radius:var(--r-md); padding:14px 18px; margin-bottom:18px; border:1px solid; animation:l-slide-up .35s cubic-bezier(.34,1.56,.64,1) both; }
         .timer-banner.urgent  { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
         .timer-banner.warning { background:#fefce8; border-color:#fde68a; color:#854d0e; }
         .timer-banner.safe    { background:var(--indigo-light); border-color:var(--indigo-border); color:#312e81; }
         body.dark .timer-banner.safe    { background:rgba(55,48,163,.15); border-color:rgba(55,48,163,.3); color:#a5b4fc; }
         body.dark .timer-banner.warning { background:rgba(180,83,9,.2); border-color:rgba(180,83,9,.35); color:#fcd34d; }
         body.dark .timer-banner.urgent  { background:rgba(154,52,18,.2); border-color:rgba(154,52,18,.35); color:#fb923c; }
-
         .timer-inner { display:flex; align-items:center; gap:11px; flex-wrap:wrap; }
         .timer-text-col { flex:1; min-width:140px; }
-        .timer-digit {
-            display:inline-flex; flex-direction:column; align-items:center;
-            background:rgba(0,0,0,.07); border-radius:8px;
-            padding:.2rem .5rem; min-width:2.6rem;
-            font-variant-numeric:tabular-nums; font-weight:700;
-            font-size:1.1rem; line-height:1; font-family:var(--mono);
-        }
+        .timer-digit { display:inline-flex; flex-direction:column; align-items:center; background:rgba(0,0,0,.07); border-radius:8px; padding:.2rem .5rem; min-width:2.6rem; font-variant-numeric:tabular-nums; font-weight:700; font-size:1.1rem; line-height:1; font-family:var(--mono); }
         .timer-digit span { font-size:.5rem; font-weight:500; opacity:.6; text-transform:uppercase; letter-spacing:.07em; margin-top:3px; font-family:var(--font); }
-        .timer-pulse { animation: pulse .9s ease-in-out infinite; }
+        .timer-pulse { animation:pulse .9s ease-in-out infinite; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
         .timer-progress-wrap { height:3px; border-radius:999px; background:rgba(0,0,0,.08); overflow:hidden; margin-top:10px; }
         .timer-progress-fill { height:100%; border-radius:999px; background:currentColor; opacity:.4; transition:width 1s linear; }
         @media(max-width:400px) { .timer-digit { min-width:2.1rem; padding:.15rem .35rem; font-size:.95rem; } .timer-inner { gap:8px; } }
 
         /* ── Upcoming pill ── */
-        .upcoming-pill {
-            background: var(--indigo-light); border:1px solid var(--indigo-border);
-            border-radius: var(--r-md); padding:14px 16px;
-            display:flex; align-items:center; gap:14px;
-            margin-bottom:20px; animation:l-slide-up .4s ease both; flex-wrap:wrap;
-        }
+        .upcoming-pill { background:var(--indigo-light); border:1px solid var(--indigo-border); border-radius:var(--r-md); padding:14px 16px; display:flex; align-items:center; gap:14px; margin-bottom:20px; animation:l-slide-up .4s ease both; flex-wrap:wrap; }
         .up-icon { width:38px; height:38px; background:var(--indigo); border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 10px rgba(55,48,163,.28); }
         .up-eyebrow { font-size:.6rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--indigo); margin-bottom:2px; }
         .up-name { font-size:.88rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
@@ -367,139 +294,114 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         .status-guide-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border-subtle); }
         .status-guide-row:last-child { border-bottom:none; }
 
-        /* ── Library grid ── */
-.grid-lib {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 16px;
-    margin-bottom: 16px;
-    align-items: start;
-}
+        /* ════════════════════════════════════════════
+           LIBRARY SECTION — complete rewrite
+        ════════════════════════════════════════════ */
+        .grid-lib {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: start;
+        }
+        @media(max-width:900px) { .grid-lib { grid-template-columns:1fr; } }
 
-@media (max-width: 900px) {
-    .grid-lib { grid-template-columns: 1fr; }
-}
+        /* Banner */
+        .lib-banner {
+            background: linear-gradient(135deg,#3730a3 0%,#4338ca 60%,#6366f1 100%);
+            border-radius: var(--r-lg);
+            padding: 20px 20px 16px;
+            overflow: hidden;
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .lib-banner::before {
+            content:''; position:absolute; inset:0;
+            background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E") repeat;
+            opacity:.4; pointer-events:none;
+        }
+        .lib-banner-inner { position:relative; z-index:1; }
 
-/* ── Lib banner — overflow-safe ── */
-.lib-banner {
-    background: linear-gradient(135deg, var(--indigo) 0%, #4338ca 60%, #6366f1 100%);
-    border-radius: var(--r-lg);
-    padding: 20px 20px 16px;
-    overflow: hidden;
-    position: relative;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 100%;
-}
+        /* Banner top row: eyebrow + number + sub + browse btn */
+        .lib-banner-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .lib-eyebrow { font-size:.6rem; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-bottom:4px; }
+        .lib-title   { font-size:1.6rem; font-weight:800; color:white; letter-spacing:-.04em; line-height:1.1; font-family:var(--mono); }
+        .lib-sub     { font-size:.72rem; color:rgba(255,255,255,.5); margin-top:3px; font-weight:500; }
 
-.lib-banner::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E") repeat;
-    opacity: .4;
-    pointer-events: none;
-}
+        .lib-browse {
+            display: inline-flex; align-items:center; gap:6px;
+            padding: 9px 13px;
+            background: rgba(255,255,255,.18); color:white;
+            border-radius: 9px; font-size:.75rem; font-weight:700;
+            text-decoration:none; border:1px solid rgba(255,255,255,.2);
+            transition:background var(--ease); white-space:nowrap;
+            flex-shrink: 0; touch-action:manipulation;
+        }
+        .lib-browse:hover { background:rgba(255,255,255,.28); }
 
-.lib-stats {
-    display: flex;
-    gap: 6px;
-    flex-wrap: nowrap;
-    overflow: hidden;
-    width: 100%;
-    box-sizing: border-box;
-}
+        /* Stats row */
+        .lib-stats {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .lib-stat {
+            flex: 1 1 0;
+            min-width: 0;
+            background: rgba(255,255,255,.1);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 9px;
+            padding: 7px 8px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .lib-stat-lbl {
+            font-size: .5rem; font-weight:600;
+            color: rgba(255,255,255,.55); text-transform:uppercase;
+            letter-spacing:.06em; white-space:nowrap;
+            overflow:hidden; text-overflow:ellipsis; display:block;
+        }
+        .lib-stat-val {
+            font-size: .9rem; font-weight:800; color:white;
+            font-family:var(--mono); line-height:1.2; display:block;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
 
-.lib-stat {
-    flex: 1 1 0;
-    min-width: 0;
-    overflow: hidden;
-    background: rgba(255,255,255,.1);
-    border-radius: 10px;
-    padding: 7px 8px;
-    border: 1px solid rgba(255,255,255,.1);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    box-sizing: border-box;
-}
+        /* Mobile banner tweaks */
+        @media(max-width:639px) {
+            .lib-banner { padding:14px 14px 12px; }
+            .lib-banner-top { gap:10px; }
+            .lib-title { font-size:1.35rem; }
+            .lib-browse { padding:8px 11px; font-size:.72rem; }
+            .lib-stats { gap:5px; }
+            .lib-stat { padding:6px 7px; border-radius:8px; }
+            .lib-stat-lbl { font-size:.44rem; letter-spacing:0; }
+            .lib-stat-val { font-size:.82rem; }
+        }
+        @media(max-width:380px) {
+            .lib-stat-lbl { font-size:.4rem; }
+            .lib-stat-val { font-size:.75rem; }
+            .lib-stat { padding:5px 6px; }
+        }
 
-.lib-stat-icon {
-    width: 22px;
-    height: 22px;
-    background: rgba(255,255,255,.12);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.lib-stat-lbl {
-    font-size: .52rem;
-    font-weight: 600;
-    color: rgba(255,255,255,.55);
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-}
-
-.lib-stat-val {
-    font-size: .88rem;
-    font-weight: 800;
-    color: white;
-    font-family: var(--mono);
-    line-height: 1.2;
-    display: block;
-}
-
-.lib-browse {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 14px;
-    background: rgba(255,255,255,.18);
-    color: white;
-    border-radius: 9px;
-    font-size: .78rem;
-    font-weight: 700;
-    text-decoration: none;
-    border: 1px solid rgba(255,255,255,.2);
-    transition: background var(--ease);
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.lib-browse:hover { background: rgba(255,255,255,.28); }
-
-@media (max-width: 639px) {
-    .lib-banner { padding: 14px 14px 12px; }
-
-    .lib-stat { flex-direction: column; align-items: flex-start; gap: 3px; padding: 6px 7px; }
-    .lib-stat-icon { display: none; }
-    .lib-stat-lbl { font-size: .44rem; letter-spacing: 0; }
-    .lib-stat-val { font-size: .82rem; }
-
-    .lib-browse { width: 100%; justify-content: center; font-size: .75rem; padding: 9px; }
-}
-
-        /* ── Book list items ── */
-        .book-letter { width:34px; height:34px; border-radius:9px; background:var(--indigo-light); color:var(--indigo); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; letter-spacing:-.02em; }
+        /* Book rows */
+        .book-letter { width:34px; height:34px; border-radius:9px; background:var(--indigo-light); color:var(--indigo); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; }
         .book-title  { font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .book-author { font-size:.7rem; color:var(--text-sub); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .avail-dot   { width:8px; height:8px; border-radius:50%; }
-        .avail-dot.on  { background:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.15); }
-        .avail-dot.off { background:var(--text-faint); }
-        .avail-num   { font-size:.68rem; color:var(--text-sub); font-family:var(--mono); }
         body.dark .book-letter { background:rgba(55,48,163,.2); color:#818cf8; }
 
-        /* ── Active-borrow rows ── */
+        /* Active borrow rows */
         .borrow-row { display:flex; align-items:center; gap:9px; background:var(--input-bg); border-radius:10px; padding:9px 12px; border:1px solid var(--border-subtle); }
 
-        /* ── AI finder ── */
+        /* AI finder */
         .rag-wrap { position:relative; margin-top:12px; }
         .rag-icon-pos { position:absolute; left:11px; top:50%; transform:translateY(-50%); pointer-events:none; }
         .search-input { width:100%; padding:11px 12px 11px 34px; border-radius:var(--r-sm); border:1px solid rgba(99,102,241,.15); font-size:1rem; font-family:var(--font); background:var(--input-bg); color:var(--text); transition:all var(--ease); outline:none; -webkit-appearance:none; }
@@ -515,7 +417,7 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         body.dark .ai-result-box { background:rgba(55,48,163,.15) !important; border-color:rgba(99,102,241,.25) !important; }
         body.dark #ragText, body.dark #ragText * { color:#a5b4fc !important; }
 
-        /* ── Login toast ── */
+        /* Login toast */
         .login-toast { position:fixed; bottom:calc(var(--mob-nav-total) + 8px); right:16px; z-index:400; max-width:280px; background:#0f172a; border-radius:14px; padding:12px 14px; display:flex; align-items:flex-start; gap:10px; box-shadow:0 8px 32px rgba(0,0,0,.3); transform:translateY(8px); opacity:0; pointer-events:none; transition:all .35s cubic-bezier(.34,1.56,.64,1); }
         .login-toast.show { transform:none; opacity:1; pointer-events:auto; }
         .toast-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -524,41 +426,16 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         @media(max-width:479px) { .login-toast { bottom:calc(var(--mob-nav-total) + 6px); left:12px; right:12px; max-width:none; } }
 
         @media(max-width:639px) { .topbar { margin-bottom:14px; } .greeting-name { font-size:1.35rem; } }
-
-/* ── Lib banner mobile overflow fix ── */
-.lib-banner { max-width:100%; overflow:hidden; box-sizing:border-box; }
-@media(max-width:639px) {
-    .lib-banner { padding:14px; }
-    .lib-stat-item {
-        flex:1 1 calc(50% - 4px);
-        min-width:0;
-        padding:6px 8px;
-        box-sizing:border-box;
-    }
-    .lib-stat-lbl { font-size:.46rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .lib-stat-val { font-size:.82rem; line-height:1.1; }
-    .grid-lib { grid-template-columns:1fr !important; }
-}
     </style>
 </head>
 
 <body>
 
 <?php
-/*
- * ═══════════════════════════════════════════════════════════════════
- * SHARED LAYOUT PARTIAL
- * Renders: sidebar, mobile bottom nav, dark-mode toggle JS,
- * and links app.css. Also exposes layout_dark_toggle() helper.
- * ═══════════════════════════════════════════════════════════════════
- */
 $page = 'dashboard';
 include(APPPATH . 'Views/partials/layout.php');
 ?>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     MAIN CONTENT AREA
-════════════════════════════════════════════════════════════════ -->
 <main class="main-area">
 
     <!-- Topbar -->
@@ -798,7 +675,7 @@ include(APPPATH . 'Views/partials/layout.php');
         </div>
     </div>
 
-    <!-- How-to + Status guide (shown conditionally) -->
+    <!-- How-to + Status guide -->
     <?php if (empty($reservations) || $unclaimedCount > 0 || $pending > 0): ?>
         <div class="grid-main" style="margin-bottom:16px;">
             <div class="card card-p">
@@ -854,203 +731,207 @@ include(APPPATH . 'Views/partials/layout.php');
         </div>
     <?php endif; ?>
 
-    <!-- Library section -->
-<div class="grid-lib fade-up-4">
-    <div style="display:flex;flex-direction:column;gap:14px;">
+    <!-- ═══════════════════════════════════════════════════
+         LIBRARY SECTION
+    ════════════════════════════════════════════════════ -->
+    <div class="grid-lib fade-up-4">
 
-        <!-- Library banner -->
-        <div class="lib-banner">
-            <div style="position:relative;z-index:1;">
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
-                    <div>
-                        <div class="lib-eyebrow">Community Library</div>
-                        <div class="lib-title"><?= $availableCount ?></div>
-                        <div class="lib-sub">available · <?= $totalBooks ?> total titles</div>
-                    </div>
-                    <a href="<?= base_url('/books') ?>" class="lib-browse">
-                        <?= icon('book-open', 13, 'white') ?> Browse Library
-                    </a>
-                </div>
-                <div class="lib-stats">
-                    <div class="lib-stat">
-                        <div class="lib-stat-icon"><?= icon('bookmark', 13, '#a5b4fc') ?></div>
+        <!-- LEFT COL: banner + AI finder -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <!-- Banner -->
+            <div class="lib-banner">
+                <div class="lib-banner-inner">
+                    <div class="lib-banner-top">
                         <div>
-                            <div class="lib-stat-lbl">My Borrows</div>
-                            <div class="lib-stat-val"><?= count($myBorrowings) ?></div>
+                            <div class="lib-eyebrow">Community Library</div>
+                            <div class="lib-title"><?= $availableCount ?></div>
+                            <div class="lib-sub">available · <?= $totalBooks ?> total titles</div>
                         </div>
-                    </div>
-                    <div class="lib-stat">
-                        <div class="lib-stat-icon"><?= icon('hourglass', 13, '#fcd34d') ?></div>
-                        <div>
-                            <div class="lib-stat-lbl">Pending</div>
-                            <div class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'pending')) ?></div>
-                        </div>
-                    </div>
-                    <div class="lib-stat">
-                        <div class="lib-stat-icon"><?= icon('check-circle', 13, '#7dd3fc') ?></div>
-                        <div>
-                            <div class="lib-stat-lbl">Active</div>
-                            <div class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'approved')) ?></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- AI Book Finder -->
-        <div class="card card-p">
-            <div style="display:flex;align-items:center;gap:10px;">
-                <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', 16, '#7c3aed') ?></div>
-                <div>
-                    <div class="card-title">AI Book Finder</div>
-                    <div class="card-sub">Describe what you want to read</div>
-                </div>
-            </div>
-            <div class="rag-wrap">
-                <span class="rag-icon-pos"><?= icon('search', 13, 'var(--text-sub)') ?></span>
-                <input type="text" id="ragInput" class="search-input"
-                    placeholder="e.g. Filipino history, funny stories…"
-                    autocomplete="off" autocorrect="off" spellcheck="false"
-                    onkeydown="if(event.key==='Enter') doRagSearch()">
-            </div>
-            <div id="ragSkel" style="display:none;margin-top:.5rem;">
-                <div class="shimmer" style="width:90%;"></div>
-                <div class="shimmer" style="width:70%;"></div>
-                <div class="shimmer" style="width:52%;"></div>
-            </div>
-            <div class="ai-result-box" id="ragResult">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                    <?= icon('robot', 14, 'var(--indigo)') ?>
-                    <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
-                </div>
-                <p style="font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
-                <div id="ragBooks"></div>
-            </div>
-            <div id="ragErr" style="display:none;margin-top:5px;font-size:11px;color:#dc2626;font-weight:500;"></div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;">
-                <button onclick="doRagSearch()" id="ragBtn" class="find-btn">
-                    <?= icon('sparkles', 13, 'white') ?> Find Books
-                </button>
-                <a href="<?= base_url('/books') ?>" class="link-sm">Full library →</a>
-            </div>
-        </div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:14px;">
-
-        <!-- Books catalog -->
-        <div class="card card-p" style="flex:1;">
-            <div class="card-head">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div class="card-icon" style="background:var(--indigo-light);">
-                        <?= icon('book-open', 16, 'var(--indigo)') ?>
-                    </div>
-                    <div>
-                        <div class="card-title">Available Now</div>
-                        <div class="card-sub">Books you can borrow today</div>
-                    </div>
-                </div>
-                <a href="<?= base_url('/books') ?>" class="link-sm">All →</a>
-            </div>
-
-            <?php if (!empty($featuredBooks)): ?>
-                <div style="display:flex;flex-direction:column;gap:2px;">
-                    <?php foreach (array_slice($featuredBooks, 0, 6) as $book):
-                        $avail = (int)($book['available_copies'] ?? 0);
-                        $pillStyle = $avail === 0
-                            ? 'background:#fee2e2;color:#991b1b;'
-                            : ($avail <= 1
-                                ? 'background:#fef3c7;color:#92400e;'
-                                : 'background:#dcfce7;color:#166634;');
-                        $pillText = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
-                    ?>
-                        <a href="<?= base_url('/books') ?>"
-                           style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;min-width:0;">
-                            <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
-                            <div style="flex:1;min-width:0;">
-                                <div class="book-title"><?= esc($book['title']) ?></div>
-                                <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
-                            </div>
-                            <span style="font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;white-space:nowrap;<?= $pillStyle ?>">
-                                <?= $pillText ?>
-                            </span>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-                <?php if (count($featuredBooks) > 6): ?>
-                    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-subtle);text-align:center;">
-                        <a href="<?= base_url('/books') ?>" class="link-sm">
-                            +<?= count($featuredBooks) - 6 ?> more →
+                        <a href="<?= base_url('/books') ?>" class="lib-browse">
+                            <?= icon('book-open', 13, 'white') ?> Browse
                         </a>
                     </div>
-                <?php endif; ?>
-            <?php else: ?>
-                <div style="text-align:center;padding:32px 12px;">
-                    <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);">
-                        <?= icon('book-open', 28, 'currentColor') ?>
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <span class="lib-stat-lbl">My Borrows</span>
+                            <span class="lib-stat-val"><?= count($myBorrowings) ?></span>
+                        </div>
+                        <div class="lib-stat">
+                            <span class="lib-stat-lbl">Pending</span>
+                            <span class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'pending')) ?></span>
+                        </div>
+                        <div class="lib-stat">
+                            <span class="lib-stat-lbl">Active</span>
+                            <span class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'approved')) ?></span>
+                        </div>
                     </div>
-                    <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No books available</p>
                 </div>
-            <?php endif; ?>
-        </div>
+            </div>
 
-        <!-- My borrows — only shown if there are active ones -->
-        <?php
-        $activeBorrows = array_slice(
-            array_values(array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved', 'pending']))),
-            0, 4
-        );
-        if (!empty($activeBorrows)): ?>
+            <!-- AI Book Finder -->
             <div class="card card-p">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', 16, '#7c3aed') ?></div>
+                    <div>
+                        <div class="card-title">AI Book Finder</div>
+                        <div class="card-sub">Describe what you want to read</div>
+                    </div>
+                </div>
+                <div class="rag-wrap">
+                    <span class="rag-icon-pos"><?= icon('search', 13, 'var(--text-sub)') ?></span>
+                    <input type="text" id="ragInput" class="search-input"
+                        placeholder="e.g. Filipino history, funny stories…"
+                        autocomplete="off" autocorrect="off" spellcheck="false"
+                        onkeydown="if(event.key==='Enter') doRagSearch()">
+                </div>
+                <div id="ragSkel" style="display:none;margin-top:.5rem;">
+                    <div class="shimmer" style="width:90%;"></div>
+                    <div class="shimmer" style="width:70%;"></div>
+                    <div class="shimmer" style="width:52%;"></div>
+                </div>
+                <div class="ai-result-box" id="ragResult">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                        <?= icon('robot', 14, 'var(--indigo)') ?>
+                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
+                    </div>
+                    <p style="font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
+                    <div id="ragBooks"></div>
+                </div>
+                <div id="ragErr" style="display:none;margin-top:5px;font-size:11px;color:#dc2626;font-weight:500;"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;">
+                    <button onclick="doRagSearch()" id="ragBtn" class="find-btn">
+                        <?= icon('sparkles', 13, 'white') ?> Find Books
+                    </button>
+                    <a href="<?= base_url('/books') ?>" class="link-sm">Full library →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COL: books catalog + my borrows -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <!-- Available Now -->
+            <div class="card card-p" style="flex:1;">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="card-icon" style="background:#dcfce7;">
-                            <?= icon('bookmark', 16, '#16a34a') ?>
+                        <div class="card-icon" style="background:var(--indigo-light);">
+                            <?= icon('book-open', 16, 'var(--indigo)') ?>
                         </div>
                         <div>
-                            <div class="card-title">My Active Borrows</div>
-                            <div class="card-sub">Currently checked out</div>
+                            <div class="card-title">Available Now</div>
+                            <div class="card-sub">Books you can borrow today</div>
                         </div>
                     </div>
-                    <a href="<?= base_url('/books') ?>#mine" class="link-sm">All →</a>
+                    <a href="<?= base_url('/books') ?>" class="link-sm">All →</a>
                 </div>
-                <div style="display:flex;flex-direction:column;gap:7px;">
-                    <?php foreach ($activeBorrows as $borrow):
-                        $bs  = strtolower($borrow['status'] ?? 'pending');
-                        $due = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
-                        $overdue = $due && $due < time();
-                        $dueSoon = $due && !$overdue && $due < time() + 3 * 86400;
-                    ?>
-                        <div class="borrow-row">
-                            <div class="book-letter" style="width:30px;height:30px;font-size:.7rem;">
-                                <?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?>
-                            </div>
-                            <div style="flex:1;min-width:0;">
-                                <p style="font-weight:600;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                    <?= esc($borrow['title'] ?? 'Unknown Book') ?>
-                                </p>
-                                <?php if ($due && $bs === 'approved'): ?>
-                                    <p style="font-size:.68rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : 'var(--text-sub)') ?>;font-family:var(--mono);">
-                                        <?= $overdue ? 'Overdue · ' : ($dueSoon ? 'Due soon · ' : '') ?><?= date('M j, Y', $due) ?>
-                                    </p>
-                                <?php endif; ?>
-                            </div>
-                            <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>">
-                                <?= $overdue ? 'Overdue' : ($dueSoon ? 'Due Soon' : ucfirst($bs)) ?>
-                            </span>
+                <?php if (!empty($featuredBooks)): ?>
+                    <div style="display:flex;flex-direction:column;gap:2px;">
+                        <?php foreach (array_slice($featuredBooks, 0, 6) as $book):
+                            $avail = (int)($book['available_copies'] ?? 0);
+                            $pillStyle = $avail === 0
+                                ? 'background:#fee2e2;color:#991b1b;'
+                                : ($avail <= 1
+                                    ? 'background:#fef3c7;color:#92400e;'
+                                    : 'background:#dcfce7;color:#166634;');
+                            $pillText = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
+                        ?>
+                            <a href="<?= base_url('/books') ?>"
+                               style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;min-width:0;">
+                                <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
+                                <div style="flex:1;min-width:0;">
+                                    <div class="book-title"><?= esc($book['title']) ?></div>
+                                    <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
+                                </div>
+                                <span style="font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;white-space:nowrap;<?= $pillStyle ?>">
+                                    <?= $pillText ?>
+                                </span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php if (count($featuredBooks) > 6): ?>
+                        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-subtle);text-align:center;">
+                            <a href="<?= base_url('/books') ?>" class="link-sm">
+                                +<?= count($featuredBooks) - 6 ?> more →
+                            </a>
                         </div>
-                    <?php endforeach; ?>
-                </div>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <div style="text-align:center;padding:32px 12px;">
+                        <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);">
+                            <?= icon('book-open', 28, 'currentColor') ?>
+                        </div>
+                        <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No books available</p>
+                    </div>
+                <?php endif; ?>
             </div>
-        <?php endif; ?>
 
+            <!-- My Active Borrows -->
+            <?php
+            $activeBorrows = array_slice(
+                array_values(array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved','pending']))),
+                0, 4
+            );
+            if (!empty($activeBorrows)): ?>
+                <div class="card card-p">
+                    <div class="card-head">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div class="card-icon" style="background:#dcfce7;">
+                                <?= icon('bookmark', 16, '#16a34a') ?>
+                            </div>
+                            <div>
+                                <div class="card-title">My Active Borrows</div>
+                                <div class="card-sub">Currently checked out</div>
+                            </div>
+                        </div>
+                        <a href="<?= base_url('/books') ?>#mine" class="link-sm">All →</a>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:7px;">
+                        <?php foreach ($activeBorrows as $borrow):
+                            $bs  = strtolower($borrow['status'] ?? 'pending');
+                            $due = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
+                            $overdue = $due && $due < time();
+                            $dueSoon = $due && !$overdue && $due < time() + 3 * 86400;
+                        ?>
+                            <div class="borrow-row">
+                                <div class="book-letter" style="width:30px;height:30px;font-size:.7rem;">
+                                    <?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?>
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <p style="font-weight:600;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                        <?= esc($borrow['title'] ?? 'Unknown Book') ?>
+                                    </p>
+                                    <?php if ($due && $bs === 'approved'): ?>
+                                        <p style="font-size:.68rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : 'var(--text-sub)') ?>;font-family:var(--mono);">
+                                            <?= $overdue ? 'Overdue · ' : ($dueSoon ? 'Due soon · ' : '') ?><?= date('M j, Y', $due) ?>
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                                <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>">
+                                    <?= $overdue ? 'Overdue' : ($dueSoon ? 'Due Soon' : ucfirst($bs)) ?>
+                                </span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="card card-p" style="text-align:center;padding:28px 20px;">
+                    <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);">
+                        <?= icon('bookmark', 26, 'currentColor') ?>
+                    </div>
+                    <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
+                    <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
+                        <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
+                    </a>
+                </div>
+            <?php endif; ?>
+
+        </div>
     </div>
-</div>
-</main><!-- /.main-area -->
 
-<!-- ═══════════════════════════════════════════════════════════════
-     DATE MODAL
-════════════════════════════════════════════════════════════════ -->
+</main>
+
+<!-- Date Modal -->
 <div id="dateModal" class="modal-back" onclick="handleModalBack(event)">
     <div class="modal-card">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
@@ -1071,9 +952,7 @@ include(APPPATH . 'Views/partials/layout.php');
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     LOGIN TOAST
-════════════════════════════════════════════════════════════════ -->
+<!-- Login Toast -->
 <div id="loginToast" class="login-toast">
     <div class="toast-icon" id="toastIcon"></div>
     <div style="flex:1;min-width:0;">
@@ -1084,14 +963,12 @@ include(APPPATH . 'Views/partials/layout.php');
 </div>
 
 <script>
-/* ── Data from PHP ─────────────────────────────────────────────── */
 const NOTIF_KEY   = 'notified_ids_<?= session()->get('user_id') ?>';
 const reservations = <?= json_encode($reservations ?? []) ?>;
 const allResData   = <?= json_encode($allReservations ?? []) ?>;
 const approvedRes  = reservations.filter(r => r.status === 'approved' && !r.claimed);
 let   notifications = [];
 
-/* ── Notification helpers ──────────────────────────────────────── */
 const getSeenIds  = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch(e) { return []; } };
 const saveSeenIds = ids => localStorage.setItem(NOTIF_KEY, JSON.stringify(ids));
 
@@ -1153,10 +1030,7 @@ function renderNotifs() {
         </div>`).join('');
 }
 
-function toggleNotifications() {
-    document.getElementById('notifDD').classList.toggle('show');
-}
-
+function toggleNotifications() { document.getElementById('notifDD').classList.toggle('show'); }
 document.addEventListener('click', e => {
     const dd   = document.getElementById('notifDD');
     const bell = document.querySelector('.notif-bell');
@@ -1171,7 +1045,6 @@ const timeAgo = t => {
     return `${Math.floor(s/86400)}d ago`;
 };
 
-/* ── Date modal ────────────────────────────────────────────────── */
 function openDateModal(date, items) {
     const d = new Date(date + 'T00:00:00');
     document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
@@ -1208,15 +1081,10 @@ function openDateModal(date, items) {
     document.body.style.overflow = 'hidden';
 }
 
-function closeDateModal() {
-    document.getElementById('dateModal').classList.remove('show');
-    document.body.style.overflow = '';
-}
-
+function closeDateModal() { document.getElementById('dateModal').classList.remove('show'); document.body.style.overflow = ''; }
 function handleModalBack(e) { if (e.target.classList.contains('modal-back')) closeDateModal(); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
 
-/* ── Countdown timer ───────────────────────────────────────────── */
 function initTimer() {
     const banner  = document.getElementById('timerBanner'),
           titleEl = document.getElementById('timerTitle'),
@@ -1284,7 +1152,6 @@ function initTimer() {
     setInterval(tick, 1000);
 }
 
-/* ── Login toast ───────────────────────────────────────────────── */
 function showLoginToast() {
     const key = 'toast_<?= session()->get('user_id') ?>_' + new Date().toDateString();
     if (sessionStorage.getItem(key)) return;
@@ -1319,7 +1186,6 @@ function showLoginToast() {
 
 function dismissToast() { document.getElementById('loginToast').classList.remove('show'); }
 
-/* ── AI Book Finder ────────────────────────────────────────────── */
 async function doRagSearch() {
     const query = document.getElementById('ragInput').value.trim();
     if (query.length < 2) return;
@@ -1366,17 +1232,13 @@ async function doRagSearch() {
     }
 }
 
-/* ── DOMContentLoaded ──────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
-    /* Dark mode is already applied by layout.php — just remove pre-init class */
     document.documentElement.classList.remove('dark-pre');
-
     if ('Notification' in window) Notification.requestPermission();
     loadNotifications();
     initTimer();
     showLoginToast();
 
-    /* Build calendar event map */
     const byDate = {};
     allResData.forEach(r => {
         if (!r.reservation_date) return;
