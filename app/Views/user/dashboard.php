@@ -367,43 +367,124 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         .status-guide-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border-subtle); }
         .status-guide-row:last-child { border-bottom:none; }
 
-        /* ── Library section ── */
-        .grid-lib { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-bottom:16px; }
-        @media(max-width:900px) { .grid-lib { grid-template-columns:1fr; } }
-
-        .lib-banner { background:linear-gradient(135deg,var(--indigo) 0%,#4338ca 60%,#6366f1 100%); border-radius:var(--r-lg); padding:22px 22px 18px; overflow:hidden; position:relative; }
-        .lib-banner::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E") repeat; opacity:.4; }
-        .lib-eyebrow { font-size:.6rem; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-bottom:4px; }
-        .lib-title { font-size:1.6rem; font-weight:800; color:white; letter-spacing:-.04em; line-height:1.1; }
-        .lib-sub { font-size:.75rem; color:rgba(255,255,255,.55); margin-top:4px; }
-        .lib-browse { display:inline-flex; align-items:center; gap:7px; padding:10px 16px; background:rgba(255,255,255,.18); color:white; border-radius:9px; font-size:.78rem; font-weight:700; text-decoration:none; border:1px solid rgba(255,255,255,.2); transition:all var(--ease); backdrop-filter:blur(4px); touch-action:manipulation; }
-        .lib-browse:hover { background:rgba(255,255,255,.28); }
-        .lib-stats { display:flex; gap:6px; margin-top:16px; flex-wrap:nowrap; overflow:hidden; }
-        .lib-stat { display:flex; align-items:center; gap:5px; background:rgba(255,255,255,.1); border-radius:10px; padding:7px 8px; border:1px solid rgba(255,255,255,.1); flex:1; min-width:0; overflow:hidden; }
-        .lib-stat-icon { width:22px; height:22px; background:rgba(255,255,255,.12); border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .lib-stat-lbl { font-size:.52rem; font-weight:600; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .lib-stat-val { font-size:.88rem; font-weight:800; color:white; font-family:var(--mono); line-height:1.2; }
-        body.dark .lib-stat { background:rgba(255,255,255,.06) !important; border-color:rgba(255,255,255,.08) !important; }
-        @media(max-width:900px) {
-    .grid-main, .grid-three, .grid-lib { grid-template-columns: 1fr; }
+        /* ── Library grid ── */
+.grid-lib {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: start;
 }
-        @media(max-width:639px) {
-            .lib-banner { padding:16px 16px 14px; }
-            .lib-banner > div[style] { flex-direction:column; align-items:flex-start !important; gap:10px !important; }
-            .lib-browse { width:100%; justify-content:center; padding:9px 12px; font-size:.75rem; }
-            .lib-title { font-size:1.25rem; }
-            .lib-stats { flex-direction:row; flex-wrap:nowrap; gap:5px; margin-top:10px; }
-            .lib-stat { flex:1; min-width:0; padding:6px; gap:4px; border-radius:8px; flex-direction:column; align-items:flex-start; }
-            .lib-stat-icon { display:none; }
-            .lib-stat-lbl {
-    font-size: .46rem;
+
+@media (max-width: 900px) {
+    .grid-lib { grid-template-columns: 1fr; }
+}
+
+/* ── Lib banner — overflow-safe ── */
+.lib-banner {
+    background: linear-gradient(135deg, var(--indigo) 0%, #4338ca 60%, #6366f1 100%);
+    border-radius: var(--r-lg);
+    padding: 20px 20px 16px;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+}
+
+.lib-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E") repeat;
+    opacity: .4;
+    pointer-events: none;
+}
+
+.lib-stats {
+    display: flex;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.lib-stat {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    background: rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: 7px 8px;
+    border: 1px solid rgba(255,255,255,.1);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-sizing: border-box;
+}
+
+.lib-stat-icon {
+    width: 22px;
+    height: 22px;
+    background: rgba(255,255,255,.12);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.lib-stat-lbl {
+    font-size: .52rem;
+    font-weight: 600;
+    color: rgba(255,255,255,.55);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    display: block;
 }
-.lib-stat-val { font-size: .82rem; line-height: 1.1; }
-            .main-area { padding:14px 12px 0; }
-        }
+
+.lib-stat-val {
+    font-size: .88rem;
+    font-weight: 800;
+    color: white;
+    font-family: var(--mono);
+    line-height: 1.2;
+    display: block;
+}
+
+.lib-browse {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    background: rgba(255,255,255,.18);
+    color: white;
+    border-radius: 9px;
+    font-size: .78rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,.2);
+    transition: background var(--ease);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.lib-browse:hover { background: rgba(255,255,255,.28); }
+
+@media (max-width: 639px) {
+    .lib-banner { padding: 14px 14px 12px; }
+
+    .lib-stat { flex-direction: column; align-items: flex-start; gap: 3px; padding: 6px 7px; }
+    .lib-stat-icon { display: none; }
+    .lib-stat-lbl { font-size: .44rem; letter-spacing: 0; }
+    .lib-stat-val { font-size: .82rem; }
+
+    .lib-browse { width: 100%; justify-content: center; font-size: .75rem; padding: 9px; }
+}
 
         /* ── Book list items ── */
         .book-letter { width:34px; height:34px; border-radius:9px; background:var(--indigo-light); color:var(--indigo); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; letter-spacing:-.02em; }
@@ -780,10 +861,15 @@ include(APPPATH . 'Views/partials/layout.php');
         <!-- Library banner -->
         <div class="lib-banner">
             <div style="position:relative;z-index:1;">
-                <div class="lib-eyebrow">Community Library</div>
-                <div class="lib-title"><?= $availableCount ?></div>
-                <div style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);margin-top:2px;margin-bottom:14px;">
-                    available · <?= $totalBooks ?> total titles
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+                    <div>
+                        <div class="lib-eyebrow">Community Library</div>
+                        <div class="lib-title"><?= $availableCount ?></div>
+                        <div class="lib-sub">available · <?= $totalBooks ?> total titles</div>
+                    </div>
+                    <a href="<?= base_url('/books') ?>" class="lib-browse">
+                        <?= icon('book-open', 13, 'white') ?> Browse Library
+                    </a>
                 </div>
                 <div class="lib-stats">
                     <div class="lib-stat">
@@ -808,9 +894,6 @@ include(APPPATH . 'Views/partials/layout.php');
                         </div>
                     </div>
                 </div>
-                <a href="<?= base_url('/books') ?>" class="lib-browse" style="margin-top:14px;">
-                    <?= icon('book-open', 13, 'white') ?> Browse Library
-                </a>
             </div>
         </div>
 
@@ -874,18 +957,22 @@ include(APPPATH . 'Views/partials/layout.php');
                 <div style="display:flex;flex-direction:column;gap:2px;">
                     <?php foreach (array_slice($featuredBooks, 0, 6) as $book):
                         $avail = (int)($book['available_copies'] ?? 0);
-                        $ac = $avail === 0 ? 'avail-off' : ($avail <= 1 ? 'avail-low' : 'avail-on');
-                        $at = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
+                        $pillStyle = $avail === 0
+                            ? 'background:#fee2e2;color:#991b1b;'
+                            : ($avail <= 1
+                                ? 'background:#fef3c7;color:#92400e;'
+                                : 'background:#dcfce7;color:#166634;');
+                        $pillText = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
                     ?>
-                        <a href="<?= base_url('/books') ?>" style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;">
+                        <a href="<?= base_url('/books') ?>"
+                           style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;min-width:0;">
                             <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
                             <div style="flex:1;min-width:0;">
                                 <div class="book-title"><?= esc($book['title']) ?></div>
                                 <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
                             </div>
-                            <span style="font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;
-                                <?= $avail === 0 ? 'background:#fee2e2;color:#991b1b;' : ($avail <= 1 ? 'background:#fef3c7;color:#92400e;' : 'background:#dcfce7;color:#166634;') ?>">
-                                <?= $at ?>
+                            <span style="font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;white-space:nowrap;<?= $pillStyle ?>">
+                                <?= $pillText ?>
                             </span>
                         </a>
                     <?php endforeach; ?>
@@ -893,7 +980,7 @@ include(APPPATH . 'Views/partials/layout.php');
                 <?php if (count($featuredBooks) > 6): ?>
                     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-subtle);text-align:center;">
                         <a href="<?= base_url('/books') ?>" class="link-sm">
-                            +<?= count($featuredBooks) - 6 ?> more books →
+                            +<?= count($featuredBooks) - 6 ?> more →
                         </a>
                     </div>
                 <?php endif; ?>
@@ -903,21 +990,17 @@ include(APPPATH . 'Views/partials/layout.php');
                         <?= icon('book-open', 28, 'currentColor') ?>
                     </div>
                     <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No books available</p>
-                    <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
-                        <?= icon('book-open', 12, 'var(--indigo)') ?> Browse catalog
-                    </a>
                 </div>
             <?php endif; ?>
         </div>
 
-        <!-- My borrows -->
+        <!-- My borrows — only shown if there are active ones -->
         <?php
         $activeBorrows = array_slice(
             array_values(array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved', 'pending']))),
             0, 4
         );
-        ?>
-        <?php if (!empty($activeBorrows)): ?>
+        if (!empty($activeBorrows)): ?>
             <div class="card card-p">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
@@ -933,7 +1016,7 @@ include(APPPATH . 'Views/partials/layout.php');
                 </div>
                 <div style="display:flex;flex-direction:column;gap:7px;">
                     <?php foreach ($activeBorrows as $borrow):
-                        $bs = strtolower($borrow['status'] ?? 'pending');
+                        $bs  = strtolower($borrow['status'] ?? 'pending');
                         $due = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
                         $overdue = $due && $due < time();
                         $dueSoon = $due && !$overdue && $due < time() + 3 * 86400;
@@ -958,16 +1041,6 @@ include(APPPATH . 'Views/partials/layout.php');
                         </div>
                     <?php endforeach; ?>
                 </div>
-            </div>
-        <?php else: ?>
-            <div class="card card-p" style="text-align:center;padding:28px 20px;">
-                <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);">
-                    <?= icon('bookmark', 26, 'currentColor') ?>
-                </div>
-                <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
-                <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
-                    <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
-                </a>
             </div>
         <?php endif; ?>
 
