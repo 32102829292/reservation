@@ -13,6 +13,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
     <style>
+        :root {
+            --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        body {
+            font-family: var(--font);
+            display: flex;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
         .ai-card {
             background: var(--card);
             border-radius: var(--r-lg);
@@ -655,737 +668,601 @@
 </head>
 
 <body>
-    <?php
-    $navItems = [
-        ['url' => '/dashboard',        'icon' => 'house',     'label' => 'Dashboard',       'key' => 'dashboard'],
-        ['url' => '/reservation',      'icon' => 'plus',      'label' => 'New Reservation', 'key' => 'reservation'],
-        ['url' => '/reservation-list', 'icon' => 'calendar',  'label' => 'My Reservations', 'key' => 'reservation-list'],
-        ['url' => '/books',            'icon' => 'book-open', 'label' => 'Library',         'key' => 'books'],
-        ['url' => '/profile',          'icon' => 'user',      'label' => 'Profile',         'key' => 'profile'],
+
+<?php
+$page = 'books';
+include(APPPATH . 'Views/partials/layout.php');
+
+$booksJson = json_encode(array_map(fn($b) => [
+    'id'               => (int)($b['id'] ?? 0),
+    'title'            => $b['title'] ?? '',
+    'author'           => $b['author'] ?? 'Unknown',
+    'genre'            => $b['genre'] ?? '',
+    'preface'          => $b['preface'] ?? '',
+    'published_year'   => $b['published_year'] ?? '',
+    'cover_image'      => $b['cover_image'] ?? '',
+    'isbn'             => $b['isbn'] ?? '',
+    'call_number'      => $b['call_number'] ?? '',
+    'available_copies' => (int)($b['available_copies'] ?? 0),
+    'total_copies'     => (int)($b['total_copies'] ?? 1),
+], $books ?? []));
+
+function svgIcon(string $name, int $size = 16, string $stroke = 'currentColor'): string
+{
+    $icons = [
+        'book-open'     => '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>',
+        'bolt'          => '<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"/>',
+        'search'        => '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+        'grid'          => '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+        'history'       => '<path d="M3 12a9 9 0 105.657-8.486"/><path d="M3 4v4h4"/><path d="M12 7v5l3 3"/>',
+        'eye'           => '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+        'barcode'       => '<path d="M3 5h2v14H3V5zm4 0h1v14H7V5zm3 0h2v14h-2V5zm4 0h1v14h-1V5zm3 0h2v14h-2V5z"/>',
+        'copy'          => '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>',
+        'tag'           => '<path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+        'location'      => '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
+        'calendar-days' => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1" fill="currentColor" stroke="none"/>',
+        'check-circle'  => '<path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22 4 12 14.01 9 11.01"/>',
+        'x-circle'      => '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+        'xmark'         => '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
     ];
-    $page = 'books';
-    $avatarLetter = strtoupper(mb_substr(trim($user_name ?? 'U'), 0, 1));
-    $booksJson = json_encode(array_map(fn($b) => [
-        'id'               => (int)($b['id'] ?? 0),
-        'title'            => $b['title'] ?? '',
-        'author'           => $b['author'] ?? 'Unknown',
-        'genre'            => $b['genre'] ?? '',
-        'preface'          => $b['preface'] ?? '',
-        'published_year'   => $b['published_year'] ?? '',
-        'cover_image'      => $b['cover_image'] ?? '',
-        'isbn'             => $b['isbn'] ?? '',
-        'call_number'      => $b['call_number'] ?? '',
-        'available_copies' => (int)($b['available_copies'] ?? 0),
-        'total_copies'     => (int)($b['total_copies'] ?? 1),
-    ], $books ?? []));
+    $d  = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
+    $sw = in_array($name, ['calendar-days', 'barcode', 'tag', 'grid']) ? '1.5' : '1.8';
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="' . $stroke . '" stroke-width="' . $sw . '">' . $d . '</svg>';
+}
+?>
 
-    function svgIcon(string $name, int $size = 16, string $stroke = 'currentColor'): string
-    {
-        $icons = [
-            'house'         => '<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>',
-            'plus'          => '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
-            'calendar'      => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-            'book-open'     => '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>',
-            'user'          => '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>',
-            'logout'        => '<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>',
-            'sun'           => '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
-            'moon'          => '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
-            'bolt'          => '<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"/>',
-            'search'        => '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
-            'grid'          => '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
-            'history'       => '<path d="M3 12a9 9 0 105.657-8.486"/><path d="M3 4v4h4"/><path d="M12 7v5l3 3"/>',
-            'eye'           => '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
-            'barcode'       => '<path d="M3 5h2v14H3V5zm4 0h1v14H7V5zm3 0h2v14h-2V5zm4 0h1v14h-1V5zm3 0h2v14h-2V5z"/>',
-            'copy'          => '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>',
-            'tag'           => '<path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
-            'location'      => '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
-            'calendar-days' => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1" fill="currentColor" stroke="none"/>',
-            'check-circle'  => '<path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22 4 12 14.01 9 11.01"/>',
-            'x-circle'      => '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
-            'xmark'         => '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
-        ];
-        $d  = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
-        $sw = in_array($name, ['calendar', 'calendar-days', 'barcode', 'tag', 'grid']) ? '1.5' : '1.8';
-        return '<svg xmlns="http://www.w3.org/2000/svg" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="' . $stroke . '" stroke-width="' . $sw . '">' . $d . '</svg>';
-    }
-    ?>
+<main class="main-area">
 
-    <div class="l-shell">
-        <aside class="l-sidebar">
-            <div class="l-sidebar__inner">
-                <div class="l-sidebar__top">
-                    <div class="l-brand-tag">Resident Portal</div>
-                    <div class="l-brand-name">my<em>Space.</em></div>
-                    <div class="l-brand-sub">Community Management</div>
-                </div>
-
-                <div class="l-user-card">
-                    <div class="l-user-avatar"><?= $avatarLetter ?></div>
-                    <div class="l-user-info">
-                        <div class="l-user-name"><?= esc($user_name ?? 'Resident') ?></div>
-                        <div class="l-user-role">Resident</div>
-                    </div>
-                </div>
-
-                <nav class="l-nav">
-                    <div class="l-nav__label">Menu</div>
-                    <?php foreach ($navItems as $item):
-                        $active = ($page === $item['key']);
-                    ?>
-                        <a href="<?= base_url($item['url']) ?>" class="l-nav__link <?= $active ? 'is-active' : '' ?>">
-                            <div class="l-nav__icon">
-                                <?= svgIcon($item['icon'], 16, $active ? 'white' : 'currentColor') ?>
-                            </div>
-                            <?= $item['label'] ?>
-                        </a>
-                    <?php endforeach; ?>
-                </nav>
-
-                <?php if (isset($remainingReservations)):
-                    $maxSlots  = 3;
-                    $remaining = $remainingReservations ?? 3;
-                    $usedSlots = $maxSlots - $remaining;
-                    $pct       = ($usedSlots / $maxSlots) * 100;
-                    $fillClass = $remaining === 0 ? 'is-full' : ($remaining === 1 ? 'is-low' : '');
-                ?>
-                    <div class="l-quota">
-                        <div class="l-quota__row">
-                            <span class="l-quota__label">Monthly Quota</span>
-                            <span class="l-quota__value"><?= $usedSlots ?>/<?= $maxSlots ?></span>
-                        </div>
-                        <div class="l-quota__track">
-                            <div class="l-quota__fill <?= $fillClass ?>" style="width:<?= $pct ?>%;"></div>
-                        </div>
-                        <p class="l-quota__note <?= $remaining === 0 ? 'is-err' : ($remaining === 1 ? 'is-warn' : '') ?>">
-                            <?php if ($remaining === 0): ?>⚠ No slots left this month
-                            <?php elseif ($remaining === 1): ?>⚡ Only 1 slot remaining
-                            <?php else: ?><?= $remaining ?> slots remaining this month<?php endif; ?>
-                        </p>
-                    </div>
-                <?php endif; ?>
-
-                <div class="l-sidebar__footer">
-                    <a href="<?= base_url('/logout') ?>" class="l-logout">
-                        <div class="l-nav__icon l-nav__icon--logout">
-                            <?= svgIcon('logout', 16, '#f87171') ?>
-                        </div>
-                        Sign Out
-                    </a>
-                </div>
-            </div>
-        </aside>
-
-        <nav class="l-mobile-nav">
-            <?php foreach ($navItems as $item):
-                $active = ($page === $item['key']);
-            ?>
-                <a href="<?= base_url($item['url']) ?>"
-                    class="l-mobile-nav__item <?= $active ? 'is-active' : '' ?>"
-                    title="<?= esc($item['label']) ?>">
-                    <?= svgIcon($item['icon'], 22, $active ? 'var(--indigo)' : 'currentColor') ?>
-                </a>
-            <?php endforeach; ?>
-            <a href="<?= base_url('/logout') ?>" class="l-mobile-nav__item l-mobile-nav__item--logout" title="Sign Out">
-                <?= svgIcon('logout', 22, '#f87171') ?>
-            </a>
-        </nav>
-
-        <div class="modal-backdrop" id="bookDetailModal" onclick="onDetailBackdrop(event)">
-            <div class="detail-card">
-                <div class="sheet-handle"></div>
-                <div class="detail-cover" id="detailCover">
-                    <span class="detail-cover-ph" id="detailCoverPh"></span>
-                </div>
-                <div class="detail-body">
-                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;">
-                        <div style="flex:1;min-width:0;">
-                            <p id="detailGenrePill" style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--indigo);margin-bottom:3px;"></p>
-                            <h3 id="detailTitle" style="font-size:1.15rem;font-weight:800;line-height:1.25;letter-spacing:-.02em;"></h3>
-                            <p id="detailAuthor" style="font-size:.82rem;font-weight:600;margin-top:2px;"></p>
-                        </div>
-                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
-                            <button onclick="closeDetailModal()" class="icon-btn" style="width:36px;height:36px;border-radius:9px;">
-                                <?= svgIcon('xmark', 13, 'currentColor') ?>
-                            </button>
-                            <span id="detailAvailTag" class="tag"></span>
-                        </div>
-                    </div>
-
-                    <div id="detailPrefaceBox" class="hidden" style="margin-bottom:16px;padding:14px;background:var(--input-bg);border-radius:var(--r-md);border:1px solid var(--border);">
-                        <p style="font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text-sub);margin-bottom:5px;">About this book</p>
-                        <p id="detailPreface" style="font-size:.82rem;line-height:1.65;font-style:italic;font-weight:500;"></p>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-icon"><?= svgIcon('copy', 13, 'var(--indigo)') ?></div>
-                        <div>
-                            <p class="info-label">Copies</p>
-                            <p id="detailCopies" class="info-value"></p>
-                        </div>
-                    </div>
-                    <div class="info-row" id="detailYearRow">
-                        <div class="info-icon"><?= svgIcon('calendar-days', 13, 'var(--indigo)') ?></div>
-                        <div>
-                            <p class="info-label">Published</p>
-                            <p id="detailYear" class="info-value"></p>
-                        </div>
-                    </div>
-                    <div class="info-row" id="detailGenreRow">
-                        <div class="info-icon"><?= svgIcon('tag', 13, 'var(--indigo)') ?></div>
-                        <div>
-                            <p class="info-label">Genre</p>
-                            <p id="detailGenreVal" class="info-value"></p>
-                        </div>
-                    </div>
-                    <div class="info-row" id="detailCallRow">
-                        <div class="info-icon"><?= svgIcon('location', 13, 'var(--indigo)') ?></div>
-                        <div>
-                            <p class="info-label">Call Number <span style="text-transform:none;font-weight:500;color:var(--text-faint);">(shelf location)</span></p>
-                            <p id="detailCallVal" class="info-value"></p>
-                        </div>
-                    </div>
-                    <div class="info-row" id="detailIsbnRow">
-                        <div class="info-icon"><?= svgIcon('barcode', 13, 'var(--indigo)') ?></div>
-                        <div>
-                            <p class="info-label">ISBN</p>
-                            <p id="detailIsbnVal" class="info-value" style="font-family:var(--mono);"></p>
-                        </div>
-                    </div>
-
-                    <div id="detailActions" style="display:flex;gap:10px;margin-top:20px;"></div>
-                </div>
-            </div>
+    <!-- Topbar -->
+    <div class="topbar fade-up">
+        <div>
+            <div class="greeting-eyebrow">Resident Portal</div>
+            <div class="greeting-name">Community <span style="color:var(--indigo)">Library</span></div>
+            <div class="greeting-sub">Browse, search, and borrow books available to all residents</div>
         </div>
-
-        <div class="modal-backdrop" id="borrowModal" onclick="onBorrowBackdrop(event)">
-            <div class="modal-card">
-                <div class="sheet-handle"></div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                    <div>
-                        <h3 style="font-size:1rem;font-weight:800;letter-spacing:-.02em;">Confirm Borrow</h3>
-                        <p style="font-size:.72rem;font-weight:500;margin-top:2px;">14-day loan period</p>
-                    </div>
-                    <button onclick="closeBorrowModal()" class="icon-btn" style="width:36px;height:36px;border-radius:9px;">
-                        <?= svgIcon('xmark', 13, 'currentColor') ?>
-                    </button>
-                </div>
-
-                <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--indigo-light);border-radius:var(--r-md);border:1px solid var(--indigo-border);margin-bottom:20px;">
-                    <div style="width:38px;height:38px;background:var(--card);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--shadow-sm);">
-                        <?= svgIcon('book-open', 16, 'var(--indigo)') ?>
-                    </div>
-                    <div>
-                        <p style="font-weight:700;font-size:.88rem;" id="modalBookTitle">—</p>
-                        <p style="font-size:.7rem;margin-top:2px;">You'll be notified once your request is approved</p>
-                    </div>
-                </div>
-
-                <div style="display:flex;gap:10px;">
-                    <button onclick="closeBorrowModal()" style="flex:1;padding:11px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;color:var(--text-sub);border:1px solid var(--border);cursor:pointer;font-size:.85rem;font-family:var(--font);transition:background var(--ease);">Cancel</button>
-                    <form id="borrowForm" method="post" action="" style="flex:1;">
-                        <?= csrf_field() ?>
-                        <button type="submit" style="width:100%;padding:11px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-weight:700;font-size:.85rem;border:none;cursor:pointer;font-family:var(--font);box-shadow:0 4px 12px rgba(55,48,163,.28);transition:background var(--ease);">Yes, Borrow</button>
-                    </form>
-                </div>
-            </div>
+        <div class="topbar-right">
+            <?= layout_dark_toggle() ?>
         </div>
-
-        <main class="main-area">
-            <div class="topbar fade-up">
-                <div>
-                    <div class="greeting-eyebrow">Resident Portal</div>
-                    <div class="greeting-name">Community <span style="color:var(--indigo)">Library</span></div>
-                    <div class="greeting-sub">Browse, search, and borrow books available to all residents</div>
-                </div>
-                <div class="topbar-right">
-                    <div class="icon-btn l-icon-btn" onclick="toggleDark()" id="darkBtn" title="Toggle dark mode">
-                        <span id="dark-icon"><?= svgIcon('sun', 14, 'currentColor') ?></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Flash messages -->
-            <?php if (session()->getFlashdata('success')): ?>
-                <div class="flash-ok fade-up">
-                    <?= svgIcon('check-circle', 15, 'currentColor') ?>
-                    <?= session()->getFlashdata('success') ?>
-                </div>
-            <?php endif; ?>
-            <?php if (session()->getFlashdata('error')): ?>
-                <div class="flash-err fade-up">
-                    <?= svgIcon('x-circle', 15, 'currentColor') ?>
-                    <?= session()->getFlashdata('error') ?>
-                </div>
-            <?php endif; ?>
-
-            <!-- AI Smart Suggestion -->
-            <div class="ai-card fade-up-1">
-                <div class="ai-card-head">
-                    <div class="ai-icon">
-                        <?= svgIcon('bolt', 13, 'var(--indigo)') ?>
-                    </div>
-                    <div>
-                        <div class="ai-label">AI Smart Suggestion</div>
-                    </div>
-                </div>
-                <div class="ai-input-row">
-                    <input id="ragQuery" type="text" class="ai-input"
-                        placeholder="e.g. adventure for kids, Philippine history…"
-                        onkeydown="if(event.key==='Enter')doRag()">
-                    <button id="ragBtn" onclick="doRag()" class="find-btn">
-                        <?= svgIcon('search', 12, 'white') ?>
-                        Find for Me
-                    </button>
-                </div>
-                <div id="ragSkel" style="display:none;margin-top:.65rem;">
-                    <div class="shimmer" style="width:88%"></div>
-                    <div class="shimmer" style="width:68%"></div>
-                    <div class="shimmer" style="width:50%"></div>
-                </div>
-                <div id="ragErr" style="display:none;margin-top:8px;padding:10px 14px;background:#fee2e2;border:1px solid #fecaca;border-radius:var(--r-sm);font-size:.8rem;color:#991b1b;font-weight:500;"></div>
-                <div class="ai-result-box" id="ragRes">
-                    <p style="font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--indigo);margin-bottom:6px;display:flex;align-items:center;gap:5px;">
-                        <?= svgIcon('bolt', 10, 'var(--indigo)') ?> Librarian Suggestion
-                    </p>
-                    <p id="ragText" style="font-size:.82rem;color:#312e81;line-height:1.65;font-style:italic;font-weight:500;"></p>
-                    <p style="font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--text-sub);margin-top:10px;margin-bottom:6px;">Matching books</p>
-                    <div id="ragChips" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-                </div>
-            </div>
-            <div class="controls-row fade-up-1">
-                <div class="search-wrap">
-                    <span class="search-icon-pos"><?= svgIcon('search', 13, 'currentColor') ?></span>
-                    <input id="searchInput" type="text" class="search-input"
-                        placeholder="Search title or author…"
-                        oninput="filterBooks()">
-                </div>
-                <select id="genreFilter" class="genre-select" onchange="filterBooks()">
-                    <option value="">All Genres</option>
-                    <?php foreach ($genres as $g): ?>
-                        <option value="<?= esc($g) ?>"><?= esc($g) ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <div class="tab-group">
-                    <button id="tabBrowse" onclick="switchTab('browse')" class="tab-btn">
-                        <?= svgIcon('grid', 12, 'currentColor') ?> Browse
-                    </button>
-                    <button id="tabMine" onclick="switchTab('mine')" class="tab-btn">
-                        <?= svgIcon('history', 12, 'currentColor') ?> My Borrowings
-                    </button>
-                </div>
-            </div>
-
-            <div id="paneBrowse">
-                <?php if (empty($books)): ?>
-                    <div class="card">
-                        <div class="empty-state">
-                            <div class="empty-icon"><?= svgIcon('book-open', 24, 'var(--text-faint)') ?></div>
-                            <h3 style="font-size:.95rem;font-weight:700;margin-bottom:4px;">No books yet</h3>
-                            <p style="font-size:.78rem;">The library is being stocked — check back soon!</p>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <div class="books-grid" id="booksGrid">
-                        <?php foreach ($books as $book):
-                            $available = (int)($book['available_copies'] ?? 0) > 0;
-                        ?>
-                            <div class="book-card"
-                                id="book-<?= (int)$book['id'] ?>"
-                                data-title="<?= strtolower(htmlspecialchars($book['title'], ENT_QUOTES, 'UTF-8')) ?>"
-                                data-author="<?= strtolower(htmlspecialchars($book['author'] ?? '', ENT_QUOTES, 'UTF-8')) ?>"
-                                data-genre="<?= htmlspecialchars($book['genre'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                onclick="openBookDetail(<?= (int)$book['id'] ?>)">
-
-                                <div class="book-cover">
-                                    <?php if (!empty($book['cover_image'])): ?>
-                                        <img src="<?= esc($book['cover_image']) ?>" alt="<?= esc($book['title']) ?>">
-                                    <?php else: ?>
-                                        <span class="cover-ph"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></span>
-                                    <?php endif; ?>
-                                    <div class="cover-overlay">
-                                        <span class="cover-overlay-btn">
-                                            <?= svgIcon('eye', 11, 'var(--indigo)') ?> View Details
-                                        </span>
-                                    </div>
-                                    <?php if (!empty($book['genre'])): ?>
-                                        <span class="cover-genre-badge"><?= esc($book['genre']) ?></span>
-                                    <?php endif; ?>
-                                    <span class="cover-avail-badge <?= $available ? 'avail-yes' : 'avail-no' ?>">
-                                        <?= $available ? 'Available' : 'Out' ?>
-                                    </span>
-                                </div>
-
-                                <div class="book-body">
-                                    <p class="book-title-txt"><?= esc($book['title']) ?></p>
-                                    <p class="book-author-txt">by <?= esc($book['author'] ?? 'Unknown') ?></p>
-                                    <div class="book-meta">
-                                        <span class="meta-pill"><?= (int)($book['available_copies'] ?? 0) ?>/<?= (int)($book['total_copies'] ?? 1) ?> copies</span>
-                                        <?php if (!empty($book['published_year'])): ?>
-                                            <span class="meta-pill"><?= esc($book['published_year']) ?></span>
-                                        <?php endif; ?>
-                                        <?php if (!empty($book['call_number'])): ?>
-                                            <span class="meta-pill-mono"><?= esc($book['call_number']) ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <p class="tap-hint">Tap to view &amp; borrow</p>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <div id="paneMine" style="display:none;">
-                <?php if (empty($myBorrowings)): ?>
-                    <div class="card">
-                        <div class="empty-state">
-                            <div class="empty-icon"><?= svgIcon('history', 24, 'var(--text-faint)') ?></div>
-                            <h3 style="font-size:.95rem;font-weight:700;margin-bottom:4px;">No borrowing history</h3>
-                            <p style="font-size:.78rem;">Books you borrow will appear here.</p>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <!-- Desktop table -->
-                    <div class="card" style="display:none;" id="borrowTableWrap">
-                        <div style="padding:16px 18px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px;">
-                            <div style="width:32px;height:32px;background:var(--indigo-light);border-radius:9px;display:flex;align-items:center;justify-content:center;">
-                                <?= svgIcon('history', 14, 'var(--indigo)') ?>
-                            </div>
-                            <div>
-                                <div style="font-size:.88rem;font-weight:700;">My Borrowing History</div>
-                                <div style="font-size:.68rem;color:var(--text-sub);"><?= count($myBorrowings) ?> record<?= count($myBorrowings) !== 1 ? 's' : '' ?></div>
-                            </div>
-                        </div>
-                        <div style="overflow-x:auto;">
-                            <table class="borrow-table">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Book</th>
-                                        <th>Borrowed On</th>
-                                        <th>Due Date</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($myBorrowings as $i => $b):
-                                        $s = strtolower($b['status'] ?? 'pending');
-                                    ?>
-                                        <tr>
-                                            <td style="color:var(--text-sub);font-weight:700;font-size:.78rem;"><?= $i + 1 ?></td>
-                                            <td>
-                                                <p style="font-weight:600;font-size:.85rem;"><?= esc($b['title']) ?></p>
-                                                <p style="font-size:.72rem;color:var(--text-sub);margin-top:1px;"><?= esc($b['author'] ?? '') ?></p>
-                                            </td>
-                                            <td style="font-size:.82rem;color:var(--text-muted);font-weight:500;"><?= esc($b['borrowed_at'] ?? '—') ?></td>
-                                            <td style="font-size:.82rem;color:var(--text-muted);font-weight:500;"><?= esc($b['due_date'] ?? '—') ?></td>
-                                            <td><span class="tag tag-<?= $s ?>"><?= ucfirst($s) ?></span></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div id="borrowCardsWrap" style="display:flex;flex-direction:column;gap:10px;">
-                        <div style="display:flex;align-items:center;gap:9px;margin-bottom:2px;">
-                            <div style="width:28px;height:28px;background:var(--indigo-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                <?= svgIcon('history', 13, 'var(--indigo)') ?>
-                            </div>
-                            <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--text-sub);">Borrowing History</p>
-                        </div>
-                        <?php foreach ($myBorrowings as $b):
-                            $s = strtolower($b['status'] ?? 'pending');
-                        ?>
-                            <div class="borrow-card">
-                                <div class="borrow-card-top">
-                                    <div style="width:36px;height:36px;background:var(--indigo-light);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                        <?= svgIcon('book-open', 15, 'var(--indigo)') ?>
-                                    </div>
-                                    <div style="flex:1;min-width:0;">
-                                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
-                                            <p style="font-weight:700;font-size:.85rem;line-height:1.3;"><?= esc($b['title']) ?></p>
-                                            <span class="tag tag-<?= $s ?>" style="flex-shrink:0;margin-top:1px;"><?= ucfirst($s) ?></span>
-                                        </div>
-                                        <p style="font-size:.7rem;color:var(--text-sub);font-weight:500;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= esc($b['author'] ?? '') ?></p>
-                                    </div>
-                                </div>
-                                <div class="borrow-card-dates">
-                                    <span style="display:flex;align-items:center;gap:4px;">
-                                        <?= svgIcon('calendar-days', 10, 'var(--text-faint)') ?>
-                                        Borrowed: <?= esc($b['borrowed_at'] ?? '—') ?>
-                                    </span>
-                                    <span style="display:flex;align-items:center;gap:4px;<?= $s === 'approved' ? 'color:#e11d48;font-weight:700;' : '' ?>">
-                                        <?= svgIcon('calendar-days', 10, 'var(--text-faint)') ?>
-                                        Due: <?= esc($b['due_date'] ?? '—') ?>
-                                    </span>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-        </main>
-
     </div>
 
-    <script>
-        const BASE_URL = "<?= base_url() ?>";
-    </script>
+    <!-- Flash messages -->
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="flash-ok fade-up">
+            <?= svgIcon('check-circle', 15, 'currentColor') ?>
+            <?= session()->getFlashdata('success') ?>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="flash-err fade-up">
+            <?= svgIcon('x-circle', 15, 'currentColor') ?>
+            <?= session()->getFlashdata('error') ?>
+        </div>
+    <?php endif; ?>
 
-    <script>
-        (function() {
-            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-        })();
+    <!-- AI Smart Suggestion -->
+    <div class="ai-card fade-up-1">
+        <div class="ai-card-head">
+            <div class="ai-icon">
+                <?= svgIcon('bolt', 13, 'var(--indigo)') ?>
+            </div>
+            <div>
+                <div class="ai-label">AI Smart Suggestion</div>
+            </div>
+        </div>
+        <div class="ai-input-row">
+            <input id="ragQuery" type="text" class="ai-input"
+                placeholder="e.g. adventure for kids, Philippine history…"
+                onkeydown="if(event.key==='Enter')doRag()">
+            <button id="ragBtn" onclick="doRag()" class="find-btn">
+                <?= svgIcon('search', 12, 'white') ?>
+                Find for Me
+            </button>
+        </div>
+        <div id="ragSkel" style="display:none;margin-top:.65rem;">
+            <div class="shimmer" style="width:88%"></div>
+            <div class="shimmer" style="width:68%"></div>
+            <div class="shimmer" style="width:50%"></div>
+        </div>
+        <div id="ragErr" style="display:none;margin-top:8px;padding:10px 14px;background:#fee2e2;border:1px solid #fecaca;border-radius:var(--r-sm);font-size:.8rem;color:#991b1b;font-weight:500;"></div>
+        <div class="ai-result-box" id="ragRes">
+            <p style="font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--indigo);margin-bottom:6px;display:flex;align-items:center;gap:5px;">
+                <?= svgIcon('bolt', 10, 'var(--indigo)') ?> Librarian Suggestion
+            </p>
+            <p id="ragText" style="font-size:.82rem;color:#312e81;line-height:1.65;font-style:italic;font-weight:500;"></p>
+            <p style="font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--text-sub);margin-top:10px;margin-bottom:6px;">Matching books</p>
+            <div id="ragChips" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+    </div>
 
-        const BOOKS = <?= $booksJson ?? '[]' ?>;
-        const bookMap = {};
-        BOOKS.forEach(b => bookMap[b.id] = b);
+    <!-- Controls -->
+    <div class="controls-row fade-up-1">
+        <div class="search-wrap">
+            <span class="search-icon-pos"><?= svgIcon('search', 13, 'currentColor') ?></span>
+            <input id="searchInput" type="text" class="search-input"
+                placeholder="Search title or author…"
+                oninput="filterBooks()">
+        </div>
+        <select id="genreFilter" class="genre-select" onchange="filterBooks()">
+            <option value="">All Genres</option>
+            <?php foreach ($genres as $g): ?>
+                <option value="<?= esc($g) ?>"><?= esc($g) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <div class="tab-group">
+            <button id="tabBrowse" onclick="switchTab('browse')" class="tab-btn">
+                <?= svgIcon('grid', 12, 'currentColor') ?> Browse
+            </button>
+            <button id="tabMine" onclick="switchTab('mine')" class="tab-btn">
+                <?= svgIcon('history', 12, 'currentColor') ?> My Borrowings
+            </button>
+        </div>
+    </div>
 
-        /* ── Dark mode ── */
-        function toggleDark() {
-            const isDark = document.body.classList.toggle('dark');
-            updateDarkIcon(isDark);
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        }
+    <!-- Browse pane -->
+    <div id="paneBrowse">
+        <?php if (empty($books)): ?>
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-icon"><?= svgIcon('book-open', 24, 'var(--text-faint)') ?></div>
+                    <h3 style="font-size:.95rem;font-weight:700;margin-bottom:4px;">No books yet</h3>
+                    <p style="font-size:.78rem;">The library is being stocked — check back soon!</p>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="books-grid" id="booksGrid">
+                <?php foreach ($books as $book):
+                    $available = (int)($book['available_copies'] ?? 0) > 0;
+                ?>
+                    <div class="book-card"
+                        id="book-<?= (int)$book['id'] ?>"
+                        data-title="<?= strtolower(htmlspecialchars($book['title'], ENT_QUOTES, 'UTF-8')) ?>"
+                        data-author="<?= strtolower(htmlspecialchars($book['author'] ?? '', ENT_QUOTES, 'UTF-8')) ?>"
+                        data-genre="<?= htmlspecialchars($book['genre'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                        onclick="openBookDetail(<?= (int)$book['id'] ?>)">
 
-        function updateDarkIcon(isDark) {
-            const el = document.getElementById('dark-icon');
-            if (!el) return;
-            el.innerHTML = isDark ?
-                `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>` :
-                `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
-        }
+                        <div class="book-cover">
+                            <?php if (!empty($book['cover_image'])): ?>
+                                <img src="<?= esc($book['cover_image']) ?>" alt="<?= esc($book['title']) ?>">
+                            <?php else: ?>
+                                <span class="cover-ph"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></span>
+                            <?php endif; ?>
+                            <div class="cover-overlay">
+                                <span class="cover-overlay-btn">
+                                    <?= svgIcon('eye', 11, 'var(--indigo)') ?> View Details
+                                </span>
+                            </div>
+                            <?php if (!empty($book['genre'])): ?>
+                                <span class="cover-genre-badge"><?= esc($book['genre']) ?></span>
+                            <?php endif; ?>
+                            <span class="cover-avail-badge <?= $available ? 'avail-yes' : 'avail-no' ?>">
+                                <?= $available ? 'Available' : 'Out' ?>
+                            </span>
+                        </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateDarkIcon(document.body.classList.contains('dark'));
-            responsiveBorrowView();
+                        <div class="book-body">
+                            <p class="book-title-txt"><?= esc($book['title']) ?></p>
+                            <p class="book-author-txt">by <?= esc($book['author'] ?? 'Unknown') ?></p>
+                            <div class="book-meta">
+                                <span class="meta-pill"><?= (int)($book['available_copies'] ?? 0) ?>/<?= (int)($book['total_copies'] ?? 1) ?> copies</span>
+                                <?php if (!empty($book['published_year'])): ?>
+                                    <span class="meta-pill"><?= esc($book['published_year']) ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($book['call_number'])): ?>
+                                    <span class="meta-pill-mono"><?= esc($book['call_number']) ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <p class="tap-hint">Tap to view &amp; borrow</p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- My Borrowings pane -->
+    <div id="paneMine" style="display:none;">
+        <?php if (empty($myBorrowings)): ?>
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-icon"><?= svgIcon('history', 24, 'var(--text-faint)') ?></div>
+                    <h3 style="font-size:.95rem;font-weight:700;margin-bottom:4px;">No borrowing history</h3>
+                    <p style="font-size:.78rem;">Books you borrow will appear here.</p>
+                </div>
+            </div>
+        <?php else: ?>
+            <!-- Desktop table -->
+            <div class="card" style="display:none;" id="borrowTableWrap">
+                <div style="padding:16px 18px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px;">
+                    <div style="width:32px;height:32px;background:var(--indigo-light);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+                        <?= svgIcon('history', 14, 'var(--indigo)') ?>
+                    </div>
+                    <div>
+                        <div style="font-size:.88rem;font-weight:700;">My Borrowing History</div>
+                        <div style="font-size:.68rem;color:var(--text-sub);"><?= count($myBorrowings) ?> record<?= count($myBorrowings) !== 1 ? 's' : '' ?></div>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="borrow-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Book</th>
+                                <th>Borrowed On</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($myBorrowings as $i => $b):
+                                $s = strtolower($b['status'] ?? 'pending');
+                            ?>
+                                <tr>
+                                    <td style="color:var(--text-sub);font-weight:700;font-size:.78rem;"><?= $i + 1 ?></td>
+                                    <td>
+                                        <p style="font-weight:600;font-size:.85rem;"><?= esc($b['title']) ?></p>
+                                        <p style="font-size:.72rem;color:var(--text-sub);margin-top:1px;"><?= esc($b['author'] ?? '') ?></p>
+                                    </td>
+                                    <td style="font-size:.82rem;color:var(--text-muted);font-weight:500;"><?= esc($b['borrowed_at'] ?? '—') ?></td>
+                                    <td style="font-size:.82rem;color:var(--text-muted);font-weight:500;"><?= esc($b['due_date'] ?? '—') ?></td>
+                                    <td><span class="tag tag-<?= $s ?>"><?= ucfirst($s) ?></span></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Mobile cards -->
+            <div id="borrowCardsWrap" style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:2px;">
+                    <div style="width:28px;height:28px;background:var(--indigo-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <?= svgIcon('history', 13, 'var(--indigo)') ?>
+                    </div>
+                    <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--text-sub);">Borrowing History</p>
+                </div>
+                <?php foreach ($myBorrowings as $b):
+                    $s = strtolower($b['status'] ?? 'pending');
+                ?>
+                    <div class="borrow-card">
+                        <div class="borrow-card-top">
+                            <div style="width:36px;height:36px;background:var(--indigo-light);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <?= svgIcon('book-open', 15, 'var(--indigo)') ?>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                                    <p style="font-weight:700;font-size:.85rem;line-height:1.3;"><?= esc($b['title']) ?></p>
+                                    <span class="tag tag-<?= $s ?>" style="flex-shrink:0;margin-top:1px;"><?= ucfirst($s) ?></span>
+                                </div>
+                                <p style="font-size:.7rem;color:var(--text-sub);font-weight:500;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= esc($b['author'] ?? '') ?></p>
+                            </div>
+                        </div>
+                        <div class="borrow-card-dates">
+                            <span style="display:flex;align-items:center;gap:4px;">
+                                <?= svgIcon('calendar-days', 10, 'var(--text-faint)') ?>
+                                Borrowed: <?= esc($b['borrowed_at'] ?? '—') ?>
+                            </span>
+                            <span style="display:flex;align-items:center;gap:4px;<?= $s === 'approved' ? 'color:#e11d48;font-weight:700;' : '' ?>">
+                                <?= svgIcon('calendar-days', 10, 'var(--text-faint)') ?>
+                                Due: <?= esc($b['due_date'] ?? '—') ?>
+                            </span>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+</main>
+
+<!-- Book Detail Modal -->
+<div class="modal-backdrop" id="bookDetailModal" onclick="onDetailBackdrop(event)">
+    <div class="detail-card">
+        <div class="sheet-handle"></div>
+        <div class="detail-cover" id="detailCover">
+            <span class="detail-cover-ph" id="detailCoverPh"></span>
+        </div>
+        <div class="detail-body">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;">
+                <div style="flex:1;min-width:0;">
+                    <p id="detailGenrePill" style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--indigo);margin-bottom:3px;"></p>
+                    <h3 id="detailTitle" style="font-size:1.15rem;font-weight:800;line-height:1.25;letter-spacing:-.02em;"></h3>
+                    <p id="detailAuthor" style="font-size:.82rem;font-weight:600;margin-top:2px;"></p>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
+                    <button onclick="closeDetailModal()" class="icon-btn" style="width:36px;height:36px;border-radius:9px;">
+                        <?= svgIcon('xmark', 13, 'currentColor') ?>
+                    </button>
+                    <span id="detailAvailTag" class="tag"></span>
+                </div>
+            </div>
+
+            <div id="detailPrefaceBox" class="hidden" style="margin-bottom:16px;padding:14px;background:var(--input-bg);border-radius:var(--r-md);border:1px solid var(--border);">
+                <p style="font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text-sub);margin-bottom:5px;">About this book</p>
+                <p id="detailPreface" style="font-size:.82rem;line-height:1.65;font-style:italic;font-weight:500;"></p>
+            </div>
+
+            <div class="info-row">
+                <div class="info-icon"><?= svgIcon('copy', 13, 'var(--indigo)') ?></div>
+                <div>
+                    <p class="info-label">Copies</p>
+                    <p id="detailCopies" class="info-value"></p>
+                </div>
+            </div>
+            <div class="info-row" id="detailYearRow">
+                <div class="info-icon"><?= svgIcon('calendar-days', 13, 'var(--indigo)') ?></div>
+                <div>
+                    <p class="info-label">Published</p>
+                    <p id="detailYear" class="info-value"></p>
+                </div>
+            </div>
+            <div class="info-row" id="detailGenreRow">
+                <div class="info-icon"><?= svgIcon('tag', 13, 'var(--indigo)') ?></div>
+                <div>
+                    <p class="info-label">Genre</p>
+                    <p id="detailGenreVal" class="info-value"></p>
+                </div>
+            </div>
+            <div class="info-row" id="detailCallRow">
+                <div class="info-icon"><?= svgIcon('location', 13, 'var(--indigo)') ?></div>
+                <div>
+                    <p class="info-label">Call Number <span style="text-transform:none;font-weight:500;color:var(--text-faint);">(shelf location)</span></p>
+                    <p id="detailCallVal" class="info-value"></p>
+                </div>
+            </div>
+            <div class="info-row" id="detailIsbnRow">
+                <div class="info-icon"><?= svgIcon('barcode', 13, 'var(--indigo)') ?></div>
+                <div>
+                    <p class="info-label">ISBN</p>
+                    <p id="detailIsbnVal" class="info-value" style="font-family:var(--mono);"></p>
+                </div>
+            </div>
+
+            <div id="detailActions" style="display:flex;gap:10px;margin-top:20px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Borrow Confirm Modal -->
+<div class="modal-backdrop" id="borrowModal" onclick="onBorrowBackdrop(event)">
+    <div class="modal-card">
+        <div class="sheet-handle"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <div>
+                <h3 style="font-size:1rem;font-weight:800;letter-spacing:-.02em;">Confirm Borrow</h3>
+                <p style="font-size:.72rem;font-weight:500;margin-top:2px;">14-day loan period</p>
+            </div>
+            <button onclick="closeBorrowModal()" class="icon-btn" style="width:36px;height:36px;border-radius:9px;">
+                <?= svgIcon('xmark', 13, 'currentColor') ?>
+            </button>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--indigo-light);border-radius:var(--r-md);border:1px solid var(--indigo-border);margin-bottom:20px;">
+            <div style="width:38px;height:38px;background:var(--card);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--shadow-sm);">
+                <?= svgIcon('book-open', 16, 'var(--indigo)') ?>
+            </div>
+            <div>
+                <p style="font-weight:700;font-size:.88rem;" id="modalBookTitle">—</p>
+                <p style="font-size:.7rem;margin-top:2px;">You'll be notified once your request is approved</p>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+            <button onclick="closeBorrowModal()" style="flex:1;padding:11px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;color:var(--text-sub);border:1px solid var(--border);cursor:pointer;font-size:.85rem;font-family:var(--font);transition:background var(--ease);">Cancel</button>
+            <form id="borrowForm" method="post" action="" style="flex:1;">
+                <?= csrf_field() ?>
+                <button type="submit" style="width:100%;padding:11px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-weight:700;font-size:.85rem;border:none;cursor:pointer;font-family:var(--font);box-shadow:0 4px 12px rgba(55,48,163,.28);transition:background var(--ease);">Yes, Borrow</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const BASE_URL = "<?= base_url() ?>";
+    const BOOKS    = <?= $booksJson ?? '[]' ?>;
+    const bookMap  = {};
+    BOOKS.forEach(b => bookMap[b.id] = b);
+
+    /* ── Responsive borrow view ── */
+    function responsiveBorrowView() {
+        const table = document.getElementById('borrowTableWrap');
+        const cards = document.getElementById('borrowCardsWrap');
+        if (!table || !cards) return;
+        const isWide = window.innerWidth >= 768;
+        table.style.display = isWide ? 'block' : 'none';
+        cards.style.display = isWide ? 'none'  : 'flex';
+    }
+    window.addEventListener('resize', responsiveBorrowView);
+    document.addEventListener('DOMContentLoaded', responsiveBorrowView);
+
+    /* ── Tab switching ── */
+    function switchTab(t) {
+        document.getElementById('paneBrowse').style.display = t === 'browse' ? '' : 'none';
+        document.getElementById('paneMine').style.display   = t === 'mine'   ? '' : 'none';
+        document.getElementById('tabBrowse').className = 'tab-btn' + (t === 'browse' ? ' active' : '');
+        document.getElementById('tabMine').className   = 'tab-btn' + (t === 'mine'   ? ' active' : '');
+    }
+    switchTab('browse');
+
+    /* ── Filter ── */
+    function filterBooks() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const g = document.getElementById('genreFilter').value;
+        document.querySelectorAll('.book-card').forEach(c => {
+            const mQ = c.dataset.title.includes(q) || c.dataset.author.includes(q);
+            const mG = !g || c.dataset.genre === g;
+            c.style.display = mQ && mG ? '' : 'none';
         });
+    }
 
-        /* ── Responsive borrow view ── */
-        function responsiveBorrowView() {
-            const table = document.getElementById('borrowTableWrap');
-            const cards = document.getElementById('borrowCardsWrap');
-            if (!table || !cards) return;
-            const isWide = window.innerWidth >= 768;
-            table.style.display = isWide ? 'block' : 'none';
-            cards.style.display = isWide ? 'none' : 'flex';
+    /* ── Book detail modal ── */
+    function openBookDetail(id) {
+        const b = bookMap[id];
+        if (!b) return;
+        const avail = b.available_copies > 0;
+
+        const coverEl = document.getElementById('detailCover');
+        const phEl    = document.getElementById('detailCoverPh');
+        const oldImg  = coverEl.querySelector('img');
+        if (oldImg) oldImg.remove();
+        if (b.cover_image) {
+            phEl.style.display = 'none';
+            const img = document.createElement('img');
+            img.src = b.cover_image;
+            img.alt = b.title;
+            coverEl.appendChild(img);
+        } else {
+            phEl.style.display = '';
+            phEl.textContent = b.title.charAt(0).toUpperCase();
         }
-        window.addEventListener('resize', responsiveBorrowView);
 
-        /* ── Tab switching ── */
-        function switchTab(t) {
-            document.getElementById('paneBrowse').style.display = t === 'browse' ? '' : 'none';
-            document.getElementById('paneMine').style.display = t === 'mine' ? '' : 'none';
-            document.getElementById('tabBrowse').className = 'tab-btn' + (t === 'browse' ? ' active' : '');
-            document.getElementById('tabMine').className = 'tab-btn' + (t === 'mine' ? ' active' : '');
+        document.getElementById('detailGenrePill').textContent = b.genre || '';
+        document.getElementById('detailTitle').textContent     = b.title;
+        document.getElementById('detailAuthor').textContent    = 'by ' + b.author;
+        document.getElementById('detailCopies').textContent    = b.available_copies + ' available of ' + b.total_copies + ' total';
+
+        const tag = document.getElementById('detailAvailTag');
+        tag.textContent = avail ? 'Available' : 'Not Available';
+        tag.className   = 'tag ' + (avail ? 'tag-available' : 'tag-out');
+
+        const prefBox = document.getElementById('detailPrefaceBox');
+        if (b.preface) {
+            document.getElementById('detailPreface').textContent = b.preface;
+            prefBox.classList.remove('hidden');
+        } else {
+            prefBox.classList.add('hidden');
         }
-        switchTab('browse');
 
-        /* ── Filter books ── */
-        function filterBooks() {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            const g = document.getElementById('genreFilter').value;
-            document.querySelectorAll('.book-card').forEach(c => {
-                const mQ = c.dataset.title.includes(q) || c.dataset.author.includes(q);
-                const mG = !g || c.dataset.genre === g;
-                c.style.display = mQ && mG ? '' : 'none';
+        const yr = document.getElementById('detailYearRow');
+        if (b.published_year) { document.getElementById('detailYear').textContent = b.published_year; yr.style.display = ''; }
+        else yr.style.display = 'none';
+
+        const gr = document.getElementById('detailGenreRow');
+        if (b.genre) { document.getElementById('detailGenreVal').textContent = b.genre; gr.style.display = ''; }
+        else gr.style.display = 'none';
+
+        const cr = document.getElementById('detailCallRow');
+        if (b.call_number) { document.getElementById('detailCallVal').innerHTML = '<span class="call-number-badge">' + b.call_number + '</span>'; cr.style.display = ''; }
+        else cr.style.display = 'none';
+
+        const ir = document.getElementById('detailIsbnRow');
+        if (b.isbn) { document.getElementById('detailIsbnVal').textContent = b.isbn; ir.style.display = ''; }
+        else ir.style.display = 'none';
+
+        const acts = document.getElementById('detailActions');
+        if (avail) {
+            acts.innerHTML = `
+                <button
+                    data-id="${b.id}"
+                    data-title="${b.title.replace(/"/g,'&quot;')}"
+                    onclick="closeDetailModal(); openBorrowModal(+this.dataset.id, this.dataset.title)"
+                    style="flex:1;padding:12px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-weight:700;font-size:.85rem;border:none;cursor:pointer;font-family:var(--font);box-shadow:0 4px 12px rgba(55,48,163,.28);display:flex;align-items:center;justify-content:center;gap:7px;transition:background var(--ease);"
+                    onmouseover="this.style.background='#312e81'" onmouseout="this.style.background='var(--indigo)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Borrow This Book
+                </button>
+                <button onclick="closeDetailModal()"
+                    style="padding:12px 18px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid var(--border);cursor:pointer;color:var(--text-sub);font-family:var(--font);">
+                    Close
+                </button>`;
+        } else {
+            acts.innerHTML = `
+                <button disabled
+                    style="flex:1;padding:12px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid var(--border);cursor:not-allowed;color:var(--text-sub);font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;">
+                    Currently Unavailable
+                </button>
+                <button onclick="closeDetailModal()"
+                    style="padding:12px 18px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid var(--border);cursor:pointer;color:var(--text-sub);font-family:var(--font);">
+                    Close
+                </button>`;
+        }
+
+        document.getElementById('bookDetailModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetailModal() {
+        document.getElementById('bookDetailModal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    function onDetailBackdrop(e) {
+        if (e.target === document.getElementById('bookDetailModal')) closeDetailModal();
+    }
+
+    /* ── Borrow modal ── */
+    function openBorrowModal(id, title) {
+        document.getElementById('modalBookTitle').textContent = title;
+        document.getElementById('borrowForm').action = BASE_URL + 'books/borrow/' + id;
+        document.getElementById('borrowModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeBorrowModal() {
+        document.getElementById('borrowModal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    function onBorrowBackdrop(e) {
+        if (e.target === document.getElementById('borrowModal')) closeBorrowModal();
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeDetailModal(); closeBorrowModal(); }
+    });
+
+    /* ── RAG ── */
+    async function doRag() {
+        const query = document.getElementById('ragQuery').value.trim();
+        if (query.length < 2) return;
+        const skel = document.getElementById('ragSkel');
+        const err  = document.getElementById('ragErr');
+        const res  = document.getElementById('ragRes');
+        const btn  = document.getElementById('ragBtn');
+        res.classList.remove('show');
+        err.style.display = 'none';
+        skel.style.display = 'block';
+        btn.disabled = true;
+        document.querySelectorAll('.book-card').forEach(c => c.classList.remove('rag-hl'));
+        try {
+            const r = await fetch('/rag/suggest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ query })
             });
-        }
-
-        /* ── Book detail modal ── */
-        function openBookDetail(id) {
-            const b = bookMap[id];
-            if (!b) return;
-            const avail = b.available_copies > 0;
-
-            const coverEl = document.getElementById('detailCover');
-            const phEl = document.getElementById('detailCoverPh');
-            const oldImg = coverEl.querySelector('img');
-            if (oldImg) oldImg.remove();
-            if (b.cover_image) {
-                phEl.style.display = 'none';
-                const img = document.createElement('img');
-                img.src = b.cover_image;
-                img.alt = b.title;
-                coverEl.appendChild(img);
-            } else {
-                phEl.style.display = '';
-                phEl.textContent = b.title.charAt(0).toUpperCase();
-            }
-
-            document.getElementById('detailGenrePill').textContent = b.genre || '';
-            document.getElementById('detailTitle').textContent = b.title;
-            document.getElementById('detailAuthor').textContent = 'by ' + b.author;
-            document.getElementById('detailCopies').textContent = b.available_copies + ' available of ' + b.total_copies + ' total';
-
-            const tag = document.getElementById('detailAvailTag');
-            tag.textContent = avail ? 'Available' : 'Not Available';
-            tag.className = 'tag ' + (avail ? 'tag-available' : 'tag-out');
-
-            const prefBox = document.getElementById('detailPrefaceBox');
-            if (b.preface) {
-                document.getElementById('detailPreface').textContent = b.preface;
-                prefBox.classList.remove('hidden');
-            } else {
-                prefBox.classList.add('hidden');
-            }
-
-            const yr = document.getElementById('detailYearRow');
-            if (b.published_year) {
-                document.getElementById('detailYear').textContent = b.published_year;
-                yr.style.display = '';
-            } else yr.style.display = 'none';
-
-            const gr = document.getElementById('detailGenreRow');
-            if (b.genre) {
-                document.getElementById('detailGenreVal').textContent = b.genre;
-                gr.style.display = '';
-            } else gr.style.display = 'none';
-
-            const cr = document.getElementById('detailCallRow');
-            if (b.call_number) {
-                document.getElementById('detailCallVal').innerHTML = '<span class="call-number-badge">' + b.call_number + '</span>';
-                cr.style.display = '';
-            } else cr.style.display = 'none';
-
-            const ir = document.getElementById('detailIsbnRow');
-            if (b.isbn) {
-                document.getElementById('detailIsbnVal').textContent = b.isbn;
-                ir.style.display = '';
-            } else ir.style.display = 'none';
-
-            const acts = document.getElementById('detailActions');
-            if (avail) {
-                acts.innerHTML = `
-                    <button
-                        data-id="${b.id}"
-                        data-title="${b.title.replace(/"/g, '&quot;')}"
-                        onclick="closeDetailModal(); openBorrowModal(+this.dataset.id, this.dataset.title)"
-                        style="flex:1;padding:12px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-weight:700;font-size:.85rem;border:none;cursor:pointer;font-family:var(--font);box-shadow:0 4px 12px rgba(55,48,163,.28);display:flex;align-items:center;justify-content:center;gap:7px;transition:background var(--ease);"
-                        onmouseover="this.style.background='#312e81'" onmouseout="this.style.background='var(--indigo)'">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        Borrow This Book
-                    </button>
-                    <button onclick="closeDetailModal()"
-                        style="padding:12px 18px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid var(--border);cursor:pointer;color:var(--text-sub);font-family:var(--font);">
-                        Close
-                    </button>`;
-            } else {
-                acts.innerHTML = `
-                    <button disabled
-                        style="flex:1;padding:12px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid var(--border);cursor:not-allowed;color:var(--text-sub);font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;">
-                        Currently Unavailable
-                    </button>
-                    <button onclick="closeDetailModal()"
-                        style="padding:12px 18px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;font-size:.85rem;border:1px solid var(--border);cursor:pointer;color:var(--text-sub);font-family:var(--font);">
-                        Close
-                    </button>`;
-            }
-
-            document.getElementById('bookDetailModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDetailModal() {
-            document.getElementById('bookDetailModal').classList.remove('show');
-            document.body.style.overflow = '';
-        }
-
-        function onDetailBackdrop(e) {
-            if (e.target === document.getElementById('bookDetailModal')) closeDetailModal();
-        }
-
-        /* ── Borrow modal ── */
-        function openBorrowModal(id, title) {
-            document.getElementById('modalBookTitle').textContent = title;
-            document.getElementById('borrowForm').action = BASE_URL + 'books/borrow/' + id;
-            document.getElementById('borrowModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeBorrowModal() {
-            document.getElementById('borrowModal').classList.remove('show');
-            document.body.style.overflow = '';
-        }
-
-        function onBorrowBackdrop(e) {
-            if (e.target === document.getElementById('borrowModal')) closeBorrowModal();
-        }
-
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') {
-                closeDetailModal();
-                closeBorrowModal();
-            }
-        });
-
-        /* ── RAG ── */
-        async function doRag() {
-            const query = document.getElementById('ragQuery').value.trim();
-            if (query.length < 2) return;
-            const skel = document.getElementById('ragSkel');
-            const err = document.getElementById('ragErr');
-            const res = document.getElementById('ragRes');
-            const btn = document.getElementById('ragBtn');
-            res.classList.remove('show');
-            err.style.display = 'none';
-            skel.style.display = 'block';
-            btn.disabled = true;
-            document.querySelectorAll('.book-card').forEach(c => c.classList.remove('rag-hl'));
-            try {
-                const r = await fetch('/rag/suggest', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        query
-                    })
-                });
-                const d = await r.json();
-                skel.style.display = 'none';
-                btn.disabled = false;
-                if (!d.suggestion) {
-                    err.textContent = d.error || d.message || 'No suggestion found.';
-                    err.style.display = 'block';
-                    return;
-                }
-                document.getElementById('ragText').textContent = d.suggestion;
-                const chips = document.getElementById('ragChips');
-                chips.innerHTML = '';
-                (d.books || []).forEach(b => {
-                    const avail = (b.available_copies || 0) > 0;
-                    const chip = document.createElement('button');
-                    chip.style.cssText = `display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:9px;font-size:.72rem;font-weight:600;border:1px solid;cursor:pointer;font-family:var(--font);transition:all .15s;${avail ? 'background:var(--card);border-color:var(--indigo-border);color:var(--indigo);' : 'background:var(--input-bg);border-color:var(--border);color:var(--text-sub);border-style:dashed;'}`;
-                    chip.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
-                        b.title + (avail ? '' : ' <span style="opacity:.55">(out)</span>');
-                    chip.onclick = () => {
-                        openBookDetail(b.id);
-                        const card = document.getElementById('book-' + b.id);
-                        if (card) {
-                            card.classList.add('rag-hl');
-                            card.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'center'
-                            });
-                        }
-                    };
-                    chips.appendChild(chip);
-                    const card = document.getElementById('book-' + b.id);
-                    if (card) card.classList.add('rag-hl');
-                });
-                res.classList.add('show');
-            } catch (e) {
-                skel.style.display = 'none';
-                btn.disabled = false;
-                err.textContent = 'Network error. Please try again.';
+            const d = await r.json();
+            skel.style.display = 'none';
+            btn.disabled = false;
+            if (!d.suggestion) {
+                err.textContent = d.error || d.message || 'No suggestion found.';
                 err.style.display = 'block';
+                return;
             }
+            document.getElementById('ragText').textContent = d.suggestion;
+            const chips = document.getElementById('ragChips');
+            chips.innerHTML = '';
+            (d.books || []).forEach(b => {
+                const avail = (b.available_copies || 0) > 0;
+                const chip  = document.createElement('button');
+                chip.style.cssText = `display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:9px;font-size:.72rem;font-weight:600;border:1px solid;cursor:pointer;font-family:var(--font);transition:all .15s;${avail ? 'background:var(--card);border-color:var(--indigo-border);color:var(--indigo);' : 'background:var(--input-bg);border-color:var(--border);color:var(--text-sub);border-style:dashed;'}`;
+                chip.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
+                    b.title + (avail ? '' : ' <span style="opacity:.55">(out)</span>');
+                chip.onclick = () => {
+                    openBookDetail(b.id);
+                    const card = document.getElementById('book-' + b.id);
+                    if (card) { card.classList.add('rag-hl'); card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                };
+                chips.appendChild(chip);
+                const card = document.getElementById('book-' + b.id);
+                if (card) card.classList.add('rag-hl');
+            });
+            res.classList.add('show');
+        } catch (e) {
+            skel.style.display = 'none';
+            btn.disabled = false;
+            err.textContent = 'Network error. Please try again.';
+            err.style.display = 'block';
         }
-    </script>
+    }
+</script>
 
 </body>
-
 </html>
