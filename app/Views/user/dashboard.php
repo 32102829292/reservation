@@ -774,143 +774,205 @@ include(APPPATH . 'Views/partials/layout.php');
     <?php endif; ?>
 
     <!-- Library section -->
-    <div class="grid-lib fade-up-4">
-        <div style="display:flex;flex-direction:column;gap:14px;">
-            <!-- Library banner -->
-            <div class="lib-banner">
-                <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-                    <div>
-                        <div class="lib-eyebrow">Community Library</div>
-                        <div class="lib-title"><?= $availableCount ?> books available</div>
-                        <div class="lib-sub"><?= $totalBooks ?> total titles in collection</div>
-                    </div>
-                    <a href="<?= base_url('/books') ?>" class="lib-browse"><?= icon('book-open', 14, 'white') ?> Browse All</a>
-                </div>
-                <div class="lib-stats" style="position:relative;z-index:1;">
-                    <div class="lib-stat">
-                        <div class="lib-stat-icon"><?= icon('bookmark', 14, '#a5b4fc') ?></div>
-                        <div><div class="lib-stat-lbl">My Borrows</div><div class="lib-stat-val"><?= count($myBorrowings) ?></div></div>
-                    </div>
-                    <div class="lib-stat">
-                        <div class="lib-stat-icon"><?= icon('hourglass', 14, '#fcd34d') ?></div>
-                        <div><div class="lib-stat-lbl">Pending</div><div class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'pending')) ?></div></div>
-                    </div>
-                    <div class="lib-stat">
-                        <div class="lib-stat-icon"><?= icon('check-circle', 14, '#7dd3fc') ?></div>
-                        <div><div class="lib-stat-lbl">Active</div><div class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'approved')) ?></div></div>
-                    </div>
-                </div>
-            </div>
+<div class="grid-lib fade-up-4">
+    <div style="display:flex;flex-direction:column;gap:14px;">
 
-            <!-- AI Book Finder -->
-            <div class="card card-p">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', 16, '#7c3aed') ?></div>
-                    <div>
-                        <div class="card-title">AI Book Finder</div>
-                        <div class="card-sub">Describe what you want to read</div>
+        <!-- Library banner -->
+        <div class="lib-banner">
+            <div style="position:relative;z-index:1;">
+                <div class="lib-eyebrow">Community Library</div>
+                <div class="lib-title"><?= $availableCount ?></div>
+                <div style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);margin-top:2px;margin-bottom:14px;">
+                    available · <?= $totalBooks ?> total titles
+                </div>
+                <div class="lib-stats">
+                    <div class="lib-stat">
+                        <div class="lib-stat-icon"><?= icon('bookmark', 13, '#a5b4fc') ?></div>
+                        <div>
+                            <div class="lib-stat-lbl">My Borrows</div>
+                            <div class="lib-stat-val"><?= count($myBorrowings) ?></div>
+                        </div>
+                    </div>
+                    <div class="lib-stat">
+                        <div class="lib-stat-icon"><?= icon('hourglass', 13, '#fcd34d') ?></div>
+                        <div>
+                            <div class="lib-stat-lbl">Pending</div>
+                            <div class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'pending')) ?></div>
+                        </div>
+                    </div>
+                    <div class="lib-stat">
+                        <div class="lib-stat-icon"><?= icon('check-circle', 13, '#7dd3fc') ?></div>
+                        <div>
+                            <div class="lib-stat-lbl">Active</div>
+                            <div class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'approved')) ?></div>
+                        </div>
                     </div>
                 </div>
-                <div class="rag-wrap">
-                    <span class="rag-icon-pos"><?= icon('search', 13, 'var(--text-sub)') ?></span>
-                    <input type="text" id="ragInput" class="search-input"
-                        placeholder="e.g. Filipino history, funny stories…"
-                        autocomplete="off" autocorrect="off" spellcheck="false"
-                        onkeydown="if(event.key==='Enter') doRagSearch()">
-                </div>
-                <div id="ragSkel" style="display:none;margin-top:.5rem;">
-                    <div class="shimmer" style="width:90%;"></div>
-                    <div class="shimmer" style="width:70%;"></div>
-                    <div class="shimmer" style="width:52%;"></div>
-                </div>
-                <div class="ai-result-box" id="ragResult">
-                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                        <?= icon('robot', 14, 'var(--indigo)') ?>
-                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
-                    </div>
-                    <p style="font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
-                    <div id="ragBooks"></div>
-                </div>
-                <div id="ragErr" style="display:none;margin-top:5px;font-size:11px;color:#dc2626;font-weight:500;"></div>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;">
-                    <button onclick="doRagSearch()" id="ragBtn" class="find-btn">
-                        <?= icon('sparkles', 13, 'white') ?> Find Books
-                    </button>
-                    <a href="<?= base_url('/books') ?>" class="link-sm">Full library →</a>
-                </div>
+                <a href="<?= base_url('/books') ?>" class="lib-browse" style="margin-top:14px;">
+                    <?= icon('book-open', 13, 'white') ?> Browse Library
+                </a>
             </div>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:14px;">
-            <!-- Available now -->
-            <div class="card card-p">
-                <div class="card-head">
-                    <div class="section-lbl" style="margin-bottom:0;">Available Now</div>
-                    <a href="<?= base_url('/books') ?>" class="link-sm">All →</a>
+        <!-- AI Book Finder -->
+        <div class="card card-p">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', 16, '#7c3aed') ?></div>
+                <div>
+                    <div class="card-title">AI Book Finder</div>
+                    <div class="card-sub">Describe what you want to read</div>
                 </div>
-                <?php if (!empty($featuredBooks)): ?>
-                    <div>
-                        <?php foreach (array_slice($featuredBooks, 0, 5) as $book):
-                            $avail = (int)($book['available_copies'] ?? 0) > 0;
-                        ?>
-                            <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border-subtle);">
-                                <a href="<?= base_url('/books') ?>" style="display:contents;">
-                                    <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
-                                    <div style="flex:1;min-width:0;">
-                                        <div class="book-title"><?= esc($book['title']) ?></div>
-                                        <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
-                                    </div>
-                                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
-                                        <div class="avail-dot <?= $avail ? 'on' : 'off' ?>"></div>
-                                        <div class="avail-num"><?= (int)($book['available_copies'] ?? 0) ?> left</div>
-                                    </div>
-                                </a>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php else: ?>
-                    <div style="text-align:center;padding:20px 12px;">
-                        <div style="display:flex;justify-content:center;margin-bottom:6px;"><?= icon('book-open', 24, 'var(--text-faint)') ?></div>
-                        <p style="font-size:12px;color:var(--text-sub);">No books yet</p>
-                    </div>
-                <?php endif; ?>
             </div>
-
-            <!-- My borrows -->
-            <div class="card card-p">
-                <div class="card-head">
-                    <div class="section-lbl" style="margin-bottom:0;">My Borrows</div>
-                    <a href="<?= base_url('/books') ?>#mine" class="link-sm">All →</a>
+            <div class="rag-wrap">
+                <span class="rag-icon-pos"><?= icon('search', 13, 'var(--text-sub)') ?></span>
+                <input type="text" id="ragInput" class="search-input"
+                    placeholder="e.g. Filipino history, funny stories…"
+                    autocomplete="off" autocorrect="off" spellcheck="false"
+                    onkeydown="if(event.key==='Enter') doRagSearch()">
+            </div>
+            <div id="ragSkel" style="display:none;margin-top:.5rem;">
+                <div class="shimmer" style="width:90%;"></div>
+                <div class="shimmer" style="width:70%;"></div>
+                <div class="shimmer" style="width:52%;"></div>
+            </div>
+            <div class="ai-result-box" id="ragResult">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                    <?= icon('robot', 14, 'var(--indigo)') ?>
+                    <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
                 </div>
-                <?php $activeBorrows = array_slice(array_values(array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved','pending']))), 0, 4); ?>
-                <?php if (!empty($activeBorrows)): ?>
-                    <div style="display:flex;flex-direction:column;gap:7px;">
-                        <?php foreach ($activeBorrows as $borrow): $bs = strtolower($borrow['status'] ?? 'pending'); ?>
-                            <div class="borrow-row">
-                                <div class="book-letter" style="width:30px;height:30px;font-size:11px;"><?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?></div>
-                                <div style="flex:1;min-width:0;">
-                                    <p style="font-weight:600;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= esc($borrow['title'] ?? 'Unknown Book') ?></p>
-                                    <?php if (!empty($borrow['due_date']) && $bs === 'approved'): ?>
-                                        <p style="font-size:10px;color:var(--text-sub);font-family:var(--mono);">Due <?= date('M j', strtotime($borrow['due_date'])) ?></p>
-                                    <?php endif; ?>
-                                </div>
-                                <span class="tag tag-<?= $bs ?>"><?= ucfirst($bs) ?></span>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php else: ?>
-                    <div style="text-align:center;padding:18px 12px;">
-                        <div style="display:flex;justify-content:center;margin-bottom:6px;"><?= icon('bookmark', 22, 'var(--text-faint)') ?></div>
-                        <p style="font-size:12px;color:var(--text-sub);">No active borrows</p>
-                        <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-weight:700;color:var(--indigo);text-decoration:none;touch-action:manipulation;">
-                            <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
-                        </a>
-                    </div>
-                <?php endif; ?>
+                <p style="font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
+                <div id="ragBooks"></div>
+            </div>
+            <div id="ragErr" style="display:none;margin-top:5px;font-size:11px;color:#dc2626;font-weight:500;"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;">
+                <button onclick="doRagSearch()" id="ragBtn" class="find-btn">
+                    <?= icon('sparkles', 13, 'white') ?> Find Books
+                </button>
+                <a href="<?= base_url('/books') ?>" class="link-sm">Full library →</a>
             </div>
         </div>
     </div>
 
+    <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Books catalog -->
+        <div class="card card-p" style="flex:1;">
+            <div class="card-head">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="card-icon" style="background:var(--indigo-light);">
+                        <?= icon('book-open', 16, 'var(--indigo)') ?>
+                    </div>
+                    <div>
+                        <div class="card-title">Available Now</div>
+                        <div class="card-sub">Books you can borrow today</div>
+                    </div>
+                </div>
+                <a href="<?= base_url('/books') ?>" class="link-sm">All →</a>
+            </div>
+
+            <?php if (!empty($featuredBooks)): ?>
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                    <?php foreach (array_slice($featuredBooks, 0, 6) as $book):
+                        $avail = (int)($book['available_copies'] ?? 0);
+                        $ac = $avail === 0 ? 'avail-off' : ($avail <= 1 ? 'avail-low' : 'avail-on');
+                        $at = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
+                    ?>
+                        <a href="<?= base_url('/books') ?>" style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;">
+                            <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
+                            <div style="flex:1;min-width:0;">
+                                <div class="book-title"><?= esc($book['title']) ?></div>
+                                <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
+                            </div>
+                            <span style="font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;
+                                <?= $avail === 0 ? 'background:#fee2e2;color:#991b1b;' : ($avail <= 1 ? 'background:#fef3c7;color:#92400e;' : 'background:#dcfce7;color:#166634;') ?>">
+                                <?= $at ?>
+                            </span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (count($featuredBooks) > 6): ?>
+                    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-subtle);text-align:center;">
+                        <a href="<?= base_url('/books') ?>" class="link-sm">
+                            +<?= count($featuredBooks) - 6 ?> more books →
+                        </a>
+                    </div>
+                <?php endif; ?>
+            <?php else: ?>
+                <div style="text-align:center;padding:32px 12px;">
+                    <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);">
+                        <?= icon('book-open', 28, 'currentColor') ?>
+                    </div>
+                    <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No books available</p>
+                    <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
+                        <?= icon('book-open', 12, 'var(--indigo)') ?> Browse catalog
+                    </a>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- My borrows -->
+        <?php
+        $activeBorrows = array_slice(
+            array_values(array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved', 'pending']))),
+            0, 4
+        );
+        ?>
+        <?php if (!empty($activeBorrows)): ?>
+            <div class="card card-p">
+                <div class="card-head">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div class="card-icon" style="background:#dcfce7;">
+                            <?= icon('bookmark', 16, '#16a34a') ?>
+                        </div>
+                        <div>
+                            <div class="card-title">My Active Borrows</div>
+                            <div class="card-sub">Currently checked out</div>
+                        </div>
+                    </div>
+                    <a href="<?= base_url('/books') ?>#mine" class="link-sm">All →</a>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px;">
+                    <?php foreach ($activeBorrows as $borrow):
+                        $bs = strtolower($borrow['status'] ?? 'pending');
+                        $due = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
+                        $overdue = $due && $due < time();
+                        $dueSoon = $due && !$overdue && $due < time() + 3 * 86400;
+                    ?>
+                        <div class="borrow-row">
+                            <div class="book-letter" style="width:30px;height:30px;font-size:.7rem;">
+                                <?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <p style="font-weight:600;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                    <?= esc($borrow['title'] ?? 'Unknown Book') ?>
+                                </p>
+                                <?php if ($due && $bs === 'approved'): ?>
+                                    <p style="font-size:.68rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : 'var(--text-sub)') ?>;font-family:var(--mono);">
+                                        <?= $overdue ? 'Overdue · ' : ($dueSoon ? 'Due soon · ' : '') ?><?= date('M j, Y', $due) ?>
+                                    </p>
+                                <?php endif; ?>
+                            </div>
+                            <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>">
+                                <?= $overdue ? 'Overdue' : ($dueSoon ? 'Due Soon' : ucfirst($bs)) ?>
+                            </span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="card card-p" style="text-align:center;padding:28px 20px;">
+                <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);">
+                    <?= icon('bookmark', 26, 'currentColor') ?>
+                </div>
+                <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
+                <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
+                    <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
+                </a>
+            </div>
+        <?php endif; ?>
+
+    </div>
+</div>
 </main><!-- /.main-area -->
 
 <!-- ═══════════════════════════════════════════════════════════════

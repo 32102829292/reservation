@@ -1535,113 +1535,168 @@
         </div>
 
         <!-- ── SECTION 4: LIBRARY ── -->
-        <p class="section-label fade-up-4">
-            Library
-            <span style="margin-left:auto;"><a href="/admin/books" class="link-sm">Browse All →</a></span>
-        </p>
-        <div class="grid-lib fade-up-4">
-            <div style="display:flex;flex-direction:column;gap:14px;">
-                <div class="lib-banner">
-                    <div style="position:relative;z-index:1;">
-                        <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
-                        <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;"><?= $bookAvailCount ?> <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span></div>
-                        <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:16px;"><?= $bookTotalCount ?> total titles</div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                            <div class="lib-stat-item">
-                                <div class="lib-stat-lbl">Borrow Reqs</div>
-                                <div class="lib-stat-val"><?= $pendingBorrowings ?></div>
-                            </div>
-                            <?php $bpct = $bookTotalCount > 0 ? round($bookAvailCount / $bookTotalCount * 100) : 0; ?>
-                            <div class="lib-stat-item">
-                                <div class="lib-stat-lbl">In Stock</div>
-                                <div class="lib-stat-val"><?= $bpct ?>%</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<p class="section-label fade-up-4">
+    Library
+    <a href="/admin/books" class="link-sm" style="margin-left:auto;">Browse All →</a>
+</p>
+<div class="grid-lib fade-up-4">
 
-                <div class="card card-p" style="flex:1;">
-                    <div class="card-head">
-                        <div>
-                            <div class="card-title">Borrow Requests</div>
-                            <div class="card-sub">Pending approval</div>
-                        </div>
-                        <?php if ($pendingBorrowings > 0): ?><a href="/admin/books#borrowings" class="link-sm">All <?= $pendingBorrowings ?> →</a><?php endif; ?>
-                    </div>
-                    <?php $sr = array_slice(array_values(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending')), 0, 4);
-                    if (!empty($sr)): ?>
-                        <div style="display:flex;flex-direction:column;gap:8px;">
-                            <?php foreach ($sr as $bw): ?>
-                                <div class="borrow-req">
-                                    <div class="book-letter" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;"><?= mb_strtoupper(mb_substr($bw['book_title'] ?? 'B', 0, 1)) ?></div>
-                                    <div style="flex:1;min-width:0;">
-                                        <p style="font-weight:700;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($bw['book_title'] ?? 'Unknown Book') ?></p>
-                                        <p style="font-size:.68rem;color:var(--text-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($bw['resident_name'] ?? 'Unknown') ?></p>
-                                    </div>
-                                    <div style="display:flex;gap:5px;flex-shrink:0;">
-                                        <form method="post" action="/admin/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-approve" title="Approve">✓</button></form>
-                                        <form method="post" action="/admin/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-reject" title="Reject">✕</button></form>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php else: ?>
-                        <div style="text-align:center;padding:20px 12px;">
-                            <i class="fa-regular fa-circle-check" style="font-size:1.8rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
-                            <p style="font-size:12px;color:var(--text-sub);">No pending requests</p>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
+    <!-- Left column: banner + borrow requests -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
 
-            <div class="card card-p-lg">
-                <div class="card-head">
-                    <div>
-                        <div class="card-title">Books Catalog</div>
-                        <div class="card-sub">Availability at a glance</div>
-                    </div>
-                    <a href="/admin/books" class="action-btn" style="padding:7px 14px;font-size:.75rem;"><i class="fa-solid fa-plus" style="font-size:.7rem;"></i> Add Book</a>
+        <!-- Banner -->
+        <div class="lib-banner">
+            <div style="position:relative;z-index:1;">
+                <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
+                <div style="font-size:1.8rem;font-weight:800;color:white;letter-spacing:-.04em;line-height:1.1;">
+                    <?= $bookAvailCount ?>
+                    <span style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.55);">available</span>
                 </div>
-                <?php if (!empty($dashBooks)):
-                    $gc = ['fiction' => '#3730a3', 'fantasy' => '#7c3aed', 'poetry' => '#ec4899', 'humor' => '#f59e0b', 'history' => '#64748b', 'science' => '#06b6d4', 'romance' => '#f43f5e'];
-                ?>
-                    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;padding:0 6px 8px;border-bottom:1px solid rgba(99,102,241,.07);margin-bottom:4px;">
-                        <span style="font-size:.6rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-sub);">Title / Author</span>
-                        <span style="font-size:.6rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-sub);">Stock</span>
+                <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;margin-bottom:16px;"><?= $bookTotalCount ?> total titles</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <div class="lib-stat-item">
+                        <div class="lib-stat-lbl">Borrow Reqs</div>
+                        <div class="lib-stat-val"><?= $pendingBorrowings ?></div>
                     </div>
-                    <div style="display:flex;flex-direction:column;gap:2px;">
-                        <?php foreach (array_slice($dashBooks, 0, 10) as $book):
-                            $g  = $book['genre'] ?? '';
-                            $sc = $gc[strtolower($g)] ?? '#3730a3';
-                            $av = (int)($book['available_copies'] ?? 0);
-                            $ac = $av === 0 ? 'avail-off' : ($av <= 1 ? 'avail-low' : 'avail-on');
-                            $at = $av === 0 ? 'Out' : ($av <= 1 ? '1 left' : $av . ' left');
-                        ?>
-                            <a href="/admin/books" class="book-row">
-                                <div class="book-spine" style="background:<?= $sc ?>"></div>
-                                <div style="flex:1;min-width:0;">
-                                    <div style="font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($book['title']) ?></div>
-                                    <div style="font-size:.7rem;color:var(--text-sub);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($book['author'] ?? '—') ?><?= !empty($book['genre']) ? ' · ' . htmlspecialchars($book['genre']) : '' ?></div>
-                                </div>
-                                <span class="avail-pill <?= $ac ?>"><?= $at ?></span>
-                            </a>
-                        <?php endforeach; ?>
+                    <?php $bpct = $bookTotalCount > 0 ? round($bookAvailCount / $bookTotalCount * 100) : 0; ?>
+                    <div class="lib-stat-item">
+                        <div class="lib-stat-lbl">In Stock</div>
+                        <div class="lib-stat-val"><?= $bpct ?>%</div>
                     </div>
-                    <?php if (count($dashBooks) > 10): ?>
-                        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(99,102,241,.07);text-align:center;">
-                            <a href="/admin/books" style="font-size:.75rem;font-weight:700;color:var(--indigo);">+<?= count($dashBooks) - 10 ?> more books →</a>
-                        </div>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <div style="text-align:center;padding:32px 12px;">
-                        <i class="fa-solid fa-book-open" style="font-size:2rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
-                        <p style="font-size:.82rem;color:var(--text-sub);">No books yet</p>
-                        <a href="/admin/books" class="action-btn" style="display:inline-flex;margin-top:12px;padding:8px 16px;font-size:.8rem;"><i class="fa-solid fa-plus" style="font-size:.7rem;"></i> Add the first book</a>
+                    <div class="lib-stat-item">
+                        <div class="lib-stat-lbl">Borrowed</div>
+                        <div class="lib-stat-val"><?= max(0, $bookTotalCount - $bookAvailCount) ?></div>
                     </div>
-                <?php endif; ?>
+                </div>
+                <a href="/admin/books" class="lib-browse" style="margin-top:14px;">
+                    <i class="fa-solid fa-book-open" style="font-size:.75rem;"></i> Browse Library
+                </a>
             </div>
         </div>
 
+        <!-- Borrow Requests -->
+        <div class="card card-p" style="flex:1;">
+            <div class="card-head">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="card-icon" style="background:#fef3c7;">
+                        <i class="fa-solid fa-clipboard-list" style="color:#d97706;font-size:.9rem;"></i>
+                    </div>
+                    <div>
+                        <div class="card-title">Borrow Requests</div>
+                        <div class="card-sub">Pending approval</div>
+                    </div>
+                </div>
+                <?php if ($pendingBorrowings > 0): ?>
+                    <a href="/admin/books#borrowings" class="link-sm">All <?= $pendingBorrowings ?> →</a>
+                <?php endif; ?>
+            </div>
+            <?php
+            $sr = array_slice(
+                array_values(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending')),
+                0, 4
+            );
+            if (!empty($sr)): ?>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <?php foreach ($sr as $bw): ?>
+                        <div class="borrow-req">
+                            <div class="book-letter" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;">
+                                <?= mb_strtoupper(mb_substr($bw['book_title'] ?? 'B', 0, 1)) ?>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <p style="font-weight:700;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($bw['book_title'] ?? 'Unknown Book') ?></p>
+                                <p style="font-size:.68rem;color:var(--text-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($bw['resident_name'] ?? 'Unknown') ?></p>
+                            </div>
+                            <div style="display:flex;gap:5px;flex-shrink:0;">
+                                <form method="post" action="/admin/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-approve" title="Approve">✓</button></form>
+                                <form method="post" action="/admin/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="btn-reject" title="Reject">✕</button></form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div style="text-align:center;padding:24px 12px;">
+                    <i class="fa-regular fa-circle-check" style="font-size:1.8rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
+                    <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No pending requests</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Right column: books catalog -->
+    <div class="card card-p-lg">
+        <div class="card-head">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div class="card-icon" style="background:var(--indigo-light);color:var(--indigo);">
+                    <i class="fa-solid fa-book" style="font-size:.9rem;"></i>
+                </div>
+                <div>
+                    <div class="card-title">Books Catalog</div>
+                    <div class="card-sub">Availability at a glance</div>
+                </div>
+            </div>
+            <a href="/admin/books" class="action-btn" style="padding:7px 14px;font-size:.75rem;">
+                <i class="fa-solid fa-plus" style="font-size:.7rem;"></i> Add Book
+            </a>
+        </div>
+
+        <?php if (!empty($dashBooks)):
+            $gc = [
+                'fiction'   => '#3730a3',
+                'fantasy'   => '#7c3aed',
+                'poetry'    => '#ec4899',
+                'humor'     => '#f59e0b',
+                'history'   => '#64748b',
+                'science'   => '#06b6d4',
+                'romance'   => '#f43f5e',
+                'academic'  => '#0369a1',
+            ];
+        ?>
+            <!-- column headers -->
+            <div style="display:grid;grid-template-columns:1fr auto;gap:8px;padding:0 6px 8px;border-bottom:1px solid rgba(99,102,241,.07);margin-bottom:4px;">
+                <span class="stat-lbl" style="letter-spacing:.1em;">Title / Author</span>
+                <span class="stat-lbl" style="letter-spacing:.1em;">Stock</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:2px;">
+                <?php foreach (array_slice($dashBooks, 0, 10) as $book):
+                    $g  = strtolower($book['genre'] ?? '');
+                    $sc = $gc[$g] ?? '#3730a3';
+                    $av = (int)($book['available_copies'] ?? 0);
+                    $ac = $av === 0 ? 'avail-off' : ($av <= 1 ? 'avail-low' : 'avail-on');
+                    $at = $av === 0 ? 'Out' : ($av <= 1 ? '1 left' : $av . ' left');
+                ?>
+                    <a href="/admin/books" class="book-row">
+                        <div class="book-spine" style="background:<?= $sc ?>"></div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($book['title']) ?></div>
+                            <div style="font-size:.7rem;color:var(--text-sub);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                <?= htmlspecialchars($book['author'] ?? '—') ?>
+                                <?= !empty($book['genre']) ? ' · ' . htmlspecialchars($book['genre']) : '' ?>
+                            </div>
+                        </div>
+                        <span class="avail-pill <?= $ac ?>"><?= $at ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+
+            <?php if (count($dashBooks) > 10): ?>
+                <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(99,102,241,.07);text-align:center;">
+                    <a href="/admin/books" class="link-sm">+<?= count($dashBooks) - 10 ?> more books →</a>
+                </div>
+            <?php endif; ?>
+
+        <?php else: ?>
+            <div style="text-align:center;padding:48px 12px;">
+                <i class="fa-solid fa-book-open" style="font-size:2.5rem;color:#e2e8f0;display:block;margin-bottom:10px;"></i>
+                <p style="font-size:.85rem;color:var(--text-sub);font-weight:600;margin-bottom:14px;">No books yet</p>
+                <a href="/admin/books" class="action-btn" style="display:inline-flex;padding:9px 18px;font-size:.82rem;">
+                    <i class="fa-solid fa-plus" style="font-size:.75rem;"></i> Add the first book
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
+
+</div>
         <!-- ── SECTION 5: INSIGHTS ── -->
         <p class="section-label fade-up-4">
             Insights
