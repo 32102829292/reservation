@@ -114,7 +114,11 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
     </script>
     <style>
         /* ── Layout shell ── */
-        body { display:flex; height:100vh; height:100dvh; overflow:hidden; }
+        :root {
+    --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+        body { display:flex; height:100vh; height:100dvh; overflow:hidden;font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
         html.dark-pre body,
         html.dark-pre .sidebar-inner,
         html.dark-pre .mobile-nav-pill { background:#060e1e; }

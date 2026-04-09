@@ -46,7 +46,7 @@
   --mob-nav-total: calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px));
 
   --font: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --mono: 'JetBrains Mono', monospace;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
   --ease: .18s cubic-bezier(.4, 0, .2, 1);
 }
 
