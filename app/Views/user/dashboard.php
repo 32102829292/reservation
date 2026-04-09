@@ -375,23 +375,34 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
         }
 
-        /* Mobile banner tweaks */
-        @media(max-width:639px) {
-            .lib-banner { padding:14px 14px 12px; }
-            .lib-banner-top { gap:10px; }
-            .lib-title { font-size:1.35rem; }
-            .lib-browse { padding:8px 11px; font-size:.72rem; }
-            .lib-stats { gap:5px; }
-            .lib-stat { padding:6px 7px; border-radius:8px; }
-            .lib-stat-lbl { font-size:.44rem; letter-spacing:0; }
-            .lib-stat-val { font-size:.82rem; }
-        }
+        
         @media(max-width:380px) {
             .lib-stat-lbl { font-size:.4rem; }
             .lib-stat-val { font-size:.75rem; }
             .lib-stat { padding:5px 6px; }
         }
 
+        @media(max-width:639px) {
+    .grid-lib {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+    .grid-lib > div {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media(max-width:479px) {
+    .lib-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+    }
+    .lib-stat-lbl { font-size: .42rem; letter-spacing: 0; }
+    .lib-stat-val { font-size: .78rem; }
+    .lib-browse   { padding: 7px 9px; font-size: .68rem; }
+}
         /* Book rows */
         .book-letter { width:34px; height:34px; border-radius:9px; background:var(--indigo-light); color:var(--indigo); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; }
         .book-title  { font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -424,7 +435,12 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '')
         .toast-close { background:rgba(255,255,255,.08); border:none; border-radius:6px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin-top:1px; touch-action:manipulation; }
         @media(min-width:1024px) { .login-toast { bottom:24px; } }
         @media(max-width:479px) { .login-toast { bottom:calc(var(--mob-nav-total) + 6px); left:12px; right:12px; max-width:none; } }
-
+        @media(max-width:639px) {
+  .grid-lib {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+}
         @media(max-width:639px) { .topbar { margin-bottom:14px; } .greeting-name { font-size:1.35rem; } }
     </style>
 </head>
