@@ -57,42 +57,59 @@ $nextColors = [
     'slate'  => ['bg' => 'rgba(100,116,139,.05)', 'border' => 'rgba(100,116,139,.15)', 'icon_bg' => 'rgba(100,116,139,.1)','icon_fg' => '#64748b', 'btn_bg' => '#64748b', 'icon' => 'calendar-x'],
 ];
 
-function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
-    $icons = [
-        'house'         => '<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>',
-        'plus'          => '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
-        'calendar'      => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-        'book-open'     => '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>',
-        'user'          => '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>',
-        'logout'        => '<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>',
-        'clock'         => '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
-        'check-circle'  => '<path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22 4 12 14.01 9 11.01"/>',
-        'ticket'        => '<path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" stroke-linecap="round" stroke-linejoin="round"/>',
-        'triangle'      => '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-        'calendar-x'    => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="14" x2="14" y2="18"/><line x1="14" y1="14" x2="10" y2="18"/>',
-        'bell'          => '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',
-        'check'         => '<polyline points="20 6 9 17 4 12"/>',
-        'x'             => '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
-        'chevron-right' => '<polyline points="9 18 15 12 9 6"/>',
-        'arrow-right'   => '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
-        'ban'           => '<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>',
-        'hourglass'     => '<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round" stroke-linejoin="round"/>',
-        'layers'        => '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
-        'list-check'    => '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round" stroke-linejoin="round"/>',
-        'sparkles'      => '<path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round"/>',
-        'search'        => '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
-        'bookmark'      => '<path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>',
-        'robot'         => '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="5" r="1"/>',
-        'info'          => '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
-        'check-double'  => '<path d="M17 1l-8.5 8.5L6 7M22 6l-8.5 8.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13l-4 4 1.5 1.5" stroke-linecap="round" stroke-linejoin="round"/>',
-        'calendar-days' => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1" fill="currentColor" stroke="none"/>',
-        'bar-chart'     => '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
-        'eye'           => '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
-        'trending-up'   => '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+/**
+ * Render an inline SVG icon with explicit, fixed dimensions.
+ * Always pass width & height as attributes AND in style="" so
+ * the icon never inherits an unexpected font-size from a flex parent.
+ *
+ * @param string $name    Icon key
+ * @param int    $size    Pixel size (width & height)
+ * @param string $stroke  Stroke color — use a concrete hex or CSS var string
+ * @param string $extra   Extra attributes appended to <svg>
+ */
+function icon(string $name, int $size = 16, string $stroke = 'currentColor', string $extra = ''): string {
+    static $icons = [
+        'house'         => ['<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'plus'          => ['<path d="M12 5v14M5 12h14" stroke-linecap="round"/>', '1.8'],
+        'calendar'      => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', '1.5'],
+        'book-open'     => ['<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>', '1.5'],
+        'user'          => ['<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'logout'        => ['<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'clock'         => ['<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', '1.8'],
+        'check-circle'  => ['<path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22 4 12 14.01 9 11.01"/>', '1.8'],
+        'ticket'        => ['<path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'triangle'      => ['<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', '1.8'],
+        'calendar-x'    => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="14" x2="14" y2="18"/><line x1="14" y1="14" x2="10" y2="18"/>', '1.5'],
+        'bell'          => ['<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>', '1.8'],
+        'check'         => ['<polyline points="20 6 9 17 4 12"/>', '1.8'],
+        'x'             => ['<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', '1.8'],
+        'chevron-right' => ['<polyline points="9 18 15 12 9 6"/>', '1.8'],
+        'arrow-right'   => ['<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>', '1.8'],
+        'ban'           => ['<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>', '1.8'],
+        'hourglass'     => ['<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'layers'        => ['<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>', '1.8'],
+        'list-check'    => ['<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'sparkles'      => ['<path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'search'        => ['<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>', '1.8'],
+        'bookmark'      => ['<path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>', '1.5'],
+        'robot'         => ['<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="5" r="1"/>', '1.5'],
+        'info'          => ['<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', '1.8'],
+        'check-double'  => ['<path d="M17 1l-8.5 8.5L6 7M22 6l-8.5 8.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13l-4 4 1.5 1.5" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'calendar-days' => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1" fill="currentColor" stroke="none"/>', '1.5'],
+        'bar-chart'     => ['<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>', '1.5'],
+        'eye'           => ['<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>', '1.8'],
+        'trending-up'   => ['<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>', '1.8'],
     ];
-    $d  = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
-    $sw = in_array($name, ['calendar', 'calendar-days', 'calendar-x', 'bar-chart', 'bookmark', 'robot']) ? '1.5' : '1.8';
-    return '<svg xmlns="http://www.w3.org/2000/svg" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="' . $stroke . '" stroke-width="' . $sw . '" ' . $extra . '>' . $d . '</svg>';
+    [$d, $sw] = $icons[$name] ?? ['<circle cx="12" cy="12" r="10"/>', '1.8'];
+    return sprintf(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="%s" style="width:%dpx;height:%dpx;flex-shrink:0;" %s>%s</svg>',
+        $size, $size,
+        htmlspecialchars($stroke, ENT_QUOTES),
+        $sw,
+        $size, $size,
+        $extra,
+        $d
+    );
 }
 ?>
 <!DOCTYPE html>
@@ -104,8 +121,10 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
     <link rel="manifest" href="/manifest.json">
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
     <meta name="theme-color" content="#1e1b4b">
-    <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script>
     (function () {
@@ -114,39 +133,36 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
     </script>
     <style>
         /* ── Layout shell ── */
-        :root {
-    --font: 'Plus Jakarta Sans', system-ui, sans-serif;
-    --mono: 'JetBrains Mono', 'Courier New', monospace;
-}
-        body { display:flex; height:100vh; height:100dvh; overflow:hidden;font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+        body { display:flex; height:100vh; height:100dvh; overflow:hidden; }
         html.dark-pre body,
-        html.dark-pre .sidebar-inner,
-        html.dark-pre .mobile-nav-pill { background:#060e1e; }
+        html.dark-pre .l-sidebar__inner,
+        html.dark-pre .l-mobile-nav { background:#060e1e; }
 
         /* ── Reserve button ── */
         .reserve-btn {
             display:none; align-items:center; gap:7px; padding:10px 18px;
             background:var(--indigo); color:#fff; border-radius:var(--r-sm);
-            font-size:.85rem; font-weight:700; border:none; cursor:pointer;
-            font-family:var(--font); letter-spacing:-.01em; transition:all var(--ease);
-            text-decoration:none; box-shadow:0 4px 12px rgba(55,48,163,.28);
-            touch-action:manipulation;
+            font-family:var(--font); font-size:.85rem; font-weight:700;
+            border:none; cursor:pointer; letter-spacing:-.01em;
+            transition:all var(--ease); text-decoration:none;
+            box-shadow:0 4px 12px rgba(55,48,163,.28); touch-action:manipulation;
         }
         @media(min-width:480px) { .reserve-btn { display:flex; } }
         .reserve-btn:hover { background:#312e81; transform:translateY(-1px); box-shadow:0 6px 18px rgba(55,48,163,.35); }
-        .btn-text { display:none; }
+        .reserve-btn svg { width:16px; height:16px; flex-shrink:0; }
 
         /* ── Notification dropdown ── */
         .notif-bell { position:relative; }
         .notif-badge {
             position:absolute; top:-5px; right:-5px;
-            background:#ef4444; color:white; font-size:.55rem; font-weight:700;
-            padding:2px 5px; border-radius:999px; min-width:17px; text-align:center;
+            background:#ef4444; color:white; font-family:var(--font);
+            font-size:.55rem; font-weight:700; padding:2px 5px;
+            border-radius:999px; min-width:17px; text-align:center;
             border:2px solid var(--bg); line-height:1.3; pointer-events:none;
         }
         .notif-dd {
-            position:fixed; top:80px; right:20px; width:320px; background:var(--card);
-            border-radius:var(--r-xl);
+            position:fixed; top:80px; right:20px; width:320px;
+            background:var(--card); border-radius:var(--r-xl);
             box-shadow:var(--shadow-lg), 0 0 0 1px rgba(99,102,241,.09);
             z-index:200; display:none; overflow:hidden;
         }
@@ -160,10 +176,12 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
         /* ── Next-action card ── */
         .next-card { display:flex; align-items:flex-start; gap:14px; border-radius:var(--r-md); padding:16px 18px; border:1px solid; margin-bottom:20px; animation:l-slide-up .4s ease both; }
         .next-icon-wrap { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .next-eyebrow { font-size:.6rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; margin-bottom:4px; }
-        .next-msg { font-size:.83rem; color:var(--text-muted); line-height:1.6; }
-        .next-cta { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:9px 16px; border-radius:9px; font-size:.75rem; font-weight:700; color:#fff; text-decoration:none; font-family:var(--font); transition:opacity var(--ease); touch-action:manipulation; }
+        .next-icon-wrap svg { width:14px; height:14px; flex-shrink:0; }
+        .next-eyebrow { font-family:var(--font); font-size:.6rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; margin-bottom:4px; }
+        .next-msg { font-family:var(--font); font-size:.83rem; color:var(--text-muted); line-height:1.6; }
+        .next-cta { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:9px 16px; border-radius:9px; font-family:var(--font); font-size:.75rem; font-weight:700; color:#fff; text-decoration:none; transition:opacity var(--ease); touch-action:manipulation; }
         .next-cta:hover { opacity:.85; }
+        .next-cta svg { width:12px; height:12px; flex-shrink:0; }
 
         /* ── Countdown timer banner ── */
         .timer-banner { display:none; border-radius:var(--r-md); padding:14px 18px; margin-bottom:18px; border:1px solid; animation:l-slide-up .35s cubic-bezier(.34,1.56,.64,1) both; }
@@ -175,8 +193,9 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
         body.dark .timer-banner.urgent  { background:rgba(154,52,18,.2); border-color:rgba(154,52,18,.35); color:#fb923c; }
         .timer-inner { display:flex; align-items:center; gap:11px; flex-wrap:wrap; }
         .timer-text-col { flex:1; min-width:140px; }
+        .timer-text-col p { font-family:var(--font); }
         .timer-digit { display:inline-flex; flex-direction:column; align-items:center; background:rgba(0,0,0,.07); border-radius:8px; padding:.2rem .5rem; min-width:2.6rem; font-variant-numeric:tabular-nums; font-weight:700; font-size:1.1rem; line-height:1; font-family:var(--mono); }
-        .timer-digit span { font-size:.5rem; font-weight:500; opacity:.6; text-transform:uppercase; letter-spacing:.07em; margin-top:3px; font-family:var(--font); }
+        .timer-digit span { font-family:var(--font); font-size:.5rem; font-weight:500; opacity:.6; text-transform:uppercase; letter-spacing:.07em; margin-top:3px; }
         .timer-pulse { animation:pulse .9s ease-in-out infinite; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
         .timer-progress-wrap { height:3px; border-radius:999px; background:rgba(0,0,0,.08); overflow:hidden; margin-top:10px; }
@@ -186,10 +205,11 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
         /* ── Upcoming pill ── */
         .upcoming-pill { background:var(--indigo-light); border:1px solid var(--indigo-border); border-radius:var(--r-md); padding:14px 16px; display:flex; align-items:center; gap:14px; margin-bottom:20px; animation:l-slide-up .4s ease both; flex-wrap:wrap; }
         .up-icon { width:38px; height:38px; background:var(--indigo); border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 10px rgba(55,48,163,.28); }
-        .up-eyebrow { font-size:.6rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--indigo); margin-bottom:2px; }
-        .up-name { font-size:.88rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
-        .up-time { font-size:.72rem; color:#4338ca; font-family:var(--mono); margin-top:1px; }
-        .up-btn { margin-left:auto; font-size:.72rem; font-weight:700; color:var(--indigo); background:var(--card); border:1px solid var(--indigo-border); border-radius:8px; padding:8px 14px; text-decoration:none; white-space:nowrap; transition:all var(--ease); touch-action:manipulation; }
+        .up-icon svg { width:16px; height:16px; flex-shrink:0; }
+        .up-eyebrow { font-family:var(--font); font-size:.6rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--indigo); margin-bottom:2px; }
+        .up-name { font-family:var(--font); font-size:.88rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+        .up-time { font-family:var(--mono); font-size:.72rem; color:#4338ca; margin-top:1px; }
+        .up-btn { margin-left:auto; font-family:var(--font); font-size:.72rem; font-weight:700; color:var(--indigo); background:var(--card); border:1px solid var(--indigo-border); border-radius:8px; padding:8px 14px; text-decoration:none; white-space:nowrap; transition:all var(--ease); touch-action:manipulation; }
         .up-btn:hover { background:var(--indigo); color:white; box-shadow:0 2px 8px rgba(55,48,163,.22); }
         @media(max-width:479px) { .up-name { max-width:100%; } .up-btn { margin-left:0; width:100%; text-align:center; display:block; } }
 
@@ -198,10 +218,11 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
         .stat-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:18px 20px; box-shadow:var(--shadow-sm); transition:transform var(--ease), box-shadow var(--ease); }
         .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
         .stat-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
-        .stat-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
-        .stat-lbl { font-size:.62rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--text-sub); }
-        .stat-num { font-size:2rem; font-weight:800; color:var(--text); line-height:1; letter-spacing:-.04em; font-family:var(--mono); }
-        .stat-hint { font-size:.72rem; color:var(--text-sub); margin-top:4px; }
+        .stat-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .stat-icon svg { width:16px; height:16px; flex-shrink:0; }
+        .stat-lbl { font-family:var(--font); font-size:.62rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--text-sub); }
+        .stat-num { font-family:var(--mono); font-size:2rem; font-weight:800; color:var(--text); line-height:1; letter-spacing:-.04em; }
+        .stat-hint { font-family:var(--font); font-size:.72rem; color:var(--text-sub); margin-top:4px; }
         @media(max-width:639px) { .stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .stat-card { padding:14px 16px; } .stat-num { font-size:1.6rem; } .stat-card-top { margin-bottom:10px; } }
         @media(max-width:360px) { .stats-grid { gap:8px; } .stat-card { padding:12px 14px; } .stat-num { font-size:1.4rem; } .stat-icon { width:30px; height:30px; } }
 
@@ -213,24 +234,26 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
         /* ── Card sub-elements ── */
         .card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
         .card-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .card-title { font-size:.9rem; font-weight:700; color:var(--text); letter-spacing:-.01em; }
-        .card-sub   { font-size:.7rem; color:var(--text-sub); margin-top:2px; }
-        .section-lbl { font-size:.62rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--text-sub); margin-bottom:14px; }
-        .link-sm { font-size:.65rem; font-weight:700; color:var(--indigo); text-decoration:none; letter-spacing:.05em; text-transform:uppercase; transition:opacity .15s; touch-action:manipulation; }
+        .card-icon svg { width:16px; height:16px; flex-shrink:0; }
+        .card-title { font-family:var(--font); font-size:.9rem; font-weight:700; color:var(--text); letter-spacing:-.01em; }
+        .card-sub   { font-family:var(--font); font-size:.7rem; color:var(--text-sub); margin-top:2px; }
+        .section-lbl { font-family:var(--font); font-size:.62rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--text-sub); margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+        .section-lbl::before { content:''; width:3px; height:13px; border-radius:2px; background:var(--indigo); flex-shrink:0; }
+        .link-sm { font-family:var(--font); font-size:.65rem; font-weight:700; color:var(--indigo); text-decoration:none; letter-spacing:.05em; text-transform:uppercase; transition:opacity .15s; touch-action:manipulation; }
         .link-sm:hover { opacity:.7; }
 
         /* ── FullCalendar overrides ── */
-        #calendar { font-size:.8rem; font-family:var(--font); }
+        #calendar { font-family:var(--font) !important; font-size:.8rem; }
         .fc .fc-toolbar { flex-wrap:wrap; gap:.5rem; }
-        .fc-toolbar-title { font-size:.95rem !important; font-weight:800 !important; color:var(--text) !important; font-family:var(--font) !important; letter-spacing:-.02em !important; }
+        .fc-toolbar-title { font-family:var(--font) !important; font-size:.95rem !important; font-weight:800 !important; color:var(--text) !important; letter-spacing:-.02em !important; }
         .fc-button-primary { background:var(--indigo) !important; border-color:var(--indigo) !important; border-radius:9px !important; font-family:var(--font) !important; font-weight:700 !important; font-size:.72rem !important; padding:.3rem .65rem !important; box-shadow:none !important; touch-action:manipulation !important; }
         .fc-button-primary:hover { background:#312e81 !important; }
         .fc-button-primary:not(:disabled):active, .fc-button-primary:not(:disabled).fc-button-active { background:#1e1b4b !important; }
-        .fc-daygrid-event { border-radius:5px !important; font-size:.65rem !important; font-weight:600 !important; padding:2px 5px !important; border:none !important; cursor:pointer !important; font-family:var(--font) !important; }
+        .fc-daygrid-event { border-radius:5px !important; font-family:var(--font) !important; font-size:.65rem !important; font-weight:600 !important; padding:2px 5px !important; border:none !important; cursor:pointer !important; }
         .fc-daygrid-day:hover { background-color:var(--indigo-light) !important; cursor:pointer; }
         .fc-day-today { background:rgba(55,48,163,.06) !important; }
         .fc-day-today .fc-daygrid-day-number { color:var(--indigo) !important; font-weight:800 !important; }
-        .fc-daygrid-day-number { font-size:.72rem; font-weight:600; font-family:var(--font); }
+        .fc-daygrid-day-number { font-family:var(--font); font-size:.72rem; font-weight:600; }
         .fc-col-header-cell-cushion { font-family:var(--font); font-size:.72rem; font-weight:700; letter-spacing:.04em; }
         body.dark .fc-toolbar-title { color:var(--text) !important; }
         body.dark .fc-daygrid-day-number { color:#7fb3e8; }
@@ -258,25 +281,27 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
         .cal-legend { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
         .leg-item { display:flex; align-items:center; gap:5px; }
         .leg-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-        .leg-lbl { font-size:.68rem; font-weight:600; color:var(--text-sub); }
+        .leg-lbl { font-family:var(--font); font-size:.68rem; font-weight:600; color:var(--text-sub); }
         @media(max-width:479px) { .cal-legend { gap:8px; } .leg-lbl { display:none; } .leg-dot { width:9px; height:9px; } }
 
         /* ── Quick-action links ── */
-        .qa-link { display:flex; align-items:center; gap:11px; padding:12px; border-radius:var(--r-sm); border:1px solid var(--border); background:var(--card); text-decoration:none; color:var(--text-muted); font-size:.83rem; font-weight:600; transition:all var(--ease); touch-action:manipulation; }
+        .qa-link { display:flex; align-items:center; gap:11px; padding:12px; border-radius:var(--r-sm); border:1px solid var(--border); background:var(--card); text-decoration:none; color:var(--text-muted); font-family:var(--font); font-size:.83rem; font-weight:600; transition:all var(--ease); touch-action:manipulation; }
         .qa-link:hover { border-color:var(--indigo); background:var(--indigo-light); color:var(--indigo); }
         @media(pointer:fine) { .qa-link:hover { transform:translateX(3px); } }
         .qa-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .qa-icon svg { width:16px; height:16px; flex-shrink:0; }
         .qa-chev { margin-left:auto; color:var(--text-faint); transition:color var(--ease); }
+        .qa-chev svg { width:14px; height:14px; flex-shrink:0; }
         .qa-link:hover .qa-chev { color:var(--indigo); }
 
         /* ── Recent booking rows ── */
         .bk-row { display:flex; align-items:center; gap:11px; padding:9px 8px; border-radius:11px; text-decoration:none; color:inherit; transition:background var(--ease); touch-action:manipulation; }
         .bk-row:hover { background:var(--indigo-light); }
         .bk-date { width:38px; height:38px; background:var(--input-bg); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; border:1px solid var(--border-subtle); }
-        .bk-month { font-size:.55rem; font-weight:700; text-transform:uppercase; color:var(--text-sub); }
-        .bk-day  { font-size:.95rem; font-weight:800; color:var(--text); line-height:1; font-family:var(--mono); }
-        .bk-name { font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .bk-time { font-size:.68rem; color:var(--text-sub); margin-top:1px; font-family:var(--mono); }
+        .bk-month { font-family:var(--font); font-size:.55rem; font-weight:700; text-transform:uppercase; color:var(--text-sub); }
+        .bk-day  { font-family:var(--mono); font-size:.95rem; font-weight:800; color:var(--text); line-height:1; }
+        .bk-name { font-family:var(--font); font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .bk-time { font-family:var(--mono); font-size:.68rem; color:var(--text-sub); margin-top:1px; }
 
         /* ── Date modal rows ── */
         .date-row { display:flex; align-items:center; gap:11px; padding:.75rem; border-bottom:1px solid var(--border-subtle); border-radius:10px; transition:background .15s; }
@@ -286,30 +311,19 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
         /* ── How-to / status guide ── */
         .how-step { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border-subtle); }
         .how-step:last-child { border-bottom:none; }
-        .step-num { width:24px; height:24px; border-radius:50%; background:var(--indigo); color:white; font-size:.7rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
+        .step-num { width:24px; height:24px; border-radius:50%; background:var(--indigo); color:white; font-family:var(--font); font-size:.7rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
+        .how-step p { font-family:var(--font); }
         .status-guide-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border-subtle); }
         .status-guide-row:last-child { border-bottom:none; }
+        .status-guide-row p { font-family:var(--font); font-size:.72rem; color:var(--text-muted); }
 
-        /* ══════════════════════════════════════════
-           LIBRARY SECTION
-        ══════════════════════════════════════════ */
-        .grid-lib {
-            display: grid;
-            grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-            gap: 16px;
-            margin-bottom: 16px;
-            align-items: start;
-        }
+        /* ── Library section ── */
+        .grid-lib { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-bottom:16px; align-items:start; }
 
-        /* ── Banner ── */
         .lib-banner {
-            background: linear-gradient(135deg,#3730a3 0%,#4338ca 60%,#6366f1 100%);
-            border-radius: var(--r-lg);
-            padding: 20px 20px 16px;
-            overflow: hidden;
-            position: relative;
-            box-sizing: border-box;
-            width: 100%;
+            background:linear-gradient(135deg,#3730a3 0%,#4338ca 60%,#6366f1 100%);
+            border-radius:var(--r-lg); padding:20px 20px 16px;
+            overflow:hidden; position:relative; box-sizing:border-box; width:100%;
         }
         .lib-banner::before {
             content:''; position:absolute; inset:0;
@@ -318,48 +332,44 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
         }
         .lib-banner-inner { position:relative; z-index:1; }
         .lib-banner-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
-        .lib-eyebrow { font-size:.6rem; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-bottom:4px; }
-        .lib-title   { font-size:1.6rem; font-weight:800; color:white; letter-spacing:-.04em; line-height:1.1; font-family:var(--mono); }
-        .lib-sub     { font-size:.72rem; color:rgba(255,255,255,.5); margin-top:3px; font-weight:500; }
+        .lib-eyebrow { font-family:var(--font); font-size:.6rem; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-bottom:4px; }
+        .lib-title   { font-family:var(--mono); font-size:1.6rem; font-weight:800; color:white; letter-spacing:-.04em; line-height:1.1; }
+        .lib-sub     { font-family:var(--font); font-size:.72rem; color:rgba(255,255,255,.5); margin-top:3px; font-weight:500; }
         .lib-browse {
             display:inline-flex; align-items:center; gap:6px; padding:9px 13px;
             background:rgba(255,255,255,.18); color:white; border-radius:9px;
-            font-size:.75rem; font-weight:700; text-decoration:none;
+            font-family:var(--font); font-size:.75rem; font-weight:700; text-decoration:none;
             border:1px solid rgba(255,255,255,.2); transition:background var(--ease);
             white-space:nowrap; flex-shrink:0; touch-action:manipulation;
         }
+        .lib-browse svg { width:13px; height:13px; flex-shrink:0; }
         .lib-browse:hover { background:rgba(255,255,255,.28); }
 
-        /* ── Stats pills ── */
         .lib-stats { display:flex; gap:6px; width:100%; box-sizing:border-box; }
-        .lib-stat {
-            flex:1 1 0; min-width:0;
-            background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.1);
-            border-radius:9px; padding:7px 8px; box-sizing:border-box; overflow:hidden;
-        }
-        .lib-stat-lbl { font-size:.5rem; font-weight:600; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
-        .lib-stat-val { font-size:.9rem; font-weight:800; color:white; font-family:var(--mono); line-height:1.2; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .lib-stat { flex:1 1 0; min-width:0; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.1); border-radius:9px; padding:7px 8px; box-sizing:border-box; overflow:hidden; }
+        .lib-stat-lbl { font-family:var(--font); font-size:.5rem; font-weight:600; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+        .lib-stat-val { font-family:var(--mono); font-size:.9rem; font-weight:800; color:white; line-height:1.2; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-        /* ── Book rows ── */
-        .book-letter { width:34px; height:34px; border-radius:9px; background:var(--indigo-light); color:var(--indigo); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; }
-        .book-title  { font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .book-author { font-size:.7rem; color:var(--text-sub); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .book-letter { width:34px; height:34px; border-radius:9px; background:var(--indigo-light); color:var(--indigo); display:flex; align-items:center; justify-content:center; font-family:var(--font); font-weight:800; font-size:.8rem; flex-shrink:0; }
+        .book-title  { font-family:var(--font); font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .book-author { font-family:var(--font); font-size:.7rem; color:var(--text-sub); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         body.dark .book-letter { background:rgba(55,48,163,.2); color:#818cf8; }
 
-        /* ── Active borrow rows ── */
         .borrow-row { display:flex; align-items:center; gap:9px; background:var(--input-bg); border-radius:10px; padding:9px 12px; border:1px solid var(--border-subtle); }
 
         /* ── AI finder ── */
         .rag-wrap { position:relative; margin-top:12px; }
-        .rag-icon-pos { position:absolute; left:11px; top:50%; transform:translateY(-50%); pointer-events:none; }
-        .search-input { width:100%; padding:11px 12px 11px 34px; border-radius:var(--r-sm); border:1px solid rgba(99,102,241,.15); font-size:1rem; font-family:var(--font); background:var(--input-bg); color:var(--text); transition:all var(--ease); outline:none; -webkit-appearance:none; }
+        .rag-icon-pos { position:absolute; left:11px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--text-sub); display:flex; }
+        .rag-icon-pos svg { width:13px; height:13px; flex-shrink:0; }
+        .search-input { width:100%; padding:11px 12px 11px 34px; border-radius:var(--r-sm); border:1px solid rgba(99,102,241,.15); font-family:var(--font); font-size:.85rem; background:var(--input-bg); color:var(--text); transition:all var(--ease); outline:none; -webkit-appearance:none; }
         .search-input:focus { border-color:#818cf8; background:var(--card); box-shadow:0 0 0 3px rgba(99,102,241,.08); }
         .search-input::placeholder { color:var(--text-sub); }
         .ai-result-box { display:none; margin-top:.75rem; background:var(--indigo-light); border:1px solid var(--indigo-border); border-radius:var(--r-sm); padding:12px 14px; overflow:hidden; }
         .ai-result-box.show { display:block; animation:l-slide-up .3s ease; }
         #ragBooks { margin-top:8px; display:flex; flex-wrap:wrap; gap:5px; overflow:hidden; }
         #ragBooks a { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .find-btn { display:inline-flex; align-items:center; gap:7px; padding:10px 16px; background:var(--indigo); color:white; border-radius:var(--r-sm); font-size:.8rem; font-weight:700; border:none; cursor:pointer; font-family:var(--font); transition:all var(--ease); touch-action:manipulation; }
+        .find-btn { display:inline-flex; align-items:center; gap:7px; padding:10px 16px; background:var(--indigo); color:white; border-radius:var(--r-sm); font-family:var(--font); font-size:.8rem; font-weight:700; border:none; cursor:pointer; transition:all var(--ease); touch-action:manipulation; }
+        .find-btn svg { width:13px; height:13px; flex-shrink:0; }
         .find-btn:hover { background:#312e81; }
         .find-btn:disabled { opacity:.6; cursor:not-allowed; }
         body.dark .ai-result-box { background:rgba(55,48,163,.15) !important; border-color:rgba(99,102,241,.25) !important; }
@@ -370,133 +380,37 @@ function icon($name, $size = 16, $stroke = 'currentColor', $extra = '') {
         .login-toast.show { transform:none; opacity:1; pointer-events:auto; }
         .toast-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .toast-close { background:rgba(255,255,255,.08); border:none; border-radius:6px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin-top:1px; touch-action:manipulation; }
+        .toast-close svg { width:10px; height:10px; flex-shrink:0; }
+        #toastTitle { font-family:var(--font); font-weight:700; font-size:12px; line-height:1.3; color:white; }
+        #toastBody  { font-family:var(--font); font-size:10px; color:rgba(255,255,255,.6); margin-top:2px; }
         @media(min-width:1024px) { .login-toast { bottom:24px; } }
         @media(max-width:479px) { .login-toast { bottom:calc(var(--mob-nav-total) + 6px); left:12px; right:12px; max-width:none; } }
 
-        /* ══════════════════════════════════════════
-           MOBILE BOTTOM NAV — FULL REWRITE
-           Shows icon + label, 6 items, no overflow
-        ══════════════════════════════════════════ */
-        .l-mobile-nav {
-            display: none;
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: var(--card);
-            border-top: 1px solid var(--border);
-            z-index: 200;
-            box-shadow: 0 -4px 24px rgba(55,48,163,.12);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-            transition: background var(--ease);
-        }
-        .l-mobile-nav__inner {
-            display: flex;
-            justify-content: space-around;
-            align-items: stretch;
-            height: 60px;
-            width: 100%;
-            padding: 0 2px;
-        }
-        .l-mobile-nav__item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            padding: 6px 2px 4px;
-            border-radius: 0;
-            cursor: pointer;
-            text-decoration: none;
-            color: var(--text-sub);
-            position: relative;
-            transition: color .15s, background .15s;
-            font-size: .55rem;
-            font-weight: 700;
-            letter-spacing: .02em;
-            text-transform: uppercase;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            min-width: 0;
-        }
-        .l-mobile-nav__item svg { flex-shrink: 0; }
-        .l-mobile-nav__item span.nav-lbl { line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-align: center; display: block; }
-        .l-mobile-nav__item.is-active { color: var(--indigo); }
-        .l-mobile-nav__item.is-active::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 20%; right: 20%;
-            height: 2px;
-            background: var(--indigo);
-            border-radius: 0 0 3px 3px;
-        }
-        .l-mobile-nav__item--logout { color: var(--text-sub); }
-        .l-mobile-nav__item--logout.is-active { color: var(--text-sub); }
-        .l-mobile-nav__item--logout.is-active::after { display: none; }
-        .l-mobile-nav__badge {
-            position: absolute; top: 4px; right: calc(50% - 18px);
-            background: #ef4444; color: #fff;
-            font-size: .5rem; font-weight: 700;
-            width: 14px; height: 14px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid var(--card); pointer-events: none;
-        }
-        /* Active icon bg pill */
-        .l-mobile-nav__item.is-active .nav-icon-wrap {
-            background: var(--indigo-light);
-            border-radius: 8px;
-        }
-        .nav-icon-wrap {
-            width: 32px; height: 24px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 8px;
-            transition: background .15s;
-        }
-        /* dark nav */
-        body.dark .l-mobile-nav { background: var(--card); border-color: rgba(99,102,241,.18); box-shadow: 0 -4px 24px rgba(0,0,0,.3); }
-        body.dark .l-mobile-nav__item { color: var(--text-sub); }
-        body.dark .l-mobile-nav__item.is-active { color: #818cf8; }
-        body.dark .l-mobile-nav__item.is-active::after { background: #818cf8; }
-        body.dark .l-mobile-nav__item.is-active .nav-icon-wrap { background: rgba(99,102,241,.15); }
-        body.dark .l-mobile-nav__badge { border-color: var(--card); }
-
-        /* Very narrow phones: shrink label font */
-        @media(max-width:360px) {
-            .l-mobile-nav__item { font-size: .48rem; padding: 6px 1px 4px; }
-            .nav-icon-wrap { width: 28px; }
-        }
-
-        /* ══════════════════════════════════════════
-           RESPONSIVE — Library grid
-        ══════════════════════════════════════════ */
-        /* Collapse to 1 col at ≤900px */
-        @media(max-width:900px) {
-            .grid-lib { grid-template-columns: 1fr; }
-        }
-        /* Extra mobile tweaks ≤639px */
+        /* ── Responsive — library grid ── */
+        @media(max-width:900px) { .grid-lib { grid-template-columns:1fr; } }
         @media(max-width:639px) {
-            .grid-lib { grid-template-columns: 1fr !important; gap: 12px; }
-            .grid-lib > div { width: 100%; min-width: 0; }
-            .topbar { margin-bottom: 14px; }
-            .lib-banner { padding: 14px 14px 12px; }
-            .lib-banner-top { gap: 10px; }
-            .lib-title { font-size: 1.35rem; }
-            .lib-browse { padding: 8px 11px; font-size: .72rem; }
-            .lib-stats { gap: 5px; }
-            .lib-stat { padding: 6px 7px; border-radius: 8px; }
-            .lib-stat-lbl { font-size: .44rem; letter-spacing: 0; }
-            .lib-stat-val { font-size: .82rem; }
+            .grid-lib { grid-template-columns:1fr !important; gap:12px; }
+            .grid-lib > div { width:100%; min-width:0; }
+            .topbar { margin-bottom:14px; }
+            .lib-banner { padding:14px 14px 12px; }
+            .lib-banner-top { gap:10px; }
+            .lib-title { font-size:1.35rem; }
+            .lib-browse { padding:8px 11px; font-size:.72rem; }
+            .lib-stats { gap:5px; }
+            .lib-stat { padding:6px 7px; border-radius:8px; }
+            .lib-stat-lbl { font-size:.44rem; letter-spacing:0; }
+            .lib-stat-val { font-size:.82rem; }
         }
-        /* Very narrow phones ≤479px */
         @media(max-width:479px) {
-            .lib-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 4px; }
-            .lib-stat-lbl { font-size: .42rem; letter-spacing: 0; }
-            .lib-stat-val { font-size: .78rem; }
-            .lib-browse { padding: 7px 9px; font-size: .68rem; gap: 4px; }
+            .lib-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; }
+            .lib-stat-lbl { font-size:.42rem; letter-spacing:0; }
+            .lib-stat-val { font-size:.78rem; }
+            .lib-browse { padding:7px 9px; font-size:.68rem; gap:4px; }
         }
         @media(max-width:380px) {
-            .lib-stat-lbl { font-size: .4rem; }
-            .lib-stat-val { font-size: .75rem; }
-            .lib-stat { padding: 5px 6px; }
+            .lib-stat-lbl { font-size:.4rem; }
+            .lib-stat-val { font-size:.75rem; }
+            .lib-stat { padding:5px 6px; }
         }
     </style>
 </head>
@@ -520,10 +434,10 @@ include(APPPATH . 'Views/partials/layout.php');
         <div class="topbar-right">
             <?= layout_dark_toggle() ?>
             <a href="<?= base_url('/reservation') ?>" class="reserve-btn">
-                <?= icon('plus', 16, 'white') ?> <span class="btn-text">Reserve</span>
+                <?= icon('plus', 16, 'white') ?> Reserve
             </a>
             <div class="notif-bell" onclick="toggleNotifications()">
-                <div class="l-icon-btn"><?= icon('bell', 16, '#64748b') ?></div>
+                <div class="l-icon-btn"><?= icon('bell', 16, 'currentColor') ?></div>
                 <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
             </div>
         </div>
@@ -532,8 +446,8 @@ include(APPPATH . 'Views/partials/layout.php');
     <!-- Notification dropdown -->
     <div id="notifDD" class="notif-dd">
         <div style="padding:11px 13px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-weight:700;font-size:13px;color:var(--text);">Notifications</span>
-            <button onclick="markAllRead()" style="font-size:11px;color:var(--indigo);font-weight:600;background:none;border:none;cursor:pointer;touch-action:manipulation;">Mark all read</button>
+            <span style="font-family:var(--font);font-weight:700;font-size:13px;color:var(--text);">Notifications</span>
+            <button onclick="markAllRead()" style="font-family:var(--font);font-size:11px;color:var(--indigo);font-weight:600;background:none;border:none;cursor:pointer;touch-action:manipulation;">Mark all read</button>
         </div>
         <div id="notifList" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
     </div>
@@ -549,7 +463,7 @@ include(APPPATH . 'Views/partials/layout.php');
     <!-- Next-action card -->
     <?php if ($nextAction): $nc = $nextColors[$nextAction['color']]; ?>
         <div class="next-card fade-up" style="background:<?= $nc['bg'] ?>;border-color:<?= $nc['border'] ?>;">
-            <div class="next-icon-wrap" style="background:<?= $nc['icon_bg'] ?>;color:<?= $nc['icon_fg'] ?>;">
+            <div class="next-icon-wrap" style="background:<?= $nc['icon_bg'] ?>;">
                 <?= icon($nc['icon'], 14, $nc['icon_fg']) ?>
             </div>
             <div style="flex:1;min-width:0;">
@@ -574,9 +488,9 @@ include(APPPATH . 'Views/partials/layout.php');
             </div>
             <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
                 <div class="timer-digit"><span id="tdH">00</span><span>hrs</span></div>
-                <span style="font-weight:700;font-size:14px;opacity:.4;" class="timer-pulse">:</span>
+                <span style="font-family:var(--font);font-weight:700;font-size:14px;opacity:.4;" class="timer-pulse">:</span>
                 <div class="timer-digit"><span id="tdM">00</span><span>min</span></div>
-                <span style="font-weight:700;font-size:14px;opacity:.4;" class="timer-pulse">:</span>
+                <span style="font-family:var(--font);font-weight:700;font-size:14px;opacity:.4;" class="timer-pulse">:</span>
                 <div class="timer-digit"><span id="tdS">00</span><span>sec</span></div>
             </div>
         </div>
@@ -691,7 +605,7 @@ include(APPPATH . 'Views/partials/layout.php');
                         <div class="qa-icon" style="background:#ede9fe;"><?= icon('calendar', 16, '#7c3aed') ?></div>
                         My Reservations
                         <?php if ($pending > 0): ?>
-                            <span style="margin-left:auto;background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;"><?= $pending ?></span>
+                            <span style="margin-left:auto;background:#fef3c7;color:#92400e;font-family:var(--font);font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;"><?= $pending ?></span>
                         <?php else: ?>
                             <span class="qa-chev"><?= icon('chevron-right', 14, 'currentColor') ?></span>
                         <?php endif; ?>
@@ -737,8 +651,8 @@ include(APPPATH . 'Views/partials/layout.php');
                 <?php else: ?>
                     <div style="text-align:center;padding:22px 12px;">
                         <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('calendar-x', 28, 'currentColor') ?></div>
-                        <p style="font-size:12px;color:var(--text-sub);">No bookings yet</p>
-                        <a href="<?= base_url('/reservation') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:9px;font-size:11px;font-weight:700;color:var(--indigo);text-decoration:none;touch-action:manipulation;">
+                        <p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">No bookings yet</p>
+                        <a href="<?= base_url('/reservation') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:9px;font-family:var(--font);font-size:11px;font-weight:700;color:var(--indigo);text-decoration:none;touch-action:manipulation;">
                             <?= icon('plus', 12, 'var(--indigo)') ?> Make your first reservation
                         </a>
                     </div>
@@ -793,10 +707,10 @@ include(APPPATH . 'Views/partials/layout.php');
                     ['expired',   'hourglass',    '#f1f5f9', '#475569', '#64748b', 'Expired',  'Date passed before approval.'],
                 ] as [$key, $ico, $bg, $fg, $ic, $label, $desc]): ?>
                     <div class="status-guide-row">
-                        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:7px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;min-width:74px;justify-content:center;background:<?= $bg ?>;color:<?= $fg ?>;">
+                        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:7px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;min-width:74px;justify-content:center;background:<?= $bg ?>;color:<?= $fg ?>;">
                             <?= icon($ico, 8, $ic) ?><?= $label ?>
                         </span>
-                        <p style="font-size:11px;color:var(--text-muted);"><?= $desc ?></p>
+                        <p><?= $desc ?></p>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -849,7 +763,7 @@ include(APPPATH . 'Views/partials/layout.php');
                     </div>
                 </div>
                 <div class="rag-wrap">
-                    <span class="rag-icon-pos"><?= icon('search', 13, 'var(--text-sub)') ?></span>
+                    <span class="rag-icon-pos"><?= icon('search', 13, 'currentColor') ?></span>
                     <input type="text" id="ragInput" class="search-input"
                         placeholder="e.g. Filipino history, funny stories…"
                         autocomplete="off" autocorrect="off" spellcheck="false"
@@ -863,12 +777,12 @@ include(APPPATH . 'Views/partials/layout.php');
                 <div class="ai-result-box" id="ragResult">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                         <?= icon('robot', 14, 'var(--indigo)') ?>
-                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
+                        <p style="font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
                     </div>
-                    <p style="font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
+                    <p style="font-family:var(--font);font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
                     <div id="ragBooks"></div>
                 </div>
-                <div id="ragErr" style="display:none;margin-top:5px;font-size:11px;color:#dc2626;font-weight:500;"></div>
+                <div id="ragErr" style="display:none;margin-top:5px;font-family:var(--font);font-size:11px;color:#dc2626;font-weight:500;"></div>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;">
                     <button onclick="doRagSearch()" id="ragBtn" class="find-btn">
                         <?= icon('sparkles', 13, 'white') ?> Find Books
@@ -911,7 +825,7 @@ include(APPPATH . 'Views/partials/layout.php');
                                     <div class="book-title"><?= esc($book['title']) ?></div>
                                     <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
                                 </div>
-                                <span style="font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;white-space:nowrap;<?= $pillStyle ?>">
+                                <span style="font-family:var(--font);font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;white-space:nowrap;<?= $pillStyle ?>">
                                     <?= $pillText ?>
                                 </span>
                             </a>
@@ -925,7 +839,7 @@ include(APPPATH . 'Views/partials/layout.php');
                 <?php else: ?>
                     <div style="text-align:center;padding:32px 12px;">
                         <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('book-open', 28, 'currentColor') ?></div>
-                        <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No books available</p>
+                        <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);font-weight:600;">No books available</p>
                     </div>
                 <?php endif; ?>
             </div>
@@ -960,11 +874,11 @@ include(APPPATH . 'Views/partials/layout.php');
                                     <?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?>
                                 </div>
                                 <div style="flex:1;min-width:0;">
-                                    <p style="font-weight:600;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                    <p style="font-family:var(--font);font-weight:600;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                                         <?= esc($borrow['title'] ?? 'Unknown Book') ?>
                                     </p>
                                     <?php if ($due && $bs === 'approved'): ?>
-                                        <p style="font-size:.68rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : 'var(--text-sub)') ?>;font-family:var(--mono);">
+                                        <p style="font-family:var(--mono);font-size:.68rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : 'var(--text-sub)') ?>;">
                                             <?= $overdue ? 'Overdue · ' : ($dueSoon ? 'Due soon · ' : '') ?><?= date('M j, Y', $due) ?>
                                         </p>
                                     <?php endif; ?>
@@ -979,8 +893,8 @@ include(APPPATH . 'Views/partials/layout.php');
             <?php else: ?>
                 <div class="card card-p" style="text-align:center;padding:28px 20px;">
                     <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('bookmark', 26, 'currentColor') ?></div>
-                    <p style="font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
-                    <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
+                    <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
+                    <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-family:var(--font);font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
                         <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
                     </a>
                 </div>
@@ -996,8 +910,8 @@ include(APPPATH . 'Views/partials/layout.php');
     <div class="modal-card">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
             <div>
-                <h3 style="font-size:16px;font-weight:700;letter-spacing:-.2px;" id="modalDateTitle"></h3>
-                <p style="font-size:11px;color:var(--text-sub);margin-top:2px;" id="modalDateSub"></p>
+                <h3 style="font-family:var(--font);font-size:16px;font-weight:700;letter-spacing:-.2px;" id="modalDateTitle"></h3>
+                <p style="font-family:var(--font);font-size:11px;color:var(--text-sub);margin-top:2px;" id="modalDateSub"></p>
             </div>
             <button onclick="closeDateModal()" style="width:36px;height:36px;border-radius:9px;background:var(--input-bg);border:none;color:var(--text-sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation;">
                 <?= icon('x', 13, 'currentColor') ?>
@@ -1006,9 +920,9 @@ include(APPPATH . 'Views/partials/layout.php');
         <div id="modalList"></div>
         <div class="hidden" id="modalEmpty" style="text-align:center;padding:24px 12px;">
             <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('calendar-x', 26, 'currentColor') ?></div>
-            <p style="font-size:12px;color:var(--text-sub);">No reservations for this date.</p>
+            <p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">No reservations for this date.</p>
         </div>
-        <button onclick="closeDateModal()" style="margin-top:16px;width:100%;padding:12px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;color:var(--text-muted);border:1px solid var(--border);cursor:pointer;font-size:.82rem;font-family:var(--font);touch-action:manipulation;">Close</button>
+        <button onclick="closeDateModal()" style="margin-top:16px;width:100%;padding:12px;background:var(--input-bg);border-radius:var(--r-sm);font-family:var(--font);font-weight:600;color:var(--text-muted);border:1px solid var(--border);cursor:pointer;font-size:.82rem;touch-action:manipulation;">Close</button>
     </div>
 </div>
 
@@ -1016,8 +930,8 @@ include(APPPATH . 'Views/partials/layout.php');
 <div id="loginToast" class="login-toast">
     <div class="toast-icon" id="toastIcon"></div>
     <div style="flex:1;min-width:0;">
-        <p style="font-weight:700;font-size:12px;line-height:1.3;color:white;" id="toastTitle"></p>
-        <p style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;" id="toastBody"></p>
+        <p id="toastTitle"></p>
+        <p id="toastBody"></p>
     </div>
     <button class="toast-close" onclick="dismissToast()"><?= icon('x', 10, 'white') ?></button>
 </div>
@@ -1068,7 +982,7 @@ function updateBadge() {
 function renderNotifs() {
     const list = document.getElementById('notifList');
     if (!notifications.length) {
-        list.innerHTML = `<div style="text-align:center;padding:24px 16px;"><p style="font-size:12px;color:var(--text-sub);">All caught up!</p></div>`;
+        list.innerHTML = `<div style="text-align:center;padding:24px 16px;"><p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">All caught up!</p></div>`;
         return;
     }
     list.innerHTML = notifications
@@ -1077,12 +991,12 @@ function renderNotifs() {
         <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="markRead(${n.id})">
             <div style="display:flex;align-items:flex-start;gap:9px;">
                 <div style="width:30px;height:30px;background:var(--indigo-light);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
                 <div style="flex:1;min-width:0;">
-                    <p style="font-weight:700;font-size:12px;color:var(--text);">${n.title}</p>
-                    <p style="font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p>
-                    <p style="font-size:9px;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
+                    <p style="font-family:var(--font);font-weight:700;font-size:12px;color:var(--text);">${n.title}</p>
+                    <p style="font-family:var(--font);font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p>
+                    <p style="font-family:var(--font);font-size:9px;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
                 </div>
                 ${!n.read ? '<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>' : ''}
             </div>
@@ -1124,13 +1038,13 @@ function openDateModal(date, items) {
             row.className = 'date-row';
             row.innerHTML = `
             <div style="width:32px;height:32px;background:var(--input-bg);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--border);">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-sub)" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-sub)" stroke-width="1.5" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
             <div style="flex:1;min-width:0;">
-                <p style="font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name||'Reserved'}</p>
-                <p style="font-size:10px;color:var(--text-sub);margin-top:1px;font-family:var(--mono);">${t1}${t2}</p>
+                <p style="font-family:var(--font);font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name||'Reserved'}</p>
+                <p style="font-family:var(--mono);font-size:10px;color:var(--text-sub);margin-top:1px;">${t1}${t2}</p>
             </div>
-            <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};flex-shrink:0;">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
+            <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};flex-shrink:0;">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
             list.appendChild(row);
         });
     } else {
@@ -1155,10 +1069,11 @@ function initTimer() {
           pw      = document.getElementById('timerPW'),
           pf      = document.getElementById('timerPF');
 
+    const mkSvg = (path, sw) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" style="width:16px;height:16px;flex-shrink:0;">${path}</svg>`;
     const icons = {
-        urgent:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-        warning: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round"/></svg>`,
-        safe:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`,
+        urgent:  mkSvg('<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', '1.8'),
+        warning: mkSvg('<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round"/>', '1.8'),
+        safe:    mkSvg('<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>', '1.8'),
     };
 
     function findTarget() {
@@ -1225,12 +1140,12 @@ function showLoginToast() {
         const today  = new Date().toDateString();
         const resDay = new Date(r.reservation_date + 'T00:00:00').toDateString();
         if (now >= start && now < end && !td)
-            td = {icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><polygon points="5 3 19 12 5 21 5 3"/></svg>',bg:'rgba(37,99,235,.2)',title:'Active reservation now!',body:`${r.resource_name||'Resource'} ends at ${(r.end_time||'').substring(0,5)}`};
+            td = {icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><polygon points="5 3 19 12 5 21 5 3"/></svg>',bg:'rgba(37,99,235,.2)',title:'Active reservation now!',body:`${r.resource_name||'Resource'} ends at ${(r.end_time||'').substring(0,5)}`};
         if (!td && resDay === today && minsToStart > 0 && minsToStart <= 120)
-            td = {icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',bg:'rgba(217,119,6,.2)',title:`In ${Math.round(minsToStart)} min`,body:`${r.resource_name||'Resource'} · ${(r.start_time||'').substring(0,5)} – ${(r.end_time||'').substring(0,5)}`};
+            td = {icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',bg:'rgba(217,119,6,.2)',title:`In ${Math.round(minsToStart)} min`,body:`${r.resource_name||'Resource'} · ${(r.start_time||'').substring(0,5)} – ${(r.end_time||'').substring(0,5)}`};
         if (!td && resDay === today) {
             const fmt = t => { const [h,m] = t.split(':'); const hr=+h; return `${hr%12||12}:${m} ${hr<12?'AM':'PM'}`; };
-            td = {icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>',bg:'rgba(37,99,235,.2)',title:'Reservation today',body:`${r.resource_name||'Resource'} · ${fmt(r.start_time)} – ${fmt(r.end_time)}`};
+            td = {icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>',bg:'rgba(37,99,235,.2)',title:'Reservation today',body:`${r.resource_name||'Resource'} · ${fmt(r.start_time)} – ${fmt(r.end_time)}`};
         }
     });
     if (!td) return;
@@ -1274,11 +1189,11 @@ async function doRagSearch() {
             const avail = (b.available_copies || 0) > 0;
             const chip = document.createElement('a');
             chip.href = '/books';
-            chip.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:8px;font-size:10px;font-weight:600;border:1px solid;transition:all .15s;text-decoration:none;font-family:var(--font);max-width:100%;overflow:hidden;${avail?'background:var(--card);border-color:var(--indigo-border);color:var(--indigo);':'background:var(--input-bg);border-color:var(--border);color:var(--text-sub);'}`;
+            chip.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:8px;font-family:var(--font);font-size:10px;font-weight:600;border:1px solid;transition:all .15s;text-decoration:none;max-width:100%;overflow:hidden;${avail?'background:var(--card);border-color:var(--indigo-border);color:var(--indigo);':'background:var(--input-bg);border-color:var(--border);color:var(--text-sub);'}`;
             const titleSpan = document.createElement('span');
             titleSpan.style.cssText = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
             titleSpan.textContent = b.title + (!avail ? ' (out)' : '');
-            chip.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="flex-shrink:0;"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round"/></svg>`;
+            chip.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:9px;height:9px;flex-shrink:0;"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round"/></svg>`;
             chip.appendChild(titleSpan);
             booksRow.appendChild(chip);
         });
@@ -1340,7 +1255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const items = byDate[d];
             if (items && items.length) {
                 const badge = document.createElement('div');
-                badge.style.cssText = 'font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;margin-bottom:1px;font-family:var(--mono);';
+                badge.style.cssText = 'font-family:var(--mono);font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;margin-bottom:1px;';
                 badge.textContent   = items.length;
                 info.el.querySelector('.fc-daygrid-day-top')?.appendChild(badge);
             }

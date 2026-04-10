@@ -15,29 +15,54 @@ $remaining = $remainingReservations ?? null;
 $usedSlots = $remaining !== null ? ($maxSlots - $remaining) : 0;
 
 $navItems = [
-    ['url' => '/dashboard',        'label' => 'Home',      'key' => 'dashboard',        'icon' => 'house'],
-    ['url' => '/reservation',      'label' => 'Reserve',   'key' => 'reservation',      'icon' => 'plus'],
-    ['url' => '/reservation-list', 'label' => 'My Slots',  'key' => 'reservation-list', 'icon' => 'calendar'],
-    ['url' => '/books',            'label' => 'Library',   'key' => 'books',            'icon' => 'book-open'],
-    ['url' => '/profile',          'label' => 'Profile',   'key' => 'profile',          'icon' => 'user'],
+    ['url' => '/dashboard',        'label' => 'Home',     'key' => 'dashboard',        'icon' => 'house'],
+    ['url' => '/reservation',      'label' => 'Reserve',  'key' => 'reservation',      'icon' => 'plus'],
+    ['url' => '/reservation-list', 'label' => 'My Slots', 'key' => 'reservation-list', 'icon' => 'calendar'],
+    ['url' => '/books',            'label' => 'Library',  'key' => 'books',            'icon' => 'book-open'],
+    ['url' => '/profile',          'label' => 'Profile',  'key' => 'profile',          'icon' => 'user'],
 ];
 
-function _layout_icon(string $name, int $size = 16, string $stroke = 'currentColor'): string {
-    static $icons = [
-        'house'      => '<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>',
-        'plus'       => '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
-        'calendar'   => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-        'book-open'  => '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>',
-        'user'       => '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>',
-        'logout'     => '<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>',
-        'sun'        => '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
-        'moon'       => '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
+/* SVG paths only — sizes set explicitly in markup */
+function _layout_svg(string $name): string {
+    static $paths = [
+        'house'     => '<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>',
+        'plus'      => '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
+        'calendar'  => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+        'book-open' => '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>',
+        'user'      => '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>',
+        'logout'    => '<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>',
+        'sun'       => '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+        'moon'      => '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
     ];
-    $d  = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
     $sw = in_array($name, ['calendar', 'book-open']) ? '1.5' : '1.8';
+    $d  = $paths[$name] ?? '<circle cx="12" cy="12" r="10"/>';
+    return $d . '" stroke-width="' . $sw; /* returned into the svg template below */
+}
+
+/**
+ * Render a sidebar/layout icon at a given pixel size.
+ * stroke is passed explicitly — never relies on CSS color inheritance so
+ * dark-mode transitions work without JavaScript SVG re-painting.
+ */
+function _layout_icon(string $name, int $size, string $stroke): string {
+    static $icons = [
+        'house'     => ['<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'plus'      => ['<path d="M12 5v14M5 12h14" stroke-linecap="round"/>', '1.8'],
+        'calendar'  => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', '1.5'],
+        'book-open' => ['<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>', '1.5'],
+        'user'      => ['<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'logout'    => ['<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'sun'       => ['<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>', '1.8'],
+        'moon'      => ['<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>', '1.8'],
+    ];
+    [$d, $sw] = $icons[$name] ?? ['<circle cx="12" cy="12" r="10"/>', '1.8'];
     return sprintf(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="%s">%s</svg>',
-        $size, $size, htmlspecialchars($stroke, ENT_QUOTES), $sw, $d
+        '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="%s" style="width:%dpx;height:%dpx;flex-shrink:0;">%s</svg>',
+        $size, $size,
+        htmlspecialchars($stroke, ENT_QUOTES),
+        $sw,
+        $size, $size,
+        $d
     );
 }
 ?>
@@ -53,10 +78,8 @@ function _layout_icon(string $name, int $size = 16, string $stroke = 'currentCol
 })();
 </script>
 
-<link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
-
 <!-- ════════════════════════════════
-     SIDEBAR (desktop only)
+     SIDEBAR (desktop only ≥1024px)
 ════════════════════════════════ -->
 <aside class="l-sidebar" role="navigation" aria-label="Main navigation">
     <div class="l-sidebar__inner">
@@ -81,12 +104,13 @@ function _layout_icon(string $name, int $size = 16, string $stroke = 'currentCol
             <?php foreach ($navItems as $item):
                 $active   = ($page === $item['key']);
                 $hasBadge = ($item['key'] === 'reservation-list' && $pending > 0);
+                $iconColor = $active ? 'white' : 'currentColor';
             ?>
                 <a href="<?= base_url($item['url']) ?>"
                    class="l-nav__link<?= $active ? ' is-active' : '' ?>"
                    <?= $active ? 'aria-current="page"' : '' ?>>
                     <span class="l-nav__icon" aria-hidden="true">
-                        <?= _layout_icon($item['icon'], 16, $active ? 'white' : 'currentColor') ?>
+                        <?= _layout_icon($item['icon'], 16, $iconColor) ?>
                     </span>
                     <?= esc($item['label']) ?>
                     <?php if ($hasBadge): ?>
@@ -118,36 +142,39 @@ function _layout_icon(string $name, int $size = 16, string $stroke = 'currentCol
 
         <div class="l-sidebar__footer">
             <a href="<?= base_url('/logout') ?>" class="l-logout">
-                <span class="l-nav__icon" aria-hidden="true">
+                <span class="l-logout__icon" aria-hidden="true">
                     <?= _layout_icon('logout', 16, '#f87171') ?>
                 </span>
                 Sign Out
             </a>
         </div>
+
     </div>
 </aside>
 
 <!-- ════════════════════════════════
-     MOBILE BOTTOM NAV
-     Icon + label, active indicator
-     top bar line, no overflow
+     MOBILE BOTTOM NAV  (<1024px)
+     Explicit icon sizes, no color
+     inheritance issues in dark mode
 ════════════════════════════════ -->
-<nav class="l-mobile-nav" aria-label="Mobile navigation">
+<nav class="l-mobile-nav" aria-label="Mobile navigation" id="l-mobile-nav">
     <div class="l-mobile-nav__inner">
         <?php foreach ($navItems as $item):
             $active   = ($page === $item['key']);
             $hasBadge = ($item['key'] === 'reservation-list' && $pending > 0);
-            $iconColor = $active ? 'var(--indigo)' : '#94a3b8';
         ?>
             <a href="<?= base_url($item['url']) ?>"
                class="l-mobile-nav__item<?= $active ? ' is-active' : '' ?>"
                title="<?= esc($item['label']) ?>"
+               data-nav-key="<?= $item['key'] ?>"
                <?= $active ? 'aria-current="page"' : '' ?>>
                 <?php if ($hasBadge): ?>
-                    <span class="l-mobile-nav__badge" aria-label="<?= $pending ?> pending"><?= $pending > 9 ? '9+' : $pending ?></span>
+                    <span class="l-mobile-nav__badge" aria-label="<?= $pending ?> pending">
+                        <?= $pending > 9 ? '9+' : $pending ?>
+                    </span>
                 <?php endif; ?>
-                <span class="nav-icon-wrap">
-                    <?= _layout_icon($item['icon'], 20, $iconColor) ?>
+                <span class="nav-icon-wrap" aria-hidden="true">
+                    <?= _layout_icon($item['icon'], 20, 'currentColor') ?>
                 </span>
                 <span class="nav-lbl"><?= esc($item['label']) ?></span>
             </a>
@@ -156,7 +183,7 @@ function _layout_icon(string $name, int $size = 16, string $stroke = 'currentCol
         <a href="<?= base_url('/logout') ?>"
            class="l-mobile-nav__item l-mobile-nav__item--logout"
            title="Sign Out">
-            <span class="nav-icon-wrap">
+            <span class="nav-icon-wrap" aria-hidden="true">
                 <?= _layout_icon('logout', 20, '#f87171') ?>
             </span>
             <span class="nav-lbl" style="color:#f87171;">Logout</span>
@@ -176,13 +203,19 @@ function layout_dark_toggle(): string {
         onclick="layoutToggleDark()"
         aria-label="Toggle dark mode"
         title="Toggle dark mode">
-        <span id="l-dark-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <span id="l-dark-icon" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;">
+            <svg id="l-dark-svg" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.8"
+                 style="width:15px;height:15px;flex-shrink:0;">
                 <circle cx="12" cy="12" r="5"/>
-                <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
             </svg>
         </span>
     </button>
@@ -192,29 +225,31 @@ function layout_dark_toggle(): string {
 
 <script>
 (function () {
-    const MOON = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`;
-    const SUN  = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+    const MOON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:15px;height:15px;flex-shrink:0;"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`;
+    const SUN_SVG  = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:15px;height:15px;flex-shrink:0;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
 
     function applyDark(isDark) {
         document.body.classList.toggle('dark', isDark);
         document.documentElement.classList.remove('dark-pre');
-        const icon = document.getElementById('l-dark-icon');
-        if (icon) icon.innerHTML = isDark ? MOON : SUN;
-        /* Update mobile nav icon colors on theme change */
-        document.querySelectorAll('.l-mobile-nav__item').forEach(el => {
-            const isActive = el.classList.contains('is-active');
-            const isLogout = el.classList.contains('l-mobile-nav__item--logout');
-            el.querySelectorAll('svg').forEach(svg => {
-                if (isLogout) return;
-                svg.setAttribute('stroke', isActive
-                    ? (isDark ? '#818cf8' : 'var(--indigo)')
-                    : (isDark ? '#4a6fa5' : '#94a3b8'));
-            });
-        });
+
+        /* Toggle the dark-mode toggle icon */
+        const iconWrap = document.getElementById('l-dark-icon');
+        if (iconWrap) iconWrap.innerHTML = isDark ? MOON_SVG : SUN_SVG;
+
+        /*
+         * Mobile nav: update SVG stroke color on each nav item.
+         * We use CSS currentColor so the color cascades from the
+         * .l-mobile-nav__item color property — but SVGs rendered
+         * server-side with explicit stroke="currentColor" need the
+         * parent element color to be correct, which CSS handles.
+         * Nothing extra needed here beyond toggling body.dark.
+         */
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        applyDark(localStorage.getItem('theme') === 'dark');
+        /* Apply saved theme on load */
+        const saved = localStorage.getItem('theme');
+        applyDark(saved === 'dark');
     });
 
     window.layoutToggleDark = function () {
