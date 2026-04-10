@@ -137,7 +137,7 @@
 
     <!-- Print Modal -->
     <div id="tl-print-modal" class="print-modal-back" role="dialog" aria-modal="true" aria-labelledby="tl-modal-title"
-         onclick="if(event.target===this)tlClosePrintModal()">
+         style="display:none;" onclick="if(event.target===this)tlClosePrintModal()">
         <div class="print-modal-card">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
                 <div class="card-icon" style="background:#eef2ff;flex-shrink:0;">
@@ -1014,7 +1014,7 @@
 
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
-            const printOpen = document.getElementById('tl-print-modal')?.classList.contains('show');
+            const printOpen = document.getElementById('tl-print-modal')?.style.display === 'flex';
             const dateOpen  = document.getElementById('dateModal')?.classList.contains('show');
             if (printOpen) { tlClosePrintModal(); }
             else if (dateOpen) { closeDateModal(); }
@@ -1046,7 +1046,10 @@
             const noBtn  = document.getElementById('tl-no-btn');
             yesBtn.classList.add('active');    yesBtn.setAttribute('aria-pressed', 'true');
             noBtn.classList.remove('active');  noBtn.setAttribute('aria-pressed', 'false');
-            document.getElementById('tl-print-modal').classList.add('show');
+            const pm = document.getElementById('tl-print-modal');
+            pm.style.display = 'flex';
+            pm.style.alignItems = 'center';
+            pm.style.justifyContent = 'center';
             document.body.style.overflow = 'hidden';
         }
 
@@ -1094,7 +1097,7 @@
         }
 
         function tlSkipPrint()     { if (tlCurrentPrint) tlMarkLogged(tlCurrentPrint.id); tlClosePrintModal(); tlNextPrintModal(); }
-        function tlClosePrintModal() { document.getElementById('tl-print-modal').classList.remove('show'); document.body.style.overflow = ''; tlCurrentPrint = null; }
+        function tlClosePrintModal() { const pm = document.getElementById('tl-print-modal'); pm.style.display = 'none'; document.body.style.overflow = ''; tlCurrentPrint = null; }
         function tlNextPrintModal()  { if (tlPrintQueue.length > 0) setTimeout(() => tlOpenPrintModal(tlPrintQueue.shift()), 400); }
 
         /* ─────────────────── Live sessions ─────────────────── */
