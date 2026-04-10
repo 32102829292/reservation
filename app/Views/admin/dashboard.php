@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin Dashboard View — fully debugged + tlInitialized fix
+ * Admin Dashboard View — fully debugged + notification system fixed
  */
 ?>
 <!DOCTYPE html>
@@ -18,6 +18,52 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+    <style>
+        /* ── Notification dropdown ── */
+        .notif-bell { position: relative; }
+        .notif-badge-dot {
+            position: absolute; top: -5px; right: -5px;
+            background: #ef4444; color: white;
+            font-family: var(--font); font-size: .55rem; font-weight: 700;
+            padding: 2px 5px; border-radius: 999px; min-width: 17px;
+            text-align: center; border: 2px solid var(--bg);
+            line-height: 1.3; pointer-events: none;
+        }
+        .notif-dd {
+            position: fixed; top: 80px; right: 20px; width: 320px;
+            background: var(--card); border-radius: var(--r-xl);
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99,102,241,.09);
+            z-index: 200; display: none; overflow: hidden;
+        }
+        .notif-dd.show { display: block; animation: fadeInDown .15s ease; }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-6px) scale(.98); }
+            to   { opacity: 1; transform: none; }
+        }
+        .notif-item {
+            padding: .85rem 1.1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background .15s; cursor: pointer;
+        }
+        .notif-item:hover { background: var(--input-bg); }
+        .notif-item.unread { background: var(--indigo-light); }
+        .notif-item:last-child { border-bottom: none; }
+
+        /* Fix: Mark all read button focus ring */
+        #notifDD-mark-btn {
+            font-size: 11px; color: var(--indigo); font-weight: 600;
+            background: none; border: none; cursor: pointer;
+            outline: none; padding: 4px 8px; border-radius: 6px;
+            transition: background .15s; font-family: var(--font);
+        }
+        #notifDD-mark-btn:hover { background: rgba(99,102,241,.08); }
+        #notifDD-mark-btn:focus-visible { outline: 2px solid var(--indigo); }
+
+        @media(max-width:479px) {
+            .notif-dd { left: 12px; right: 12px; width: auto; top: 72px; }
+        }
+    </style>
 </head>
 
 <body>
@@ -172,12 +218,13 @@
         </div>
     </div>
 
+    <!-- Notification Dropdown -->
     <div id="notifDD" class="notif-dd" role="dialog" aria-label="Notifications">
-        <div style="padding:11px 13px;border-bottom:1px solid rgba(99,102,241,.07);display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-weight:700;font-size:13px;">Notifications</span>
-            <button onclick="markAllRead()" style="font-size:11px;color:var(--indigo);font-weight:600;background:none;border:none;cursor:pointer;">Mark all read</button>
+        <div style="padding:11px 13px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-family:var(--font);font-weight:700;font-size:13px;color:var(--text);">Notifications</span>
+            <button id="notifDD-mark-btn" onclick="markAllRead()">Mark all read</button>
         </div>
-        <div id="notifList" style="max-height:300px;overflow-y:auto;" aria-live="polite"></div>
+        <div id="notifList" style="max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;" aria-live="polite"></div>
     </div>
 
     <div id="tl-toast-container" aria-live="assertive" aria-atomic="false"></div>
@@ -218,9 +265,10 @@
                      onkeydown="if(event.key==='Enter'||event.key===' ')adminToggleDark()">
                     <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem;" aria-hidden="true"></i></span>
                 </div>
-                <div class="notif-bell" onclick="toggleNotifications()">
+                <div class="notif-bell">
                     <div class="icon-btn" role="button" tabindex="0" aria-label="Notifications"
                          aria-expanded="false" id="notifBellBtn"
+                         onclick="toggleNotifications()"
                          onkeydown="if(event.key==='Enter'||event.key===' ')toggleNotifications()">
                         <i class="fa-regular fa-bell" style="font-size:.9rem;" aria-hidden="true"></i>
                     </div>
@@ -878,7 +926,6 @@
             if (s < 86400) return `${Math.floor(s/3600)}h ago`;
             return `${Math.floor(s/86400)}d ago`;
         };
-
         const escHtml = str => String(str ?? '')
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -886,75 +933,95 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
 
-        /* ─────────────────── Notifications ─────────────────── */
-        let readIds = [];
-        try { readIds = JSON.parse(localStorage.getItem('admin_read_notifs') || '[]'); } catch(e) { readIds = []; }
-        let notifs  = [];
+        /* ═══════════════════════════════════════════
+           NOTIFICATIONS  — matches user dashboard
+        ═══════════════════════════════════════════ */
+        const NOTIF_KEY  = 'admin_notif_seen_ids';
+        let   notifications = [];
+
+        const getSeenIds  = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch(e) { return []; } };
+        const saveSeenIds = ids => { try { localStorage.setItem(NOTIF_KEY, JSON.stringify(ids)); } catch(e) {} };
 
         function loadNotifications() {
-            notifs = [];
-            allRes
-                .filter(r => r.status === 'pending' && !readIds.includes(String(r.id)))
-                .slice(0, 10)
-                .forEach(r => notifs.push({
-                    id:   r.id,
-                    msg:  `${escHtml(r.visitor_name||'User')} → ${escHtml(r.resource_name||'Resource')}`,
-                    time: r.created_at || new Date().toISOString()
+            const seen = getSeenIds();
+            notifications = allRes
+                .filter(r => r.status === 'pending')
+                .slice(0, 20)
+                .map(r => ({
+                    id:    parseInt(r.id),
+                    title: 'New Pending Request',
+                    msg:   `${escHtml(r.visitor_name || 'User')} → ${escHtml(r.resource_name || 'Resource')}`,
+                    time:  r.created_at || new Date().toISOString(),
+                    read:  seen.includes(parseInt(r.id))
                 }));
-            updateNotifBadge();
+            updateBadge();
             renderNotifs();
         }
 
         function markAllRead() {
-            notifs.forEach(n => { if (!readIds.includes(String(n.id))) readIds.push(String(n.id)); });
-            notifs = [];
-            try { localStorage.setItem('admin_read_notifs', JSON.stringify(readIds)); } catch(e) {}
-            updateNotifBadge();
+            saveSeenIds([...new Set([...getSeenIds(), ...notifications.map(n => n.id)])]);
+            notifications.forEach(n => n.read = true);
+            updateBadge();
             renderNotifs();
         }
 
-        function updateNotifBadge() {
-            const b = document.getElementById('notifBadge'), n = notifs.length;
-            b.style.display = n > 0 ? 'block' : 'none';
-            b.textContent   = n > 9 ? '9+' : n;
+        function markRead(id) {
+            const ids = getSeenIds();
+            if (!ids.includes(id)) saveSeenIds([...ids, id]);
+            const n = notifications.find(n => n.id === id);
+            if (n) { n.read = true; updateBadge(); renderNotifs(); }
+        }
+
+        function updateBadge() {
+            const badge  = document.getElementById('notifBadge');
+            const unread = notifications.filter(n => !n.read).length;
+            badge.style.display = unread > 0 ? 'block' : 'none';
+            badge.textContent   = unread > 9 ? '9+' : unread;
             const btn = document.getElementById('notifBellBtn');
-            if (btn) btn.setAttribute('aria-label', n > 0 ? `Notifications (${n} unread)` : 'Notifications');
+            if (btn) btn.setAttribute('aria-label', unread > 0 ? `Notifications (${unread} unread)` : 'Notifications');
         }
 
         function renderNotifs() {
-            const l = document.getElementById('notifList');
-            if (!notifs.length) {
-                l.innerHTML = `<div style="text-align:center;padding:24px;">
-                    <i class="fa-regular fa-bell-slash" style="font-size:1.5rem;color:#e2e8f0;display:block;margin-bottom:8px;" aria-hidden="true"></i>
-                    <p style="font-size:.78rem;color:var(--text-sub);">No notifications</p></div>`;
+            const list = document.getElementById('notifList');
+            if (!notifications.length) {
+                list.innerHTML = `
+                    <div style="text-align:center;padding:24px 16px;">
+                        <i class="fa-regular fa-bell-slash" style="font-size:1.5rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
+                        <p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">All caught up!</p>
+                    </div>`;
                 return;
             }
-            l.innerHTML = notifs.map(n =>
-                `<div class="notif-item unread" onclick="location='/admin/manage-reservations?id=${encodeURIComponent(n.id)}'" role="button" tabindex="0"
-                      onkeydown="if(event.key==='Enter')location='/admin/manage-reservations?id=${encodeURIComponent(n.id)}'">
+            list.innerHTML = [...notifications]
+                .sort((a, b) => new Date(b.time) - new Date(a.time))
+                .map(n => `
+                <div class="notif-item${!n.read ? ' unread' : ''}"
+                     onclick="markRead(${n.id}); location='/admin/manage-reservations?id=${encodeURIComponent(n.id)}'"
+                     role="button" tabindex="0"
+                     onkeydown="if(event.key==='Enter')this.click()">
                     <div style="display:flex;align-items:flex-start;gap:9px;">
-                        <div style="width:30px;height:30px;background:#fef3c7;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" aria-hidden="true">
+                        <div style="width:30px;height:30px;background:#fef3c7;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                             <i class="fa-solid fa-clock" style="font-size:.7rem;color:#d97706;"></i>
                         </div>
                         <div style="flex:1;min-width:0;">
-                            <p style="font-weight:700;font-size:.78rem;">New Pending Request</p>
-                            <p style="font-size:.68rem;color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p>
-                            <p style="font-size:.62rem;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
+                            <p style="font-family:var(--font);font-weight:700;font-size:12px;color:var(--text);">${n.title}</p>
+                            <p style="font-family:var(--font);font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p>
+                            <p style="font-family:var(--font);font-size:9px;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
                         </div>
-                        <span style="width:7px;height:7px;border-radius:50%;background:var(--indigo);flex-shrink:0;margin-top:4px;" aria-hidden="true"></span>
+                        ${!n.read ? '<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;" aria-hidden="true"></span>' : ''}
                     </div>
-                </div>`
-            ).join('');
+                </div>`).join('');
         }
 
         function toggleNotifications() {
-            const dd = document.getElementById('notifDD');
+            const dd  = document.getElementById('notifDD');
             const btn = document.getElementById('notifBellBtn');
             const isOpen = dd.classList.toggle('show');
-            if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            btn?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         }
+
         document.addEventListener('click', e => {
-            const dd = document.getElementById('notifDD'), bell = document.querySelector('.notif-bell');
+            const dd   = document.getElementById('notifDD');
+            const bell = document.querySelector('.notif-bell');
             if (!bell?.contains(e.target) && !dd?.contains(e.target)) {
                 dd?.classList.remove('show');
                 document.getElementById('notifBellBtn')?.setAttribute('aria-expanded', 'false');
@@ -994,8 +1061,10 @@
                     row.setAttribute('tabindex', '0');
                     row.onclick   = () => location = `/admin/manage-reservations?id=${encodeURIComponent(r.id)}`;
                     row.onkeydown = e => { if (e.key === 'Enter') row.onclick(); };
-                    row.innerHTML = `<div style="width:30px;height:30px;background:#eef2ff;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" aria-hidden="true">
-                        <i class="fa-solid fa-desktop" style="font-size:.7rem;color:#3730a3;"></i></div>
+                    row.innerHTML = `
+                        <div style="width:30px;height:30px;background:#eef2ff;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-desktop" style="font-size:.7rem;color:#3730a3;"></i>
+                        </div>
                         <div style="flex:1;min-width:0;">
                             <p style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.resource_name || 'Resource')}</p>
                             <p style="font-size:.7rem;color:var(--text-sub);">${escHtml(r.visitor_name || r.full_name || 'Guest')} · ${escHtml(t)}${et ? '–' + escHtml(et) : ''}</p>
@@ -1016,15 +1085,13 @@
             if (e.key !== 'Escape') return;
             const printOpen = document.getElementById('tl-print-modal')?.style.display === 'flex';
             const dateOpen  = document.getElementById('dateModal')?.classList.contains('show');
-            if (printOpen) { tlClosePrintModal(); }
-            else if (dateOpen) { closeDateModal(); }
+            if (printOpen) tlClosePrintModal();
+            else if (dateOpen) closeDateModal();
         });
 
         /* ─────────────────── Print modal ─────────────────── */
         const TL_LOGGED_KEY = 'tl_admin_print_logged';
         let tlSessions = {}, tlPrintQueue = [], tlCurrentPrint = null, tlPageCount = 1, tlPrinted = true;
-
-        /* ── FIX: prevents the print modal from firing on page load for already-ended sessions ── */
         let tlInitialized = false;
 
         const tlGetLogged  = () => { try { return JSON.parse(localStorage.getItem(TL_LOGGED_KEY) || '[]'); } catch(e) { return []; } };
@@ -1071,7 +1138,7 @@
             if (!tlCurrentPrint) return;
             const btn = document.getElementById('tl-save-btn');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;" aria-hidden="true"></i>Saving…';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Saving…';
             const pages = tlPrinted ? clamp(tlPageCount, 1, 999) : 0;
             let success = false;
             try {
@@ -1084,19 +1151,17 @@
                     tlMarkLogged(tlCurrentPrint.id);
                     success = true;
                 } else {
-                    console.warn('Print log failed:', res.status);
                     tlToast('warning', 'Could not save print log', `Server returned ${res.status}. Try again.`);
                 }
             } catch(e) {
-                console.error('Print log network error:', e);
                 tlToast('warning', 'Network error', 'Print log not saved. Check your connection.');
             }
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right:8px;" aria-hidden="true"></i>Save & Log';
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right:8px;"></i>Save & Log';
             if (success) { tlClosePrintModal(); tlNextPrintModal(); }
         }
 
-        function tlSkipPrint()     { if (tlCurrentPrint) tlMarkLogged(tlCurrentPrint.id); tlClosePrintModal(); tlNextPrintModal(); }
+        function tlSkipPrint()      { if (tlCurrentPrint) tlMarkLogged(tlCurrentPrint.id); tlClosePrintModal(); tlNextPrintModal(); }
         function tlClosePrintModal() { const pm = document.getElementById('tl-print-modal'); pm.style.display = 'none'; document.body.style.overflow = ''; tlCurrentPrint = null; }
         function tlNextPrintModal()  { if (tlPrintQueue.length > 0) setTimeout(() => tlOpenPrintModal(tlPrintQueue.shift()), 400); }
 
@@ -1128,18 +1193,20 @@
         function tlToast(type, title, sub) {
             const c = document.getElementById('tl-toast-container');
             if (!c) return;
-            const t = document.createElement('div');
+            const t  = document.createElement('div');
             t.className = 'tl-toast';
             const ic = type === 'warning' ? 'fa-triangle-exclamation' : 'fa-clock-rotate-left';
             const bg = type === 'warning' ? 'rgba(245,158,11,.2)' : 'rgba(239,68,68,.2)';
-            t.innerHTML = `<div class="tl-toast-icon" style="background:${bg};" aria-hidden="true">
-                <i class="fa-solid ${ic}" style="color:${type === 'warning' ? '#f59e0b' : '#ef4444'};font-size:.8rem;"></i></div>
+            t.innerHTML = `
+                <div class="tl-toast-icon" style="background:${bg};">
+                    <i class="fa-solid ${ic}" style="color:${type==='warning'?'#f59e0b':'#ef4444'};font-size:.8rem;"></i>
+                </div>
                 <div style="flex:1;min-width:0;">
                     <p style="font-weight:700;font-size:.75rem;color:white;">${escHtml(title)}</p>
                     <p style="font-size:.68rem;color:#94a3b8;margin-top:2px;">${escHtml(sub)}</p>
                 </div>
-                <button onclick="this.closest('.tl-toast').remove()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:.75rem;flex-shrink:0;" aria-label="Dismiss notification">
-                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                <button onclick="this.closest('.tl-toast').remove()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:.75rem;flex-shrink:0;" aria-label="Dismiss">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>`;
             c.appendChild(t);
             setTimeout(() => { t.classList.add('dismissing'); setTimeout(() => t.remove(), 220); }, 7000);
@@ -1156,14 +1223,13 @@
                     grid.innerHTML = '';
                     noS?.classList.remove('hidden');
                     tlSessions = {};
-                    tlInitialized = true; /* mark even on empty tick */
+                    tlInitialized = true;
                     return;
                 }
                 noS?.classList.add('hidden');
 
                 const nowMs     = Date.now();
                 const activeIds = new Set(sessions.map(r => `tl-card-${r.id}`));
-
                 Array.from(grid.children).forEach(c => { if (!activeIds.has(c.id)) c.remove(); });
 
                 sessions.forEach(r => {
@@ -1181,12 +1247,9 @@
                     if (!tlSessions[r.id]) tlSessions[r.id] = { warned: false, expired: false };
                     const s = tlSessions[r.id];
 
-                    /* ── FIX: only fire toasts/modal AFTER the first render tick ── */
                     if (!s.warned && remMs > 0 && remMs <= TL_WARN) {
                         s.warned = true;
-                        if (tlInitialized) {
-                            tlToast('warning', `${name} — 5 min left`, `${res} ending soon`);
-                        }
+                        if (tlInitialized) tlToast('warning', `${name} — 5 min left`, `${res} ending soon`);
                     }
                     if (!s.expired && remMs <= 0) {
                         s.expired = true;
@@ -1200,12 +1263,11 @@
                     }
 
                     let card = document.getElementById(`tl-card-${r.id}`);
-
                     if (!card) {
                         card = document.createElement('div');
                         card.id = `tl-card-${r.id}`;
-                        const sf   = (r.start_time || '').substring(0, 5) || '–';
-                        const ef   = (r.end_time   || '').substring(0, 5) || '–';
+                        const sf     = (r.start_time || '').substring(0, 5) || '–';
+                        const ef     = (r.end_time   || '').substring(0, 5) || '–';
                         const logged = tlIsLogged(r.id);
                         card.className = `tl-session-card ${state}`;
                         card.innerHTML = `
@@ -1214,31 +1276,30 @@
                                     <p style="font-weight:700;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(name)}</p>
                                     <p style="font-size:.68rem;color:var(--text-sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(res)}</p>
                                 </div>
-                                <span class="tl-countdown" id="tl-cd-${r.id}"><i class="fa-regular fa-clock" style="font-size:.6rem;" aria-hidden="true"></i>${escHtml(tlFmt(remMs))}</span>
+                                <span class="tl-countdown" id="tl-cd-${r.id}">
+                                    <i class="fa-regular fa-clock" style="font-size:.6rem;"></i>${escHtml(tlFmt(remMs))}
+                                </span>
                             </div>
                             <div class="tl-prog-track"><div class="tl-prog-fill" id="tl-pf-${r.id}" style="width:${prog}%"></div></div>
                             <div style="display:flex;justify-content:space-between;margin-top:7px;">
                                 <span style="font-size:.65rem;color:var(--text-sub);font-family:var(--mono);">${escHtml(sf)}–${escHtml(ef)}</span>
                                 <span class="tl-used-${r.id}" style="font-size:.65rem;font-weight:600;color:var(--text-muted);">${Math.max(0, Math.floor(elMs/60000))}m used</span>
                             </div>
-                            ${logged && remMs <= 0 ? `<div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check" style="font-size:.6rem;" aria-hidden="true"></i>Logged</div>` : ''}`;
+                            ${logged && remMs <= 0 ? `<div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check" style="font-size:.6rem;"></i>Logged</div>` : ''}`;
                         grid.appendChild(card);
                     } else {
                         card.className = `tl-session-card ${state}`;
                         const cdEl = document.getElementById(`tl-cd-${r.id}`);
                         const pfEl = document.getElementById(`tl-pf-${r.id}`);
                         const usEl = card.querySelector(`.tl-used-${r.id}`);
-                        if (cdEl) cdEl.innerHTML = `<i class="fa-regular fa-clock" style="font-size:.6rem;" aria-hidden="true"></i>${escHtml(tlFmt(remMs))}`;
+                        if (cdEl) cdEl.innerHTML = `<i class="fa-regular fa-clock" style="font-size:.6rem;"></i>${escHtml(tlFmt(remMs))}`;
                         if (pfEl) pfEl.style.width = `${prog}%`;
                         if (usEl) usEl.textContent = `${Math.max(0, Math.floor(elMs/60000))}m used`;
                     }
                 });
 
-                /* Clean up stale session state */
                 const activeRIds = new Set(sessions.map(r => r.id));
                 Object.keys(tlSessions).forEach(id => { if (!activeRIds.has(id)) delete tlSessions[id]; });
-
-                /* ── FIX: mark initialized AFTER first full render ── */
                 tlInitialized = true;
 
             } catch(err) {
@@ -1257,14 +1318,8 @@
             const c = getChartColors(isDark);
             [trendChartInst, monthChartInst].forEach(chart => {
                 if (!chart) return;
-                if (chart.options.scales?.x) {
-                    chart.options.scales.x.grid.color  = c.grid;
-                    chart.options.scales.x.ticks.color = c.tick;
-                }
-                if (chart.options.scales?.y) {
-                    chart.options.scales.y.grid.color  = c.grid;
-                    chart.options.scales.y.ticks.color = c.tick;
-                }
+                if (chart.options.scales?.x) { chart.options.scales.x.grid.color  = c.grid; chart.options.scales.x.ticks.color = c.tick; }
+                if (chart.options.scales?.y) { chart.options.scales.y.grid.color  = c.grid; chart.options.scales.y.ticks.color = c.tick; }
                 chart.update('none');
             });
         }
@@ -1317,8 +1372,8 @@
                             tooltip: { backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10 }
                         },
                         scales: {
-                            x: { grid:{ display:false }, ticks:{ font:chartFont, color:cc.tick } },
-                            y: { grid:{ color:cc.grid }, ticks:{ font:chartFont, color:cc.tick, stepSize:1 }, beginAtZero:true }
+                            x: { grid:{display:false}, ticks:{font:chartFont, color:cc.tick} },
+                            y: { grid:{color:cc.grid}, ticks:{font:chartFont, color:cc.tick, stepSize:1}, beginAtZero:true }
                         }
                     }
                 });
@@ -1331,16 +1386,13 @@
             const pal  = ['#3730a3','#7c3aed','#16a34a','#d97706','#ec4899'];
             if (rCtx) {
                 const rCanvas = document.getElementById('resourceChart');
-                if (!rCanvas.width || rCanvas.width < 10) { rCanvas.width  = 140; }
-                if (!rCanvas.height || rCanvas.height < 10) { rCanvas.height = 140; }
-
+                if (!rCanvas.width  || rCanvas.width  < 10) rCanvas.width  = 140;
+                if (!rCanvas.height || rCanvas.height < 10) rCanvas.height = 140;
                 new Chart(rCtx, {
                     type: 'doughnut',
                     data: { labels: rL, datasets: [{ data:rD, backgroundColor:pal, borderWidth:0, hoverOffset:4 }] },
                     options: {
-                        responsive:false,
-                        animation:{ duration:400 },
-                        cutout:'65%',
+                        responsive:false, animation:{duration:400}, cutout:'65%',
                         plugins: {
                             legend: { display:false },
                             tooltip: { backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10 }
@@ -1350,9 +1402,9 @@
                 const leg = document.getElementById('resourceLegend');
                 if (leg) leg.innerHTML = rL.map((l, i) =>
                     `<div style="display:flex;align-items:center;gap:8px;min-width:0;">
-                        <span style="width:9px;height:9px;border-radius:50%;background:${pal[i] || '#94a3b8'};flex-shrink:0;" aria-hidden="true"></span>
+                        <span style="width:9px;height:9px;border-radius:50%;background:${pal[i]||'#94a3b8'};flex-shrink:0;"></span>
                         <span style="font-size:.78rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;">${escHtml(l)}</span>
-                        <span style="font-size:.78rem;font-weight:800;flex-shrink:0;">${escHtml(String(rD[i] ?? 0))}</span>
+                        <span style="font-size:.78rem;font-weight:800;flex-shrink:0;">${escHtml(String(rD[i]??0))}</span>
                     </div>`
                 ).join('');
             }
@@ -1421,11 +1473,11 @@
                 const sg = document.getElementById('ins-suggestion');
                 if (sg) {
                     let t = '';
-                    if      (noShowRate > 30)                                  t = `High no-show rate (${noShowRate}%). Consider sending session reminders.`;
-                    else if (declineRate > 25)                                 t = `Decline rate elevated (${declineRate}%). Review approval rules or add more resources.`;
-                    else if (trendDir === 'up'   && trendPct > 20)             t = `Reservations up ${trendPct}% this week — keep "${topResource}" available.`;
-                    else if (trendDir === 'down' && Math.abs(trendPct) > 20)   t = `Bookings dropped ${Math.abs(trendPct)}% vs last week. Consider community outreach.`;
-                    else                                                        t = `${peakDayLabel}s are your busiest day. Keep "${topResource}" free and well-resourced.`;
+                    if      (noShowRate > 30)                                t = `High no-show rate (${noShowRate}%). Consider sending session reminders.`;
+                    else if (declineRate > 25)                               t = `Decline rate elevated (${declineRate}%). Review approval rules or add more resources.`;
+                    else if (trendDir === 'up'   && trendPct > 20)           t = `Reservations up ${trendPct}% this week — keep "${topResource}" available.`;
+                    else if (trendDir === 'down' && Math.abs(trendPct) > 20) t = `Bookings dropped ${Math.abs(trendPct)}% vs last week. Consider community outreach.`;
+                    else                                                      t = `${peakDayLabel}s are your busiest day. Keep "${topResource}" free and well-resourced.`;
                     sg.textContent = t;
                 }
 
@@ -1488,15 +1540,15 @@
                                 legend: { display:false },
                                 tooltip: {
                                     backgroundColor:'#0f172a',
-                                    titleFont:{ family:'Plus Jakarta Sans', weight:'700' },
-                                    bodyFont:{ family:'Plus Jakarta Sans' },
+                                    titleFont:{family:'Plus Jakarta Sans',weight:'700'},
+                                    bodyFont:{family:'Plus Jakarta Sans'},
                                     padding:10, cornerRadius:10,
                                     callbacks:{ label: ctx => ` ${ctx.raw} reservations` }
                                 }
                             },
                             scales: {
-                                x: { grid:{ display:false }, ticks:{ font:{ family:'Plus Jakarta Sans', size: mob ? 8 : 10 }, color:cc.tick } },
-                                y: { grid:{ color:cc.grid }, beginAtZero:true, ticks:{ font:{ family:'Plus Jakarta Sans', size: mob ? 8 : 10 }, color:cc.tick, stepSize:1 } }
+                                x: { grid:{display:false}, ticks:{font:{family:'Plus Jakarta Sans',size:mob?8:10},color:cc.tick} },
+                                y: { grid:{color:cc.grid}, beginAtZero:true, ticks:{font:{family:'Plus Jakarta Sans',size:mob?8:10},color:cc.tick,stepSize:1} }
                             }
                         }
                     });
@@ -1516,7 +1568,7 @@
                             return `<div>
                                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px;">
                                     <div style="display:flex;align-items:center;gap:8px;min-width:0;">
-                                        <span style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:white;background:${c};flex-shrink:0;" aria-hidden="true">${i + 1}</span>
+                                        <span style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:white;background:${c};flex-shrink:0;">${i + 1}</span>
                                         <span style="font-size:.78rem;font-weight:600;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(name)}</span>
                                     </div>
                                     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
