@@ -26,7 +26,7 @@ class App extends BaseConfig
 
         // On production (Render), use the live URL
         if (ENVIRONMENT === 'production') {
-            $this->baseURL = 'https://reservation-k2eg.onrender.com/';
+            $this->baseURL = 'https://reservation-z2uk.onrender.com/';
         }
     }
 }
