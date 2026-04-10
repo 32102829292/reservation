@@ -1,115 +1,6 @@
 <?php
 /**
- * Admin Dashboard View — fully debugged
- *
- * Bug fixes applied (all numbered for traceability):
- *
- * PHP-SIDE
- *  P1.  $insPH/$insPD/$insPM – array_search returns false when all values are 0,
- *       causing date()/array index warnings. Guard with explicit (int) cast + fallback.
- *  P2.  $f12 closure used inside class-level PHP scope before arrow-fn support check;
- *       safe in PHP 7.4+ but added comment. Also: $f12($insPH + 1) wraps wrongly at
- *       hour 23 → clamp argument to 23.
- *  P3.  $insTopRes reset()/array_key_first() on empty $insResMap returns false/null;
- *       both now properly guarded.
- *  P4.  $insBD / $insBDC same empty-array issue with arsort+reset.
- *  P5.  $insTrP division: $insPrev7 check already exists but $ins7/$insPrev7 are
- *       int-cast; ternary was missing parens → added explicit parens.
- *  P6.  $bpct already clamped 0-100 in "fixed" version but the inner expression
- *       $bookAvailCount / $bookTotalCount could produce > 100 if data is dirty;
- *       kept the clamp, added (float) cast for safety.
- *  P7.  htmlspecialchars() calls on array values that could be null/int now all
- *       wrapped with (string) cast or null-coalesce to ''.
- *  P8.  json_encode() calls without ENT_QUOTES flag for values embedded in JS
- *       string literals. Added JSON_HEX_TAG | JSON_HEX_APOS | JSON_UNESCAPED_UNICODE.
- *  P9.  $reservations iterated with foreach but may be null → added ?? [].
- *  P10. $gc genre match: strtolower() on null $book['genre'] emits deprecation in
- *       PHP 8.1+; guard with ?? ''.
- *  P11. array_slice($dashBorrowReqs, …) of a non-array crashes. Guard with (array).
- *  P12. $pendingBorrowings used in borrow_pill and borrow-req count; already
- *       defaulted to 0 but the pill link anchor href had a raw # which could
- *       cause a full-page scroll jump; use data-tab attribute pattern instead.
- *       (Left as-is since the JS/server side controls the tab – noted as comment.)
- *  P13. Date construction: new DateTime($res['reservation_date']) can throw if
- *       the string is malformed; wrapped in try/catch with fallback.
- *  P14. $dashBooks not guaranteed array; default to [] before slice.
- *
- * HTML
- *  H1.  <form> tags inside <a> tags are invalid HTML (borrow approve/reject forms
- *       inside .borrow-req div). Moved buttons outside anchor, restructured markup.
- *  H2.  Missing lang on inner elements; aria-labels added to icon buttons for a11y.
- *  H3.  Modal <div>s lack role="dialog" and aria-modal="true"; added.
- *  H4.  <canvas> elements have no aria-label; added aria-label + role="img".
- *  H5.  "fa-sparkles" is Font Awesome 6 Pro only; swapped to "fa-wand-magic-sparkles"
- *       which is in the free set.
- *  H6.  Print modal save button uses id="tl-save-btn" referenced twice; second
- *       occurrence (already just one) confirmed unique.
- *
- * JAVASCRIPT
- *  J1.  patchDarkToggle IIFE: if adminToggleDark is defined AFTER this script
- *       (e.g., in admin_layout.php which is included before </body>), the original
- *       is already in place. But if it is NOT yet defined, window.adminToggleDark
- *       is undefined → _orig() throws. Guard: _orig = typeof … === 'function' ? …
- *  J2.  tlRender(): sessions.forEach mutates the DOM but tlSessions[r.id] state
- *       is never cleaned up for sessions that drop off (memory leak). Added cleanup.
- *  J3.  tlRender(): card.innerHTML fully replaces content every second, resetting
- *       GPU compositing layers and causing reflow on every tick. Fixed to only
- *       update the countdown span text + progress fill width if card already exists.
- *  J4.  tlGetActiveSessions(): date comparison uses r.reservation_date !== today
- *       (string), but r.reservation_date may come in as "2025-01-05T00:00:00"
- *       (with time). Guard with .split('T')[0].
- *  J5.  openDateModal(): new Date(dateStr + 'T00:00:00') is correct for local time,
- *       but if dateStr is already a full ISO string the concatenation corrupts it.
- *       Slice to 10 chars first.
- *  J6.  openDateModal(): list sort mutates the original array via [...list].sort —
- *       spread is already used, so this is fine, but the sort comparator doesn't
- *       handle null start_time strings; added null-coalesce.
- *  J7.  markAllRead(): iterates notifs which may have been emptied by a prior call;
- *       no crash but readIds could accumulate stale entries. Harmless but noted.
- *  J8.  tlSavePrint(): fetch error path still calls tlClosePrintModal() and
- *       tlNextPrintModal(), so the queue advances even on network failure. Users
- *       lose the prompt. Fixed: on error, re-enable button and show toast instead
- *       of silently closing.
- *  J9.  tlAdjustPages(): no upper bound check in the original — max was added in
- *       the "fixed" version (999) but tlPageCount is never validated on save.
- *       On save: clamp again before sending.
- *  J10. Chart.js doughnut: responsive:false + no explicit width/height on canvas
- *       makes it render at 0×0 on some browsers. Added explicit CSS dimensions.
- *  J11. FullCalendar eventClick: info.event.startStr may include time component
- *       ("2025-01-05T09:00:00+08:00"), .split('T')[0] is correct but timezone
- *       offset after the time can shift the date. Use event.start (Date object)
- *       and format manually to avoid TZ shift.
- *  J12. dayCellDidMount: info.el.querySelector('.fc-daygrid-day-top') can be null
- *       in list-view. Already guarded with ?. operator — OK.
- *  J13. INS object: peakHourIdx, peakDowIdx, peakMonthIdx are PHP-echoed int casts;
- *       if the PHP arrays are all zeros, these will be 0 (falsy index). The JS
- *       consumers treat them as indices — that is fine, index 0 is valid.
- *  J14. pct() helper: if max=0 returns 0 correctly; but used as CSS width percentage
- *       without '%' suffix in some inline styles — verified all call sites add '%'.
- *  J15. Resource ranking innerHTML: `name` interpolated without escaping → XSS if
- *       resource names contain HTML chars. Escape with a helper.
- *  J16. notifList innerHTML: n.msg interpolated without escaping → XSS.
- *       Same for tlCurrentPrint values in tl-modal.
- *  J17. tlRender card.innerHTML: visitor_name / resource_name → XSS.
- *  J18. openDateModal row.innerHTML: resource_name / visitor_name → XSS.
- *  J19. Smart suggestion textContent (safe) but peakDayLabel / topResource are
- *       PHP-json_encode'd — safe as JS string values.
- *  J20. setInterval tick: if tlRender() throws (e.g., DOM node removed during
- *       navigation), the interval keeps firing and filling the console. Wrap in
- *       try/catch.
- *  J21. beforeunload vs pagehide: beforeunload does not fire reliably on mobile
- *       (bfcache). Use 'pagehide' as additional listener.
- *  J22. toggleNotifications(): clicking the bell while a date modal is open should
- *       not open both. Minor UX — added check.
- *  J23. document.addEventListener keydown: calls both closeDateModal() AND
- *       tlClosePrintModal() on Escape — correct, but if both are open simultaneously
- *       only one should close. Added check for which is open first.
- *  J24. Monthly chart mCtx: uses `cc` from outer closure. `cc` is defined in
- *       DOMContentLoaded so it's in scope — fine. But the chart theme update
- *       function only updates trendChartInst and monthChartInst, not the doughnut.
- *       The doughnut has no grid lines so it looks fine — noted.
- *  J25. INS.resourceMap keys may contain characters that break template literals
- *       (backticks, ${…}). The escapeHtml helper covers this.
+ * Admin Dashboard View — fully debugged + tlInitialized fix
  */
 ?>
 <!DOCTYPE html>
@@ -135,9 +26,9 @@
     $page = $page ?? 'dashboard';
 
     /* ── Safe defaults ── */
-    $reservations      = $reservations      ?? [];   // P9
-    $dashBooks         = is_array($dashBooks         ?? null) ? $dashBooks         : [];  // P14
-    $dashBorrowReqs    = is_array($dashBorrowReqs    ?? null) ? $dashBorrowReqs    : [];  // P11
+    $reservations      = $reservations      ?? [];
+    $dashBooks         = is_array($dashBooks         ?? null) ? $dashBooks         : [];
+    $dashBorrowReqs    = is_array($dashBorrowReqs    ?? null) ? $dashBorrowReqs    : [];
     $bookTotalCount    = (int)($bookTotalCount    ?? 0);
     $bookAvailCount    = (int)($bookAvailCount    ?? 0);
     $pendingBorrowings = (int)($pendingBorrowings ?? 0);
@@ -158,7 +49,7 @@
     $insDateVol = [];
     $ins7 = 0; $insPrev7 = 0;
 
-    foreach ($reservations as $r) {                          // P9: already []
+    foreach ($reservations as $r) {
         if (!empty($r['start_time']))
             $insHourArr[(int)date('G', strtotime($r['start_time']))]++;
         if (!empty($r['reservation_date'])) {
@@ -177,8 +68,6 @@
         $insResMap[$resKey] = ($insResMap[$resKey] ?? 0) + 1;
     }
 
-    /* P1: array_search returns false when max is 0; cast to int gives 0 which is
-       a valid index — acceptable fallback (first hour/day/month). */
     $maxHour = max($insHourArr);
     $maxDow  = max($insDowArr);
     $maxMon  = max($insMonArr);
@@ -186,14 +75,12 @@
     $insPD   = $maxDow  > 0 ? (int)array_search($maxDow,  $insDowArr)  : 0;
     $insPM   = $maxMon  > 0 ? (int)array_search($maxMon,  $insMonArr)  : 0;
 
-    /* P2: clamp end-hour to 23 so $f12(24) never happens */
     $f12    = fn(int $h) => ((($h % 12) ?: 12)) . ' ' . ($h < 12 ? 'AM' : 'PM');
     $endH   = min(23, $insPH + 1);
     $insPHL = $f12($insPH) . '–' . $f12($endH);
     $insPDL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][$insPD] ?? '—';
     $insPML = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][$insPM] ?? '—';
 
-    /* P3/P4: guard empty maps */
     arsort($insResMap);
     $insTopRes    = count($insResMap) > 0 ? (string)array_key_first($insResMap) : 'N/A';
     $insTopResCnt = count($insResMap) > 0 ? (int)reset($insResMap)              : 0;
@@ -203,7 +90,6 @@
     $insBDC = count($insDateVol) > 0 ? (int)reset($insDateVol)              : 0;
     $insBDL = $insBD ? date('M j, Y', (int)strtotime($insBD)) : 'N/A';
 
-    /* P5: explicit parens + int cast */
     $insTrP = $insPrev7 > 0
         ? (int)round((($ins7 - $insPrev7) / $insPrev7) * 100)
         : ($ins7 > 0 ? 100 : 0);
@@ -218,19 +104,16 @@
         ENT_QUOTES, 'UTF-8'
     );
 
-    /* P6: safe book percentage 0-100 */
     $bpct = $bookTotalCount > 0
         ? min(100, max(0, (int)round((float)$bookAvailCount / (float)$bookTotalCount * 100)))
         : 0;
 
-    /* P8: JSON encode flags for safe embedding in JS */
     $JSON_FLAGS = JSON_HEX_TAG | JSON_HEX_APOS | JSON_UNESCAPED_UNICODE;
     ?>
 
     <?php include APPPATH . 'Views/partials/admin_layout.php'; ?>
 
     <!-- ════════ MODALS ════════ -->
-    <!-- H3: role + aria-modal for accessibility -->
     <div id="dateModal" class="modal-back" role="dialog" aria-modal="true" aria-labelledby="modalDateTitle"
          onclick="if(event.target===this)closeDateModal()">
         <div class="modal-card">
@@ -239,7 +122,6 @@
                     <h3 style="font-family:var(--font);font-size:16px;font-weight:700;" id="modalDateTitle"></h3>
                     <p style="font-size:11px;color:var(--text-sub);margin-top:2px;" id="modalDateSub"></p>
                 </div>
-                <!-- H2: aria-label on icon-only button -->
                 <button onclick="closeDateModal()" class="modal-close" aria-label="Close date modal">
                     <i class="fa-solid fa-xmark" style="font-size:.8rem;" aria-hidden="true"></i>
                 </button>
@@ -308,7 +190,7 @@
             <div>
                 <div class="greeting-eyebrow">
                     <?php $hh = (int)date('H'); echo $hh < 12 ? 'Good morning' : ($hh < 17 ? 'Good afternoon' : 'Good evening'); ?>,
-                    <?= $admin_name /* already htmlspecialchars'd above */ ?>
+                    <?= $admin_name ?>
                 </div>
                 <div class="greeting-name">Admin Dashboard</div>
                 <div class="greeting-date">
@@ -484,7 +366,6 @@
                     </div>
                     <span style="font-size:.65rem;font-weight:700;background:#eef2ff;color:var(--indigo);padding:4px 10px;border-radius:999px;white-space:nowrap;">System-wide</span>
                 </div>
-                <!-- H4: canvas aria -->
                 <div class="chart-wrap"><canvas id="trendChart" role="img" aria-label="Reservations trend over the last 7 days"></canvas></div>
             </div>
             <div class="card card-p">
@@ -500,7 +381,6 @@
                     </div>
                     <span style="font-size:.65rem;font-weight:700;background:#ede9fe;color:#7c3aed;padding:4px 10px;border-radius:999px;white-space:nowrap;">Top 5</span>
                 </div>
-                <!-- J10: explicit size so doughnut renders correctly -->
                 <div class="resource-chart-wrap">
                     <canvas id="resourceChart" class="resource-chart-canvas"
                             style="width:140px;height:140px;min-width:140px;"
@@ -598,7 +478,6 @@
                     $pl = array_values(array_filter($reservations, fn($r) => ($r['status'] ?? '') === 'pending'));
                     if (!empty($pl)):
                         foreach (array_slice($pl, 0, 4) as $res):
-                            /* P13: guard malformed date */
                             $dtObj = null;
                             if (!empty($res['reservation_date'])) {
                                 try { $dtObj = new DateTime($res['reservation_date']); } catch (\Exception $e) { $dtObj = null; }
@@ -616,7 +495,6 @@
                                 </div>
                             <?php endif; ?>
                             <div style="flex:1;min-width:0;">
-                                <!-- P7: string cast on potentially null values -->
                                 <div class="bk-name"><?= htmlspecialchars((string)($res['resource_name'] ?? 'Resource'), ENT_QUOTES, 'UTF-8') ?></div>
                                 <div class="bk-time">
                                     <?= htmlspecialchars((string)($res['visitor_name'] ?? 'Guest'), ENT_QUOTES, 'UTF-8') ?>
@@ -649,10 +527,8 @@
             <a href="/admin/books" class="link-sm" style="margin-left:auto;">Browse All →</a>
         </p>
 
-        <!-- grid-lib: no inline grid-template-columns — let admin_app.css handle responsiveness -->
         <div class="grid-lib fade-up-4">
 
-            <!-- Left column: banner + borrow requests -->
             <div style="display:flex;flex-direction:column;gap:14px;">
 
                 <!-- Banner -->
@@ -701,7 +577,6 @@
                         <?php endif; ?>
                     </div>
                     <?php
-                    /* P11: ensure array_slice gets an array */
                     $borrowReqsArr = is_array($dashBorrowReqs) ? $dashBorrowReqs : [];
                     $sr = array_slice(
                         array_values(array_filter($borrowReqsArr, fn($b) => ($b['status'] ?? '') === 'pending')),
@@ -710,8 +585,6 @@
                     if (!empty($sr)): ?>
                         <div style="display:flex;flex-direction:column;gap:8px;">
                             <?php foreach ($sr as $bw): ?>
-                                <!-- H1: forms are NOT inside <a> here — this is a div, so it is valid.
-                                     Forms inside block-level divs are fine. -->
                                 <div class="borrow-req">
                                     <div class="book-letter" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;" aria-hidden="true">
                                         <?= mb_strtoupper(mb_substr((string)($bw['book_title'] ?? 'B'), 0, 1)) ?>
@@ -748,7 +621,6 @@
 
             <!-- Right column: books catalog -->
             <div class="card card-p-lg">
-                <!-- card-head uses flex-wrap so the Add Book btn never overflows -->
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;min-width:0;">
                         <div class="card-icon" style="background:var(--indigo-light);color:var(--indigo);flex-shrink:0;">
@@ -772,7 +644,6 @@
                         'romance'  => '#f43f5e', 'academic' => '#0369a1',
                     ];
                 ?>
-                    <!-- column headers -->
                     <div style="display:grid;grid-template-columns:1fr auto;gap:8px;padding:0 6px 8px;border-bottom:1px solid rgba(99,102,241,.07);margin-bottom:4px;">
                         <span class="stat-lbl" style="letter-spacing:.1em;">Title / Author</span>
                         <span class="stat-lbl" style="letter-spacing:.1em;">Stock</span>
@@ -780,7 +651,6 @@
 
                     <div style="display:flex;flex-direction:column;gap:2px;">
                         <?php foreach (array_slice($dashBooks, 0, 10) as $book):
-                            /* P10: guard null genre with ?? '' */
                             $g  = strtolower((string)($book['genre'] ?? ''));
                             $sc = $gc[$g] ?? '#3730a3';
                             $av = (int)($book['available_copies'] ?? 0);
@@ -825,7 +695,6 @@
         <!-- ── SECTION 5: INSIGHTS ── -->
         <p class="section-label fade-up-4">
             Insights
-            <!-- H5: fa-sparkles is Pro-only; use fa-wand-magic-sparkles (free) -->
             <span style="margin-left:auto;font-size:.65rem;font-weight:700;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 10px;border-radius:999px;white-space:nowrap;">
                 <i class="fa-solid fa-wand-magic-sparkles" style="font-size:.55rem;" aria-hidden="true"></i> Auto-generated
             </span>
@@ -977,7 +846,6 @@
     </main>
 
     <script>
-        /* ─── P8: JSON encoded with safe flags ─── */
         const allRes     = <?= json_encode($reservations, $JSON_FLAGS) ?>;
         const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         const PRINT_EP   = '/admin/log-print';
@@ -1011,7 +879,6 @@
             return `${Math.floor(s/86400)}d ago`;
         };
 
-        /* J15/J16/J17/J18/J25: XSS-safe HTML escape helper */
         const escHtml = str => String(str ?? '')
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -1025,7 +892,6 @@
         let notifs  = [];
 
         function loadNotifications() {
-            /* always reset before rebuilding (prevents duplicate entries) */
             notifs = [];
             allRes
                 .filter(r => r.status === 'pending' && !readIds.includes(String(r.id)))
@@ -1051,7 +917,6 @@
             const b = document.getElementById('notifBadge'), n = notifs.length;
             b.style.display = n > 0 ? 'block' : 'none';
             b.textContent   = n > 9 ? '9+' : n;
-            /* update aria-expanded on bell button */
             const btn = document.getElementById('notifBellBtn');
             if (btn) btn.setAttribute('aria-label', n > 0 ? `Notifications (${n} unread)` : 'Notifications');
         }
@@ -1064,7 +929,6 @@
                     <p style="font-size:.78rem;color:var(--text-sub);">No notifications</p></div>`;
                 return;
             }
-            /* J16: n.msg is already escaped by escHtml above */
             l.innerHTML = notifs.map(n =>
                 `<div class="notif-item unread" onclick="location='/admin/manage-reservations?id=${encodeURIComponent(n.id)}'" role="button" tabindex="0"
                       onkeydown="if(event.key==='Enter')location='/admin/manage-reservations?id=${encodeURIComponent(n.id)}'">
@@ -1098,7 +962,6 @@
         });
 
         /* ─────────────────── Date modal ─────────────────── */
-        /* J5: always slice dateStr to 10 chars before appending time */
         function openDateModal(dateStr, list) {
             const safe = (dateStr || '').slice(0, 10);
             const fmt  = new Date(safe + 'T00:00:00').toLocaleDateString('en-US', {
@@ -1113,7 +976,6 @@
             if (!list?.length) { empty.classList.remove('hidden'); return; }
             empty.classList.add('hidden');
 
-            /* J6: null-safe sort comparator */
             [...list]
                 .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))
                 .forEach(r => {
@@ -1132,7 +994,6 @@
                     row.setAttribute('tabindex', '0');
                     row.onclick   = () => location = `/admin/manage-reservations?id=${encodeURIComponent(r.id)}`;
                     row.onkeydown = e => { if (e.key === 'Enter') row.onclick(); };
-                    /* J18: escHtml for user-supplied values */
                     row.innerHTML = `<div style="width:30px;height:30px;background:#eef2ff;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" aria-hidden="true">
                         <i class="fa-solid fa-desktop" style="font-size:.7rem;color:#3730a3;"></i></div>
                         <div style="flex:1;min-width:0;">
@@ -1151,7 +1012,6 @@
             document.body.style.overflow = '';
         }
 
-        /* J23: Escape closes whichever modal is open first */
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
             const printOpen = document.getElementById('tl-print-modal')?.classList.contains('show');
@@ -1164,6 +1024,9 @@
         const TL_LOGGED_KEY = 'tl_admin_print_logged';
         let tlSessions = {}, tlPrintQueue = [], tlCurrentPrint = null, tlPageCount = 1, tlPrinted = true;
 
+        /* ── FIX: prevents the print modal from firing on page load for already-ended sessions ── */
+        let tlInitialized = false;
+
         const tlGetLogged  = () => { try { return JSON.parse(localStorage.getItem(TL_LOGGED_KEY) || '[]'); } catch(e) { return []; } };
         const tlMarkLogged = id => {
             try {
@@ -1175,7 +1038,6 @@
 
         function tlOpenPrintModal(r) {
             tlCurrentPrint = r; tlPageCount = 1; tlPrinted = true;
-            /* J17: escHtml for modal title/subtitle */
             document.getElementById('tl-modal-title').textContent = r.visitor_name || r.full_name || 'User';
             document.getElementById('tl-modal-sub').textContent   = `${r.resource_name || 'Resource'} · Session ended`;
             document.getElementById('tl-page-num').textContent    = '1';
@@ -1202,14 +1064,11 @@
             document.getElementById('tl-page-num').textContent = tlPageCount;
         }
 
-        /* J8: only mark logged on 2xx; show error toast on failure; don't advance
-               queue on network/server error so admin can retry */
         async function tlSavePrint() {
             if (!tlCurrentPrint) return;
             const btn = document.getElementById('tl-save-btn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;" aria-hidden="true"></i>Saving…';
-            /* J9: clamp page count before sending */
             const pages = tlPrinted ? clamp(tlPageCount, 1, 999) : 0;
             let success = false;
             try {
@@ -1232,7 +1091,6 @@
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right:8px;" aria-hidden="true"></i>Save & Log';
             if (success) { tlClosePrintModal(); tlNextPrintModal(); }
-            /* on failure: modal stays open so admin can retry or skip */
         }
 
         function tlSkipPrint()     { if (tlCurrentPrint) tlMarkLogged(tlCurrentPrint.id); tlClosePrintModal(); tlNextPrintModal(); }
@@ -1242,7 +1100,6 @@
         /* ─────────────────── Live sessions ─────────────────── */
         const TL_WARN = 5 * 60 * 1000, TL_CRIT = 2 * 60 * 1000;
 
-        /* J4: normalize reservation_date to YYYY-MM-DD before comparing */
         function tlGetActiveSessions() {
             const today = new Date().toISOString().split('T')[0], nowMs = Date.now();
             return allRes.filter(r => {
@@ -1285,9 +1142,7 @@
             setTimeout(() => { t.classList.add('dismissing'); setTimeout(() => t.remove(), 220); }, 7000);
         }
 
-        /* J3: only update countdown & progress instead of full innerHTML every second */
         function tlRender() {
-            /* J20: wrap entire render in try/catch so interval never dies silently */
             try {
                 const sessions = tlGetActiveSessions();
                 const grid     = document.getElementById('tl-sessions-grid');
@@ -1297,8 +1152,8 @@
                 if (!sessions.length) {
                     grid.innerHTML = '';
                     noS?.classList.remove('hidden');
-                    /* J2: clean up state for sessions that are gone */
                     tlSessions = {};
+                    tlInitialized = true; /* mark even on empty tick */
                     return;
                 }
                 noS?.classList.add('hidden');
@@ -1306,7 +1161,6 @@
                 const nowMs     = Date.now();
                 const activeIds = new Set(sessions.map(r => `tl-card-${r.id}`));
 
-                /* Remove cards for sessions that ended */
                 Array.from(grid.children).forEach(c => { if (!activeIds.has(c.id)) c.remove(); });
 
                 sessions.forEach(r => {
@@ -1324,23 +1178,27 @@
                     if (!tlSessions[r.id]) tlSessions[r.id] = { warned: false, expired: false };
                     const s = tlSessions[r.id];
 
-                    if (!s.warned  && remMs > 0 && remMs <= TL_WARN) {
+                    /* ── FIX: only fire toasts/modal AFTER the first render tick ── */
+                    if (!s.warned && remMs > 0 && remMs <= TL_WARN) {
                         s.warned = true;
-                        tlToast('warning', `${name} — 5 min left`, `${res} ending soon`);
+                        if (tlInitialized) {
+                            tlToast('warning', `${name} — 5 min left`, `${res} ending soon`);
+                        }
                     }
                     if (!s.expired && remMs <= 0) {
                         s.expired = true;
-                        tlToast('expired', `${name}'s session ended`, `${res} time limit reached`);
-                        if (!tlIsLogged(r.id)) {
-                            if (!tlCurrentPrint) setTimeout(() => tlOpenPrintModal(r), 1200);
-                            else tlPrintQueue.push(r);
+                        if (tlInitialized) {
+                            tlToast('expired', `${name}'s session ended`, `${res} time limit reached`);
+                            if (!tlIsLogged(r.id)) {
+                                if (!tlCurrentPrint) setTimeout(() => tlOpenPrintModal(r), 1200);
+                                else tlPrintQueue.push(r);
+                            }
                         }
                     }
 
                     let card = document.getElementById(`tl-card-${r.id}`);
 
                     if (!card) {
-                        /* First render: create full card */
                         card = document.createElement('div');
                         card.id = `tl-card-${r.id}`;
                         const sf   = (r.start_time || '').substring(0, 5) || '–';
@@ -1363,7 +1221,6 @@
                             ${logged && remMs <= 0 ? `<div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check" style="font-size:.6rem;" aria-hidden="true"></i>Logged</div>` : ''}`;
                         grid.appendChild(card);
                     } else {
-                        /* J3: subsequent renders — only update dynamic parts, avoid full reflow */
                         card.className = `tl-session-card ${state}`;
                         const cdEl = document.getElementById(`tl-cd-${r.id}`);
                         const pfEl = document.getElementById(`tl-pf-${r.id}`);
@@ -1374,9 +1231,12 @@
                     }
                 });
 
-                /* J2: clean up state entries for sessions no longer active */
+                /* Clean up stale session state */
                 const activeRIds = new Set(sessions.map(r => r.id));
                 Object.keys(tlSessions).forEach(id => { if (!activeRIds.has(id)) delete tlSessions[id]; });
+
+                /* ── FIX: mark initialized AFTER first full render ── */
+                tlInitialized = true;
 
             } catch(err) {
                 console.error('tlRender error:', err);
@@ -1406,9 +1266,6 @@
             });
         }
 
-        /* J1: safe patch — guard against adminToggleDark not yet being defined,
-           and also handle the case it's defined AFTER this script runs (layout include).
-           Use a DOMContentLoaded wrapper that runs AFTER all synchronous scripts. */
         document.addEventListener('DOMContentLoaded', () => {
             const _orig = typeof window.adminToggleDark === 'function'
                 ? window.adminToggleDark
@@ -1419,7 +1276,6 @@
             };
         }, { once: true });
 
-        /* J21: use both beforeunload and pagehide for reliable cleanup on mobile */
         let _tlInterval = null;
         function _tlCleanup() { if (_tlInterval) { clearInterval(_tlInterval); _tlInterval = null; } }
         window.addEventListener('beforeunload', _tlCleanup);
@@ -1471,7 +1327,6 @@
             const rD   = <?= json_encode($resourceData   ?? [1],         $JSON_FLAGS) ?>;
             const pal  = ['#3730a3','#7c3aed','#16a34a','#d97706','#ec4899'];
             if (rCtx) {
-                /* J10: set explicit pixel size on canvas to avoid 0×0 on some browsers */
                 const rCanvas = document.getElementById('resourceChart');
                 if (!rCanvas.width || rCanvas.width < 10) { rCanvas.width  = 140; }
                 if (!rCanvas.height || rCanvas.height < 10) { rCanvas.height = 140; }
@@ -1503,12 +1358,12 @@
             const byDate = {};
             allRes.forEach(r => {
                 if (!r.reservation_date) return;
-                const dk = (r.reservation_date || '').split('T')[0];  /* J4 */
+                const dk = (r.reservation_date || '').split('T')[0];
                 (byDate[dk] = byDate[dk] || []).push(r);
             });
 
             const events = allRes.filter(r => r.reservation_date).map(r => {
-                const dk  = (r.reservation_date || '').split('T')[0]; /* J4 */
+                const dk  = (r.reservation_date || '').split('T')[0];
                 const st  = isClaimed(r) ? 'claimed' : (r.status || 'pending');
                 const clr = { approved:'#10b981', pending:'#fbbf24', declined:'#f87171', claimed:'#a855f7' };
                 return {
@@ -1529,7 +1384,6 @@
                 eventDisplay:   'block',
                 eventMaxStack:  mob ? 1 : 2,
                 dateClick:      info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
-                /* J11: use event.start (Date object) → format to local YYYY-MM-DD */
                 eventClick:     info => {
                     const d   = info.event.start;
                     const key = d
@@ -1561,7 +1415,6 @@
                 const maxH = Math.max(...hourArr, 1);
                 const maxD = Math.max(...dowArr,  1);
 
-                /* Smart suggestion */
                 const sg = document.getElementById('ins-suggestion');
                 if (sg) {
                     let t = '';
@@ -1570,11 +1423,9 @@
                     else if (trendDir === 'up'   && trendPct > 20)             t = `Reservations up ${trendPct}% this week — keep "${topResource}" available.`;
                     else if (trendDir === 'down' && Math.abs(trendPct) > 20)   t = `Bookings dropped ${Math.abs(trendPct)}% vs last week. Consider community outreach.`;
                     else                                                        t = `${peakDayLabel}s are your busiest day. Keep "${topResource}" free and well-resourced.`;
-                    /* textContent is XSS-safe for the suggestion element */
                     sg.textContent = t;
                 }
 
-                /* Heatmap */
                 const hm = document.getElementById('ins-heatmap');
                 if (hm) {
                     hm.innerHTML = '';
@@ -1589,7 +1440,6 @@
                     }
                 }
 
-                /* DOW bars */
                 const be = document.getElementById('ins-dow-bars');
                 const le = document.getElementById('ins-dow-labels');
                 if (be && le) {
@@ -1606,7 +1456,6 @@
                     });
                 }
 
-                /* DOW mini */
                 const mini = document.getElementById('ins-dow-mini');
                 if (mini) {
                     mini.innerHTML = '';
@@ -1617,7 +1466,6 @@
                     });
                 }
 
-                /* Monthly chart */
                 const mCtx = document.getElementById('ins-month-chart')?.getContext('2d');
                 if (mCtx) {
                     monthChartInst = new Chart(mCtx, {
@@ -1651,13 +1499,11 @@
                     });
                 }
 
-                /* Resource ranking */
                 const rk = document.getElementById('ins-resource-ranking');
                 if (rk) {
                     const entries = Object.entries(resourceMap).sort((a, b) => b[1] - a[1]);
                     const topMax  = entries[0]?.[1] || 1;
                     const colors  = ['#3730a3','#d97706','#7c3aed','#16a34a','#ec4899','#06b6d4','#f87171'];
-                    /* J15/J25: escHtml on resource names to prevent XSS */
                     rk.innerHTML = !entries.length
                         ? '<p style="font-size:.75rem;color:var(--text-sub);text-align:center;padding:16px;">No data yet</p>'
                         : entries.slice(0, 7).map(([name, cnt], i) => {
