@@ -75,13 +75,32 @@ $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_
         .pw-strength { height: 3px; border-radius: 999px; background: var(--border); overflow: hidden; margin-top: 6px; }
         .pw-fill { height: 100%; border-radius: 999px; transition: width .3s, background .3s; }
 
-        /* ── Danger zone ── */
+        /* ── Danger row ── */
         .danger-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border-subtle); gap: 12px; }
         .danger-row:last-child { border-bottom: none; padding-bottom: 0; }
-        .danger-btn { font-size: .75rem; font-weight: 700; padding: 8px 14px; border-radius: 9px; border: 1px solid #fecaca; background: #fef2f2; color: #dc2626; cursor: pointer; font-family: var(--font); transition: all var(--ease); white-space: nowrap; flex-shrink: 0; }
+
+        /* ── Danger button — light mode base, all dark selectors ── */
+        .danger-btn {
+            font-size: .75rem; font-weight: 700; padding: 8px 14px;
+            border-radius: 9px; border: 1px solid #fecaca;
+            background: #fef2f2; color: #dc2626;
+            cursor: pointer; font-family: var(--font);
+            transition: all var(--ease); white-space: nowrap; flex-shrink: 0;
+        }
         .danger-btn:hover { background: #fee2e2; border-color: #f87171; }
-        body.dark .danger-btn { background: rgba(220,38,38,.1); color: #f87171; border-color: rgba(220,38,38,.2); }
-        body.dark .danger-btn:hover { background: rgba(220,38,38,.18); border-color: rgba(220,38,38,.35); }
+        body.dark .danger-btn,
+        html.dark .danger-btn,
+        .dark .danger-btn {
+            background: rgba(220,38,38,.1) !important;
+            color: #f87171 !important;
+            border-color: rgba(220,38,38,.2) !important;
+        }
+        body.dark .danger-btn:hover,
+        html.dark .danger-btn:hover,
+        .dark .danger-btn:hover {
+            background: rgba(220,38,38,.18) !important;
+            border-color: rgba(220,38,38,.35) !important;
+        }
 
         /* ── Quick links ── */
         .quick-link { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--card); text-decoration: none; color: var(--text-muted); font-size: .83rem; font-weight: 600; transition: all var(--ease); }
@@ -89,32 +108,45 @@ $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_
 
         /* ── Quick link icon boxes ── */
         .ql-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .ql-icon-indigo  { background: #eef2ff; }
-        .ql-icon-violet  { background: #ede9fe; }
-        .ql-icon-amber   { background: #fef3c7; }
-        .ql-icon-purple  { background: #f3e8ff; }
-        body.dark .ql-icon-indigo { background: rgba(99,102,241,.12); }
-        body.dark .ql-icon-violet { background: rgba(124,58,237,.12); }
-        body.dark .ql-icon-amber  { background: rgba(217,119,6,.12); }
-        body.dark .ql-icon-purple { background: rgba(147,51,234,.12); }
+        .ql-icon-indigo { background: #eef2ff; }
+        .ql-icon-violet { background: #ede9fe; }
+        .ql-icon-amber  { background: #fef3c7; }
+        .ql-icon-purple { background: #f3e8ff; }
+        body.dark .ql-icon-indigo, html.dark .ql-icon-indigo, .dark .ql-icon-indigo { background: rgba(99,102,241,.12) !important; }
+        body.dark .ql-icon-violet, html.dark .ql-icon-violet, .dark .ql-icon-violet { background: rgba(124,58,237,.12) !important; }
+        body.dark .ql-icon-amber,  html.dark .ql-icon-amber,  .dark .ql-icon-amber  { background: rgba(217,119,6,.12)  !important; }
+        body.dark .ql-icon-purple, html.dark .ql-icon-purple, .dark .ql-icon-purple { background: rgba(147,51,234,.12) !important; }
 
         /* ── Card icon boxes ── */
         .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .card-icon-indigo  { background: var(--indigo-light); }
-        .card-icon-amber   { background: #fef3c7; }
-        .card-icon-red     { background: #fef2f2; }
-        body.dark .card-icon-amber { background: rgba(217,119,6,.1); }
-        body.dark .card-icon-red   { background: rgba(220,38,38,.1); }
+        .card-icon-indigo { background: var(--indigo-light); }
+        .card-icon-amber  { background: #fef3c7; }
+        .card-icon-red    { background: #fef2f2; }
+        body.dark .card-icon-amber,  html.dark .card-icon-amber,  .dark .card-icon-amber  { background: rgba(217,119,6,.1) !important; }
+        body.dark .card-icon-red,    html.dark .card-icon-red,    .dark .card-icon-red    { background: rgba(220,38,38,.1) !important; }
 
         /* ── Delete modal icon box ── */
-        .delete-modal-icon { width: 46px; height: 46px; background: #fef2f2; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #fecaca; }
-        body.dark .delete-modal-icon { background: rgba(220,38,38,.1); border-color: rgba(220,38,38,.2); }
+        .delete-modal-icon {
+            width: 46px; height: 46px;
+            background: #fef2f2; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; border: 1px solid #fecaca;
+        }
+        body.dark .delete-modal-icon,
+        html.dark .delete-modal-icon,
+        .dark .delete-modal-icon {
+            background: rgba(220,38,38,.1) !important;
+            border-color: rgba(220,38,38,.2) !important;
+        }
 
         /* ── Active badge ── */
         .active-badge { display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: #dcfce7; border-radius: 999px; flex-shrink: 0; }
-        .active-badge span { font-size: .65rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: .05em; }
-        body.dark .active-badge { background: rgba(22,163,74,.12); }
-        body.dark .active-badge span { color: #4ade80; }
+        .active-badge-text { font-size: .65rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: .05em; }
+        body.dark .active-badge,      html.dark .active-badge,      .dark .active-badge      { background: rgba(22,163,74,.12) !important; }
+        body.dark .active-badge-text, html.dark .active-badge-text, .dark .active-badge-text { color: #4ade80 !important; }
+
+        /* ── Card title danger ── */
+        .card-title-danger { color: #dc2626; }
 
         /* ── Field inputs (modal) ── */
         .field-label { display: block; font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 6px; }
@@ -125,21 +157,20 @@ $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_
         /* ── Delete input states ── */
         .input-success { border-color: #86efac !important; background: #f0fdf4 !important; }
         .input-error   { border-color: #f87171 !important; background: #fff5f5 !important; }
-        body.dark .input-success { background: #052e16 !important; }
-        body.dark .input-error   { background: #2d0a0a !important; }
+        body.dark .input-success, html.dark .input-success, .dark .input-success { background: #052e16 !important; }
+        body.dark .input-error,   html.dark .input-error,   .dark .input-error   { background: #2d0a0a !important; }
 
         /* ── Dark delete modal overrides ── */
-        body.dark #deleteConfirmInput { background: var(--input-bg); border-color: #7f1d1d; color: var(--text); }
-        body.dark .delete-warning-box { background: rgba(127,29,29,.3) !important; border-color: #7f1d1d !important; }
-        body.dark .delete-warning-box p { color: #fca5a5 !important; }
-        body.dark .delete-warning-title { color: #fca5a5 !important; }
-        body.dark .delete-code-badge { background: rgba(127,29,29,.4) !important; border-color: #7f1d1d !important; color: #fca5a5 !important; }
-        body.dark .delete-cancel-btn { background: var(--input-bg) !important; border-color: var(--border) !important; color: #a5b4fc !important; }
+        body.dark #deleteConfirmInput, html.dark #deleteConfirmInput, .dark #deleteConfirmInput { background: var(--input-bg); border-color: #7f1d1d; color: var(--text); }
+        body.dark .delete-warning-box, html.dark .delete-warning-box, .dark .delete-warning-box { background: rgba(127,29,29,.3) !important; border-color: #7f1d1d !important; }
+        body.dark .delete-warning-box p, html.dark .delete-warning-box p, .dark .delete-warning-box p { color: #fca5a5 !important; }
+        body.dark .delete-warning-title, html.dark .delete-warning-title, .dark .delete-warning-title { color: #fca5a5 !important; }
+        body.dark .delete-code-badge, html.dark .delete-code-badge, .dark .delete-code-badge { background: rgba(127,29,29,.4) !important; border-color: #7f1d1d !important; color: #fca5a5 !important; }
+        body.dark .delete-cancel-btn, html.dark .delete-cancel-btn, .dark .delete-cancel-btn { background: var(--input-bg) !important; border-color: var(--border) !important; color: #a5b4fc !important; }
 
-        /* ── Card / section sub-elements ── */
+        /* ── Card / section helpers ── */
         .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
         .card-title { font-size: .9rem; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
-        .card-title-danger { color: #dc2626; }
         .card-sub   { font-size: .7rem; color: var(--text-sub); margin-top: 2px; }
         .section-lbl { font-size: .62rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 14px; }
 
@@ -414,7 +445,7 @@ include(APPPATH . 'Views/partials/layout.php');
                     </div>
                     <div class="active-badge">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span>Active</span>
+                        <span class="active-badge-text">Active</span>
                     </div>
                 </div>
             </div>
@@ -500,7 +531,7 @@ function checkPw(val) {
 }
 
 function checkDeleteInput(val) {
-    const btn = document.getElementById('deleteConfirmBtn');
+    const btn  = document.getElementById('deleteConfirmBtn');
     const hint = document.getElementById('deleteInputHint');
     const inp  = document.getElementById('deleteConfirmInput');
     if (val === 'DELETE') {
@@ -509,8 +540,13 @@ function checkDeleteInput(val) {
         hint.textContent='✓ Confirmed — you may now delete your account'; hint.style.color='#16a34a';
     } else {
         resetDeleteBtn();
-        if (val.length > 0) { inp.className='field-input input-error'; inp.style.borderColor=''; inp.style.background=''; hint.textContent='Must be exactly "DELETE" in uppercase'; hint.style.color='#dc2626'; }
-        else { inp.className='field-input'; inp.style.borderColor='#fecaca'; inp.style.background=''; hint.textContent='This action is irreversible. Case-sensitive.'; hint.style.color=''; }
+        if (val.length > 0) {
+            inp.className='field-input input-error'; inp.style.borderColor=''; inp.style.background='';
+            hint.textContent='Must be exactly "DELETE" in uppercase'; hint.style.color='#dc2626';
+        } else {
+            inp.className='field-input'; inp.style.borderColor='#fecaca'; inp.style.background='';
+            hint.textContent='This action is irreversible. Case-sensitive.'; hint.style.color='';
+        }
     }
 }
 function resetDeleteBtn() {
