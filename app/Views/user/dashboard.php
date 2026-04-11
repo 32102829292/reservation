@@ -1032,8 +1032,14 @@ function openDateModal(date, items) {
             const isClaimed = r.claimed == 1;
             const s  = isClaimed ? 'claimed' : (r.status||'pending').toLowerCase();
             const [cbg,cfg] = (cmap[s]||'#f1f5f9|#475569').split('|');
-            const t1 = r.start_time ? r.start_time.substring(0,5) : 'All day';
-            const t2 = r.end_time   ? ` – ${r.end_time.substring(0,5)}` : '';
+            const fmtT = t => {
+    if (!t) return '';
+    const [h, m] = t.split(':');
+    const hr = parseInt(h, 10);
+    return `${hr % 12 || 12}:${m} ${hr < 12 ? 'AM' : 'PM'}`;
+};
+const t1 = r.start_time ? fmtT(r.start_time) : 'All day';
+const t2 = r.end_time   ? ` – ${fmtT(r.end_time)}` : '';
             const row = document.createElement('div');
             row.className = 'date-row';
             row.innerHTML = `
