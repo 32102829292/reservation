@@ -3,23 +3,35 @@
 namespace App\Controllers;
 
 use CodeIgniter\Controller;
+use App\Models\BookBorrowingModel;
 
 /**
  * BookController
  *
- * Tables:
- *   books           — id, title, author, genre, preface, isbn, published_year,
- *                     call_number, cover_image, total_copies, available_copies, status
- *   book_borrowings — id, book_id, user_id, status, borrowed_at, due_date,
- *                     returned_at, notes, created_at, updated_at
+ * Refactored to use BookBorrowingModel for all borrowing queries/writes.
+ * Raw $this->db calls remain only for the books table (no BookModel yet).
  */
 class BookController extends Controller
 {
     protected $db;
+    protected BookBorrowingModel $borrowingModel;
 
     public function __construct()
     {
-        $this->db = \Config\Database::connect();
+        $this->db             = \Config\Database::connect();
+        $this->borrowingModel = new BookBorrowingModel();
+    }
+
+    // ── Helpers ───────────────────────────────────────
+
+    private function isAdmin(): bool
+    {
+        return (session()->get('role') ?? '') === 'chairman';
+    }
+
+    private function skPrefix(): string
+    {
+        return $this->isAdmin() ? '/admin' : '/sk';
     }
 
     // ══════════════════════════════════════════════════
@@ -28,7 +40,7 @@ class BookController extends Controller
 
     public function index()
     {
-        $userId = session()->get('user_id');
+        $userId = (int) session()->get('user_id');
 
         $books = $this->db->table('books')
             ->select('id, title, author, genre, preface, isbn, published_year,
@@ -39,24 +51,16 @@ class BookController extends Controller
 
         $genres = array_values(array_unique(array_filter(array_column($books, 'genre'))));
 
-        $myBorrowings = $this->db->table('book_borrowings bb')
-            ->select('bb.id, bb.status, bb.borrowed_at, bb.due_date, bb.returned_at, bb.notes,
-                      b.title, b.author')
-            ->join('books b', 'b.id = bb.book_id')
-            ->where('bb.user_id', $userId)
-            ->orderBy('bb.created_at', 'DESC')
-            ->get()->getResultArray();
-
         return view('user/books', [
             'books'        => $books,
             'genres'       => $genres,
-            'myBorrowings' => $myBorrowings,
+            'myBorrowings' => $this->borrowingModel->getUserBorrowings($userId),
         ]);
     }
 
     public function borrow($bookId)
     {
-        $userId = session()->get('user_id');
+        $userId = (int) session()->get('user_id');
 
         $book = $this->db->table('books')
             ->where('id', $bookId)
@@ -67,29 +71,15 @@ class BookController extends Controller
             return redirect()->to('/books')->with('error', 'Book not found.');
         }
 
-        if ((int)$book['available_copies'] < 1) {
+        if ((int) $book['available_copies'] < 1) {
             return redirect()->to('/books')->with('error', 'Sorry, no copies are currently available.');
         }
 
-        $existing = $this->db->table('book_borrowings')
-            ->where('book_id', $bookId)
-            ->where('user_id', $userId)
-            ->whereIn('status', ['pending', 'approved'])
-            ->get()->getRowArray();
-
-        if ($existing) {
+        if ($this->borrowingModel->hasPendingBorrowing($userId, (int) $bookId)) {
             return redirect()->to('/books')->with('error', 'You already have an active borrow request for this book.');
         }
 
-        $this->db->table('book_borrowings')->insert([
-            'book_id'     => $bookId,
-            'user_id'     => $userId,
-            'status'      => 'pending',
-            'borrowed_at' => date('Y-m-d H:i:s'),
-            'due_date'    => date('Y-m-d', strtotime('+14 days')),
-            'created_at'  => date('Y-m-d H:i:s'),
-            'updated_at'  => date('Y-m-d H:i:s'),
-        ]);
+        $this->borrowingModel->createRequest((int) $bookId, $userId);
 
         return redirect()->to('/books')->with('success', 'Borrow request submitted! You will be notified once approved.');
     }
@@ -111,33 +101,16 @@ class BookController extends Controller
             ->orderBy('title', 'ASC')
             ->get()->getResultArray();
 
-        $borrowings = $this->db->table('book_borrowings bb')
-            ->select("
-                bb.id,
-                bb.status,
-                bb.borrowed_at,
-                bb.due_date,
-                bb.returned_at,
-                bb.notes,
-                bb.created_at,
-                b.title  AS book_title,
-                b.author AS book_author,
-                COALESCE(NULLIF(u.full_name, ''), u.name) AS resident_name,
-                u.email
-            ")
-            ->join('books b', 'b.id = bb.book_id')
-            ->join('users u', 'u.id = bb.user_id')
-            ->orderBy('bb.created_at', 'DESC')
-            ->get()->getResultArray();
-
-        return compact('books', 'borrowings');
+        return [
+            'books'      => $books,
+            'borrowings' => $this->borrowingModel->getWithDetails(),
+        ];
     }
 
     public function manage()
     {
-        $data = $this->getManageData();
         $view = $this->isAdmin() ? 'admin/books' : 'sk/books';
-        return view($view, $data);
+        return view($view, $this->getManageData());
     }
 
     public function borrowings()
@@ -147,15 +120,9 @@ class BookController extends Controller
 
     // ── CRUD ──────────────────────────────────────────
 
-    public function create()
-    {
-        $view = $this->isAdmin() ? 'admin/books_form' : 'sk/books_form';
-        return view($view, ['book' => null, 'isEdit' => false]);
-    }
-
     public function store()
     {
-        $totalCopies = (int)($this->request->getPost('total_copies') ?: 1);
+        $totalCopies = (int) ($this->request->getPost('total_copies') ?: 1);
 
         $this->db->table('books')->insert([
             'title'            => $this->request->getPost('title'),
@@ -164,7 +131,7 @@ class BookController extends Controller
             'preface'          => $this->request->getPost('preface'),
             'isbn'             => $this->request->getPost('isbn'),
             'published_year'   => $this->request->getPost('published_year') ?: null,
-            'call_number'      => $this->request->getPost('call_number') ?: null,   // ★
+            'call_number'      => $this->request->getPost('call_number') ?: null,
             'total_copies'     => $totalCopies,
             'available_copies' => $totalCopies,
             'status'           => 'active',
@@ -172,20 +139,7 @@ class BookController extends Controller
             'updated_at'       => date('Y-m-d H:i:s'),
         ]);
 
-        $prefix = $this->isAdmin() ? '/admin' : '/sk';
-        return redirect()->to($prefix . '/books')->with('success', 'Book added successfully.');
-    }
-
-    public function edit($bookId)
-    {
-        $book = $this->db->table('books')->where('id', $bookId)->get()->getRowArray();
-
-        if (!$book) {
-            return redirect()->back()->with('error', 'Book not found.');
-        }
-
-        $view = $this->isAdmin() ? 'admin/books_form' : 'sk/books_form';
-        return view($view, ['book' => $book, 'isEdit' => true]);
+        return redirect()->to($this->skPrefix() . '/books')->with('success', 'Book added successfully.');
     }
 
     public function update($bookId)
@@ -193,7 +147,7 @@ class BookController extends Controller
         $book = $this->db->table('books')->where('id', $bookId)->get()->getRowArray();
 
         if (!$book) {
-            return redirect()->back()->with('error', 'Book not found.');
+            return redirect()->to($this->skPrefix() . '/books')->with('error', 'Book not found.');
         }
 
         $data = [
@@ -203,33 +157,32 @@ class BookController extends Controller
             'preface'        => $this->request->getPost('preface')        ?? $book['preface'],
             'isbn'           => $this->request->getPost('isbn')           ?? $book['isbn'],
             'published_year' => $this->request->getPost('published_year') ?? $book['published_year'],
-            'call_number'    => $this->request->getPost('call_number')    ?? $book['call_number'] ?? null,  // ★
+            'call_number'    => $this->request->getPost('call_number')    ?? $book['call_number'] ?? null,
             'status'         => $this->request->getPost('status')         ?? $book['status'],
             'updated_at'     => date('Y-m-d H:i:s'),
         ];
 
         if ($this->request->getPost('total_copies') !== null) {
-            $newTotal                 = (int)$this->request->getPost('total_copies');
-            $diff                     = $newTotal - (int)$book['total_copies'];
+            $newTotal                 = (int) $this->request->getPost('total_copies');
+            $diff                     = $newTotal - (int) $book['total_copies'];
             $data['total_copies']     = $newTotal;
-            $data['available_copies'] = max(0, (int)$book['available_copies'] + $diff);
+            $data['available_copies'] = max(0, (int) $book['available_copies'] + $diff);
         }
 
         $this->db->table('books')->where('id', $bookId)->update($data);
 
-        $prefix = $this->isAdmin() ? '/admin' : '/sk';
-        return redirect()->to($prefix . '/books')->with('success', 'Book updated successfully.');
+        return redirect()->to($this->skPrefix() . '/books')->with('success', 'Book updated successfully.');
     }
 
     public function delete($bookId)
     {
         $this->db->table('books')->where('id', $bookId)->delete();
 
-        $prefix = $this->isAdmin() ? '/admin' : '/sk';
-        return redirect()->to($prefix . '/books')->with('success', 'Book deleted successfully.');
+        return redirect()->to($this->skPrefix() . '/books')->with('success', 'Book deleted successfully.');
     }
 
-    // ★ Inline copies editor — AJAX endpoint
+    // ── Inline copies editor — AJAX ───────────────────
+
     public function updateCopies($bookId): \CodeIgniter\HTTP\ResponseInterface
     {
         if (!session()->has('user_id')) {
@@ -238,7 +191,7 @@ class BookController extends Controller
         }
 
         $data = $this->request->getJSON(true) ?? [];
-        $val  = max(0, (int)($data['available_copies'] ?? 0));
+        $val  = max(0, (int) ($data['available_copies'] ?? 0));
 
         $book = $this->db->table('books')->where('id', $bookId)->get()->getRowArray();
         if (!$book) {
@@ -246,8 +199,7 @@ class BookController extends Controller
                 ->setJSON(['ok' => false, 'error' => 'Book not found']);
         }
 
-        // Clamp to total_copies so available never exceeds total
-        $val = min($val, (int)($book['total_copies'] ?? $val));
+        $val = min($val, (int) ($book['total_copies'] ?? $val));
 
         $this->db->table('books')->where('id', $bookId)->update([
             'available_copies' => $val,
@@ -255,29 +207,107 @@ class BookController extends Controller
         ]);
 
         return $this->response
-            ->setHeader('X-CSRF-TOKEN', csrf_hash())   // ★ CSRF refresh
+            ->setHeader('X-CSRF-TOKEN', csrf_hash())
             ->setJSON(['ok' => true, 'available_copies' => $val]);
+    }
+
+    // ── PDF / AI extraction — AJAX ────────────────────
+
+    public function extractPdf(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        if (!session()->has('user_id')) {
+            return $this->response->setStatusCode(401)
+                ->setJSON(['ok' => false, 'error' => 'Unauthorized']);
+        }
+
+        $body    = $this->request->getJSON(true) ?? [];
+        $pdfText = trim($body['pdf_text'] ?? '');
+
+        if (strlen($pdfText) < 20) {
+            return $this->response->setJSON(['ok' => false, 'error' => 'No readable text provided.']);
+        }
+
+        $pdfText = mb_substr($pdfText, 0, 6000);
+
+        $apiKey = env('ANTHROPIC_API_KEY');
+        if (!$apiKey) {
+            return $this->response->setJSON(['ok' => false, 'error' => 'AI service not configured.']);
+        }
+
+        $prompt = <<<PROMPT
+Extract bibliographic details from the following book text and return ONLY a JSON object
+with these keys (use null for anything you cannot find):
+title, author, genre, published_year, isbn, call_number, preface
+
+Rules:
+- published_year must be a 4-digit integer or null
+- isbn must be digits/hyphens only or null
+- preface is a 2-3 sentence summary of what the book is about
+- Return ONLY the JSON object, no markdown fences, no extra text
+
+TEXT:
+{$pdfText}
+PROMPT;
+
+        $ch = curl_init('https://api.anthropic.com/v1/messages');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'x-api-key: ' . $apiKey,
+                'anthropic-version: 2023-06-01',
+            ],
+            CURLOPT_POSTFIELDS => json_encode([
+                'model'      => 'claude-haiku-4-5-20251001',
+                'max_tokens' => 512,
+                'messages'   => [
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+            ]),
+            CURLOPT_TIMEOUT => 30,
+        ]);
+
+        $raw = curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+
+        if ($err) {
+            return $this->response->setJSON(['ok' => false, 'error' => 'Network error: ' . $err]);
+        }
+
+        $apiResp = json_decode($raw, true);
+        $text    = $apiResp['content'][0]['text'] ?? '';
+
+        $text      = preg_replace('/^```[a-z]*\s*/i', '', trim($text));
+        $text      = preg_replace('/\s*```$/', '', $text);
+        $extracted = json_decode(trim($text), true);
+
+        if (!is_array($extracted)) {
+            return $this->response->setJSON(['ok' => false, 'error' => 'AI returned unexpected format.']);
+        }
+
+        return $this->response
+            ->setHeader('X-CSRF-TOKEN', csrf_hash())
+            ->setJSON(['ok' => true, 'data' => $extracted]);
     }
 
     // ══════════════════════════════════════════════════
     //  BORROWING ACTIONS
+    //  All use findForAction() from the model — no more
+    //  duplicated where('id')->where('status') chains.
     // ══════════════════════════════════════════════════
 
     public function approveBorrowing($borrowingId)
     {
-        $borrowing = $this->db->table('book_borrowings')
-            ->where('id', $borrowingId)
-            ->where('status', 'pending')
-            ->get()->getRowArray();
+        $borrowing = $this->borrowingModel->findForAction((int) $borrowingId, 'pending');
 
         if (!$borrowing) {
-            return redirect()->back()->with('error', 'Request not found or already processed.');
+            return redirect()->to($this->skPrefix() . '/books#borrowings')
+                ->with('error', 'This request was already processed or could not be found.');
         }
 
-        $this->db->table('book_borrowings')->where('id', $borrowingId)->update([
-            'status'     => 'approved',
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        $this->borrowingModel->approve((int) $borrowingId);
 
         $this->db->query(
             'UPDATE books SET available_copies = GREATEST(0, available_copies - 1),
@@ -285,25 +315,20 @@ class BookController extends Controller
             [$borrowing['book_id']]
         );
 
-        return redirect()->back()->with('success', 'Borrow request approved.');
+        return redirect()->to($this->skPrefix() . '/books#borrowings')
+            ->with('success', 'Borrow request approved.');
     }
 
     public function returnBook($borrowingId)
     {
-        $borrowing = $this->db->table('book_borrowings')
-            ->where('id', $borrowingId)
-            ->where('status', 'approved')
-            ->get()->getRowArray();
+        $borrowing = $this->borrowingModel->findForAction((int) $borrowingId, 'approved');
 
         if (!$borrowing) {
-            return redirect()->back()->with('error', 'Request not found or not approved.');
+            return redirect()->to($this->skPrefix() . '/books#borrowings')
+                ->with('error', 'This book has already been returned or the request could not be found.');
         }
 
-        $this->db->table('book_borrowings')->where('id', $borrowingId)->update([
-            'status'      => 'returned',
-            'returned_at' => date('Y-m-d H:i:s'),
-            'updated_at'  => date('Y-m-d H:i:s'),
-        ]);
+        $this->borrowingModel->markReturned((int) $borrowingId);
 
         $this->db->query(
             'UPDATE books SET available_copies = LEAST(total_copies, available_copies + 1),
@@ -311,32 +336,22 @@ class BookController extends Controller
             [$borrowing['book_id']]
         );
 
-        return redirect()->back()->with('success', 'Book marked as returned.');
+        return redirect()->to($this->skPrefix() . '/books#borrowings')
+            ->with('success', 'Book marked as returned.');
     }
 
     public function rejectBorrowing($borrowingId)
     {
-        $borrowing = $this->db->table('book_borrowings')
-            ->where('id', $borrowingId)
-            ->where('status', 'pending')
-            ->get()->getRowArray();
+        $borrowing = $this->borrowingModel->findForAction((int) $borrowingId, 'pending');
 
         if (!$borrowing) {
-            return redirect()->back()->with('error', 'Request not found or already processed.');
+            return redirect()->to($this->skPrefix() . '/books#borrowings')
+                ->with('error', 'This request was already processed or could not be found.');
         }
 
-        $this->db->table('book_borrowings')->where('id', $borrowingId)->update([
-            'status'     => 'rejected',
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        $this->borrowingModel->reject((int) $borrowingId);
 
-        return redirect()->back()->with('success', 'Borrow request rejected.');
-    }
-
-    // ── Helper ────────────────────────────────────────
-
-    private function isAdmin(): bool
-    {
-        return (session()->get('role') ?? '') === 'chairman';
+        return redirect()->to($this->skPrefix() . '/books#borrowings')
+            ->with('success', 'Borrow request rejected.');
     }
 }

@@ -27,7 +27,6 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
-  <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
   <style>
     #desktopTable {
       display: none;
@@ -65,6 +64,12 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
       #borrowCardList {
         display: none !important;
       }
+    }
+
+    /* Prevents double-submit flash */
+    .form-submitting button {
+      opacity: .6;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -377,7 +382,6 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
         </div>
       <?php else: ?>
 
-        <!-- FIX: Desktop table — no Tailwind hidden/block classes, controlled by CSS media query -->
         <div class="tbl-wrap" id="desktopTable">
           <div style="overflow-x:auto;">
             <table id="booksTable">
@@ -440,7 +444,6 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
           </div>
         </div>
 
-        <!-- FIX: Mobile cards — no Tailwind classes, controlled by CSS media query -->
         <div id="bookCardList">
           <?php foreach ($books as $b):
             $avail  = (int)($b['available_copies'] ?? 0);
@@ -530,7 +533,6 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
           <button class="fpill fp-rejected" id="bpill-rejected" onclick="filterBorrowings('rejected')">Rejected</button>
         </div>
 
-        <!-- FIX: Desktop borrow table — CSS media query controlled -->
         <div class="tbl-wrap" id="desktopBorrowTable">
           <div style="overflow-x:auto;">
             <table id="borrowingsTable">
@@ -563,10 +565,10 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
                     <td>
                       <div class="act-pair">
                         <?php if ($s === 'pending'): ?>
-                          <form method="post" action="/sk/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button class="act-btn act-approve" style="width:100%;"><i class="fa-solid fa-check" style="font-size:.65rem;"></i> Approve</button></form>
-                          <form method="post" action="/sk/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button class="act-btn act-reject" style="width:100%;"><i class="fa-solid fa-xmark" style="font-size:.65rem;"></i> Reject</button></form>
+                          <form method="post" action="/sk/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="act-btn act-approve" style="width:100%;"><i class="fa-solid fa-check" style="font-size:.65rem;"></i> Approve</button></form>
+                          <form method="post" action="/sk/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="act-btn act-reject" style="width:100%;"><i class="fa-solid fa-xmark" style="font-size:.65rem;"></i> Reject</button></form>
                         <?php elseif ($s === 'approved'): ?>
-                          <form method="post" action="/sk/borrowings/return/<?= $bw['id'] ?>"><?= csrf_field() ?><button class="act-btn act-return" style="width:100%;"><i class="fa-solid fa-rotate-left" style="font-size:.65rem;"></i> Returned</button></form>
+                          <form method="post" action="/sk/borrowings/return/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="act-btn act-return" style="width:100%;"><i class="fa-solid fa-rotate-left" style="font-size:.65rem;"></i> Returned</button></form>
                         <?php else: ?>
                           <span style="font-size:.72rem;color:#94a3b8;font-weight:600;"><?= ucfirst($s) ?></span>
                         <?php endif; ?>
@@ -579,7 +581,6 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
           </div>
         </div>
 
-        <!-- FIX: Mobile borrow cards — CSS media query controlled -->
         <div id="borrowCardList">
           <?php foreach ($borrowings as $bw): $s = strtolower($bw['status'] ?? 'pending'); ?>
             <div class="borrow-card" data-status="<?= $s ?>" data-search="<?= strtolower(htmlspecialchars(($bw['resident_name'] ?? '') . ' ' . ($bw['book_title'] ?? ''), ENT_QUOTES)) ?>">
@@ -606,12 +607,12 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
               </div>
               <?php if ($s === 'pending'): ?>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:10px;border-top:1px solid rgba(99,102,241,.05);">
-                  <form method="post" action="/sk/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button class="act-btn act-approve" style="width:100%;justify-content:center;padding:10px;"><i class="fa-solid fa-check" style="font-size:.7rem;"></i> Approve</button></form>
-                  <form method="post" action="/sk/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button class="act-btn act-reject" style="width:100%;justify-content:center;padding:10px;"><i class="fa-solid fa-xmark" style="font-size:.7rem;"></i> Reject</button></form>
+                  <form method="post" action="/sk/borrowings/approve/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="act-btn act-approve" style="width:100%;justify-content:center;padding:10px;"><i class="fa-solid fa-check" style="font-size:.7rem;"></i> Approve</button></form>
+                  <form method="post" action="/sk/borrowings/reject/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="act-btn act-reject" style="width:100%;justify-content:center;padding:10px;"><i class="fa-solid fa-xmark" style="font-size:.7rem;"></i> Reject</button></form>
                 </div>
               <?php elseif ($s === 'approved'): ?>
                 <div style="padding-top:10px;border-top:1px solid rgba(99,102,241,.05);">
-                  <form method="post" action="/sk/borrowings/return/<?= $bw['id'] ?>"><?= csrf_field() ?><button class="act-btn act-return" style="width:100%;justify-content:center;padding:10px;"><i class="fa-solid fa-rotate-left" style="font-size:.7rem;"></i> Mark as Returned</button></form>
+                  <form method="post" action="/sk/borrowings/return/<?= $bw['id'] ?>"><?= csrf_field() ?><button type="submit" class="act-btn act-return" style="width:100%;justify-content:center;padding:10px;"><i class="fa-solid fa-rotate-left" style="font-size:.7rem;"></i> Mark as Returned</button></form>
                 </div>
               <?php endif; ?>
             </div>
@@ -634,6 +635,26 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
+    /* ══════════════════════════════════════
+       DOUBLE-SUBMIT GUARD
+       Disables all submit buttons in a form
+       the moment it is submitted, preventing
+       resubmission from back-button or double-click.
+    ══════════════════════════════════════ */
+    document.addEventListener('submit', function(e) {
+      const form = e.target;
+      // Skip modal forms that use AJAX or are reset programmatically
+      if (form.id === 'aPdfBookForm' || form.id === 'editForm' || form.id === 'deleteForm') return;
+      form.classList.add('form-submitting');
+      form.querySelectorAll('button[type="submit"], button:not([type])').forEach(btn => {
+        btn.disabled = true;
+        // Preserve original icon + swap text
+        const originalHtml = btn.innerHTML;
+        btn.dataset.originalHtml = originalHtml;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:.65rem;margin-right:5px;"></i> Processing…';
+      });
+    });
+
     /* ── Tab switching ── */
     function switchTab(t) {
       document.getElementById('paneBooks').style.display = t === 'books' ? '' : 'none';
@@ -641,6 +662,7 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
       document.getElementById('tabBooks').className = 'tab-btn' + (t === 'books' ? ' active' : '');
       document.getElementById('tabBorrowings').className = 'tab-btn' + (t === 'borrowings' ? ' active' : '');
     }
+    // Auto-switch to borrowings tab if URL hash is #borrowings
     if (window.location.hash === '#borrowings') switchTab('borrowings');
 
     /* ── Modals ── */
@@ -822,7 +844,9 @@ $pendingBorrows  = count(array_filter($borrowings, fn($b) => ($b['status'] ?? ''
       if (noMsg) noMsg.style.display = ((_borrowStatus !== 'all' || q) && visible === 0) ? 'block' : 'none';
     }
 
-    /* ── PDF / AI extraction ── */
+    /* ══════════════════════════════════════
+       PDF / AI EXTRACTION
+    ══════════════════════════════════════ */
     let _aPdfText = null,
       _aPI = null;
 
