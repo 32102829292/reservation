@@ -1,9 +1,13 @@
 <?php
+date_default_timezone_set('Asia/Manila');
 $page = 'user-requests';
 $pendingUserCount = $pendingUserCount ?? 0;
 $usedSlots = (int)($usedThisMonth ?? 0);
-$maxSlots = max(1, (int)($maxMonthlySlots ?? 3));
-$remainingReservations = $remainingReservations ?? 0;
+$maxSlots  = max(1, (int)($maxMonthlySlots ?? 3));
+// Derive remaining from used+max so the quota widget is never stuck at 0
+$remainingReservations = isset($remainingReservations) && (int)$remainingReservations > 0
+    ? (int)$remainingReservations
+    : max(0, $maxSlots - $usedSlots);
 $user_name = $user_name ?? 'Officer';
 
 $userReservations = $userReservations ?? [];
