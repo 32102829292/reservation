@@ -19,7 +19,89 @@ $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_
 
     <style>
         /* ── Page-specific styles only ── */
+        /* ── Dark mode: profile page ── */
 
+/* Info icon boxes */
+body.dark .info-icon {
+    background: rgba(99,102,241,.1);
+    border-color: rgba(99,102,241,.15);
+}
+
+/* Info values (hardcoded #0f172a) */
+body.dark .info-value,
+body.dark .card-title,
+body.dark .stat-mini-val {
+    color: var(--text);
+}
+
+/* Mini stat boxes */
+body.dark .stat-mini {
+    background: rgba(99,102,241,.07);
+    border-color: rgba(99,102,241,.15);
+}
+
+/* Quick links */
+body.dark .quick-link {
+    background: rgba(99,102,241,.06);
+    border-color: rgba(99,102,241,.15);
+    color: var(--text-sub);
+}
+body.dark .quick-link:hover {
+    background: rgba(99,102,241,.15);
+    color: var(--indigo);
+}
+
+/* Danger button */
+body.dark .danger-btn {
+    background: rgba(220,38,38,.1);
+    color: #f87171;
+    border-color: rgba(220,38,38,.2);
+}
+body.dark .danger-btn:hover {
+    background: rgba(220,38,38,.18);
+    border-color: rgba(220,38,38,.35);
+}
+
+/* Action button sm */
+body.dark .action-btn-sm {
+    background: rgba(99,102,241,.1);
+    border-color: rgba(99,102,241,.2);
+}
+
+/* Icon button */
+body.dark .icon-btn {
+    background: rgba(99,102,241,.08);
+    border-color: rgba(99,102,241,.15);
+}
+
+/* Modal cards */
+body.dark .modal-card {
+    background: var(--card);
+    color: var(--text);
+}
+body.dark .modal-card h3 { color: var(--text); }
+
+/* Modal cancel buttons */
+body.dark .modal-card button[onclick*="closeModal"],
+body.dark .delete-cancel-btn {
+    background: rgba(99,102,241,.08);
+    border-color: rgba(99,102,241,.15);
+    color: var(--text-sub);
+}
+
+/* Delete warning box */
+body.dark .delete-warning-box {
+    background: rgba(220,38,38,.08);
+    border-color: rgba(220,38,38,.2);
+}
+body.dark .delete-warning-title { color: #fca5a5; }
+
+/* Delete code badge */
+body.dark .delete-code-badge {
+    background: rgba(220,38,38,.1);
+    border-color: rgba(220,38,38,.2);
+    color: #fca5a5;
+}
         /* Profile avatar */
         .profile-avatar { width: 80px; height: 80px; background: linear-gradient(135deg, var(--indigo) 0%, #4338ca 60%, #818cf8 100%); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: white; box-shadow: 0 8px 24px rgba(55,48,163,.3); font-family: var(--mono); letter-spacing: -.04em; }
         .profile-status-dot { position: absolute; bottom: -4px; right: -4px; width: 22px; height: 22px; background: #10b981; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }

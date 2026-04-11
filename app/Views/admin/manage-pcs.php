@@ -20,6 +20,37 @@ $maintenCount   = $totalPcs - $availableCount;
     <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        /* ── Dark mode button fixes ── */
+body.dark .btn-toggle-to-maint {
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.25);
+}
+
+body.dark .btn-toggle-to-maint:hover {
+    background: rgba(245, 158, 11, 0.2);
+}
+
+body.dark .btn-toggle-to-avail {
+    background: rgba(34, 197, 94, 0.12);
+    color: #4ade80;
+    border-color: rgba(34, 197, 94, 0.25);
+}
+
+body.dark .btn-toggle-to-avail:hover {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+body.dark .btn-delete-sm {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+body.dark .btn-delete-sm:hover {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.35);
+}
         /* ── PC grid cards ── */
         .pc-card {
             background: var(--card);

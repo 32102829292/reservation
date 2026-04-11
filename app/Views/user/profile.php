@@ -24,6 +24,42 @@ $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_
     </script>
 
     <style>
+        /* ── Dark mode: resident profile page ── */
+
+/* Danger button */
+body.dark .danger-btn {
+    background: rgba(220,38,38,.1);
+    color: #f87171;
+    border-color: rgba(220,38,38,.2);
+}
+body.dark .danger-btn:hover {
+    background: rgba(220,38,38,.18);
+    border-color: rgba(220,38,38,.35);
+}
+
+/* Delete modal — trash icon box */
+body.dark #deleteModal [style*="background:#fef2f2"][style*="border:1px solid #fecaca"] {
+    background: rgba(220,38,38,.1) !important;
+    border-color: rgba(220,38,38,.2) !important;
+}
+
+/* Danger zone card icon box */
+body.dark .card-icon[style*="background:#fef2f2"] {
+    background: rgba(220,38,38,.08) !important;
+}
+
+/* "Account Access" active badge */
+body.dark [style*="background:#dcfce7"] {
+    background: rgba(22,163,74,.12) !important;
+}
+body.dark [style*="color:#166534"] {
+    color: #4ade80 !important;
+}
+
+/* Security card icon box */
+body.dark .card-icon[style*="background:#fef3c7"] {
+    background: rgba(217,119,6,.1) !important;
+}
         /* ── Layout shell ── */
         body { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
         html.dark-pre body { background: #060e1e; }
