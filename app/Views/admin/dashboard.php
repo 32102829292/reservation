@@ -155,6 +155,26 @@
         : 0;
 
     $JSON_FLAGS = JSON_HEX_TAG | JSON_HEX_APOS | JSON_UNESCAPED_UNICODE;
+
+    /*
+     * FIX: Normalize reservation records so JS always receives
+     * visitor_name and full_name as non-null strings.
+     * This prevents the date-modal row from silently omitting the name.
+     */
+    $reservations = array_map(function(array $r): array {
+        // Resolve display name from every possible column alias
+        $name = (string)(
+            $r['visitor_name']  ??
+            $r['full_name']     ??
+            $r['resident_name'] ??
+            $r['user_name']     ??
+            $r['name']          ??
+            ''
+        );
+        $r['visitor_name'] = $name;
+        $r['full_name']    = $name;
+        return $r;
+    }, $reservations);
     ?>
 
     <?php include APPPATH . 'Views/partials/admin_layout.php'; ?>
@@ -933,6 +953,18 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
 
+        /* ─── FIX: Robust name resolver ───
+         * Checks every possible field name so the date-modal always
+         * shows a real name instead of a blank line.
+         */
+        const resolveVisitorName = r =>
+            (r.visitor_name  || '').trim() ||
+            (r.full_name     || '').trim() ||
+            (r.resident_name || '').trim() ||
+            (r.user_name     || '').trim() ||
+            (r.name          || '').trim() ||
+            'Guest';
+
         /* ═══════════════════════════════════════════
            NOTIFICATIONS  — matches user dashboard
         ═══════════════════════════════════════════ */
@@ -950,7 +982,7 @@
                 .map(r => ({
                     id:    parseInt(r.id),
                     title: 'New Pending Request',
-                    msg:   `${escHtml(r.visitor_name || 'User')} → ${escHtml(r.resource_name || 'Resource')}`,
+                    msg:   `${escHtml(resolveVisitorName(r))} → ${escHtml(r.resource_name || 'Resource')}`,
                     time:  r.created_at || new Date().toISOString(),
                     read:  seen.includes(parseInt(r.id))
                 }));
@@ -1055,6 +1087,10 @@
                     };
                     const t  = (r.start_time || '').slice(0, 5) || '—';
                     const et = (r.end_time   || '').slice(0, 5) || '';
+
+                    /* FIX: use resolveVisitorName so the name is never blank */
+                    const displayName = resolveVisitorName(r);
+
                     const row = document.createElement('div');
                     row.className = 'date-row';
                     row.setAttribute('role', 'button');
@@ -1067,7 +1103,7 @@
                         </div>
                         <div style="flex:1;min-width:0;">
                             <p style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.resource_name || 'Resource')}</p>
-                            <p style="font-size:.7rem;color:var(--text-sub);">${escHtml(r.visitor_name || r.full_name || 'Guest')} · ${escHtml(t)}${et ? '–' + escHtml(et) : ''}</p>
+                            <p style="font-size:.7rem;color:var(--text-sub);">${escHtml(displayName)} · ${escHtml(t)}${et ? '–' + escHtml(et) : ''}</p>
                         </div>
                         <span style="padding:2px 8px;border-radius:999px;font-size:.6rem;font-weight:700;text-transform:uppercase;${clr[st] || 'background:#f1f5f9;color:#64748b'};flex-shrink:0;">${escHtml(st)}</span>`;
                     c.appendChild(row);
@@ -1105,7 +1141,7 @@
 
         function tlOpenPrintModal(r) {
             tlCurrentPrint = r; tlPageCount = 1; tlPrinted = true;
-            document.getElementById('tl-modal-title').textContent = r.visitor_name || r.full_name || 'User';
+            document.getElementById('tl-modal-title').textContent = resolveVisitorName(r);
             document.getElementById('tl-modal-sub').textContent   = `${r.resource_name || 'Resource'} · Session ended`;
             document.getElementById('tl-page-num').textContent    = '1';
             document.getElementById('tl-page-section').style.display = 'block';
@@ -1241,7 +1277,7 @@
                     const elMs     = nowMs - sMs;
                     const prog     = Math.min(100, Math.max(0, (elMs / totMs) * 100));
                     const state    = tlState(remMs);
-                    const name     = r.visitor_name || r.full_name || 'Guest';
+                    const name     = resolveVisitorName(r);
                     const res      = r.resource_name || 'Resource';
 
                     if (!tlSessions[r.id]) tlSessions[r.id] = { warned: false, expired: false };
@@ -1422,7 +1458,7 @@
                 const st  = isClaimed(r) ? 'claimed' : (r.status || 'pending');
                 const clr = { approved:'#10b981', pending:'#fbbf24', declined:'#f87171', claimed:'#a855f7' };
                 return {
-                    title:           `${r.visitor_name || r.full_name || 'Guest'} · ${r.resource_name || 'Res'}`,
+                    title:           `${resolveVisitorName(r)} · ${r.resource_name || 'Res'}`,
                     start:           dk + (r.start_time ? 'T' + r.start_time : ''),
                     end:             dk + (r.end_time   ? 'T' + r.end_time   : ''),
                     backgroundColor: clr[st] || '#94a3b8',
