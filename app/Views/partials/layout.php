@@ -69,10 +69,20 @@ function _layout_icon(string $name, int $size, string $stroke): string {
 
 <style>
 /* ── Scroll fix ── */
-html, body   { height: 100%; overflow: hidden; }
-body         { display: flex; }
-.l-sidebar   { height: 100vh; overflow-y: auto; position: sticky; top: 0; flex-shrink: 0; }
-.main-area   { height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1; min-width: 0; }
+
+/* Desktop: sidebar fixed, only main scrolls */
+@media (min-width: 1024px) {
+    html, body { height: 100%; overflow: hidden; }
+    body        { display: flex; }
+    .l-sidebar  { height: 100vh; overflow-y: auto; position: sticky; top: 0; flex-shrink: 0; }
+    .main-area  { height: 100vh; overflow-y: auto; flex: 1; min-width: 0; }
+}
+
+/* Mobile: normal page scroll, just pad bottom for the nav bar */
+@media (max-width: 1023px) {
+    html, body { height: auto; overflow: auto; }
+    .main-area { height: auto; overflow: visible; padding-bottom: 80px; }
+}
 </style>
 
 <script>
