@@ -479,10 +479,15 @@ include(APPPATH . 'Views/partials/layout.php');
                         <p style="font-size:.83rem;font-weight:600;color:var(--text);">Delete Account</p>
                         <p style="font-size:.72rem;color:var(--text-sub);margin-top:2px;">Permanently remove your account and all data</p>
                     </div>
-                    <button class="danger-btn" onclick="openModal('deleteModal')">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin-right:4px;vertical-align:middle;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-                        Delete
-                    </button>
+                    <button class="danger-btn" onclick="openModal('deleteModal')" style="display:inline-flex;align-items:center;gap:5px;">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;display:block;">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+        <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+    </svg>
+    Delete
+</button>
                 </div>
             </div>
         </div>
