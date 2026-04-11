@@ -19,8 +19,7 @@
     </script>
 
     <style>
-        /* ── Layout shell ── */
-        body { display: flex; min-height: 100vh; }
+        /* ── Layout shell — scroll is handled by layout.php ── */
         html.dark-pre body { background: #060e1e; }
 
         /* ── Page header ── */
@@ -108,7 +107,8 @@
 
         .hidden { display: none !important; }
 
-        @media(max-width:639px) { .main-area { padding: 16px 14px 0 !important; } }
+        /* ── Mobile main area padding ── */
+        @media(max-width:639px) { .main-area { padding: 16px 14px !important; } }
     </style>
 </head>
 <body>
@@ -341,7 +341,6 @@ let unreadCount = notifications.filter(n => !n.read).length, checkInterval, last
 
 document.addEventListener('DOMContentLoaded', function() {
     document.documentElement.classList.remove('dark-pre');
-    /* Dark mode already applied by layout.php */
     if ('Notification' in window) Notification.requestPermission();
     renderNotifications(); updateBadge();
     checkInterval = setInterval(checkForNewApprovals, 30000);
