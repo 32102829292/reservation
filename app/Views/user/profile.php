@@ -24,42 +24,6 @@ $memberYear   = isset($user['created_at']) ? date('Y', strtotime($user['created_
     </script>
 
     <style>
-        /* ── Dark mode: resident profile page ── */
-
-/* Danger button */
-body.dark .danger-btn {
-    background: rgba(220,38,38,.1);
-    color: #f87171;
-    border-color: rgba(220,38,38,.2);
-}
-body.dark .danger-btn:hover {
-    background: rgba(220,38,38,.18);
-    border-color: rgba(220,38,38,.35);
-}
-
-/* Delete modal — trash icon box */
-body.dark #deleteModal [style*="background:#fef2f2"][style*="border:1px solid #fecaca"] {
-    background: rgba(220,38,38,.1) !important;
-    border-color: rgba(220,38,38,.2) !important;
-}
-
-/* Danger zone card icon box */
-body.dark .card-icon[style*="background:#fef2f2"] {
-    background: rgba(220,38,38,.08) !important;
-}
-
-/* "Account Access" active badge */
-body.dark [style*="background:#dcfce7"] {
-    background: rgba(22,163,74,.12) !important;
-}
-body.dark [style*="color:#166534"] {
-    color: #4ade80 !important;
-}
-
-/* Security card icon box */
-body.dark .card-icon[style*="background:#fef3c7"] {
-    background: rgba(217,119,6,.1) !important;
-}
         /* ── Layout shell ── */
         body { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
         html.dark-pre body { background: #060e1e; }
@@ -116,10 +80,41 @@ body.dark .card-icon[style*="background:#fef3c7"] {
         .danger-row:last-child { border-bottom: none; padding-bottom: 0; }
         .danger-btn { font-size: .75rem; font-weight: 700; padding: 8px 14px; border-radius: 9px; border: 1px solid #fecaca; background: #fef2f2; color: #dc2626; cursor: pointer; font-family: var(--font); transition: all var(--ease); white-space: nowrap; flex-shrink: 0; }
         .danger-btn:hover { background: #fee2e2; border-color: #f87171; }
+        body.dark .danger-btn { background: rgba(220,38,38,.1); color: #f87171; border-color: rgba(220,38,38,.2); }
+        body.dark .danger-btn:hover { background: rgba(220,38,38,.18); border-color: rgba(220,38,38,.35); }
 
         /* ── Quick links ── */
         .quick-link { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--card); text-decoration: none; color: var(--text-muted); font-size: .83rem; font-weight: 600; transition: all var(--ease); }
         .quick-link:hover { border-color: var(--indigo); background: var(--indigo-light); color: var(--indigo); }
+
+        /* ── Quick link icon boxes ── */
+        .ql-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ql-icon-indigo  { background: #eef2ff; }
+        .ql-icon-violet  { background: #ede9fe; }
+        .ql-icon-amber   { background: #fef3c7; }
+        .ql-icon-purple  { background: #f3e8ff; }
+        body.dark .ql-icon-indigo { background: rgba(99,102,241,.12); }
+        body.dark .ql-icon-violet { background: rgba(124,58,237,.12); }
+        body.dark .ql-icon-amber  { background: rgba(217,119,6,.12); }
+        body.dark .ql-icon-purple { background: rgba(147,51,234,.12); }
+
+        /* ── Card icon boxes ── */
+        .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .card-icon-indigo  { background: var(--indigo-light); }
+        .card-icon-amber   { background: #fef3c7; }
+        .card-icon-red     { background: #fef2f2; }
+        body.dark .card-icon-amber { background: rgba(217,119,6,.1); }
+        body.dark .card-icon-red   { background: rgba(220,38,38,.1); }
+
+        /* ── Delete modal icon box ── */
+        .delete-modal-icon { width: 46px; height: 46px; background: #fef2f2; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #fecaca; }
+        body.dark .delete-modal-icon { background: rgba(220,38,38,.1); border-color: rgba(220,38,38,.2); }
+
+        /* ── Active badge ── */
+        .active-badge { display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: #dcfce7; border-radius: 999px; flex-shrink: 0; }
+        .active-badge span { font-size: .65rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: .05em; }
+        body.dark .active-badge { background: rgba(22,163,74,.12); }
+        body.dark .active-badge span { color: #4ade80; }
 
         /* ── Field inputs (modal) ── */
         .field-label { display: block; font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 6px; }
@@ -143,8 +138,8 @@ body.dark .card-icon[style*="background:#fef3c7"] {
 
         /* ── Card / section sub-elements ── */
         .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-        .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .card-title { font-size: .9rem; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+        .card-title-danger { color: #dc2626; }
         .card-sub   { font-size: .7rem; color: var(--text-sub); margin-top: 2px; }
         .section-lbl { font-size: .62rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 14px; }
 
@@ -203,7 +198,7 @@ include(APPPATH . 'Views/partials/layout.php');
         <div class="sheet-handle"></div>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:12px">
             <div style="display:flex;align-items:center;gap:12px">
-                <div style="width:46px;height:46px;background:#fef2f2;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #fecaca">
+                <div class="delete-modal-icon">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
                 </div>
                 <div>
@@ -324,22 +319,18 @@ include(APPPATH . 'Views/partials/layout.php');
             <div class="card card-p">
                 <div class="section-lbl">Quick Access</div>
                 <div style="display:flex;flex-direction:column;gap:5px;">
-                    <?php foreach ([
-                        ['/reservation',      '#eef2ff', 'var(--indigo)',  'New Reservation',  'plus'],
-                        ['/reservation-list', '#ede9fe', '#7c3aed',       'My Reservations',  'calendar'],
-                        ['/books',            '#fef3c7', '#d97706',       'Browse Library',   'book-open'],
-                        ['/dashboard',        '#f3e8ff', '#9333ea',       'Dashboard',        'house'],
-                    ] as [$url, $bg, $fg, $label, $ico]):
-                        $svgMap = [
-                            'plus'      => '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
-                            'calendar'  => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-                            'book-open' => '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>',
-                            'house'     => '<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>',
-                        ];
+                    <?php
+                    $quickLinks = [
+                        ['/reservation',      'ql-icon-indigo', 'var(--indigo)', 'New Reservation', '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>'],
+                        ['/reservation-list', 'ql-icon-violet', '#7c3aed',      'My Reservations',  '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'],
+                        ['/books',            'ql-icon-amber',  '#d97706',      'Browse Library',   '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>'],
+                        ['/dashboard',        'ql-icon-purple', '#9333ea',      'Dashboard',        '<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>'],
+                    ];
+                    foreach ($quickLinks as [$url, $iconClass, $fg, $label, $svgPath]):
                     ?>
                         <a href="<?= base_url($url) ?>" class="quick-link">
-                            <div style="width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:<?= $bg ?>;">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="<?= $fg ?>" stroke-width="1.8"><?= $svgMap[$ico] ?></svg>
+                            <div class="ql-icon <?= $iconClass ?>">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="<?= $fg ?>" stroke-width="1.8"><?= $svgPath ?></svg>
                             </div>
                             <?= $label ?>
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin-left:auto;color:var(--text-faint);"><polyline points="9 18 15 12 9 6"/></svg>
@@ -356,7 +347,7 @@ include(APPPATH . 'Views/partials/layout.php');
             <div class="card card-p-lg">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="card-icon" style="background:var(--indigo-light);">
+                        <div class="card-icon card-icon-indigo">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>
                         </div>
                         <div>
@@ -369,18 +360,20 @@ include(APPPATH . 'Views/partials/layout.php');
                         Edit
                     </button>
                 </div>
-                <?php foreach ([
+                <?php
+                $infoRows = [
                     ['user',     'Full Name',      $user['name']  ?? 'Not set'],
                     ['mail',     'Email Address',  $user['email'] ?? 'Not set'],
                     ['phone',    'Contact Number', $user['phone'] ?? 'Not set'],
                     ['calendar', 'Member Since',   $memberSince],
-                ] as [$ico, $label, $val]):
-                    $icoMap = [
-                        'user'     => '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>',
-                        'mail'     => '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
-                        'phone'    => '<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.01 1.2 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91A16 16 0 0016 17.91l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>',
-                        'calendar' => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-                    ];
+                ];
+                $icoMap = [
+                    'user'     => '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>',
+                    'mail'     => '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+                    'phone'    => '<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.01 1.2 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91A16 16 0 0016 17.91l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>',
+                    'calendar' => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+                ];
+                foreach ($infoRows as [$ico, $label, $val]):
                 ?>
                     <div class="info-row">
                         <div class="info-icon">
@@ -398,7 +391,7 @@ include(APPPATH . 'Views/partials/layout.php');
             <div class="card card-p-lg">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="card-icon" style="background:#fef3c7;">
+                        <div class="card-icon card-icon-amber">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         </div>
                         <div>
@@ -419,9 +412,9 @@ include(APPPATH . 'Views/partials/layout.php');
                         <p style="font-size:.83rem;font-weight:600;color:var(--text);">Account Access</p>
                         <p style="font-size:.72rem;color:var(--text-sub);margin-top:2px;">You are currently signed in as a Resident</p>
                     </div>
-                    <div style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#dcfce7;border-radius:999px;flex-shrink:0;">
+                    <div class="active-badge">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span style="font-size:.65rem;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.05em;">Active</span>
+                        <span>Active</span>
                     </div>
                 </div>
             </div>
@@ -441,11 +434,11 @@ include(APPPATH . 'Views/partials/layout.php');
             <div class="card card-p-lg">
                 <div class="card-head" style="margin-bottom:8px;">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="card-icon" style="background:#fef2f2;">
+                        <div class="card-icon card-icon-red">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
                         </div>
                         <div>
-                            <div class="card-title" style="color:#dc2626;">Danger Zone</div>
+                            <div class="card-title card-title-danger">Danger Zone</div>
                             <div class="card-sub">Irreversible account actions</div>
                         </div>
                     </div>
