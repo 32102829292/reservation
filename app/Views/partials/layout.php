@@ -22,8 +22,27 @@ $navItems = [
     ['url' => '/profile',          'label' => 'Profile',  'key' => 'profile',          'icon' => 'user'],
 ];
 
+/* SVG paths only — sizes set explicitly in markup */
+function _layout_svg(string $name): string {
+    static $paths = [
+        'house'     => '<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>',
+        'plus'      => '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
+        'calendar'  => '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+        'book-open' => '<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>',
+        'user'      => '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>',
+        'logout'    => '<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>',
+        'sun'       => '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+        'moon'      => '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
+    ];
+    $sw = in_array($name, ['calendar', 'book-open']) ? '1.5' : '1.8';
+    $d  = $paths[$name] ?? '<circle cx="12" cy="12" r="10"/>';
+    return $d . '" stroke-width="' . $sw; /* returned into the svg template below */
+}
+
 /**
  * Render a sidebar/layout icon at a given pixel size.
+ * stroke is passed explicitly — never relies on CSS color inheritance so
+ * dark-mode transitions work without JavaScript SVG re-painting.
  */
 function _layout_icon(string $name, int $size, string $stroke): string {
     static $icons = [
@@ -49,360 +68,11 @@ function _layout_icon(string $name, int $size, string $stroke): string {
 ?>
 
 <style>
-    /* ══════════════════════════════════════════
-       SCROLL FIX — flex body layout
-       body is the flex row (sidebar + main).
-       Only .main-area should scroll, not body.
-    ══════════════════════════════════════════ */
-    html, body {
-        height: 100%;
-        overflow: hidden; /* body itself must NOT scroll */
-    }
-
-    .main-area {
-        flex: 1;
-        min-height: 0;          /* critical: lets flex child shrink & scroll */
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch; /* smooth momentum on iOS */
-        padding-bottom: 80px;   /* clear the mobile bottom nav */
-    }
-
-    @media (max-width: 639px) {
-        .main-area {
-            padding: 16px 14px 90px !important; /* extra bottom clearance on small screens */
-        }
-    }
-
-    /* ══════════════════════════════════════════
-       LAYOUT SHELL
-    ══════════════════════════════════════════ */
-    .l-sidebar {
-        width: 240px;
-        flex-shrink: 0;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-        overflow-y: auto;
-        background: var(--sidebar-bg, #0f172a);
-        border-right: 1px solid var(--border, rgba(255,255,255,.07));
-        display: flex;
-        flex-direction: column;
-    }
-
-    @media (max-width: 1023px) {
-        .l-sidebar { display: none; }
-    }
-
-    .l-sidebar__inner {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        padding: 24px 16px 20px;
-    }
-
-    /* ── Brand ── */
-    .l-brand-tag {
-        font-size: .55rem;
-        font-weight: 700;
-        letter-spacing: .2em;
-        text-transform: uppercase;
-        color: var(--indigo, #6366f1);
-        margin-bottom: 4px;
-    }
-
-    .l-brand-name {
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: #fff;
-        letter-spacing: -.04em;
-        line-height: 1;
-    }
-
-    .l-brand-name em {
-        font-style: normal;
-        color: var(--indigo, #6366f1);
-    }
-
-    .l-brand-sub {
-        font-size: .62rem;
-        color: rgba(255,255,255,.35);
-        margin-top: 3px;
-        font-weight: 500;
-    }
-
-    .l-sidebar__top { margin-bottom: 20px; }
-
-    /* ── User card ── */
-    .l-user-card {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        background: rgba(255,255,255,.05);
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,.07);
-        margin-bottom: 22px;
-    }
-
-    .l-user-avatar {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        background: var(--indigo, #6366f1);
-        color: #fff;
-        font-weight: 800;
-        font-size: .9rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .l-user-name {
-        font-size: .82rem;
-        font-weight: 700;
-        color: #fff;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .l-user-role {
-        font-size: .65rem;
-        color: rgba(255,255,255,.4);
-        font-weight: 500;
-    }
-
-    /* ── Nav ── */
-    .l-nav { flex: 1; }
-
-    .l-nav__section {
-        font-size: .55rem;
-        font-weight: 700;
-        letter-spacing: .18em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,.25);
-        padding: 0 8px;
-        margin-bottom: 8px;
-    }
-
-    .l-nav__link {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 9px 10px;
-        border-radius: 10px;
-        font-size: .82rem;
-        font-weight: 600;
-        color: rgba(255,255,255,.5);
-        text-decoration: none;
-        transition: all .18s ease;
-        margin-bottom: 2px;
-        position: relative;
-    }
-
-    .l-nav__link:hover {
-        background: rgba(255,255,255,.06);
-        color: rgba(255,255,255,.85);
-    }
-
-    .l-nav__link.is-active {
-        background: var(--indigo, #6366f1);
-        color: #fff;
-        box-shadow: 0 4px 12px rgba(99,102,241,.35);
-    }
-
-    .l-nav__icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .l-nav__badge {
-        margin-left: auto;
-        background: #ef4444;
-        color: #fff;
-        font-size: .6rem;
-        font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 999px;
-        min-width: 18px;
-        text-align: center;
-    }
-
-    /* ── Quota ── */
-    .l-quota {
-        background: rgba(255,255,255,.04);
-        border: 1px solid rgba(255,255,255,.07);
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin-top: 16px;
-        margin-bottom: 12px;
-    }
-
-    .l-quota__row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-    }
-
-    .l-quota__label {
-        font-size: .62rem;
-        font-weight: 700;
-        letter-spacing: .1em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,.35);
-    }
-
-    .l-quota__value {
-        font-size: .75rem;
-        font-weight: 700;
-        color: rgba(255,255,255,.6);
-    }
-
-    .l-quota__track {
-        height: 5px;
-        background: rgba(255,255,255,.08);
-        border-radius: 999px;
-        overflow: hidden;
-        margin-bottom: 8px;
-    }
-
-    .l-quota__fill {
-        height: 100%;
-        background: var(--indigo, #6366f1);
-        border-radius: 999px;
-        transition: width .4s ease;
-    }
-
-    .l-quota__fill.is-low  { background: #f59e0b; }
-    .l-quota__fill.is-full { background: #ef4444; }
-
-    .l-quota__note {
-        font-size: .65rem;
-        color: rgba(255,255,255,.35);
-        font-weight: 500;
-    }
-
-    .l-quota__note.is-warn { color: #fbbf24; }
-    .l-quota__note.is-err  { color: #f87171; }
-
-    /* ── Footer / logout ── */
-    .l-sidebar__footer { margin-top: auto; padding-top: 12px; }
-
-    .l-logout {
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        padding: 9px 10px;
-        border-radius: 10px;
-        font-size: .82rem;
-        font-weight: 600;
-        color: #f87171;
-        text-decoration: none;
-        transition: background .18s ease;
-    }
-
-    .l-logout:hover { background: rgba(248,113,113,.1); }
-    .l-logout__icon { display: flex; align-items: center; flex-shrink: 0; }
-
-    /* ══════════════════════════════════════════
-       MOBILE BOTTOM NAV
-    ══════════════════════════════════════════ */
-    .l-mobile-nav {
-        display: none;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 900;
-        background: var(--card, #fff);
-        border-top: 1px solid var(--border, #e5e7eb);
-        box-shadow: 0 -4px 20px rgba(0,0,0,.08);
-        /* safe area for notched phones */
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    @media (max-width: 1023px) {
-        .l-mobile-nav { display: block; }
-    }
-
-    .l-mobile-nav__inner {
-        display: flex;
-        align-items: stretch;
-        height: 60px;
-    }
-
-    .l-mobile-nav__item {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        text-decoration: none;
-        color: var(--text-sub, #94a3b8);
-        font-size: .58rem;
-        font-weight: 600;
-        position: relative;
-        transition: color .18s ease;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .l-mobile-nav__item.is-active { color: var(--indigo, #6366f1); }
-
-    .l-mobile-nav__item--logout { color: #f87171 !important; }
-
-    .l-mobile-nav__badge {
-        position: absolute;
-        top: 6px;
-        right: calc(50% - 18px);
-        background: #ef4444;
-        color: #fff;
-        font-size: .5rem;
-        font-weight: 700;
-        padding: 1px 4px;
-        border-radius: 999px;
-        min-width: 14px;
-        text-align: center;
-        line-height: 1.4;
-    }
-
-    .nav-icon-wrap {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-    }
-
-    .nav-lbl { line-height: 1; }
-
-    /* ══════════════════════════════════════════
-       DARK MODE TOGGLE BUTTON
-    ══════════════════════════════════════════ */
-    .l-icon-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: var(--card);
-        color: var(--text-muted);
-        cursor: pointer;
-        transition: all .18s ease;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .l-icon-btn:hover {
-        background: var(--indigo-light);
-        border-color: var(--indigo-border);
-        color: var(--indigo);
-    }
+/* ── Scroll fix ── */
+html, body   { height: 100%; overflow: hidden; }
+body         { display: flex; }
+.l-sidebar   { height: 100vh; overflow-y: auto; position: sticky; top: 0; flex-shrink: 0; }
+.main-area   { height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1; min-width: 0; }
 </style>
 
 <script>
@@ -440,8 +110,8 @@ function _layout_icon(string $name, int $size, string $stroke): string {
             <div class="l-nav__section">Menu</div>
 
             <?php foreach ($navItems as $item):
-                $active    = ($page === $item['key']);
-                $hasBadge  = ($item['key'] === 'reservation-list' && $pending > 0);
+                $active   = ($page === $item['key']);
+                $hasBadge = ($item['key'] === 'reservation-list' && $pending > 0);
                 $iconColor = $active ? 'white' : 'currentColor';
             ?>
                 <a href="<?= base_url($item['url']) ?>"
@@ -492,6 +162,8 @@ function _layout_icon(string $name, int $size, string $stroke): string {
 
 <!-- ════════════════════════════════
      MOBILE BOTTOM NAV  (<1024px)
+     Explicit icon sizes, no color
+     inheritance issues in dark mode
 ════════════════════════════════ -->
 <nav class="l-mobile-nav" aria-label="Mobile navigation" id="l-mobile-nav">
     <div class="l-mobile-nav__inner">
@@ -567,11 +239,23 @@ function layout_dark_toggle(): string {
     function applyDark(isDark) {
         document.body.classList.toggle('dark', isDark);
         document.documentElement.classList.remove('dark-pre');
+
+        /* Toggle the dark-mode toggle icon */
         const iconWrap = document.getElementById('l-dark-icon');
         if (iconWrap) iconWrap.innerHTML = isDark ? MOON_SVG : SUN_SVG;
+
+        /*
+         * Mobile nav: update SVG stroke color on each nav item.
+         * We use CSS currentColor so the color cascades from the
+         * .l-mobile-nav__item color property — but SVGs rendered
+         * server-side with explicit stroke="currentColor" need the
+         * parent element color to be correct, which CSS handles.
+         * Nothing extra needed here beyond toggling body.dark.
+         */
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        /* Apply saved theme on load */
         const saved = localStorage.getItem('theme');
         applyDark(saved === 'dark');
     });
