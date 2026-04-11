@@ -70,18 +70,19 @@ function _layout_icon(string $name, int $size, string $stroke): string {
 <style>
 /* ── Scroll fix ── */
 
-/* Desktop: sidebar fixed, only main scrolls */
+/* Desktop ≥1024px: sidebar sticky, only main-area scrolls */
 @media (min-width: 1024px) {
-    html, body { height: 100%; overflow: hidden; }
-    body        { display: flex; }
+    html, body  { height: 100% !important; overflow: hidden !important; }
+    body        { display: flex !important; }
     .l-sidebar  { height: 100vh; overflow-y: auto; position: sticky; top: 0; flex-shrink: 0; }
-    .main-area  { height: 100vh; overflow-y: auto; flex: 1; min-width: 0; }
+    .main-area  { height: 100vh !important; overflow-y: auto !important; flex: 1; min-width: 0; }
 }
 
-/* Mobile: normal page scroll, just pad bottom for the nav bar */
+/* Mobile <1024px: let the whole page scroll naturally */
 @media (max-width: 1023px) {
-    html, body { height: auto; overflow: auto; }
-    .main-area { height: auto; overflow: visible; padding-bottom: 80px; }
+    html        { height: auto !important; overflow-y: auto !important; }
+    body        { height: auto !important; overflow-y: auto !important; display: block !important; }
+    .main-area  { height: auto !important; overflow: visible !important; padding-bottom: 84px !important; }
 }
 </style>
 
