@@ -58,10 +58,6 @@ function sk_icon(string $name, int $size = 16, string $stroke = 'currentColor', 
 $myRes  = $reservations    ?? [];
 $sysRes = $allReservations ?? [];
 
-/*
- * FIX: Normalise visitor_name on every record so JS never shows a blank.
- * Tries every possible column alias the DB might use.
- */
 $normalizeResName = function(array $r): array {
     $name = (string)(
         $r['visitor_name']  ??
@@ -84,10 +80,9 @@ $sysApproved = count(array_filter($sysRes, fn($r) => ($r['status'] ?? '') === 'a
 $sysDeclined = count(array_filter($sysRes, fn($r) => in_array($r['status'] ?? '', ['declined', 'canceled'])));
 $sysClaimed  = count(array_filter($sysRes, fn($r) => in_array($r['claimed'] ?? false, [true, 1, 't', 'true', '1'], true)));
 
-/* FIX: Use Philippine Time for "today" so date comparisons are correct */
 $pht          = new DateTimeZone('Asia/Manila');
 $nowPHT       = new DateTime('now', $pht);
-$sysToday     = $nowPHT->format('Y-m-d');   // e.g. 2026-04-11 in PHT
+$sysToday     = $nowPHT->format('Y-m-d');
 
 $sysTodayAll      = array_filter($sysRes, fn($r) => ($r['reservation_date'] ?? '') === $sysToday);
 $sysTodayTotal    = count($sysTodayAll);
@@ -182,7 +177,7 @@ if (empty($resourceLabels)) {
     $resourceData = [1];
 }
 
-// ── Active timer (my sessions) — uses PHT timestamps ─────────
+// ── Active timer (my sessions) ─────────────────────────────────
 $activeBanner   = null;
 $upcomingBanner = null;
 $nowTs = $nowPHT->getTimestamp();
@@ -200,7 +195,6 @@ foreach ($myRes as $r) {
     }
 }
 
-/* PHT hour for greeting */
 $hhPHT = (int)$nowPHT->format('H');
 ?>
 <!DOCTYPE html>
@@ -451,14 +445,81 @@ $hhPHT = (int)$nowPHT->format('H');
 
         @media(max-width:639px) { .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-        .chart-wrap { position: relative; height: 200px; width: 100%; }
-        @media(max-width:639px) { .chart-wrap { height: 160px; } }
+        /* ── CHART FIXES ── */
+        .chart-wrap {
+            position: relative;
+            height: 220px;
+            width: 100%;
+        }
 
-        .donut-wrap  { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
-        .donut-canvas{ width: 140px !important; height: 140px !important; flex-shrink: 0; }
+        /* Donut chart: row on desktop, column on mobile */
+        .donut-wrap {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .donut-canvas {
+            width: 130px !important;
+            height: 130px !important;
+            flex-shrink: 0;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #resourceLegend {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            width: 100%;
+        }
+
+        /* Charts grid: 2-col desktop, 1-col mobile */
+        .grid-two {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        @media(max-width:720px) {
+            .grid-two {
+                grid-template-columns: 1fr !important;
+            }
+            .chart-wrap {
+                height: 170px;
+            }
+            .donut-wrap {
+                flex-direction: column;
+                align-items: center;
+            }
+            .donut-canvas {
+                width: 110px !important;
+                height: 110px !important;
+            }
+            #resourceLegend {
+                width: 100%;
+                padding: 0 4px;
+            }
+        }
+
+        @media(max-width:479px) {
+            .chart-wrap { height: 145px; }
+            .donut-canvas {
+                width: 100px !important;
+                height: 100px !important;
+            }
+            .card-title { font-size: .82rem; }
+            .card-sub   { font-size: .62rem; }
+            .tag        { font-size: .58rem !important; padding: 3px 7px !important; }
+        }
+        /* ── END CHART FIXES ── */
 
         .grid-main  { display: grid; grid-template-columns: minmax(0,1.9fr) minmax(0,1fr); gap: 16px; margin-bottom: 18px; }
-        .grid-two   { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; margin-bottom: 18px; }
         .grid-three { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 14px; margin-bottom: 18px; }
         .grid-four  { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin-bottom: 18px; }
         .side-col   { display: flex; flex-direction: column; gap: 14px; }
@@ -694,10 +755,8 @@ $hhPHT = (int)$nowPHT->format('H');
                 <div class="greeting-eyebrow"><?php echo $hhPHT < 12 ? 'Good morning' : ($hhPHT < 17 ? 'Good afternoon' : 'Good evening'); ?></div>
                 <div class="greeting-name"><?= esc($user_name ?? 'Officer') ?></div>
                 <div class="greeting-sub" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                    <!-- PHT date display -->
                     <span><?= $nowPHT->format('l, F j, Y') ?></span>
                     <span class="sync-badge"><?= sk_icon('refresh', 9, 'currentColor') ?> Synced with Admin</span>
-                    <!-- PHT clock label -->
                     <span style="font-size:.6rem;font-weight:700;color:var(--text-sub);letter-spacing:.04em;"><?= $nowPHT->format('g:i A') ?> PHT</span>
                 </div>
             </div>
@@ -721,11 +780,10 @@ $hhPHT = (int)$nowPHT->format('H');
             </div>
         </div>
 
-        <!-- Timer banner (active / upcoming session) -->
+        <!-- Timer banner -->
         <?php if ($activeBanner || $upcomingBanner):
             $b = $activeBanner ?? $upcomingBanner;
             $isActive = !!$activeBanner;
-            /* PHT Unix timestamps for the JS countdown */
             $bStartTs = strtotime($b['reservation_date'] . ' ' . $b['start_time']);
             $bEndTs   = strtotime($b['reservation_date'] . ' ' . $b['end_time']);
         ?>
@@ -879,8 +937,10 @@ $hhPHT = (int)$nowPHT->format('H');
             <?php endforeach; ?>
         </div>
 
-        <!-- Charts -->
+        <!-- ── CHARTS — fixed layout ── -->
         <div class="grid-two fade-up-3" style="margin-bottom:20px;">
+
+            <!-- Trend Line Chart -->
             <div class="card card-p">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
@@ -892,8 +952,12 @@ $hhPHT = (int)$nowPHT->format('H');
                     </div>
                     <span class="tag tag-approved" style="font-size:.65rem;padding:4px 10px;border-radius:999px;">System-wide</span>
                 </div>
-                <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+                <div class="chart-wrap">
+                    <canvas id="trendChart"></canvas>
+                </div>
             </div>
+
+            <!-- Resource Donut Chart — fixed layout -->
             <div class="card card-p">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
@@ -905,11 +969,13 @@ $hhPHT = (int)$nowPHT->format('H');
                     </div>
                     <span class="tag tag-claimed" style="font-size:.65rem;padding:4px 10px;border-radius:999px;">Top 5</span>
                 </div>
+                <!-- Canvas centered, legend below on mobile / beside on desktop -->
                 <div class="donut-wrap">
                     <canvas id="resourceChart" class="donut-canvas"></canvas>
-                    <div id="resourceLegend" style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;"></div>
+                    <div id="resourceLegend"></div>
                 </div>
             </div>
+
         </div>
 
         <!-- SECTION 3 — Schedule & Activity -->
@@ -1299,7 +1365,6 @@ $hhPHT = (int)$nowPHT->format('H');
     </main>
 
     <script>
-        /* ── Data injected from PHP ──────────────────────────────────── */
         const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
         const NOTIF_KEY  = 'sk_notifs_<?= (int)session()->get('user_id') ?>';
         const myResData  = <?= json_encode($myRes,  JSON_HEX_TAG | JSON_HEX_APOS | JSON_UNESCAPED_UNICODE) ?>;
@@ -1321,7 +1386,6 @@ $hhPHT = (int)$nowPHT->format('H');
             totalCount:   <?= (int)$sysTotal ?>
         };
 
-        /* ── Utilities ───────────────────────────────────────────────── */
         const clamp   = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
         const pct     = (v, max)    => max > 0 ? clamp(Math.round(v / max * 100), 0, 100) : 0;
         const timeAgo = t => {
@@ -1333,10 +1397,6 @@ $hhPHT = (int)$nowPHT->format('H');
         };
         const mob = () => window.innerWidth < 640;
 
-        /*
-         * FIX: Resolve visitor name from every possible field alias.
-         * Mirrors the PHP normalisation done above.
-         */
         const resolveVisitorName = r =>
             (r.visitor_name  || '').trim() ||
             (r.full_name     || '').trim() ||
@@ -1345,20 +1405,11 @@ $hhPHT = (int)$nowPHT->format('H');
             (r.name          || '').trim() ||
             'Guest';
 
-        /*
-         * FIX: Philippine Time clock for the live-sessions checker.
-         * JS Date.now() is always UTC; convert to PHT (UTC+8) for
-         * "today" comparisons and countdown math.
-         */
-        const PHT_OFFSET_MS = 8 * 60 * 60 * 1000; // +08:00
-        const nowPHT = () => Date.now() + PHT_OFFSET_MS; // ms since epoch but shifted
-        const todayPHT = () => {
-            const d = new Date(nowPHT());
-            // toISOString on the shifted value gives us PHT date
-            return new Date(Date.now() + PHT_OFFSET_MS).toISOString().slice(0, 10);
-        };
+        const PHT_OFFSET_MS = 8 * 60 * 60 * 1000;
+        const nowPHT  = () => Date.now() + PHT_OFFSET_MS;
+        const todayPHT = () => new Date(Date.now() + PHT_OFFSET_MS).toISOString().slice(0, 10);
 
-        /* ── Dark-mode icon sync ─────────────────────────────────────── */
+        /* Dark mode */
         const _origToggle = window.layoutToggleDark;
         window.layoutToggleDark = function() {
             _origToggle();
@@ -1375,7 +1426,7 @@ $hhPHT = (int)$nowPHT->format('H');
                 : `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
         }
 
-        /* ── Login toast ─────────────────────────────────────────────── */
+        /* Login toast */
         (function() {
             const key = 'sk_toast_' + new Date(Date.now() + PHT_OFFSET_MS).toISOString().slice(0, 10);
             if (sessionStorage.getItem(key)) return;
@@ -1385,18 +1436,16 @@ $hhPHT = (int)$nowPHT->format('H');
             setTimeout(() => t.classList.remove('show'), 6000);
         })();
 
-        /* ── Timer banner countdown (PHT-aware) ──────────────────────── */
+        /* Timer banner */
         (function() {
             const banner = document.getElementById('timerBanner');
             if (!banner) return;
-            // PHP already produced Unix timestamps (seconds) in PHT context
-            const startMs = parseInt(banner.dataset.start) * 1000;
-            const endMs   = parseInt(banner.dataset.end)   * 1000;
+            const startMs  = parseInt(banner.dataset.start) * 1000;
+            const endMs    = parseInt(banner.dataset.end)   * 1000;
             const isActive = banner.dataset.active === '1';
-            const disp = document.getElementById('timerDisplay');
-
+            const disp     = document.getElementById('timerDisplay');
             function tick() {
-                const nowMs = Date.now(); // UTC ms — same epoch as PHP time()
+                const nowMs = Date.now();
                 const diff  = Math.max(0, isActive ? endMs - nowMs : startMs - nowMs);
                 if (!diff) { disp.textContent = isActive ? 'Ended' : 'Now!'; return; }
                 const s = Math.floor(diff / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60);
@@ -1406,7 +1455,7 @@ $hhPHT = (int)$nowPHT->format('H');
             setInterval(tick, 1000);
         })();
 
-        /* ── Notifications ───────────────────────────────────────────── */
+        /* Notifications */
         let notifications = [];
         const getSeenIds  = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch { return []; } };
         const saveSeenIds = ids => localStorage.setItem(NOTIF_KEY, JSON.stringify(ids));
@@ -1473,7 +1522,7 @@ $hhPHT = (int)$nowPHT->format('H');
             if (bell && !bell.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('show');
         });
 
-        /* ── Date modal ──────────────────────────────────────────────── */
+        /* Date modal */
         function openDateModal(dateStr, items) {
             const d = new Date(dateStr + 'T00:00:00');
             document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-PH', {
@@ -1494,13 +1543,9 @@ $hhPHT = (int)$nowPHT->format('H');
                     .forEach(r => {
                         const isCl = r.claimed == 1 || r.claimed === true || r.claimed === 'true';
                         const s    = isCl ? 'claimed' : (r.status || 'pending').toLowerCase();
-
-                        /* FIX: always show a name */
                         const displayName = resolveVisitorName(r);
-
                         const t  = (r.start_time || '').slice(0, 5) || '—';
                         const et = (r.end_time   || '').slice(0, 5) || '';
-
                         const row = document.createElement('div');
                         row.className = 'date-row';
                         row.innerHTML = `
@@ -1527,19 +1572,18 @@ $hhPHT = (int)$nowPHT->format('H');
         }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
 
-        /* ── Live sessions (PHT-aware) ───────────────────────────────── */
+        /* Live sessions */
         const TL_WARN = 5 * 60 * 1000, TL_CRIT = 2 * 60 * 1000;
         let sessionState = {};
 
         function getActiveSessions() {
-            const today = todayPHT();           // PHT date string YYYY-MM-DD
-            const nowMs = Date.now();           // true UTC ms — same epoch as PHP time()
+            const today = todayPHT();
+            const nowMs = Date.now();
             return allResData.filter(r => {
                 if (!r.start_time || !r.end_time) return false;
                 const rDate = (r.reservation_date || '').split('T')[0];
                 if (rDate !== today) return false;
                 if ((r.status || '').toLowerCase() !== 'approved') return false;
-                // The DB stores naive local times; treat them as PHT by subtracting offset
                 const sMs = new Date(rDate + 'T' + r.start_time).getTime() - PHT_OFFSET_MS;
                 const eMs = new Date(rDate + 'T' + r.end_time  ).getTime() - PHT_OFFSET_MS;
                 return sMs <= nowMs && eMs >= nowMs;
@@ -1613,14 +1657,14 @@ $hhPHT = (int)$nowPHT->format('H');
             Array.from(grid.children).forEach(c => { if (!ids.includes(c.id)) c.remove(); });
         }
 
-        /* ── AI Book Finder ──────────────────────────────────────────── */
+        /* AI Book Finder */
         let ragAbort = null;
         async function doRagSearch() {
             const q = document.getElementById('ragInput').value.trim();
             if (q.length < 2) { document.getElementById('ragInput').focus(); return; }
             if (ragAbort) ragAbort.abort();
             ragAbort = new AbortController();
-            const skel = document.getElementById('ragSkel');
+            const skel   = document.getElementById('ragSkel');
             const result = document.getElementById('ragResult');
             const err    = document.getElementById('ragErr');
             const btn    = document.getElementById('ragBtn');
@@ -1666,23 +1710,27 @@ $hhPHT = (int)$nowPHT->format('H');
             }
         }
 
-        /* ── Chart instances ─────────────────────────────────────────── */
+        /* Chart instances */
         let trendChart, resourceChart, monthChart;
+
         function getChartColors() {
             const dark = document.body.classList.contains('dark');
             return { grid: dark ? '#101e35' : '#f1f5f9', tick: dark ? '#4a6fa5' : '#94a3b8' };
         }
+
         function updateChartsForTheme() {
             const c = getChartColors();
             [trendChart, monthChart].forEach(ch => {
                 if (!ch) return;
-                ch.options.scales.x.grid.color  = c.grid; ch.options.scales.x.ticks.color = c.tick;
-                ch.options.scales.y.grid.color  = c.grid; ch.options.scales.y.ticks.color = c.tick;
+                ch.options.scales.x.grid.color  = c.grid;
+                ch.options.scales.x.ticks.color = c.tick;
+                ch.options.scales.y.grid.color  = c.grid;
+                ch.options.scales.y.ticks.color = c.tick;
                 ch.update('none');
             });
         }
 
-        /* ── DOMContentLoaded ────────────────────────────────────────── */
+        /* DOMContentLoaded */
         document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.classList.remove('dark-pre');
             syncDarkIcon();
@@ -1694,42 +1742,107 @@ $hhPHT = (int)$nowPHT->format('H');
             const cc     = getChartColors();
             const font   = { family: 'Plus Jakarta Sans', size: mobile ? 9 : 11 };
 
-            /* Trend line */
+            /* ── Trend line chart ── */
             const tCtx = document.getElementById('trendChart')?.getContext('2d');
             if (tCtx) {
                 trendChart = new Chart(tCtx, {
                     type: 'line',
                     data: {
                         labels: <?= json_encode($chartLabels) ?>,
-                        datasets: [{ data: <?= json_encode($chartData) ?>, borderColor:'#3730a3', backgroundColor:'rgba(55,48,163,.07)', borderWidth:2.5, tension:0.4, fill:true, pointBackgroundColor:'#3730a3', pointRadius:mobile?3:4, pointHoverRadius:mobile?5:6 }]
+                        datasets: [{
+                            data: <?= json_encode($chartData) ?>,
+                            borderColor: '#3730a3',
+                            backgroundColor: 'rgba(55,48,163,.07)',
+                            borderWidth: 2.5,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#3730a3',
+                            pointRadius: mobile ? 3 : 4,
+                            pointHoverRadius: mobile ? 5 : 6
+                        }]
                     },
                     options: {
-                        responsive:true, maintainAspectRatio:false,
-                        plugins: { legend:{display:false}, tooltip:{ backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10 } },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#0f172a',
+                                titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
+                                bodyFont:  { family: 'Plus Jakarta Sans' },
+                                padding: 10,
+                                cornerRadius: 10
+                            }
+                        },
                         scales: {
-                            x: { grid:{display:false}, ticks:{font, color:cc.tick} },
-                            y: { grid:{color:cc.grid}, ticks:{font, color:cc.tick, stepSize:1}, beginAtZero:true }
+                            x: {
+                                grid: { display: false },
+                                ticks: { font, color: cc.tick }
+                            },
+                            y: {
+                                grid: { color: cc.grid },
+                                ticks: { font, color: cc.tick, stepSize: 1 },
+                                beginAtZero: true
+                            }
                         }
                     }
                 });
             }
 
-            /* Resource donut */
+            /* ── Resource donut — fixed rendering ── */
             const rCtx = document.getElementById('resourceChart')?.getContext('2d');
             const rL   = <?= json_encode($resourceLabels) ?>;
             const rD   = <?= json_encode($resourceData)   ?>;
             const pal  = ['#3730a3','#7c3aed','#16a34a','#d97706','#ec4899'];
+
             if (rCtx) {
                 resourceChart = new Chart(rCtx, {
                     type: 'doughnut',
-                    data: { labels:rL, datasets:[{ data:rD, backgroundColor:pal, borderWidth:0, hoverOffset:4 }] },
-                    options: { responsive:false, animation:false, cutout:'65%', plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10 } } }
+                    data: {
+                        labels: rL,
+                        datasets: [{
+                            data: rD,
+                            backgroundColor: pal,
+                            borderWidth: 3,
+                            borderColor: 'transparent',
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        animation: { duration: 600, easing: 'easeInOutQuart' },
+                        cutout: '62%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#0f172a',
+                                titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
+                                bodyFont:  { family: 'Plus Jakarta Sans' },
+                                padding: 10,
+                                cornerRadius: 10
+                            }
+                        }
+                    }
                 });
+
+                /* Legend: icon + name + count — full width on mobile */
                 const leg = document.getElementById('resourceLegend');
-                if (leg) leg.innerHTML = rL.map((l, i) => `<div style="display:flex;align-items:center;gap:8px;min-width:0;"><span style="width:9px;height:9px;border-radius:50%;background:${pal[i]||'#94a3b8'};flex-shrink:0;"></span><span style="font-size:.78rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;">${l}</span><span style="font-size:.78rem;font-weight:800;color:var(--text);flex-shrink:0;">${rD[i]}</span></div>`).join('');
+                if (leg) {
+                    const total = rD.reduce((a, b) => a + b, 0) || 1;
+                    leg.innerHTML = rL.map((l, i) => {
+                        const share = Math.round(rD[i] / total * 100);
+                        return `
+                        <div style="display:flex;align-items:center;gap:8px;min-width:0;max-width:100%;">
+                            <span style="width:9px;height:9px;border-radius:50%;background:${pal[i]||'#94a3b8'};flex-shrink:0;"></span>
+                            <span style="font-size:.75rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;">${l}</span>
+                            <span style="font-size:.72rem;font-weight:800;color:var(--text);flex-shrink:0;">${rD[i]}</span>
+                            <span style="font-size:.65rem;color:var(--text-sub);flex-shrink:0;min-width:28px;text-align:right;">${share}%</span>
+                        </div>`;
+                    }).join('');
+                }
             }
 
-            /* Calendar */
+            /* ── Calendar ── */
             const byDate = {};
             allResData.forEach(r => {
                 if (!r.reservation_date) return;
@@ -1839,14 +1952,37 @@ $hhPHT = (int)$nowPHT->format('H');
                         type: 'bar',
                         data: {
                             labels: MONTH,
-                            datasets: [{ data:monthArr, backgroundColor:monthArr.map((_,i) => i===peakMonthIdx?'#3730a3':'rgba(55,48,163,.15)'), borderRadius:5, borderSkipped:false }]
+                            datasets: [{
+                                data: monthArr,
+                                backgroundColor: monthArr.map((_,i) => i===peakMonthIdx?'#3730a3':'rgba(55,48,163,.15)'),
+                                borderRadius: 5,
+                                borderSkipped: false
+                            }]
                         },
                         options: {
-                            responsive:true, maintainAspectRatio:false,
-                            plugins: { legend:{display:false}, tooltip:{ backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10, callbacks:{ label: ctx => ` ${ctx.raw} reservations` } } },
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: '#0f172a',
+                                    titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
+                                    bodyFont:  { family: 'Plus Jakarta Sans' },
+                                    padding: 10,
+                                    cornerRadius: 10,
+                                    callbacks: { label: ctx => ` ${ctx.raw} reservations` }
+                                }
+                            },
                             scales: {
-                                x: { grid:{display:false}, ticks:{font:{family:'Plus Jakarta Sans',size:mobile?8:10}, color:cc.tick} },
-                                y: { grid:{color:cc.grid}, beginAtZero:true, ticks:{font:{family:'Plus Jakarta Sans',size:mobile?8:10}, color:cc.tick, stepSize:1} }
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { font: { family: 'Plus Jakarta Sans', size: mobile?8:10 }, color: cc.tick }
+                                },
+                                y: {
+                                    grid: { color: cc.grid },
+                                    beginAtZero: true,
+                                    ticks: { font: { family: 'Plus Jakarta Sans', size: mobile?8:10 }, color: cc.tick, stepSize: 1 }
+                                }
                             }
                         }
                     });
