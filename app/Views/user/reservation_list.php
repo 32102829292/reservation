@@ -1,5 +1,12 @@
 <?php
 $page = 'reservation-list';
+
+// ── TIMEZONE FIX ──────────────────────────────────────────────────────────────
+// Ensure all date/time comparisons use Philippine Standard Time (UTC+8).
+// Without this, time() returns UTC and reservations get wrongly marked as
+// "unclaimed / No-show" 8 hours early.
+date_default_timezone_set('Asia/Manila');
+// ─────────────────────────────────────────────────────────────────────────────
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -116,20 +123,36 @@ $page = 'reservation-list';
 include(APPPATH . 'Views/partials/layout.php');
 
 /* ── Data prep ── */
+// Grace period in seconds before an approved+past reservation is marked unclaimed.
+// Set to 3600 = 1 hour after the scheduled end_time.
+define('UNCLAIMED_GRACE_SECONDS', 3600);
+
 $processed = [];
 foreach (($reservations ?? []) as $res) {
     $isClaimed = !empty($res['claimed']) && $res['claimed'] == 1;
     $status = $isClaimed ? 'claimed' : strtolower($res['status'] ?? 'pending');
+
     if ($status === 'approved') {
-        $edt = strtotime($res['reservation_date'] . ' ' . ($res['end_time'] ?? '23:59:59'));
-        if ($edt < time()) $status = 'unclaimed';
+        // ── FIX: use explicit Asia/Manila datetime to avoid UTC vs PHT mismatch ──
+        $endDateTimeStr = trim($res['reservation_date']) . ' ' . trim($res['end_time'] ?? '23:59:59');
+        $edt = strtotime($endDateTimeStr);
+
+        // Guard against bad/unparseable date strings
+        if ($edt !== false && ($edt + UNCLAIMED_GRACE_SECONDS) < time()) {
+            $status = 'unclaimed';
+        }
     } elseif ($status === 'pending') {
+        // A pending reservation whose date has fully passed (midnight boundary) is expired.
         $rdt = strtotime($res['reservation_date'] ?? '');
-        if ($rdt && $rdt < strtotime('today')) $status = 'expired';
+        if ($rdt !== false && $rdt < strtotime('today')) {
+            $status = 'expired';
+        }
     }
+
     $res['_status'] = $status;
     $processed[] = $res;
 }
+
 $unclaimedCount = count(array_filter($processed, fn($r) => $r['_status'] === 'unclaimed'));
 $pendingCount   = count(array_filter($processed, fn($r) => $r['_status'] === 'pending'));
 $maxSlots  = 3;
