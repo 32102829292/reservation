@@ -11,112 +11,110 @@ class Reservation extends BaseController
     public function index()
     {
         $session = session();
-        $userId = $session->get('user_id');
+        $userId  = $session->get('user_id');
 
         if (!$userId) {
             return redirect()->to('/login');
         }
 
-        // Get user data
         $userModel = new UserModel();
-        $user = $userModel->find($userId);
+        $user      = $userModel->find($userId);
 
         $resourceModel = new ResourceModel();
-        $resources = $resourceModel->orderBy('name', 'ASC')->findAll();
+        $resources     = $resourceModel->orderBy('name', 'ASC')->findAll();
 
-        $db = db_connect();
+        $db  = db_connect();
         $pcs = [];
-        
+
         if ($db->tableExists('pcs')) {
             $pcs = $db->table('pcs')
-                     ->select('pc_number')
-                     ->where('status', 'available')
-                     ->orderBy('pc_number', 'ASC')
-                     ->get()
-                     ->getResultArray();
+                ->select('pc_number')
+                ->where('status', 'available')
+                ->orderBy('pc_number', 'ASC')
+                ->get()
+                ->getResultArray();
         }
+
         $purposes = ['Work', 'Personal', 'Study', 'SK Activity', 'Others'];
-        
+
         if ($db->tableExists('purposes')) {
             $purposeResults = $db->table('purposes')
-                                ->select('name')
-                                ->where('is_active', 1)
-                                ->orderBy('name', 'ASC')
-                                ->get()
-                                ->getResultArray();
-            
+                ->select('name')
+                ->where('is_active', 1)
+                ->orderBy('name', 'ASC')
+                ->get()
+                ->getResultArray();
+
             if (!empty($purposeResults)) {
                 $purposes = array_column($purposeResults, 'name');
             }
         }
 
-        $reservationModel = new ReservationModel();
+        $reservationModel      = new ReservationModel();
         $remainingReservations = $reservationModel->getRemainingReservations($userId);
-
-        $isBlocked = $reservationModel->isBlocked($userId);
+        $isBlocked             = $reservationModel->isBlocked($userId);
 
         return view('user/reservation', [
-            'page' => 'reservation',
-            'user' => $user,
-            'user_name' => $user['name'] ?? '',
-            'resources' => $resources,
-            'pcs' => $pcs,
-            'purposes' => $purposes,
+            'page'                  => 'reservation',
+            'user'                  => $user,
+            'user_name'             => $user['name'] ?? '',
+            'resources'             => $resources,
+            'pcs'                   => $pcs,
+            'purposes'              => $purposes,
             'remainingReservations' => $remainingReservations,
-            'isBlocked' => $isBlocked
+            'isBlocked'             => $isBlocked,
         ]);
     }
 
     public function reserve()
     {
         $session = session();
-        $userId = $session->get('user_id');
+        $userId  = $session->get('user_id');
 
         if (!$userId) {
             return redirect()->to('/login');
         }
 
-        $request = $this->request;
+        $request          = $this->request;
         $reservationModel = new ReservationModel();
 
         $isBlocked = $reservationModel->isBlocked($userId);
         if ($isBlocked) {
             return redirect()->back()
-                           ->with('error', 'You are currently blocked from making reservations.');
+                ->with('error', 'You are currently blocked from making reservations.');
         }
 
         $fairness = $reservationModel->checkFairness($userId);
         if (!$fairness['fair']) {
-            $message = isset($fairness['blocked']) 
+            $message = isset($fairness['blocked'])
                 ? 'You have reached the maximum of 3 reservations in a 2-week period. Blocked until ' . $fairness['until']
                 : 'You have reached the maximum of 3 reservations in a 2-week period.';
-            return redirect()->back()
-                           ->with('error', $message);
+            return redirect()->back()->with('error', $message);
         }
 
         $rules = [
-            'resource_id' => 'required|numeric',
+            'resource_id'      => 'required|numeric',
             'reservation_date' => 'required|valid_date[Y-m-d]',
-            'start_time' => 'required',
-            'end_time' => 'required',
-            'purpose' => 'required'
+            'start_time'       => 'required',
+            'end_time'         => 'required',
+            'purpose'          => 'required',
         ];
 
         if (!$this->validate($rules)) {
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Please fill all required fields');
+                ->withInput()
+                ->with('error', 'Please fill all required fields');
         }
 
         $sameDayReservations = $reservationModel->getUserSameDayReservations(
-            $userId, 
+            $userId,
             $request->getPost('reservation_date')
         );
-        
+
         if (!empty($sameDayReservations)) {
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'You already have a reservation on this date. Only one reservation per day is allowed.');
+                ->withInput()
+                ->with('error', 'You already have a reservation on this date. Only one reservation per day is allowed.');
         }
 
         $conflict = $reservationModel
@@ -131,53 +129,52 @@ class Reservation extends BaseController
 
         if ($conflict) {
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'This time slot is already booked. Please choose another time.');
+                ->withInput()
+                ->with('error', 'This time slot is already booked. Please choose another time.');
         }
 
         $eTicketCode = 'SK' . strtoupper(uniqid()) . $userId;
 
         $data = [
-            'user_id' => $userId,
-            'resource_id' => $request->getPost('resource_id'),
-            'pc_number' => $request->getPost('pcs') ?: null,
+            'user_id'          => $userId,
+            'resource_id'      => $request->getPost('resource_id'),
+            'pc_number'        => $request->getPost('pcs') ?: null,
             'reservation_date' => $request->getPost('reservation_date'),
-            'start_time' => $request->getPost('start_time'),
-            'end_time' => $request->getPost('end_time'),
-            'purpose' => $request->getPost('purpose'),
-            'status' => 'pending',
-            'e_ticket_code' => $eTicketCode,
-            'qr_used' => 0,
-            'created_at' => date('Y-m-d H:i:s'),
-            'visitor_type' => 'User',
-            'visitor_name' => $session->get('name'),
-            'user_email' => $session->get('email')
+            'start_time'       => $request->getPost('start_time'),
+            'end_time'         => $request->getPost('end_time'),
+            'purpose'          => $request->getPost('purpose'),
+            'status'           => 'pending',
+            'e_ticket_code'    => $eTicketCode,
+            'qr_used'          => 0,
+            'created_at'       => date('Y-m-d H:i:s'),
+            'visitor_type'     => 'User',
+            'visitor_name'     => $session->get('name'),
+            'user_email'       => $session->get('email'),
         ];
 
         if ($reservationModel->insert($data)) {
             $reservationId = $reservationModel->insertID();
-            
             return redirect()->to('/reservation/success/' . $reservationId)
-                           ->with('success', 'Reservation created successfully! Your e-ticket code is: ' . $eTicketCode);
-        } else {
-            return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Failed to create reservation. Please try again.');
+                ->with('success', 'Reservation created successfully! Your e-ticket code is: ' . $eTicketCode);
         }
+
+        return redirect()->back()
+            ->withInput()
+            ->with('error', 'Failed to create reservation. Please try again.');
     }
 
     public function checkAvailability()
     {
         $request = $this->request;
-        
+
         if ($request->isAJAX()) {
             $resourceId = $request->getPost('resource_id');
-            $date = $request->getPost('date');
-            $startTime = $request->getPost('start_time');
-            $endTime = $request->getPost('end_time');
-            
+            $date       = $request->getPost('date');
+            $startTime  = $request->getPost('start_time');
+            $endTime    = $request->getPost('end_time');
+
             $reservationModel = new ReservationModel();
-            
+
             $conflicts = $reservationModel
                 ->where('resource_id', $resourceId)
                 ->where('reservation_date', $date)
@@ -187,50 +184,58 @@ class Reservation extends BaseController
                     ->where('end_time >=', $startTime)
                 ->groupEnd()
                 ->findAll();
-            
+
             if (empty($conflicts)) {
                 return $this->response->setJSON([
-                    'available' => true, 
-                    'message' => '✓ This time slot is available'
-                ]);
-            } else {
-                return $this->response->setJSON([
-                    'available' => false, 
-                    'message' => '✗ This time slot is already booked'
+                    'available' => true,
+                    'message'   => '✓ This time slot is available',
                 ]);
             }
+
+            return $this->response->setJSON([
+                'available' => false,
+                'message'   => '✗ This time slot is already booked',
+            ]);
         }
     }
 
     public function reservationList()
     {
         $session = session();
-        $userId = $session->get('user_id');
+        $userId  = $session->get('user_id');
 
         if (!$userId) {
             return redirect()->to('/login');
         }
 
-        $reservationModel = new ReservationModel();
-        $reservations = $reservationModel->getUserReservations($userId);
+        $userModel = new UserModel();
+        $user      = $userModel->find($userId);
+
+        $reservationModel      = new ReservationModel();
+        $reservations          = $reservationModel->getUserReservations($userId);
+        $remainingReservations = $reservationModel->getRemainingReservations($userId);
 
         return view('user/reservation_list', [
-            'page' => 'reservation-list',
-            'reservations' => $reservations
+            'page'                  => 'reservation-list',
+            'user'                  => $user,
+            'user_name'             => $user['name'] ?? '',
+            'reservations'          => $reservations,
+            'remainingReservations' => $remainingReservations,
         ]);
     }
 
     public function success($id)
     {
         $session = session();
-        $userId = $session->get('user_id');
+        $userId  = $session->get('user_id');
 
         if (!$userId) {
             return redirect()->to('/login');
         }
 
+        $userModel        = new UserModel();
         $reservationModel = new ReservationModel();
-        $reservation = $reservationModel
+        $reservation      = $reservationModel
             ->select('reservations.*, resources.name as resource_name')
             ->join('resources', 'resources.id = reservations.resource_id', 'left')
             ->where('reservations.id', $id)
@@ -239,12 +244,14 @@ class Reservation extends BaseController
 
         if (!$reservation) {
             return redirect()->to('/reservation-list')
-                           ->with('error', 'Reservation not found');
+                ->with('error', 'Reservation not found');
         }
 
         return view('user/reservation_success', [
-            'page' => 'reservation',
-            'reservation' => $reservation
+            'page'        => 'reservation',
+            'user'        => $userModel->find($userId), // already have $userId
+            'user_name'   => $session->get('name') ?? '',
+            'reservation' => $reservation,
         ]);
     }
 }
