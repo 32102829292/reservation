@@ -129,7 +129,12 @@ define('UNCLAIMED_GRACE_SECONDS', 3600);
 
 $processed = [];
 foreach (($reservations ?? []) as $res) {
-    $isClaimed = !empty($res['claimed']) && $res['claimed'] == 1;
+    // ── FIX: check both the `claimed` boolean column AND the `status` column.
+    // The admin scanner may only update `status` to "claimed" without setting
+    // the `claimed` boolean, so we check both to avoid showing "Approved" after scan.
+    $isClaimed = (!empty($res['claimed']) && $res['claimed'] == 1)
+                 || strtolower($res['status'] ?? '') === 'claimed';
+
     $status = $isClaimed ? 'claimed' : strtolower($res['status'] ?? 'pending');
 
     if ($status === 'approved') {
