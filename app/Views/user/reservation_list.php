@@ -129,11 +129,13 @@ define('UNCLAIMED_GRACE_SECONDS', 3600);
 
 $processed = [];
 foreach (($reservations ?? []) as $res) {
-    // ── FIX: check both the `claimed` boolean column AND the `status` column.
-    // The admin scanner may only update `status` to "claimed" without setting
-    // the `claimed` boolean, so we check both to avoid showing "Approved" after scan.
+    // ── FIX: check all three possible indicators that a ticket was scanned.
+    // 1. claimed boolean column (== 1)
+    // 2. status column set to "claimed" by the scanner
+    // 3. claimed_at timestamp — most reliable; only set when scanner processes the ticket
     $isClaimed = (!empty($res['claimed']) && $res['claimed'] == 1)
-                 || strtolower($res['status'] ?? '') === 'claimed';
+                 || strtolower($res['status'] ?? '') === 'claimed'
+                 || !empty($res['claimed_at']);
 
     $status = $isClaimed ? 'claimed' : strtolower($res['status'] ?? 'pending');
 
