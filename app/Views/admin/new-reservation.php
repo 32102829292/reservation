@@ -18,7 +18,63 @@
     </script>
 
     <style>
-        /* ── Form Styles ── */
+        /* ══════════════════════════════
+           BASE LAYOUT
+        ══════════════════════════════ */
+        .main-area {
+            padding: 24px 20px;
+        }
+        @media(max-width:639px) {
+            .main-area { padding: 16px 14px; }
+        }
+
+        /* ══════════════════════════════
+           PAGE HEADER
+        ══════════════════════════════ */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .page-header-left p.eyebrow {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        .page-header-left h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -.04em;
+            line-height: 1.1;
+        }
+        .page-header-left p.sub {
+            font-size: .78rem;
+            color: #94a3b8;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        .page-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+        @media(max-width:480px) {
+            .page-header-left h2 { font-size: 1.35rem; }
+            .page-header-actions { width: 100%; justify-content: flex-end; }
+        }
+
+        /* ══════════════════════════════
+           FORM CARD
+        ══════════════════════════════ */
         .form-card {
             background: var(--card);
             border-radius: var(--r-xl);
@@ -28,20 +84,32 @@
             max-width: 760px;
             margin: 0 auto;
         }
-
         @media(max-width:639px) {
-            .form-card {
-                padding: 20px 16px;
-            }
+            .form-card { padding: 18px 16px; border-radius: var(--r-lg); }
         }
 
+        /* ══════════════════════════════
+           SECTION DIVIDER & ICON
+        ══════════════════════════════ */
         .section-divider {
             border: none;
             border-top: 1px solid rgba(99, 102, 241, .08);
-            margin: 1.75rem 0;
+            margin: 1.5rem 0;
+        }
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--indigo-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        /* ── Type Toggle ── */
+        /* ══════════════════════════════
+           TYPE TOGGLE
+        ══════════════════════════════ */
         .type-toggle {
             display: flex;
             background: #f1f5f9;
@@ -49,11 +117,10 @@
             border-radius: 14px;
             gap: 4px;
         }
-
         .type-btn {
             flex: 1;
             text-align: center;
-            padding: .7rem 1rem;
+            padding: .65rem 1rem;
             border-radius: 10px;
             cursor: pointer;
             font-weight: 700;
@@ -64,18 +131,37 @@
             background: transparent;
             font-family: var(--font);
         }
-
         .type-btn.active {
             background: var(--indigo);
             color: white;
             box-shadow: 0 4px 14px rgba(55, 48, 163, .3);
         }
 
-        /* ── Autocomplete ── */
-        .autocomplete-wrap {
-            position: relative;
+        /* ══════════════════════════════
+           FIELD GRIDS — responsive
+        ══════════════════════════════ */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+        @media(max-width:639px) {
+            .grid-2 { grid-template-columns: 1fr; gap: 12px; }
+            .grid-3 { grid-template-columns: 1fr; gap: 12px; }
+        }
+        @media(min-width:400px) and (max-width:639px) {
+            .grid-3 { grid-template-columns: 1fr 1fr; }
         }
 
+        /* ══════════════════════════════
+           AUTOCOMPLETE
+        ══════════════════════════════ */
+        .autocomplete-wrap { position: relative; }
         .autocomplete-list {
             position: absolute;
             z-index: 50;
@@ -89,26 +175,18 @@
             top: calc(100% + 4px);
             left: 0;
         }
-
         .autocomplete-item {
             padding: 11px 14px;
             cursor: pointer;
             font-size: .85rem;
             transition: background .12s;
         }
+        .autocomplete-item:hover { background: var(--indigo-light); color: var(--indigo); }
+        .autocomplete-item .sub { font-size: .72rem; color: #94a3b8; margin-top: 2px; }
 
-        .autocomplete-item:hover {
-            background: var(--indigo-light);
-            color: var(--indigo);
-        }
-
-        .autocomplete-item .sub {
-            font-size: .72rem;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-
-        /* ── PC Section ── */
+        /* ══════════════════════════════
+           PC SECTION
+        ══════════════════════════════ */
         .pc-section {
             background: var(--indigo-light);
             border: 1px solid var(--indigo-border);
@@ -116,7 +194,9 @@
             padding: 16px;
         }
 
-        /* ── Buttons ── */
+        /* ══════════════════════════════
+           BUTTONS
+        ══════════════════════════════ */
         .btn-primary {
             background: var(--indigo);
             color: white;
@@ -133,19 +213,47 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 4px 12px rgba(55, 48, 163, .28);
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-primary:hover { background: var(--indigo-mid); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(55, 48, 163, .35); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border: 1px solid rgba(99, 102, 241, .12);
+            border-radius: var(--r-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            cursor: pointer;
+            transition: all .2s;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 18px;
+            background: white;
+            border: 1px solid rgba(99, 102, 241, .15);
+            border-radius: var(--r-sm);
+            font-size: .85rem;
+            font-weight: 700;
+            color: #475569;
+            text-decoration: none;
+            transition: all .2s;
+            box-shadow: var(--shadow-sm);
+            white-space: nowrap;
         }
 
-        .btn-primary:hover {
-            background: var(--indigo-mid);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(55, 48, 163, .35);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        /* ── Flash ── */
+        /* ══════════════════════════════
+           FLASH
+        ══════════════════════════════ */
         .flash-err {
             display: flex;
             align-items: center;
@@ -160,19 +268,9 @@
             font-size: .875rem;
         }
 
-        /* ── Section icon ── */
-        .section-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: var(--indigo-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        /* ── Modal ── */
+        /* ══════════════════════════════
+           MODAL
+        ══════════════════════════════ */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -185,21 +283,8 @@
             align-items: center;
             justify-content: center;
         }
-
-        .modal-backdrop.show {
-            display: flex;
-            animation: fadeIn .15s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
+        .modal-backdrop.show { display: flex; animation: fadeIn .15s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal-box {
             background: white;
@@ -213,18 +298,7 @@
             overflow-y: auto;
             box-shadow: var(--shadow-lg);
         }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(14px);
-                opacity: 0;
-            }
-
-            to {
-                transform: none;
-                opacity: 1;
-            }
-        }
+        @keyframes slideUp { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
 
         .mrow {
             display: flex;
@@ -234,26 +308,9 @@
             border-bottom: 1px solid rgba(99, 102, 241, .07);
             gap: 1rem;
         }
-
-        .mrow:last-child {
-            border-bottom: none;
-        }
-
-        .mrow-label {
-            font-size: .6rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .14em;
-            color: #94a3b8;
-            flex-shrink: 0;
-        }
-
-        .mrow-value {
-            font-weight: 700;
-            color: #0f172a;
-            font-size: .83rem;
-            text-align: right;
-        }
+        .mrow:last-child { border-bottom: none; }
+        .mrow-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; color: #94a3b8; flex-shrink: 0; }
+        .mrow-value { font-weight: 700; color: #0f172a; font-size: .83rem; text-align: right; }
 
         .sheet-handle {
             display: none;
@@ -265,135 +322,21 @@
         }
 
         @media(max-width:639px) {
-            .modal-backdrop {
-                padding: 0;
-                align-items: flex-end !important;
-            }
-
+            .modal-backdrop { padding: 0; align-items: flex-end !important; }
             .modal-box {
                 border-radius: var(--r-xl) var(--r-xl) 0 0;
                 max-width: 100%;
                 animation: sheetUp .25s cubic-bezier(.34, 1.2, .64, 1) both;
+                padding: 20px 16px 32px;
             }
-
-            .sheet-handle {
-                display: block;
-            }
+            .sheet-handle { display: block; }
         }
+        @keyframes sheetUp { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: none; } }
 
-        @keyframes sheetUp {
-            from {
-                opacity: 0;
-                transform: translateY(60px);
-            }
-
-            to {
-                opacity: 1;
-                transform: none;
-            }
-        }
-
-        /* ── Dark Mode extras ── */
-        body.dark .form-card {
-            background: #0b1628;
-            border-color: rgba(99, 102, 241, .1);
-        }
-
-        body.dark .field-input {
-            background: #101e35;
-            border-color: rgba(99, 102, 241, .18);
-            color: #e2eaf8;
-        }
-
-        body.dark .field-input:focus {
-            background: #0b1628;
-            border-color: var(--indigo);
-        }
-
-        body.dark .field-input[readonly] {
-            background: #060e1e;
-            color: #4a6fa5;
-        }
-
-        body.dark .type-toggle {
-            background: #101e35;
-        }
-
-        body.dark .type-btn {
-            color: #7fb3e8;
-        }
-
-        body.dark .section-divider {
-            border-color: rgba(99, 102, 241, .1);
-        }
-
-        body.dark .section-icon {
-            background: rgba(55, 48, 163, .2);
-        }
-
-        body.dark .pc-section {
-            background: rgba(55, 48, 163, .1);
-            border-color: rgba(99, 102, 241, .2);
-        }
-
-        body.dark .flash-err {
-            background: rgba(220, 38, 38, .1);
-            border-color: rgba(248, 113, 113, .3);
-            color: #f87171;
-        }
-
-        body.dark .autocomplete-list {
-            background: #0b1628;
-            border-color: rgba(99, 102, 241, .18);
-        }
-
-        body.dark .autocomplete-item:hover {
-            background: rgba(99, 102, 241, .12);
-            color: #a5b4fc;
-        }
-
-        body.dark .autocomplete-item .sub {
-            color: #4a6fa5;
-        }
-
-        body.dark .modal-box {
-            background: #0b1628;
-            color: #e2eaf8;
-        }
-
-        body.dark .mrow-label {
-            color: #4a6fa5;
-        }
-
-        body.dark .mrow-value {
-            color: #e2eaf8;
-        }
-
-        body.dark .mrow {
-            border-color: rgba(99, 102, 241, .08);
-        }
-
-        body.dark .sheet-handle {
-            background: #1e3a5f;
-        }
-
-        body.dark .field-input::placeholder {
-            color: #4a6fa5;
-        }
-
-        body.dark select.field-input option {
-            background: #0b1628;
-            color: #e2eaf8;
-        }
-
-        /* ════════════════════════════════════════
-           CUSTOM DATE / TIME PICKER STYLES
-           ════════════════════════════════════════ */
-        #resDate,
-        #startTime,
-        #endTime {
-            display: none !important;
-        }
+        /* ══════════════════════════════
+           CUSTOM DATE / TIME PICKERS
+        ══════════════════════════════ */
+        #resDate, #startTime, #endTime { display: none !important; }
 
         .dt-trigger {
             display: flex;
@@ -414,28 +357,11 @@
             user-select: none;
             -webkit-user-select: none;
         }
-
-        .dt-trigger.has-value {
-            color: var(--text, #0f172a);
-        }
-
-        .dt-trigger:hover {
-            border-color: rgba(99, 102, 241, .35);
-        }
-
-        .dt-trigger.open {
-            border-color: var(--indigo);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
-        }
-
-        .dt-trigger svg {
-            flex-shrink: 0;
-            opacity: .45;
-        }
-
-        .dt-trigger.open svg {
-            opacity: .8;
-        }
+        .dt-trigger.has-value { color: var(--text, #0f172a); }
+        .dt-trigger:hover { border-color: rgba(99, 102, 241, .35); }
+        .dt-trigger.open { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99, 102, 241, .12); }
+        .dt-trigger svg { flex-shrink: 0; opacity: .45; }
+        .dt-trigger.open svg { opacity: .8; }
 
         .dt-drop {
             position: absolute;
@@ -445,444 +371,162 @@
             border-radius: 14px;
             animation: dtDrop .15s cubic-bezier(.4, 0, .2, 1);
         }
-
-        @keyframes dtDrop {
-            from {
-                opacity: 0;
-                transform: translateY(-6px);
-            }
-
-            to {
-                opacity: 1;
-                transform: none;
-            }
-        }
-
-        body:not(.dark) .dt-drop {
-            background: #ffffff;
-            border: 1px solid rgba(99, 102, 241, .18);
-            box-shadow: 0 20px 50px rgba(15, 23, 42, .18);
-        }
-
-        body.dark .dt-drop {
-            background: #0e1828;
-            border: 1px solid rgba(99, 102, 241, .22);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .65);
-        }
-
-        .dt-drop.cal {
-            width: 288px;
-            padding: 18px 16px 14px;
-        }
-
-        .cal-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .cal-month-label {
-            font-size: .88rem;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 7px;
-            transition: background .15s;
-        }
-
-        body:not(.dark) .cal-month-label {
-            color: #0f172a;
-        }
-
-        body:not(.dark) .cal-month-label:hover {
-            background: #f1f5f9;
-        }
-
-        body.dark .cal-month-label {
-            color: #e2e8f0;
-        }
-
-        body.dark .cal-month-label:hover {
-            background: rgba(99, 102, 241, .12);
-        }
-
-        .cal-nav-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: .75rem;
-            transition: all .15s;
-        }
-
-        body:not(.dark) .cal-nav-btn {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            color: #64748b;
-        }
-
-        body:not(.dark) .cal-nav-btn:hover {
-            border-color: var(--indigo);
-            color: var(--indigo);
-            background: var(--indigo-light);
-        }
-
-        body.dark .cal-nav-btn {
-            background: rgba(255, 255, 255, .05);
-            border: 1px solid rgba(255, 255, 255, .08);
-            color: #94a3b8;
-        }
-
-        body.dark .cal-nav-btn:hover {
-            border-color: var(--indigo);
-            color: #a5b4fc;
-            background: rgba(99, 102, 241, .1);
-        }
-
-        .cal-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-        }
-
-        .cal-dow {
-            font-size: .6rem;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            text-align: center;
-            padding: 3px 0 9px;
-        }
-
-        body:not(.dark) .cal-dow {
-            color: #94a3b8;
-        }
-
-        body.dark .cal-dow {
-            color: #4f5a72;
-        }
-
-        .cal-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-size: .8rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all .12s;
-            border: 1px solid transparent;
-        }
-
-        body:not(.dark) .cal-day {
-            color: #475569;
-        }
-
-        body.dark .cal-day {
-            color: #8b95b0;
-        }
-
-        body:not(.dark) .cal-day:hover:not(.cal-other):not(.cal-selected) {
-            background: #f1f5f9;
-            color: #0f172a;
-            border-color: #e2e8f0;
-        }
-
-        body.dark .cal-day:hover:not(.cal-other):not(.cal-selected) {
-            background: rgba(255, 255, 255, .06);
-            color: #e2e8f0;
-            border-color: rgba(255, 255, 255, .08);
-        }
-
-        .cal-day.cal-other {
-            pointer-events: none;
-        }
-
-        body:not(.dark) .cal-day.cal-other {
-            color: #cbd5e1;
-        }
-
-        body.dark .cal-day.cal-other {
-            color: #2e3850;
-        }
-
-        body:not(.dark) .cal-day.cal-today {
-            color: var(--indigo);
-            font-weight: 700;
-        }
-
-        body.dark .cal-day.cal-today {
-            color: #818cf8;
-            font-weight: 700;
-        }
-
-        .cal-day.cal-selected {
-            background: var(--indigo) !important;
-            color: #fff !important;
-            font-weight: 700;
-            border-color: var(--indigo) !important;
-            box-shadow: 0 2px 10px rgba(99, 102, 241, .4);
-        }
-
-        .cal-footer {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 12px;
-            padding-top: 12px;
-        }
-
-        body:not(.dark) .cal-footer {
-            border-top: 1px solid #f1f5f9;
-        }
-
-        body.dark .cal-footer {
-            border-top: 1px solid rgba(255, 255, 255, .06);
-        }
-
-        .cal-foot-btn {
-            font-size: .72rem;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 5px 9px;
-            border-radius: 7px;
-            transition: all .15s;
-        }
-
-        body:not(.dark) .cal-foot-btn {
-            color: #94a3b8;
-        }
-
-        body:not(.dark) .cal-foot-btn:hover {
-            color: var(--indigo);
-            background: var(--indigo-light);
-        }
-
-        body:not(.dark) .cal-foot-btn.today {
-            color: var(--indigo);
-        }
-
-        body.dark .cal-foot-btn {
-            color: #4f5a72;
-        }
-
-        body.dark .cal-foot-btn:hover {
-            color: #818cf8;
-            background: rgba(99, 102, 241, .1);
-        }
-
-        body.dark .cal-foot-btn.today {
-            color: #818cf8;
-        }
-
-        .dt-drop.tim {
-            width: 232px;
-            padding: 16px 14px 14px;
-        }
-
-        .tim-title {
-            font-size: .65rem;
-            font-weight: 700;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        body:not(.dark) .tim-title {
-            color: #94a3b8;
-        }
-
-        body.dark .tim-title {
-            color: #4f5a72;
-        }
-
-        .tim-cols {
-            display: flex;
-            align-items: flex-start;
-            gap: 4px;
-        }
-
-        .tim-col {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            max-height: 192px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-        }
-
-        body:not(.dark) .tim-col {
-            scrollbar-color: #e2e8f0 transparent;
-        }
-
-        body.dark .tim-col {
-            scrollbar-color: rgba(99, 102, 241, .3) transparent;
-        }
-
-        .tim-col::-webkit-scrollbar {
-            width: 3px;
-        }
-
-        body:not(.dark) .tim-col::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 4px;
-        }
-
-        body.dark .tim-col::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, .3);
-            border-radius: 4px;
-        }
-
-        .tim-item {
-            padding: 7px 6px;
-            border-radius: 7px;
-            font-size: .81rem;
-            font-weight: 500;
-            text-align: center;
-            cursor: pointer;
-            transition: all .1s;
-            border: 1px solid transparent;
-        }
-
-        body:not(.dark) .tim-item {
-            color: #64748b;
-        }
-
-        body:not(.dark) .tim-item:hover:not(.sel) {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-        body.dark .tim-item {
-            color: #8b95b0;
-        }
-
-        body.dark .tim-item:hover:not(.sel) {
-            background: rgba(255, 255, 255, .06);
-            color: #e2e8f0;
-        }
-
-        .tim-item.sel {
-            background: var(--indigo) !important;
-            color: #fff !important;
-            font-weight: 700;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, .4);
-        }
-
-        .tim-sep {
-            font-size: 1rem;
-            font-weight: 700;
-            padding: 6px 0;
-            align-self: flex-start;
-            margin-top: 4px;
-        }
-
-        body:not(.dark) .tim-sep {
-            color: #cbd5e1;
-        }
-
-        body.dark .tim-sep {
-            color: #4f5a72;
-        }
-
-        .ampm-col {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding-top: 2px;
-        }
-
-        .ampm-btn {
-            padding: 8px 10px;
-            border-radius: 8px;
-            font-size: .75rem;
-            font-weight: 700;
-            cursor: pointer;
-            text-align: center;
-            transition: all .15s;
-        }
-
-        body:not(.dark) .ampm-btn {
-            border: 1px solid #e2e8f0;
-            color: #64748b;
-            background: #f8fafc;
-        }
-
-        body:not(.dark) .ampm-btn:hover:not(.sel) {
-            color: var(--indigo);
-            border-color: var(--indigo-border);
-        }
-
-        body.dark .ampm-btn {
-            border: 1px solid rgba(255, 255, 255, .07);
-            color: #8b95b0;
-            background: rgba(255, 255, 255, .04);
-        }
-
-        body.dark .ampm-btn:hover:not(.sel) {
-            color: #e2e8f0;
-            border-color: rgba(255, 255, 255, .14);
-        }
-
-        .ampm-btn.sel {
-            background: var(--indigo) !important;
-            color: #fff !important;
-            border-color: var(--indigo) !important;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, .4);
-        }
-
-        .tim-set-btn {
-            width: 100%;
-            margin-top: 12px;
-            padding: 9px;
-            background: var(--indigo);
-            color: #fff;
-            border: none;
-            border-radius: 9px;
-            font-size: .8rem;
-            font-weight: 700;
-            font-family: var(--font);
-            cursor: pointer;
-            transition: background .15s;
-        }
-
-        .tim-set-btn:hover {
-            background: #4f46e5;
-        }
-
-        .picker-wrap {
-            position: relative;
-        }
+        @keyframes dtDrop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+        body:not(.dark) .dt-drop { background: #fff; border: 1px solid rgba(99,102,241,.18); box-shadow: 0 20px 50px rgba(15,23,42,.18); }
+        body.dark .dt-drop { background: #0e1828; border: 1px solid rgba(99,102,241,.22); box-shadow: 0 20px 60px rgba(0,0,0,.65); }
+
+        .dt-drop.cal { width: 288px; padding: 18px 16px 14px; }
+
+        /* Ensure calendar doesn't overflow on mobile */
+        @media(max-width:380px) { .dt-drop.cal { width: 260px; } }
+
+        .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .cal-month-label { font-size: .88rem; font-weight: 700; cursor: pointer; padding: 4px 8px; border-radius: 7px; transition: background .15s; }
+        body:not(.dark) .cal-month-label { color: #0f172a; }
+        body:not(.dark) .cal-month-label:hover { background: #f1f5f9; }
+        body.dark .cal-month-label { color: #e2e8f0; }
+        body.dark .cal-month-label:hover { background: rgba(99,102,241,.12); }
+
+        .cal-nav-btn { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: .75rem; transition: all .15s; }
+        body:not(.dark) .cal-nav-btn { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; }
+        body:not(.dark) .cal-nav-btn:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-light); }
+        body.dark .cal-nav-btn { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); color: #94a3b8; }
+        body.dark .cal-nav-btn:hover { border-color: var(--indigo); color: #a5b4fc; background: rgba(99,102,241,.1); }
+
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+        .cal-dow { font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-align: center; padding: 3px 0 9px; }
+        body:not(.dark) .cal-dow { color: #94a3b8; }
+        body.dark .cal-dow { color: #4f5a72; }
+
+        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: .8rem; font-weight: 500; cursor: pointer; transition: all .12s; border: 1px solid transparent; }
+        body:not(.dark) .cal-day { color: #475569; }
+        body.dark .cal-day { color: #8b95b0; }
+        body:not(.dark) .cal-day:hover:not(.cal-other):not(.cal-selected) { background: #f1f5f9; color: #0f172a; border-color: #e2e8f0; }
+        body.dark .cal-day:hover:not(.cal-other):not(.cal-selected) { background: rgba(255,255,255,.06); color: #e2e8f0; border-color: rgba(255,255,255,.08); }
+        .cal-day.cal-other { pointer-events: none; }
+        body:not(.dark) .cal-day.cal-other { color: #cbd5e1; }
+        body.dark .cal-day.cal-other { color: #2e3850; }
+        body:not(.dark) .cal-day.cal-today { color: var(--indigo); font-weight: 700; }
+        body.dark .cal-day.cal-today { color: #818cf8; font-weight: 700; }
+        .cal-day.cal-selected { background: var(--indigo) !important; color: #fff !important; font-weight: 700; border-color: var(--indigo) !important; box-shadow: 0 2px 10px rgba(99,102,241,.4); }
+
+        .cal-footer { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; }
+        body:not(.dark) .cal-footer { border-top: 1px solid #f1f5f9; }
+        body.dark .cal-footer { border-top: 1px solid rgba(255,255,255,.06); }
+        .cal-foot-btn { font-size: .72rem; font-weight: 700; cursor: pointer; padding: 5px 9px; border-radius: 7px; transition: all .15s; }
+        body:not(.dark) .cal-foot-btn { color: #94a3b8; }
+        body:not(.dark) .cal-foot-btn:hover { color: var(--indigo); background: var(--indigo-light); }
+        body:not(.dark) .cal-foot-btn.today { color: var(--indigo); }
+        body.dark .cal-foot-btn { color: #4f5a72; }
+        body.dark .cal-foot-btn:hover { color: #818cf8; background: rgba(99,102,241,.1); }
+        body.dark .cal-foot-btn.today { color: #818cf8; }
+
+        .dt-drop.tim { width: 232px; padding: 16px 14px 14px; }
+        .tim-title { font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; text-align: center; margin-bottom: 12px; }
+        body:not(.dark) .tim-title { color: #94a3b8; }
+        body.dark .tim-title { color: #4f5a72; }
+        .tim-cols { display: flex; align-items: flex-start; gap: 4px; }
+        .tim-col { flex: 1; display: flex; flex-direction: column; gap: 2px; max-height: 192px; overflow-y: auto; scrollbar-width: thin; }
+        body:not(.dark) .tim-col { scrollbar-color: #e2e8f0 transparent; }
+        body.dark .tim-col { scrollbar-color: rgba(99,102,241,.3) transparent; }
+        .tim-col::-webkit-scrollbar { width: 3px; }
+        body:not(.dark) .tim-col::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+        body.dark .tim-col::-webkit-scrollbar-thumb { background: rgba(99,102,241,.3); border-radius: 4px; }
+        .tim-item { padding: 7px 6px; border-radius: 7px; font-size: .81rem; font-weight: 500; text-align: center; cursor: pointer; transition: all .1s; border: 1px solid transparent; }
+        body:not(.dark) .tim-item { color: #64748b; }
+        body:not(.dark) .tim-item:hover:not(.sel) { background: #f1f5f9; color: #0f172a; }
+        body.dark .tim-item { color: #8b95b0; }
+        body.dark .tim-item:hover:not(.sel) { background: rgba(255,255,255,.06); color: #e2e8f0; }
+        .tim-item.sel { background: var(--indigo) !important; color: #fff !important; font-weight: 700; box-shadow: 0 2px 8px rgba(99,102,241,.4); }
+        .tim-sep { font-size: 1rem; font-weight: 700; padding: 6px 0; align-self: flex-start; margin-top: 4px; }
+        body:not(.dark) .tim-sep { color: #cbd5e1; }
+        body.dark .tim-sep { color: #4f5a72; }
+        .ampm-col { display: flex; flex-direction: column; gap: 5px; padding-top: 2px; }
+        .ampm-btn { padding: 8px 10px; border-radius: 8px; font-size: .75rem; font-weight: 700; cursor: pointer; text-align: center; transition: all .15s; }
+        body:not(.dark) .ampm-btn { border: 1px solid #e2e8f0; color: #64748b; background: #f8fafc; }
+        body:not(.dark) .ampm-btn:hover:not(.sel) { color: var(--indigo); border-color: var(--indigo-border); }
+        body.dark .ampm-btn { border: 1px solid rgba(255,255,255,.07); color: #8b95b0; background: rgba(255,255,255,.04); }
+        body.dark .ampm-btn:hover:not(.sel) { color: #e2e8f0; border-color: rgba(255,255,255,.14); }
+        .ampm-btn.sel { background: var(--indigo) !important; color: #fff !important; border-color: var(--indigo) !important; box-shadow: 0 2px 8px rgba(99,102,241,.4); }
+        .tim-set-btn { width: 100%; margin-top: 12px; padding: 9px; background: var(--indigo); color: #fff; border: none; border-radius: 9px; font-size: .8rem; font-weight: 700; font-family: var(--font); cursor: pointer; transition: background .15s; }
+        .tim-set-btn:hover { background: #4f46e5; }
+        .picker-wrap { position: relative; }
+
+        /* ══════════════════════════════
+           DARK MODE — UNIFIED
+        ══════════════════════════════ */
+        body.dark .page-header-left h2 { color: #e2eaf8; }
+        body.dark .page-header-left p.eyebrow,
+        body.dark .page-header-left p.sub { color: #4a6fa5; }
+
+        body.dark .icon-btn { background: #101e35; border-color: rgba(99,102,241,.18); color: #7fb3e8; }
+        body.dark .icon-btn:hover { background: rgba(99,102,241,.12); border-color: var(--indigo); color: #a5b4fc; }
+        body.dark .back-link { background: #101e35; border-color: rgba(99,102,241,.18); color: #7fb3e8; }
+        body.dark .back-link:hover { background: rgba(99,102,241,.12); border-color: var(--indigo); color: #a5b4fc; }
+
+        body.dark .form-card { background: #0b1628; border-color: rgba(99,102,241,.1); }
+        body.dark .section-divider { border-color: rgba(99,102,241,.1); }
+        body.dark .section-icon { background: rgba(55,48,163,.2); }
+
+        body.dark p[style*="font-weight:800;color:#0f172a"] { color: #e2eaf8 !important; }
+
+        body.dark .field-input,
+        body.dark input.field-input,
+        body.dark select.field-input {
+            background: #101e35;
+            border-color: rgba(99,102,241,.18);
+            color: #e2eaf8;
+        }
+        body.dark .field-input:focus { background: #0b1628; border-color: var(--indigo); }
+        body.dark .field-input[readonly] { background: #060e1e; color: #4a6fa5; }
+        body.dark .field-input::placeholder { color: #4a6fa5; }
+        body.dark select.field-input option { background: #0b1628; color: #e2eaf8; }
+        body.dark .field-label { color: #4a6fa5; }
+
+        body.dark .type-toggle { background: #101e35; }
+        body.dark .type-btn { color: #7fb3e8; }
+
+        body.dark .pc-section { background: rgba(55,48,163,.1); border-color: rgba(99,102,241,.2); }
+
+        body.dark .flash-err { background: rgba(220,38,38,.1); border-color: rgba(248,113,113,.3); color: #f87171; }
+
+        body.dark .autocomplete-list { background: #0b1628; border-color: rgba(99,102,241,.18); }
+        body.dark .autocomplete-item:hover { background: rgba(99,102,241,.12); color: #a5b4fc; }
+        body.dark .autocomplete-item .sub { color: #4a6fa5; }
+
+        body.dark .modal-box { background: #0b1628; color: #e2eaf8; }
+        body.dark .mrow-label { color: #4a6fa5; }
+        body.dark .mrow-value { color: #e2eaf8; }
+        body.dark .mrow { border-color: rgba(99,102,241,.08); }
+        body.dark .sheet-handle { background: #1e3a5f; }
+
+        body.dark #modalSummaryBox { background: #060e1e !important; border-color: rgba(99,102,241,.1) !important; }
+        body.dark .modal-box h3 { color: #e2eaf8; }
+        body.dark .modal-box p { color: #4a6fa5; }
+        body.dark .modal-cancel-btn { background: #101e35; border-color: rgba(99,102,241,.18); color: #7fb3e8; }
+        body.dark .modal-cancel-btn:hover { background: rgba(99,102,241,.12); color: #a5b4fc; }
     </style>
 </head>
 
 <body>
     <?php include APPPATH . 'Views/partials/admin_layout.php'; ?>
 
-    <!-- Main -->
     <main class="main-area">
-        <!-- Header -->
-        <header style="display:flex;flex-direction:column;gap:4px;margin-bottom:28px">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
-                <div>
-                    <p style="font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Administration</p>
-                    <h2 style="font-size:1.75rem;font-weight:800;color:#0f172a;letter-spacing:-.04em;line-height:1.1">New Reservation</h2>
-                    <p style="font-size:.78rem;color:#94a3b8;font-weight:500;margin-top:4px">Register a manual entry into the system.</p>
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-header-left">
+                <p class="eyebrow">Administration</p>
+                <h2>New Reservation</h2>
+                <p class="sub">Register a manual entry into the system.</p>
+            </div>
+            <div class="page-header-actions">
+                <div class="icon-btn" onclick="adminToggleDark()" title="Toggle dark mode">
+                    <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem"></i></span>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
-                    <div onclick="adminToggleDark()" title="Toggle dark mode" style="width:44px;height:44px;background:white;border:1px solid rgba(99,102,241,.12);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:#64748b;cursor:pointer;transition:all var(--ease);box-shadow:var(--shadow-sm)">
-                        <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem"></i></span>
-                    </div>
-                    <a href="/admin/manage-reservations" style="display:flex;align-items:center;gap:7px;padding:10px 18px;background:white;border:1px solid rgba(99,102,241,.15);border-radius:var(--r-sm);font-size:.85rem;font-weight:700;color:#475569;text-decoration:none;transition:all var(--ease);box-shadow:var(--shadow-sm)">
-                        <i class="fa-solid fa-chevron-left" style="font-size:.75rem"></i> Back
-                    </a>
-                </div>
+                <a href="/admin/manage-reservations" class="back-link">
+                    <i class="fa-solid fa-chevron-left" style="font-size:.75rem"></i> Back
+                </a>
             </div>
         </header>
 
@@ -893,21 +537,21 @@
         <div class="form-card">
             <form id="reservationForm" method="POST" action="<?= base_url('admin/create-reservation') ?>">
                 <?= csrf_field() ?>
-                <input type="hidden" name="visitor_name" id="finalVisitorName">
-                <input type="hidden" name="user_email" id="finalUserEmail">
-                <input type="hidden" name="user_id" id="finalUserId">
-                <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
-                <input type="hidden" name="purpose" id="finalPurpose">
+                <input type="hidden" name="visitor_name"  id="finalVisitorName">
+                <input type="hidden" name="user_email"    id="finalUserEmail">
+                <input type="hidden" name="user_id"       id="finalUserId">
+                <input type="hidden" name="visitor_type"  id="finalVisitorType" value="User">
+                <input type="hidden" name="purpose"       id="finalPurpose">
 
                 <!-- Visitor Type -->
-                <div style="margin-bottom:24px">
-                    <span class="field-label" style="margin-bottom:10px;display:block">Visitor Classification</span>
+                <div style="margin-bottom:22px">
+                    <label class="field-label" style="margin-bottom:10px;display:block">Visitor Classification</label>
                     <div class="type-toggle">
                         <button type="button" class="type-btn active" id="btnUser" onclick="setType('User')">
-                            <i class="fa-solid fa-user" style="margin-right:7px;font-size:.8rem"></i>Registered User
+                            <i class="fa-solid fa-user" style="margin-right:6px;font-size:.8rem"></i>Registered User
                         </button>
                         <button type="button" class="type-btn" id="btnVisitor" onclick="setType('Visitor')">
-                            <i class="fa-solid fa-person-walking" style="margin-right:7px;font-size:.8rem"></i>Walk-in Visitor
+                            <i class="fa-solid fa-person-walking" style="margin-right:6px;font-size:.8rem"></i>Walk-in Visitor
                         </button>
                     </div>
                 </div>
@@ -915,16 +559,16 @@
                 <hr class="section-divider">
 
                 <!-- Personal Details -->
-                <div style="margin-bottom:24px">
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                <div style="margin-bottom:22px">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
                         <div class="section-icon"><i class="fa-solid fa-id-card" style="color:var(--indigo);font-size:.85rem"></i></div>
                         <div>
-                            <p style="font-weight:800;color:#0f172a;font-size:.9rem">Personal Details</p>
-                            <p style="font-size:.7rem;color:#94a3b8;margin-top:2px">Identify the visitor</p>
+                            <p style="font-weight:800;color:#0f172a;font-size:.9rem;margin:0">Personal Details</p>
+                            <p style="font-size:.7rem;color:#94a3b8;margin:2px 0 0">Identify the visitor</p>
                         </div>
                     </div>
 
-                    <div id="userFields" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div id="userFields" class="grid-2">
                         <div>
                             <label class="field-label">Full Name</label>
                             <div class="autocomplete-wrap">
@@ -939,7 +583,7 @@
                         </div>
                     </div>
 
-                    <div id="visitorFields" style="display:none;grid-template-columns:1fr 1fr;gap:16px">
+                    <div id="visitorFields" style="display:none" class="grid-2">
                         <div><label class="field-label">Full Name</label><input type="text" id="visitorNameInput" class="field-input" placeholder="Enter visitor's full name"></div>
                         <div><label class="field-label">Email Address</label><input type="email" id="visitorEmailInput" class="field-input" placeholder="Enter email (optional)"></div>
                     </div>
@@ -948,16 +592,16 @@
                 <hr class="section-divider">
 
                 <!-- Resource & Schedule -->
-                <div style="margin-bottom:24px">
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                <div style="margin-bottom:22px">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
                         <div class="section-icon"><i class="fa-solid fa-calendar-days" style="color:var(--indigo);font-size:.85rem"></i></div>
                         <div>
-                            <p style="font-weight:800;color:#0f172a;font-size:.9rem">Resource & Schedule</p>
-                            <p style="font-size:.7rem;color:#94a3b8;margin-top:2px">What, where, and when</p>
+                            <p style="font-weight:800;color:#0f172a;font-size:.9rem;margin:0">Resource & Schedule</p>
+                            <p style="font-size:.7rem;color:#94a3b8;margin:2px 0 0">What, where, and when</p>
                         </div>
                     </div>
 
-                    <div style="margin-bottom:16px">
+                    <div style="margin-bottom:14px">
                         <label class="field-label">Select Asset / Resource</label>
                         <select id="resourceSelect" name="resource_id" class="field-input" required>
                             <option value="">— Choose a resource —</option>
@@ -969,7 +613,7 @@
                         </select>
                     </div>
 
-                    <div id="pcSection" style="display:none;margin-bottom:16px" class="pc-section">
+                    <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo)">Assign Workstation</label>
                         <select id="pcSelect" name="pc_number" class="field-input" style="margin-top:6px">
                             <option value="">— No specific station —</option>
@@ -979,8 +623,8 @@
                         </select>
                     </div>
 
-                    <!-- Date / time row — custom pickers -->
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+                    <!-- Date / Time — custom pickers -->
+                    <div class="grid-3" style="margin-bottom:14px">
 
                         <!-- DATE -->
                         <div>
@@ -988,10 +632,7 @@
                             <div class="picker-wrap" id="dateWrap">
                                 <div class="dt-trigger" id="dateTrigger">
                                     <span id="dateLabel">Pick a date</span>
-                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                                        <rect x="1" y="3" width="14" height="12" rx="2.5" stroke="#818cf8" stroke-width="1.4" />
-                                        <path d="M5 1v3M11 1v3M1 7h14" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round" />
-                                    </svg>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="2.5" stroke="#818cf8" stroke-width="1.4"/><path d="M5 1v3M11 1v3M1 7h14" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round"/></svg>
                                 </div>
                                 <div class="dt-drop cal" id="calDrop" style="display:none"></div>
                             </div>
@@ -1004,10 +645,7 @@
                             <div class="picker-wrap" id="startWrap">
                                 <div class="dt-trigger" id="startTrigger">
                                     <span id="startLabel">Select time</span>
-                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                                        <circle cx="8" cy="8" r="6.5" stroke="#818cf8" stroke-width="1.4" />
-                                        <path d="M8 4.5V8l2.5 2.5" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round" />
-                                    </svg>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#818cf8" stroke-width="1.4"/><path d="M8 4.5V8l2.5 2.5" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round"/></svg>
                                 </div>
                                 <div class="dt-drop tim" id="startDrop" style="display:none"></div>
                             </div>
@@ -1020,10 +658,7 @@
                             <div class="picker-wrap" id="endWrap">
                                 <div class="dt-trigger" id="endTrigger">
                                     <span id="endLabel">Select time</span>
-                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                                        <circle cx="8" cy="8" r="6.5" stroke="#818cf8" stroke-width="1.4" />
-                                        <path d="M8 4.5V8l2.5 2.5" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round" />
-                                    </svg>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#818cf8" stroke-width="1.4"/><path d="M8 4.5V8l2.5 2.5" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round"/></svg>
                                 </div>
                                 <div class="dt-drop tim" id="endDrop" style="display:none"></div>
                             </div>
@@ -1031,7 +666,7 @@
                         </div>
                     </div>
 
-                    <div>
+                    <div style="margin-bottom:14px">
                         <label class="field-label">Purpose of Visit</label>
                         <select id="purposeSelect" class="field-input" required>
                             <option value="">— Select purpose —</option>
@@ -1041,14 +676,14 @@
                             <option value="Others">Others</option>
                         </select>
                     </div>
-                    <div id="purposeOtherWrap" style="display:none;margin-top:12px">
+                    <div id="purposeOtherWrap" style="display:none">
                         <label class="field-label">Please Specify</label>
                         <input type="text" id="purposeOther" class="field-input" placeholder="Describe the purpose…">
                     </div>
                 </div>
 
-                <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid rgba(99,102,241,.08)">
-                    <button type="button" onclick="previewReservation()" class="btn-primary" style="width:100%;max-width:none">
+                <div style="padding-top:8px;border-top:1px solid rgba(99,102,241,.08)">
+                    <button type="button" onclick="previewReservation()" class="btn-primary">
                         <i class="fa-solid fa-eye" style="font-size:.85rem"></i> Preview & Confirm
                     </button>
                 </div>
@@ -1068,7 +703,7 @@
                 <p style="font-size:.75rem;color:#94a3b8;margin-top:3px">Review details before saving.</p>
             </div>
 
-            <div style="background:#f8fafc;border-radius:var(--r-md);padding:16px;border:1px solid rgba(99,102,241,.08);margin-bottom:16px">
+            <div id="modalSummaryBox" style="background:#f8fafc;border-radius:var(--r-md);padding:16px;border:1px solid rgba(99,102,241,.08);margin-bottom:16px">
                 <div class="mrow"><span class="mrow-label">Type</span><span class="mrow-value" id="mType"></span></div>
                 <div class="mrow"><span class="mrow-label">Name</span><span class="mrow-value" id="mName"></span></div>
                 <div class="mrow"><span class="mrow-label">Email</span><span class="mrow-value" id="mEmail"></span></div>
@@ -1089,7 +724,7 @@
             </div>
 
             <div style="display:flex;gap:10px">
-                <button type="button" onclick="closeModal()" style="flex:1;padding:13px;background:#f8fafc;border-radius:var(--r-md);font-weight:700;color:#475569;border:1px solid rgba(99,102,241,.1);cursor:pointer;font-family:var(--font);font-size:.82rem;transition:background .15s">Cancel</button>
+                <button type="button" class="modal-cancel-btn" onclick="closeModal()" style="flex:1;padding:13px;background:#f8fafc;border-radius:var(--r-md);font-weight:700;color:#475569;border:1px solid rgba(99,102,241,.1);cursor:pointer;font-family:var(--font);font-size:.82rem;transition:all .15s">Cancel</button>
                 <button type="button" id="confirmBtn" onclick="submitReservation()" style="flex:2;padding:13px;background:var(--indigo);color:white;border-radius:var(--r-md);font-weight:700;border:none;cursor:pointer;font-family:var(--font);font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(55,48,163,.3)">
                     <i class="fa-solid fa-check" style="font-size:.75rem"></i> Confirm & Save
                 </button>
@@ -1099,18 +734,7 @@
 
     <script>
         const allUsers = <?= json_encode($users ?? []) ?>;
-        let currentType = 'User',
-            selectedUser = null;
-
-        function setFieldGridCols() {
-            const g1 = document.getElementById('userFields'),
-                g2 = document.getElementById('visitorFields');
-            const cols = window.innerWidth < 640 ? '1fr' : '1fr 1fr';
-            g1.style.gridTemplateColumns = cols;
-            g2.style.gridTemplateColumns = cols;
-        }
-        setFieldGridCols();
-        window.addEventListener('resize', setFieldGridCols);
+        let currentType = 'User', selectedUser = null;
 
         function setType(type) {
             currentType = type;
@@ -1121,9 +745,8 @@
             document.getElementById('userFields').style.display = isUser ? 'grid' : 'none';
             document.getElementById('visitorFields').style.display = isUser ? 'none' : 'grid';
             selectedUser = null;
-            ['userNameInput', 'userEmailDisplay', 'visitorNameInput', 'visitorEmailInput'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '';
+            ['userNameInput','userEmailDisplay','visitorNameInput','visitorEmailInput'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
             });
             document.getElementById('finalUserId').value = '';
         }
@@ -1135,19 +758,13 @@
             const q = userNameInput.value.toLowerCase().trim();
             autocompleteList.innerHTML = '';
             selectedUser = null;
-            if (!q) {
-                autocompleteList.classList.add('hidden');
-                return;
-            }
+            if (!q) { autocompleteList.classList.add('hidden'); return; }
             const matches = allUsers.filter(u =>
                 (u.name && u.name.toLowerCase().includes(q)) ||
                 (u.full_name && u.full_name.toLowerCase().includes(q)) ||
                 (u.email && u.email.toLowerCase().includes(q))
             ).slice(0, 8);
-            if (!matches.length) {
-                autocompleteList.classList.add('hidden');
-                return;
-            }
+            if (!matches.length) { autocompleteList.classList.add('hidden'); return; }
             matches.forEach(u => {
                 const displayName = u.full_name || u.name || '';
                 const li = document.createElement('li');
@@ -1167,8 +784,8 @@
         userNameInput.addEventListener('blur', () => setTimeout(() => autocompleteList.classList.add('hidden'), 150));
 
         document.getElementById('resourceSelect').addEventListener('change', function() {
-            const name = this.options[this.selectedIndex].dataset.name || '';
-            const isPC = name.toLowerCase().includes('computer') || name.toLowerCase().includes('pc');
+            const name = (this.options[this.selectedIndex].dataset.name || '').toLowerCase();
+            const isPC = name.includes('computer') || name.includes('pc');
             document.getElementById('pcSection').style.display = isPC ? 'block' : 'none';
         });
 
@@ -1178,39 +795,38 @@
 
         function previewReservation() {
             const isUser = currentType === 'User';
-            const name = isUser ? userNameInput.value.trim() : document.getElementById('visitorNameInput').value.trim();
+            const name  = isUser ? userNameInput.value.trim() : document.getElementById('visitorNameInput').value.trim();
             const email = isUser ? document.getElementById('userEmailDisplay').value.trim() : document.getElementById('visitorEmailInput').value.trim();
             const re = document.getElementById('resourceSelect');
-            const rid = re.value,
-                rn = re.options[re.selectedIndex]?.text || '—';
+            const rid = re.value, rn = re.options[re.selectedIndex]?.text || '—';
             const pcVal = document.getElementById('pcSelect').value;
-            const date = document.getElementById('resDate').value;
+            const date  = document.getElementById('resDate').value;
             const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const purposeVal = document.getElementById('purposeSelect').value;
+            const endTime   = document.getElementById('endTime').value;
+            const purposeVal   = document.getElementById('purposeSelect').value;
             const purposeOther = document.getElementById('purposeOther').value.trim();
             const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
 
-            if (!name) return alert('Please enter a name.');
-            if (!rid) return alert('Please select a resource.');
-            if (!date) return alert('Please select a date.');
-            if (!startTime) return alert('Please enter a start time.');
-            if (!endTime) return alert('Please enter an end time.');
+            if (!name)       return alert('Please enter a name.');
+            if (!rid)        return alert('Please select a resource.');
+            if (!date)       return alert('Please select a date.');
+            if (!startTime)  return alert('Please enter a start time.');
+            if (!endTime)    return alert('Please enter an end time.');
             if (!purposeVal) return alert('Please select a purpose.');
             if (isUser && !selectedUser && !document.getElementById('finalUserId').value)
                 return alert('Please select a registered user from the dropdown.');
 
             document.getElementById('finalVisitorName').value = name;
-            document.getElementById('finalUserEmail').value = email;
-            document.getElementById('finalPurpose').value = purposeFinal;
+            document.getElementById('finalUserEmail').value   = email;
+            document.getElementById('finalPurpose').value     = purposeFinal;
 
-            document.getElementById('mType').textContent = isUser ? 'Registered User' : 'Walk-in Visitor';
-            document.getElementById('mName').textContent = name || '—';
-            document.getElementById('mEmail').textContent = email || '—';
-            document.getElementById('mAsset').textContent = rn;
+            document.getElementById('mType').textContent    = isUser ? 'Registered User' : 'Walk-in Visitor';
+            document.getElementById('mName').textContent    = name || '—';
+            document.getElementById('mEmail').textContent   = email || '—';
+            document.getElementById('mAsset').textContent   = rn;
             document.getElementById('mStation').textContent = pcVal ? `Station ${pcVal}` : '—';
-            document.getElementById('mDate').textContent = document.getElementById('dateLabel').textContent;
-            document.getElementById('mTime').textContent = `${document.getElementById('startLabel').textContent} – ${document.getElementById('endLabel').textContent}`;
+            document.getElementById('mDate').textContent    = document.getElementById('dateLabel').textContent;
+            document.getElementById('mTime').textContent    = `${document.getElementById('startLabel').textContent} – ${document.getElementById('endLabel').textContent}`;
             document.getElementById('mPurpose').textContent = purposeFinal || '—';
 
             document.getElementById('qrWrap').style.display = 'none';
@@ -1224,14 +840,8 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
             const code = `ACCESS-${Date.now()}`;
             document.getElementById('qrText').textContent = code;
-            QRCode.toCanvas(document.getElementById('qrCanvas'), code, {
-                    width: 150,
-                    margin: 1,
-                    color: {
-                        dark: '#0f172a',
-                        light: '#ffffff'
-                    }
-                },
+            QRCode.toCanvas(document.getElementById('qrCanvas'), code,
+                { width: 150, margin: 1, color: { dark: '#0f172a', light: '#ffffff' } },
                 () => {
                     document.getElementById('qrWrap').style.display = 'flex';
                     btn.style.display = 'none';
@@ -1242,18 +852,14 @@
 
         function downloadQR() {
             const canvas = document.getElementById('qrCanvas');
-            const code = document.getElementById('qrText').textContent;
-            const link = document.createElement('a');
+            const code   = document.getElementById('qrText').textContent;
+            const link   = document.createElement('a');
             link.download = `E-Ticket-${code}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.href     = canvas.toDataURL('image/png');
             link.click();
         }
 
-        function openModal() {
-            document.getElementById('confirmModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
+        function openModal()  { document.getElementById('confirmModal').classList.add('show'); document.body.style.overflow = 'hidden'; }
         function closeModal() {
             document.getElementById('confirmModal').classList.remove('show');
             document.body.style.overflow = '';
@@ -1262,247 +868,116 @@
             btn.style.display = '';
             btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:.75rem"></i> Confirm & Save';
         }
-
-        function handleBackdrop(e) {
-            if (e.target === document.getElementById('confirmModal')) closeModal();
-        }
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeModal();
-        });
+        function handleBackdrop(e) { if (e.target === document.getElementById('confirmModal')) closeModal(); }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     </script>
 
     <!-- Custom Date / Time Picker JS -->
     <script>
-        (function() {
-            'use strict';
-            const TODAY = new Date();
-            let calView = {
-                y: TODAY.getFullYear(),
-                m: TODAY.getMonth()
-            };
-            let selDate = null;
-            let tState = {
-                start: {
-                    h: 9,
-                    min: 0,
-                    ampm: 'am'
-                },
-                end: {
-                    h: 5,
-                    min: 0,
-                    ampm: 'pm'
-                }
-            };
-            let activeDrop = null;
-            const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            const DOWS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-            const MINS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+    (function() {
+        'use strict';
+        const TODAY = new Date();
+        let calView  = { y: TODAY.getFullYear(), m: TODAY.getMonth() };
+        let selDate  = null;
+        let tState   = { start: { h: 9, min: 0, ampm: 'am' }, end: { h: 5, min: 0, ampm: 'pm' } };
+        let activeDrop = null;
+        const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const DOWS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+        const MINS   = [0,5,10,15,20,25,30,35,40,45,50,55];
+        function $(id){ return document.getElementById(id); }
 
-            function $(id) {
-                return document.getElementById(id);
+        function closeAll() {
+            ['calDrop','startDrop','endDrop'].forEach(id => { const el=$(id); if(el) el.style.display='none'; });
+            ['dateTrigger','startTrigger','endTrigger'].forEach(id => { const el=$(id); if(el) el.classList.remove('open'); });
+            activeDrop = null;
+        }
+        function toggle(dropId, triggerId) {
+            if (activeDrop === dropId) { closeAll(); return; }
+            closeAll(); activeDrop = dropId;
+            $(dropId).style.display = 'block';
+            $(triggerId).classList.add('open');
+        }
+        document.addEventListener('click', e => { if (!e.target.closest('.picker-wrap')) closeAll(); });
+
+        function renderCal() {
+            const {y, m} = calView;
+            const firstDow = new Date(y,m,1).getDay(), daysInM = new Date(y,m+1,0).getDate(), prevTotal = new Date(y,m,0).getDate();
+            let html = `<div class="cal-head"><div class="cal-nav-btn" id="_calPrev">&#8249;</div><div class="cal-month-label">${MONTHS[m]} ${y}</div><div class="cal-nav-btn" id="_calNext">&#8250;</div></div><div class="cal-grid">${DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
+            for (let i=0;i<firstDow;i++) html+=`<div class="cal-day cal-other">${prevTotal-firstDow+1+i}</div>`;
+            for (let d=1;d<=daysInM;d++) {
+                const isToday = d===TODAY.getDate()&&m===TODAY.getMonth()&&y===TODAY.getFullYear();
+                const isSel   = selDate&&selDate.d===d&&selDate.m===m&&selDate.y===y;
+                html+=`<div class="${['cal-day',isToday&&!isSel?'cal-today':'',isSel?'cal-selected':''].filter(Boolean).join(' ')}" data-d="${d}">${d}</div>`;
             }
+            const trail=(7-(firstDow+daysInM)%7)%7;
+            for(let i=1;i<=trail;i++) html+=`<div class="cal-day cal-other">${i}</div>`;
+            html+=`</div><div class="cal-footer"><span class="cal-foot-btn" id="_calClear">Clear</span><span class="cal-foot-btn today" id="_calToday">Today</span></div>`;
+            $('calDrop').innerHTML=html;
+            $('_calPrev').addEventListener('click',e=>{e.stopPropagation();moveMonth(-1);});
+            $('_calNext').addEventListener('click',e=>{e.stopPropagation();moveMonth(1);});
+            $('_calClear').addEventListener('click',e=>{e.stopPropagation();clearDate();});
+            $('_calToday').addEventListener('click',e=>{e.stopPropagation();gotoToday();});
+            $('calDrop').querySelectorAll('.cal-day[data-d]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();pickDay(+el.dataset.d);}));
+        }
+        function moveMonth(dir) {
+            calView.m+=dir;
+            if(calView.m>11){calView.m=0;calView.y++;}
+            if(calView.m<0){calView.m=11;calView.y--;}
+            renderCal();
+        }
+        function pickDay(d) {
+            selDate={d,m:calView.m,y:calView.y};
+            const dt=new Date(calView.y,calView.m,d);
+            const iso=`${calView.y}-${String(calView.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            $('resDate').value=iso;
+            $('dateLabel').textContent=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+            $('dateTrigger').classList.add('has-value');
+            renderCal(); setTimeout(closeAll,180);
+        }
+        function clearDate() { selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');renderCal(); }
+        function gotoToday() { calView={y:TODAY.getFullYear(),m:TODAY.getMonth()};pickDay(TODAY.getDate()); }
 
-            function closeAll() {
-                ['calDrop', 'startDrop', 'endDrop'].forEach(id => {
-                    const el = $(id);
-                    if (el) el.style.display = 'none';
-                });
-                ['dateTrigger', 'startTrigger', 'endTrigger'].forEach(id => {
-                    const el = $(id);
-                    if (el) el.classList.remove('open');
-                });
-                activeDrop = null;
-            }
+        function renderTime(which) {
+            const dropId=which==='start'?'startDrop':'endDrop';
+            const st=tState[which];
+            const hItems=Array.from({length:12},(_,i)=>i+1).map(h=>`<div class="tim-item${st.h===h?' sel':''}" data-part="h" data-val="${h}">${String(h).padStart(2,'0')}</div>`).join('');
+            const mItems=MINS.map(mn=>`<div class="tim-item${st.min===mn?' sel':''}" data-part="min" data-val="${mn}">${String(mn).padStart(2,'0')}</div>`).join('');
+            $(dropId).innerHTML=`<div class="tim-title">Select Time</div><div class="tim-cols"><div class="tim-col" id="_tc_h_${which}">${hItems}</div><div class="tim-sep">:</div><div class="tim-col" id="_tc_m_${which}">${mItems}</div><div class="ampm-col"><div class="ampm-btn${st.ampm==='am'?' sel':''}" data-ampm="am">AM</div><div class="ampm-btn${st.ampm==='pm'?' sel':''}" data-ampm="pm">PM</div></div></div><button class="tim-set-btn" id="_timSet_${which}">Set Time</button>`;
+            setTimeout(()=>{
+                const sH=$(dropId).querySelector('#_tc_h_'+which+' .sel');
+                const sM=$(dropId).querySelector('#_tc_m_'+which+' .sel');
+                if(sH)sH.scrollIntoView({block:'center',behavior:'instant'});
+                if(sM)sM.scrollIntoView({block:'center',behavior:'instant'});
+            },0);
+            $(dropId).querySelectorAll('.tim-item').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();tState[which][el.dataset.part]=+el.dataset.val;renderTime(which);}));
+            $(dropId).querySelectorAll('.ampm-btn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();tState[which].ampm=el.dataset.ampm;renderTime(which);}));
+            $(`_timSet_${which}`).addEventListener('click',e=>{e.stopPropagation();applyTime(which);});
+        }
+        function applyTime(which) {
+            const st=tState[which];
+            const label=`${String(st.h).padStart(2,'0')}:${String(st.min).padStart(2,'0')} ${st.ampm.toUpperCase()}`;
+            let h24=st.h;
+            if(st.ampm==='am'&&st.h===12)h24=0;
+            if(st.ampm==='pm'&&st.h!==12)h24=st.h+12;
+            const iso24=`${String(h24).padStart(2,'0')}:${String(st.min).padStart(2,'0')}`;
+            const labelId=which==='start'?'startLabel':'endLabel';
+            const inputId=which==='start'?'startTime':'endTime';
+            const triggerId=which==='start'?'startTrigger':'endTrigger';
+            $(labelId).textContent=label;$(inputId).value=iso24;$(triggerId).classList.add('has-value');
+            closeAll();
+        }
 
-            function toggle(dropId, triggerId) {
-                if (activeDrop === dropId) {
-                    closeAll();
-                    return;
-                }
-                closeAll();
-                activeDrop = dropId;
-                $(dropId).style.display = 'block';
-                $(triggerId).classList.add('open');
-            }
-            document.addEventListener('click', e => {
-                if (!e.target.closest('.picker-wrap')) closeAll();
-            });
+        $('dateTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('calDrop','dateTrigger');if(activeDrop==='calDrop')renderCal();});
+        $('startTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('startDrop','startTrigger');if(activeDrop==='startDrop')renderTime('start');});
+        $('endTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('endDrop','endTrigger');if(activeDrop==='endDrop')renderTime('end');});
 
-            function renderCal() {
-                const {
-                    y,
-                    m
-                } = calView;
-                const firstDow = new Date(y, m, 1).getDay();
-                const daysInM = new Date(y, m + 1, 0).getDate();
-                const prevTotal = new Date(y, m, 0).getDate();
-                let html = `<div class="cal-head"><div class="cal-nav-btn" id="_calPrev">&#8249;</div><div class="cal-month-label">${MONTHS[m]} ${y}</div><div class="cal-nav-btn" id="_calNext">&#8250;</div></div><div class="cal-grid">${DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
-                for (let i = 0; i < firstDow; i++) html += `<div class="cal-day cal-other">${prevTotal-firstDow+1+i}</div>`;
-                for (let d = 1; d <= daysInM; d++) {
-                    const isToday = d === TODAY.getDate() && m === TODAY.getMonth() && y === TODAY.getFullYear();
-                    const isSel = selDate && selDate.d === d && selDate.m === m && selDate.y === y;
-                    const cls = ['cal-day', isToday && !isSel ? 'cal-today' : '', isSel ? 'cal-selected' : ''].filter(Boolean).join(' ');
-                    html += `<div class="${cls}" data-d="${d}">${d}</div>`;
-                }
-                const trail = (7 - (firstDow + daysInM) % 7) % 7;
-                for (let i = 1; i <= trail; i++) html += `<div class="cal-day cal-other">${i}</div>`;
-                html += `</div><div class="cal-footer"><span class="cal-foot-btn" id="_calClear">Clear</span><span class="cal-foot-btn today" id="_calToday">Today</span></div>`;
-                $('calDrop').innerHTML = html;
-                $('_calPrev').addEventListener('click', e => {
-                    e.stopPropagation();
-                    moveMonth(-1);
-                });
-                $('_calNext').addEventListener('click', e => {
-                    e.stopPropagation();
-                    moveMonth(1);
-                });
-                $('_calClear').addEventListener('click', e => {
-                    e.stopPropagation();
-                    clearDate();
-                });
-                $('_calToday').addEventListener('click', e => {
-                    e.stopPropagation();
-                    gotoToday();
-                });
-                $('calDrop').querySelectorAll('.cal-day[data-d]').forEach(el => el.addEventListener('click', e => {
-                    e.stopPropagation();
-                    pickDay(+el.dataset.d);
-                }));
-            }
-
-            function moveMonth(dir) {
-                calView.m += dir;
-                if (calView.m > 11) {
-                    calView.m = 0;
-                    calView.y++;
-                }
-                if (calView.m < 0) {
-                    calView.m = 11;
-                    calView.y--;
-                }
-                renderCal();
-            }
-
-            function pickDay(d) {
-                selDate = {
-                    d,
-                    m: calView.m,
-                    y: calView.y
-                };
-                const dt = new Date(calView.y, calView.m, d);
-                const iso = `${calView.y}-${String(calView.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                $('resDate').value = iso;
-                $('dateLabel').textContent = dt.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-                $('dateTrigger').classList.add('has-value');
-                renderCal();
-                setTimeout(closeAll, 180);
-            }
-
-            function clearDate() {
-                selDate = null;
-                $('resDate').value = '';
-                $('dateLabel').textContent = 'Pick a date';
-                $('dateTrigger').classList.remove('has-value');
-                renderCal();
-            }
-
-            function gotoToday() {
-                calView = {
-                    y: TODAY.getFullYear(),
-                    m: TODAY.getMonth()
-                };
-                pickDay(TODAY.getDate());
-            }
-
-            function renderTime(which) {
-                const dropId = which === 'start' ? 'startDrop' : 'endDrop';
-                const st = tState[which];
-                const hours = Array.from({
-                    length: 12
-                }, (_, i) => i + 1);
-                const hItems = hours.map(h => `<div class="tim-item${st.h===h?' sel':''}" data-part="h" data-val="${h}">${String(h).padStart(2,'0')}</div>`).join('');
-                const mItems = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(mn => `<div class="tim-item${st.min===mn?' sel':''}" data-part="min" data-val="${mn}">${String(mn).padStart(2,'0')}</div>`).join('');
-                $(dropId).innerHTML = `<div class="tim-title">Select Time</div><div class="tim-cols"><div class="tim-col" id="_tc_h_${which}">${hItems}</div><div class="tim-sep">:</div><div class="tim-col" id="_tc_m_${which}">${mItems}</div><div class="ampm-col"><div class="ampm-btn${st.ampm==='am'?' sel':''}" data-ampm="am">AM</div><div class="ampm-btn${st.ampm==='pm'?' sel':''}" data-ampm="pm">PM</div></div></div><button class="tim-set-btn" id="_timSet_${which}">Set Time</button>`;
-                setTimeout(() => {
-                    const sH = $(dropId).querySelector('#_tc_h_' + which + ' .sel');
-                    const sM = $(dropId).querySelector('#_tc_m_' + which + ' .sel');
-                    if (sH) sH.scrollIntoView({
-                        block: 'center',
-                        behavior: 'instant'
-                    });
-                    if (sM) sM.scrollIntoView({
-                        block: 'center',
-                        behavior: 'instant'
-                    });
-                }, 0);
-                $(dropId).querySelectorAll('.tim-item').forEach(el => el.addEventListener('click', e => {
-                    e.stopPropagation();
-                    tState[which][el.dataset.part] = +el.dataset.val;
-                    renderTime(which);
-                }));
-                $(dropId).querySelectorAll('.ampm-btn').forEach(el => el.addEventListener('click', e => {
-                    e.stopPropagation();
-                    tState[which].ampm = el.dataset.ampm;
-                    renderTime(which);
-                }));
-                $(`_timSet_${which}`).addEventListener('click', e => {
-                    e.stopPropagation();
-                    applyTime(which);
-                });
-            }
-
-            function applyTime(which) {
-                const st = tState[which];
-                const label = `${String(st.h).padStart(2,'0')}:${String(st.min).padStart(2,'0')} ${st.ampm.toUpperCase()}`;
-                let h24 = st.h;
-                if (st.ampm === 'am' && st.h === 12) h24 = 0;
-                if (st.ampm === 'pm' && st.h !== 12) h24 = st.h + 12;
-                const iso24 = `${String(h24).padStart(2,'0')}:${String(st.min).padStart(2,'0')}`;
-                const labelId = which === 'start' ? 'startLabel' : 'endLabel';
-                const inputId = which === 'start' ? 'startTime' : 'endTime';
-                const triggerId = which === 'start' ? 'startTrigger' : 'endTrigger';
-                $(labelId).textContent = label;
-                $(inputId).value = iso24;
-                $(triggerId).classList.add('has-value');
-                closeAll();
-            }
-
-            $('dateTrigger').addEventListener('click', e => {
-                e.stopPropagation();
-                toggle('calDrop', 'dateTrigger');
-                if (activeDrop === 'calDrop') renderCal();
-            });
-            $('startTrigger').addEventListener('click', e => {
-                e.stopPropagation();
-                toggle('startDrop', 'startTrigger');
-                if (activeDrop === 'startDrop') renderTime('start');
-            });
-            $('endTrigger').addEventListener('click', e => {
-                e.stopPropagation();
-                toggle('endDrop', 'endTrigger');
-                if (activeDrop === 'endDrop') renderTime('end');
-            });
-
-            (function() {
-                const t = new Date();
-                $('dateLabel').textContent = t.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-                $('dateTrigger').classList.add('has-value');
-                selDate = {
-                    d: t.getDate(),
-                    m: t.getMonth(),
-                    y: t.getFullYear()
-                };
-            })();
+        (function(){
+            const t=new Date();
+            $('dateLabel').textContent=t.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+            $('dateTrigger').classList.add('has-value');
+            selDate={d:t.getDate(),m:t.getMonth(),y:t.getFullYear()};
         })();
+    })();
     </script>
 </body>
-
 </html>
