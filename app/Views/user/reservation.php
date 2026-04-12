@@ -22,12 +22,10 @@
     </script>
 
     <style>
-        /* ── Layout shell — scroll is handled by layout.php ── */
         html.dark-pre body {
             background: #060e1e;
         }
 
-        /* ── Page header ── */
         .page-eyebrow {
             font-size: .62rem;
             font-weight: 700;
@@ -74,7 +72,6 @@
             color: var(--indigo);
         }
 
-        /* ── Flash ── */
         .flash {
             display: flex;
             align-items: center;
@@ -123,7 +120,6 @@
             color: #fcd34d;
         }
 
-        /* ── Form card ── */
         .form-card {
             background: var(--card);
             border-radius: var(--r-xl);
@@ -183,7 +179,6 @@
             margin-bottom: 6px;
         }
 
-        /* ── Inputs — use CSS vars so dark mode is free ── */
         input,
         select,
         textarea {
@@ -221,7 +216,6 @@
             color: var(--text);
         }
 
-        /* ── PC section ── */
         .pc-section {
             background: var(--indigo-light);
             border: 1px solid var(--indigo-border);
@@ -264,7 +258,6 @@
             box-shadow: 0 4px 10px rgba(55, 48, 163, .3);
         }
 
-        /* ── Submit button ── */
         .btn-primary {
             background: var(--indigo);
             color: white;
@@ -289,7 +282,6 @@
             box-shadow: 0 6px 18px rgba(55, 48, 163, .35);
         }
 
-        /* ── Notification dropdown ── */
         .notif-dd {
             position: fixed;
             top: 80px;
@@ -333,7 +325,6 @@
             }
         }
 
-        /* ── Modal ── */
         .modal-summary-box {
             background: var(--input-bg);
             border-radius: var(--r-md);
@@ -397,7 +388,6 @@
             color: var(--indigo);
         }
 
-        /* ── Toast ── */
         .toast-wrap {
             position: fixed;
             top: 80px;
@@ -431,7 +421,6 @@
             animation: l-slide-up .3s ease;
         }
 
-        /* ── Availability badges ── */
         .available {
             background: #dcfce7;
             color: #166534;
@@ -450,7 +439,6 @@
             font-weight: 600;
         }
 
-        /* ── Grids ── */
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -475,17 +463,490 @@
             display: none !important;
         }
 
-        /* ── Mobile main area padding ── */
         @media(max-width:639px) {
             .main-area {
                 padding: 16px 14px !important;
             }
         }
+
+        /* ════════════════════════════════════════
+           CUSTOM DATE / TIME PICKER STYLES
+           ════════════════════════════════════════ */
+        #resDate,
+        #startTime,
+        #endTime {
+            display: none !important;
+        }
+
+        .dt-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            padding: .75rem 1rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            font-family: var(--font);
+            font-size: .88rem;
+            font-weight: 500;
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: border .2s, box-shadow .2s;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .dt-trigger.has-value {
+            color: var(--text);
+        }
+
+        .dt-trigger:hover {
+            border-color: #818cf8;
+        }
+
+        .dt-trigger.open {
+            border-color: #818cf8;
+            background: var(--card);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
+        }
+
+        .dt-trigger svg {
+            flex-shrink: 0;
+            opacity: .4;
+        }
+
+        .dt-trigger.open svg {
+            opacity: .75;
+        }
+
+        .dt-drop {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            z-index: 9999;
+            border-radius: 14px;
+            animation: dtDrop .15s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        @keyframes dtDrop {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        body:not(.dark) .dt-drop {
+            background: #ffffff;
+            border: 1px solid rgba(99, 102, 241, .18);
+            box-shadow: 0 20px 50px rgba(15, 23, 42, .18);
+        }
+
+        body.dark .dt-drop {
+            background: #0b1628;
+            border: 1px solid rgba(99, 102, 241, .22);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .65);
+        }
+
+        .dt-drop.cal {
+            width: 288px;
+            padding: 18px 16px 14px;
+        }
+
+        .cal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .cal-month-label {
+            font-size: .88rem;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 7px;
+            transition: background .15s;
+        }
+
+        body:not(.dark) .cal-month-label {
+            color: #0f172a;
+        }
+
+        body:not(.dark) .cal-month-label:hover {
+            background: #f1f5f9;
+        }
+
+        body.dark .cal-month-label {
+            color: #e2e8f0;
+        }
+
+        body.dark .cal-month-label:hover {
+            background: rgba(99, 102, 241, .12);
+        }
+
+        .cal-nav-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: .75rem;
+            transition: all .15s;
+        }
+
+        body:not(.dark) .cal-nav-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        body:not(.dark) .cal-nav-btn:hover {
+            border-color: var(--indigo);
+            color: var(--indigo);
+            background: var(--indigo-light);
+        }
+
+        body.dark .cal-nav-btn {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .08);
+            color: #94a3b8;
+        }
+
+        body.dark .cal-nav-btn:hover {
+            border-color: var(--indigo);
+            color: #a5b4fc;
+            background: rgba(99, 102, 241, .1);
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .cal-dow {
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            text-align: center;
+            padding: 3px 0 9px;
+        }
+
+        body:not(.dark) .cal-dow {
+            color: #94a3b8;
+        }
+
+        body.dark .cal-dow {
+            color: #4f5a72;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: .8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .12s;
+            border: 1px solid transparent;
+        }
+
+        body:not(.dark) .cal-day {
+            color: #475569;
+        }
+
+        body.dark .cal-day {
+            color: #8b95b0;
+        }
+
+        body:not(.dark) .cal-day:hover:not(.cal-other):not(.cal-selected) {
+            background: #f1f5f9;
+            color: #0f172a;
+            border-color: #e2e8f0;
+        }
+
+        body.dark .cal-day:hover:not(.cal-other):not(.cal-selected) {
+            background: rgba(255, 255, 255, .06);
+            color: #e2e8f0;
+            border-color: rgba(255, 255, 255, .08);
+        }
+
+        .cal-day.cal-other {
+            pointer-events: none;
+        }
+
+        body:not(.dark) .cal-day.cal-other {
+            color: #cbd5e1;
+        }
+
+        body.dark .cal-day.cal-other {
+            color: #2e3850;
+        }
+
+        body:not(.dark) .cal-day.cal-today {
+            color: var(--indigo);
+            font-weight: 700;
+        }
+
+        body.dark .cal-day.cal-today {
+            color: #818cf8;
+            font-weight: 700;
+        }
+
+        .cal-day.cal-selected {
+            background: var(--indigo) !important;
+            color: #fff !important;
+            font-weight: 700;
+            border-color: var(--indigo) !important;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, .4);
+        }
+
+        .cal-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+
+        body:not(.dark) .cal-footer {
+            border-top: 1px solid #f1f5f9;
+        }
+
+        body.dark .cal-footer {
+            border-top: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .cal-foot-btn {
+            font-size: .72rem;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 5px 9px;
+            border-radius: 7px;
+            transition: all .15s;
+        }
+
+        body:not(.dark) .cal-foot-btn {
+            color: #94a3b8;
+        }
+
+        body:not(.dark) .cal-foot-btn:hover {
+            color: var(--indigo);
+            background: var(--indigo-light);
+        }
+
+        body:not(.dark) .cal-foot-btn.today {
+            color: var(--indigo);
+        }
+
+        body.dark .cal-foot-btn {
+            color: #4f5a72;
+        }
+
+        body.dark .cal-foot-btn:hover {
+            color: #818cf8;
+            background: rgba(99, 102, 241, .1);
+        }
+
+        body.dark .cal-foot-btn.today {
+            color: #818cf8;
+        }
+
+        .dt-drop.tim {
+            width: 232px;
+            padding: 16px 14px 14px;
+        }
+
+        .tim-title {
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        body:not(.dark) .tim-title {
+            color: #94a3b8;
+        }
+
+        body.dark .tim-title {
+            color: #4f5a72;
+        }
+
+        .tim-cols {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .tim-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-height: 192px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        body:not(.dark) .tim-col {
+            scrollbar-color: #e2e8f0 transparent;
+        }
+
+        body.dark .tim-col {
+            scrollbar-color: rgba(99, 102, 241, .3) transparent;
+        }
+
+        .tim-col::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        body:not(.dark) .tim-col::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+
+        body.dark .tim-col::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, .3);
+            border-radius: 4px;
+        }
+
+        .tim-item {
+            padding: 7px 6px;
+            border-radius: 7px;
+            font-size: .81rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all .1s;
+            border: 1px solid transparent;
+        }
+
+        body:not(.dark) .tim-item {
+            color: #64748b;
+        }
+
+        body:not(.dark) .tim-item:hover:not(.sel) {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        body.dark .tim-item {
+            color: #8b95b0;
+        }
+
+        body.dark .tim-item:hover:not(.sel) {
+            background: rgba(255, 255, 255, .06);
+            color: #e2e8f0;
+        }
+
+        .tim-item.sel {
+            background: var(--indigo) !important;
+            color: #fff !important;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, .4);
+        }
+
+        .tim-sep {
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 6px 0;
+            align-self: flex-start;
+            margin-top: 4px;
+        }
+
+        body:not(.dark) .tim-sep {
+            color: #cbd5e1;
+        }
+
+        body.dark .tim-sep {
+            color: #4f5a72;
+        }
+
+        .ampm-col {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding-top: 2px;
+        }
+
+        .ampm-btn {
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: .75rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all .15s;
+        }
+
+        body:not(.dark) .ampm-btn {
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            background: #f8fafc;
+        }
+
+        body:not(.dark) .ampm-btn:hover:not(.sel) {
+            color: var(--indigo);
+            border-color: var(--indigo-border);
+        }
+
+        body.dark .ampm-btn {
+            border: 1px solid rgba(255, 255, 255, .07);
+            color: #8b95b0;
+            background: rgba(255, 255, 255, .04);
+        }
+
+        body.dark .ampm-btn:hover:not(.sel) {
+            color: #e2e8f0;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .ampm-btn.sel {
+            background: var(--indigo) !important;
+            color: #fff !important;
+            border-color: var(--indigo) !important;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, .4);
+        }
+
+        .tim-set-btn {
+            width: 100%;
+            margin-top: 12px;
+            padding: 9px;
+            background: var(--indigo);
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            font-size: .8rem;
+            font-weight: 700;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .tim-set-btn:hover {
+            background: #4f46e5;
+        }
+
+        .picker-wrap {
+            position: relative;
+        }
     </style>
 </head>
 
 <body>
-
     <?php
     $page = 'reservation';
     include(APPPATH . 'Views/partials/layout.php');
@@ -566,42 +1027,30 @@
 
         <!-- Flash messages -->
         <?php if (session()->getFlashdata('error')): ?>
-            <div class="flash flash-err">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <div class="flash flash-err"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                <?= session()->getFlashdata('error') ?>
-            </div>
+                </svg><?= session()->getFlashdata('error') ?></div>
         <?php endif; ?>
         <?php if (session()->getFlashdata('success')): ?>
-            <div class="flash flash-ok">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <div class="flash flash-ok"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-                <?= session()->getFlashdata('success') ?>
-            </div>
+                </svg><?= session()->getFlashdata('success') ?></div>
         <?php endif; ?>
         <?php if (isset($remainingReservations) && $remainingReservations > 0): ?>
-            <div class="flash flash-info">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <div class="flash flash-info"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                You have <?= $remainingReservations ?> reservation<?= $remainingReservations != 1 ? 's' : '' ?> remaining this period (max 3 per 2 weeks).
-            </div>
+                </svg>You have <?= $remainingReservations ?> reservation<?= $remainingReservations != 1 ? 's' : '' ?> remaining this period (max 3 per 2 weeks).</div>
         <?php endif; ?>
         <?php if (isset($isBlocked) && $isBlocked): ?>
-            <div class="flash flash-err">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <div class="flash flash-err"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <circle cx="12" cy="12" r="10" />
                     <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                </svg>
-                You are temporarily blocked from making reservations until <?= date('F j, Y', strtotime($isBlocked['blocked_until'])) ?>.
-            </div>
+                </svg>You are temporarily blocked from making reservations until <?= date('F j, Y', strtotime($isBlocked['blocked_until'])) ?>.</div>
         <?php endif; ?>
 
         <div class="form-card">
@@ -617,11 +1066,9 @@
                 <!-- Your Details -->
                 <div style="margin-bottom:24px;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
-                        <div class="section-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </div>
+                            </svg></div>
                         <div>
                             <div class="section-title">Your Details</div>
                             <div class="section-sub">Auto-filled from your account</div>
@@ -644,8 +1091,7 @@
                 <!-- Resource & Schedule -->
                 <div style="margin-bottom:24px;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
-                        <div class="section-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                 <rect x="3" y="4" width="18" height="18" rx="2" />
                                 <line x1="16" y1="2" x2="16" y2="6" />
                                 <line x1="8" y1="2" x2="8" y2="6" />
@@ -653,15 +1099,13 @@
                                 <circle cx="8" cy="15" r="1" fill="currentColor" stroke="none" />
                                 <circle cx="12" cy="15" r="1" fill="currentColor" stroke="none" />
                                 <circle cx="16" cy="15" r="1" fill="currentColor" stroke="none" />
-                            </svg>
-                        </div>
+                            </svg></div>
                         <div>
                             <div class="section-title">Resource & Schedule</div>
                             <div class="section-sub">Choose your resource, date and time</div>
                         </div>
                     </div>
 
-                    <!-- Resource -->
                     <div style="margin-bottom:16px;">
                         <label class="field-label">Select Resource</label>
                         <select id="resourceSelect" name="resource_id" required onchange="handleResourceChange(this)">
@@ -680,14 +1124,11 @@
                     <!-- PC section -->
                     <div id="pcSection" class="hidden" style="margin-bottom:16px;">
                         <div class="pc-section">
-                            <label class="pc-section-lbl">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="display:inline;margin-right:5px;">
+                            <label class="pc-section-lbl"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="display:inline;margin-right:5px;">
                                     <rect x="2" y="3" width="20" height="14" rx="2" />
                                     <line x1="8" y1="21" x2="16" y2="21" />
                                     <line x1="12" y1="17" x2="12" y2="21" />
-                                </svg>
-                                Select Workstation(s)
-                            </label>
+                                </svg>Select Workstation(s)</label>
                             <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;">
                                 <?php foreach ($pcs ?? [] as $pc):
                                     $num = esc($pc['pc_number'] ?? $pc['name'] ?? '');
@@ -696,22 +1137,64 @@
                                 <?php endif;
                                 endforeach; ?>
                             </div>
-                            <p style="font-size:.68rem;color:var(--indigo);font-weight:600;margin-top:10px;display:flex;align-items:center;gap:4px;">
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <p style="font-size:.68rem;color:var(--indigo);font-weight:600;margin-top:10px;display:flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                     <circle cx="12" cy="12" r="10" />
                                     <line x1="12" y1="8" x2="12" y2="12" />
                                     <line x1="12" y1="16" x2="12.01" y2="16" />
-                                </svg>
-                                Selected: <span id="pcSelectedLabel" style="font-family:var(--mono)">None</span>
-                            </p>
+                                </svg>Selected: <span id="pcSelectedLabel" style="font-family:var(--mono)">None</span></p>
                         </div>
                     </div>
 
-                    <!-- Date & time -->
+                    <!-- Date & time — custom pickers -->
                     <div class="grid-3" style="margin-bottom:16px;">
-                        <div><label class="field-label">Date</label><input type="date" name="reservation_date" id="resDate" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>" onchange="checkAvailability()" required></div>
-                        <div><label class="field-label">Start Time</label><input type="time" name="start_time" id="startTime" onchange="checkAvailability()" required></div>
-                        <div><label class="field-label">End Time</label><input type="time" name="end_time" id="endTime" onchange="checkAvailability()" required></div>
+
+                        <!-- DATE -->
+                        <div>
+                            <label class="field-label">Date</label>
+                            <div class="picker-wrap" id="dateWrap">
+                                <div class="dt-trigger" id="dateTrigger">
+                                    <span id="dateLabel">Pick a date</span>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                        <rect x="1" y="3" width="14" height="12" rx="2.5" stroke="#818cf8" stroke-width="1.4" />
+                                        <path d="M5 1v3M11 1v3M1 7h14" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div class="dt-drop cal" id="calDrop" style="display:none"></div>
+                            </div>
+                            <input type="hidden" name="reservation_date" id="resDate" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>">
+                        </div>
+
+                        <!-- START TIME -->
+                        <div>
+                            <label class="field-label">Start Time</label>
+                            <div class="picker-wrap" id="startWrap">
+                                <div class="dt-trigger" id="startTrigger">
+                                    <span id="startLabel">Select time</span>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                        <circle cx="8" cy="8" r="6.5" stroke="#818cf8" stroke-width="1.4" />
+                                        <path d="M8 4.5V8l2.5 2.5" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div class="dt-drop tim" id="startDrop" style="display:none"></div>
+                            </div>
+                            <input type="hidden" name="start_time" id="startTime">
+                        </div>
+
+                        <!-- END TIME -->
+                        <div>
+                            <label class="field-label">End Time</label>
+                            <div class="picker-wrap" id="endWrap">
+                                <div class="dt-trigger" id="endTrigger">
+                                    <span id="endLabel">Select time</span>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                        <circle cx="8" cy="8" r="6.5" stroke="#818cf8" stroke-width="1.4" />
+                                        <path d="M8 4.5V8l2.5 2.5" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div class="dt-drop tim" id="endDrop" style="display:none"></div>
+                            </div>
+                            <input type="hidden" name="end_time" id="endTime">
+                        </div>
                     </div>
 
                     <!-- Availability message -->
@@ -830,26 +1313,27 @@
             m.textContent = 'Checking availability…';
             m.style.cssText = 'background:var(--input-bg);color:var(--text-sub);margin-bottom:14px;padding:10px 14px;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;';
             fetch('<?= base_url("reservation/check-availability") ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: new URLSearchParams({
-                    resource_id: rid,
-                    date,
-                    start_time: st,
-                    end_time: et,
-                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams({
+                        resource_id: rid,
+                        date,
+                        start_time: st,
+                        end_time: et,
+                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                    })
+                }).then(r => r.json()).then(data => {
+                    m.style.cssText = '';
+                    m.textContent = data.message;
+                    m.classList.add(data.available ? 'available' : 'unavailable');
                 })
-            }).then(r => r.json()).then(data => {
-                m.style.cssText = '';
-                m.textContent = data.message;
-                m.classList.add(data.available ? 'available' : 'unavailable');
-            }).catch(() => {
-                m.textContent = 'Error checking availability';
-                m.classList.add('unavailable');
-            });
+                .catch(() => {
+                    m.textContent = 'Error checking availability';
+                    m.classList.add('unavailable');
+                });
         }
 
         function previewReservation() {
@@ -863,35 +1347,17 @@
             const po = document.getElementById('purposeOther').value.trim();
             const pf = pv === 'Others' && po ? `Others - ${po}` : pv;
             const hasPc = !document.getElementById('pcSection').classList.contains('hidden');
-            if (!rid) {
-                alert('Please select a resource');
-                return;
-            }
-            if (hasPc && selectedPcs.length === 0) {
-                alert('Please select at least one workstation');
-                return;
-            }
-            if (!date) {
-                alert('Please select a date');
-                return;
-            }
-            if (!st) {
-                alert('Please enter start time');
-                return;
-            }
-            if (!et) {
-                alert('Please enter end time');
-                return;
-            }
-            if (!pv) {
-                alert('Please select a purpose');
-                return;
-            }
+            if (!rid) return alert('Please select a resource');
+            if (hasPc && selectedPcs.length === 0) return alert('Please select at least one workstation');
+            if (!date) return alert('Please select a date');
+            if (!st) return alert('Please enter start time');
+            if (!et) return alert('Please enter end time');
+            if (!pv) return alert('Please select a purpose');
             document.getElementById('finalPurpose').value = pf;
             document.getElementById('mAsset').textContent = rn;
             document.getElementById('mStation').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
-            document.getElementById('mDate').textContent = date;
-            document.getElementById('mTime').textContent = `${st} – ${et}`;
+            document.getElementById('mDate').textContent = document.getElementById('dateLabel').textContent;
+            document.getElementById('mTime').textContent = `${document.getElementById('startLabel').textContent} – ${document.getElementById('endLabel').textContent}`;
             document.getElementById('mPurpose').textContent = pf;
             openModal();
         }
@@ -927,38 +1393,39 @@
             if (checkInterval) clearInterval(checkInterval);
         });
 
-        /* ── Notifications ── */
+        /* Notifications */
         function checkForNewApprovals() {
             fetch('<?= base_url("reservation/check-new-approvals") ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    user_id: currentUser.id,
-                    last_check: lastCheckTime
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        last_check: lastCheckTime
+                    })
                 })
-            }).then(r => r.json()).then(data => {
-                if (data.new_approvals?.length) {
-                    data.new_approvals.forEach(a => {
-                        const n = {
-                            id: a.id,
-                            title: 'Reservation Approved!',
-                            message: `Your reservation for ${a.resource_name} on ${new Date(a.date).toLocaleDateString()} has been approved.`,
-                            time: new Date().toISOString(),
-                            read: false
-                        };
-                        notifications.unshift(n);
-                        unreadCount++;
-                        updateBadge();
-                        renderNotifications();
-                        showPush(n);
-                        showToast(n);
-                    });
-                    lastCheckTime = new Date().toISOString();
-                }
-            }).catch(e => console.error(e));
+                .then(r => r.json()).then(data => {
+                    if (data.new_approvals?.length) {
+                        data.new_approvals.forEach(a => {
+                            const n = {
+                                id: a.id,
+                                title: 'Reservation Approved!',
+                                message: `Your reservation for ${a.resource_name} on ${new Date(a.date).toLocaleDateString()} has been approved.`,
+                                time: new Date().toISOString(),
+                                read: false
+                            };
+                            notifications.unshift(n);
+                            unreadCount++;
+                            updateBadge();
+                            renderNotifications();
+                            showPush(n);
+                            showToast(n);
+                        });
+                        lastCheckTime = new Date().toISOString();
+                    }
+                }).catch(e => console.error(e));
         }
 
         function showPush(n) {
@@ -1019,20 +1486,7 @@
                 l.innerHTML = '<div style="text-align:center;padding:24px;font-size:.8rem;color:var(--text-sub);">All caught up!</div>';
                 return;
             }
-            l.innerHTML = notifications.sort((a, b) => new Date(b.time) - new Date(a.time)).map(n => `
-        <div class="notif-item ${!n.read?'unread':''}" onclick="markAsRead(${n.id})">
-            <div style="display:flex;align-items:flex-start;gap:9px;">
-                <div style="width:28px;height:28px;background:var(--indigo-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <div style="flex:1;min-width:0;">
-                    <p style="font-weight:700;font-size:.8rem;color:var(--text);">${n.title}</p>
-                    <p style="font-size:.7rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.message}</p>
-                    <p style="font-size:.62rem;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
-                </div>
-                ${!n.read?'<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>':''}
-            </div>
-        </div>`).join('');
+            l.innerHTML = notifications.sort((a, b) => new Date(b.time) - new Date(a.time)).map(n => `<div class="notif-item ${!n.read?'unread':''}" onclick="markAsRead(${n.id})"><div style="display:flex;align-items:flex-start;gap:9px;"><div style="width:28px;height:28px;background:var(--indigo-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><div style="flex:1;min-width:0;"><p style="font-weight:700;font-size:.8rem;color:var(--text);">${n.title}</p><p style="font-size:.7rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.message}</p><p style="font-size:.62rem;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p></div>${!n.read?'<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>':''}</div></div>`).join('');
         }
         const timeAgo = t => {
             const s = Math.floor((Date.now() - new Date(t)) / 1000);
@@ -1045,6 +1499,247 @@
             const dd = document.getElementById('notificationDropdown');
             if (!dd.contains(e.target)) dd.classList.remove('show');
         });
+    </script>
+
+    <!-- Custom Date / Time Picker JS -->
+    <script>
+        (function() {
+            'use strict';
+            const TODAY = new Date();
+            let calView = {
+                y: TODAY.getFullYear(),
+                m: TODAY.getMonth()
+            };
+            let selDate = null;
+            let tState = {
+                start: {
+                    h: 9,
+                    min: 0,
+                    ampm: 'am'
+                },
+                end: {
+                    h: 5,
+                    min: 0,
+                    ampm: 'pm'
+                }
+            };
+            let activeDrop = null;
+            const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const DOWS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+            const MINS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+            function $(id) {
+                return document.getElementById(id);
+            }
+
+            function closeAll() {
+                ['calDrop', 'startDrop', 'endDrop'].forEach(id => {
+                    const el = $(id);
+                    if (el) el.style.display = 'none';
+                });
+                ['dateTrigger', 'startTrigger', 'endTrigger'].forEach(id => {
+                    const el = $(id);
+                    if (el) el.classList.remove('open');
+                });
+                activeDrop = null;
+            }
+
+            function toggle(dropId, triggerId) {
+                if (activeDrop === dropId) {
+                    closeAll();
+                    return;
+                }
+                closeAll();
+                activeDrop = dropId;
+                $(dropId).style.display = 'block';
+                $(triggerId).classList.add('open');
+            }
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.picker-wrap')) closeAll();
+            });
+
+            function renderCal() {
+                const {
+                    y,
+                    m
+                } = calView;
+                const firstDow = new Date(y, m, 1).getDay(),
+                    daysInM = new Date(y, m + 1, 0).getDate(),
+                    prevTotal = new Date(y, m, 0).getDate();
+                let html = `<div class="cal-head"><div class="cal-nav-btn" id="_calPrev">&#8249;</div><div class="cal-month-label">${MONTHS[m]} ${y}</div><div class="cal-nav-btn" id="_calNext">&#8250;</div></div><div class="cal-grid">${DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
+                for (let i = 0; i < firstDow; i++) html += `<div class="cal-day cal-other">${prevTotal-firstDow+1+i}</div>`;
+                for (let d = 1; d <= daysInM; d++) {
+                    const isToday = d === TODAY.getDate() && m === TODAY.getMonth() && y === TODAY.getFullYear();
+                    const isSel = selDate && selDate.d === d && selDate.m === m && selDate.y === y;
+                    html += `<div class="${['cal-day',isToday&&!isSel?'cal-today':'',isSel?'cal-selected':''].filter(Boolean).join(' ')}" data-d="${d}">${d}</div>`;
+                }
+                const trail = (7 - (firstDow + daysInM) % 7) % 7;
+                for (let i = 1; i <= trail; i++) html += `<div class="cal-day cal-other">${i}</div>`;
+                html += `</div><div class="cal-footer"><span class="cal-foot-btn" id="_calClear">Clear</span><span class="cal-foot-btn today" id="_calToday">Today</span></div>`;
+                $('calDrop').innerHTML = html;
+                $('_calPrev').addEventListener('click', e => {
+                    e.stopPropagation();
+                    moveMonth(-1);
+                });
+                $('_calNext').addEventListener('click', e => {
+                    e.stopPropagation();
+                    moveMonth(1);
+                });
+                $('_calClear').addEventListener('click', e => {
+                    e.stopPropagation();
+                    clearDate();
+                });
+                $('_calToday').addEventListener('click', e => {
+                    e.stopPropagation();
+                    gotoToday();
+                });
+                $('calDrop').querySelectorAll('.cal-day[data-d]').forEach(el => el.addEventListener('click', e => {
+                    e.stopPropagation();
+                    pickDay(+el.dataset.d);
+                }));
+            }
+
+            function moveMonth(dir) {
+                calView.m += dir;
+                if (calView.m > 11) {
+                    calView.m = 0;
+                    calView.y++;
+                }
+                if (calView.m < 0) {
+                    calView.m = 11;
+                    calView.y--;
+                }
+                renderCal();
+            }
+
+            function pickDay(d) {
+                selDate = {
+                    d,
+                    m: calView.m,
+                    y: calView.y
+                };
+                const dt = new Date(calView.y, calView.m, d);
+                const iso = `${calView.y}-${String(calView.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                $('resDate').value = iso;
+                $('dateLabel').textContent = dt.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                $('dateTrigger').classList.add('has-value');
+                renderCal();
+                setTimeout(closeAll, 180); // re-check availability after date pick
+                const sv = $('startTime').value,
+                    ev = $('endTime').value;
+                if (sv && ev) {
+                    const rid = document.getElementById('resourceSelect').value;
+                    if (rid) checkAvailability();
+                }
+            }
+
+            function clearDate() {
+                selDate = null;
+                $('resDate').value = '';
+                $('dateLabel').textContent = 'Pick a date';
+                $('dateTrigger').classList.remove('has-value');
+                renderCal();
+            }
+
+            function gotoToday() {
+                calView = {
+                    y: TODAY.getFullYear(),
+                    m: TODAY.getMonth()
+                };
+                pickDay(TODAY.getDate());
+            }
+
+            function renderTime(which) {
+                const dropId = which === 'start' ? 'startDrop' : 'endDrop';
+                const st = tState[which];
+                const hItems = Array.from({
+                    length: 12
+                }, (_, i) => i + 1).map(h => `<div class="tim-item${st.h===h?' sel':''}" data-part="h" data-val="${h}">${String(h).padStart(2,'0')}</div>`).join('');
+                const mItems = MINS.map(mn => `<div class="tim-item${st.min===mn?' sel':''}" data-part="min" data-val="${mn}">${String(mn).padStart(2,'0')}</div>`).join('');
+                $(dropId).innerHTML = `<div class="tim-title">Select Time</div><div class="tim-cols"><div class="tim-col" id="_tc_h_${which}">${hItems}</div><div class="tim-sep">:</div><div class="tim-col" id="_tc_m_${which}">${mItems}</div><div class="ampm-col"><div class="ampm-btn${st.ampm==='am'?' sel':''}" data-ampm="am">AM</div><div class="ampm-btn${st.ampm==='pm'?' sel':''}" data-ampm="pm">PM</div></div></div><button class="tim-set-btn" id="_timSet_${which}">Set Time</button>`;
+                setTimeout(() => {
+                    const sH = $(dropId).querySelector('#_tc_h_' + which + ' .sel');
+                    const sM = $(dropId).querySelector('#_tc_m_' + which + ' .sel');
+                    if (sH) sH.scrollIntoView({
+                        block: 'center',
+                        behavior: 'instant'
+                    });
+                    if (sM) sM.scrollIntoView({
+                        block: 'center',
+                        behavior: 'instant'
+                    });
+                }, 0);
+                $(dropId).querySelectorAll('.tim-item').forEach(el => el.addEventListener('click', e => {
+                    e.stopPropagation();
+                    tState[which][el.dataset.part] = +el.dataset.val;
+                    renderTime(which);
+                }));
+                $(dropId).querySelectorAll('.ampm-btn').forEach(el => el.addEventListener('click', e => {
+                    e.stopPropagation();
+                    tState[which].ampm = el.dataset.ampm;
+                    renderTime(which);
+                }));
+                $(`_timSet_${which}`).addEventListener('click', e => {
+                    e.stopPropagation();
+                    applyTime(which);
+                });
+            }
+
+            function applyTime(which) {
+                const st = tState[which];
+                const label = `${String(st.h).padStart(2,'0')}:${String(st.min).padStart(2,'0')} ${st.ampm.toUpperCase()}`;
+                let h24 = st.h;
+                if (st.ampm === 'am' && st.h === 12) h24 = 0;
+                if (st.ampm === 'pm' && st.h !== 12) h24 = st.h + 12;
+                const iso24 = `${String(h24).padStart(2,'0')}:${String(st.min).padStart(2,'0')}`;
+                const labelId = which === 'start' ? 'startLabel' : 'endLabel';
+                const inputId = which === 'start' ? 'startTime' : 'endTime';
+                const triggerId = which === 'start' ? 'startTrigger' : 'endTrigger';
+                $(labelId).textContent = label;
+                $(inputId).value = iso24;
+                $(triggerId).classList.add('has-value');
+                closeAll();
+                // re-check availability after time pick
+                const date = $('resDate').value;
+                const rid = document.getElementById('resourceSelect').value;
+                if (rid && date && $('startTime').value && $('endTime').value) checkAvailability();
+            }
+
+            $('dateTrigger').addEventListener('click', e => {
+                e.stopPropagation();
+                toggle('calDrop', 'dateTrigger');
+                if (activeDrop === 'calDrop') renderCal();
+            });
+            $('startTrigger').addEventListener('click', e => {
+                e.stopPropagation();
+                toggle('startDrop', 'startTrigger');
+                if (activeDrop === 'startDrop') renderTime('start');
+            });
+            $('endTrigger').addEventListener('click', e => {
+                e.stopPropagation();
+                toggle('endDrop', 'endTrigger');
+                if (activeDrop === 'endDrop') renderTime('end');
+            });
+
+            (function() {
+                const t = new Date();
+                $('dateLabel').textContent = t.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                $('dateTrigger').classList.add('has-value');
+                selDate = {
+                    d: t.getDate(),
+                    m: t.getMonth(),
+                    y: t.getFullYear()
+                };
+            })();
+        })();
     </script>
 </body>
 
