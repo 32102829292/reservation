@@ -59,13 +59,6 @@ $nextColors = [
 
 /**
  * Render an inline SVG icon with explicit, fixed dimensions.
- * Always pass width & height as attributes AND in style="" so
- * the icon never inherits an unexpected font-size from a flex parent.
- *
- * @param string $name    Icon key
- * @param int    $size    Pixel size (width & height)
- * @param string $stroke  Stroke color — use a concrete hex or CSS var string
- * @param string $extra   Extra attributes appended to <svg>
  */
 function icon(string $name, int $size = 16, string $stroke = 'currentColor', string $extra = ''): string {
     static $icons = [
@@ -1018,28 +1011,54 @@ const timeAgo = t => {
     return `${Math.floor(s/86400)}d ago`;
 };
 
+/* ─────────────────────────────────────────────────────────────────
+   FIX: 12-hour PHT formatter
+   Works on "HH:MM" or "HH:MM:SS" strings from the database.
+   Returns "h:MM AM/PM"
+───────────────────────────────────────────────────────────────── */
+function to12hPHT(ts) {
+    if (!ts) return '—';
+    const parts = ts.split(':');
+    let h = parseInt(parts[0], 10);
+    const m = parts[1] ? parts[1].padStart(2, '0') : '00';
+    if (isNaN(h)) return ts;
+    const ampm = h < 12 ? 'AM' : 'PM';
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
+}
+
 function openDateModal(date, items) {
     const d = new Date(date + 'T00:00:00');
-    document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-    document.getElementById('modalDateSub').textContent   = items.length ? `${items.length} reservation${items.length>1?'s':''}` : '';
+    document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US', {
+        weekday:'long', month:'long', day:'numeric', year:'numeric'
+    });
+    document.getElementById('modalDateSub').textContent = items.length
+        ? `${items.length} reservation${items.length > 1 ? 's' : ''}`
+        : '';
     const list  = document.getElementById('modalList');
     const empty = document.getElementById('modalEmpty');
     list.innerHTML = '';
+
     if (items.length) {
         empty.classList.add('hidden');
-        const cmap = {approved:'#dcfce7|#166534',pending:'#fef3c7|#92400e',declined:'#fee2e2|#991b1b',canceled:'#fee2e2|#991b1b',claimed:'#ede9fe|#5b21b6'};
-        items.sort((a,b) => (a.start_time||'').localeCompare(b.start_time||'')).forEach(r => {
+        const cmap = {
+            approved: '#dcfce7|#166534',
+            pending:  '#fef3c7|#92400e',
+            declined: '#fee2e2|#991b1b',
+            canceled: '#fee2e2|#991b1b',
+            claimed:  '#ede9fe|#5b21b6'
+        };
+
+        items.sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')).forEach(r => {
             const isClaimed = r.claimed == 1;
-            const s  = isClaimed ? 'claimed' : (r.status||'pending').toLowerCase();
-            const [cbg,cfg] = (cmap[s]||'#f1f5f9|#475569').split('|');
-            const fmtT = t => {
-    if (!t) return '';
-    const [h, m] = t.split(':');
-    const hr = parseInt(h, 10);
-    return `${hr % 12 || 12}:${m} ${hr < 12 ? 'AM' : 'PM'}`;
-};
-const t1 = r.start_time ? fmtT(r.start_time) : 'All day';
-const t2 = r.end_time   ? ` – ${fmtT(r.end_time)}` : '';
+            const s = isClaimed ? 'claimed' : (r.status || 'pending').toLowerCase();
+            const [cbg, cfg] = (cmap[s] || '#f1f5f9|#475569').split('|');
+
+            /* FIX: use to12hPHT — handles HH:MM and HH:MM:SS, appends PHT */
+            const tFmt  = r.start_time ? to12hPHT(r.start_time) : 'All day';
+            const etFmt = r.end_time   ? to12hPHT(r.end_time)   : '';
+            const timeDisplay = etFmt ? `${tFmt} – ${etFmt} PHT` : tFmt;
+
             const row = document.createElement('div');
             row.className = 'date-row';
             row.innerHTML = `
@@ -1047,15 +1066,17 @@ const t2 = r.end_time   ? ` – ${fmtT(r.end_time)}` : '';
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-sub)" stroke-width="1.5" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
             <div style="flex:1;min-width:0;">
-                <p style="font-family:var(--font);font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name||'Reserved'}</p>
-                <p style="font-family:var(--mono);font-size:10px;color:var(--text-sub);margin-top:1px;">${t1}${t2}</p>
+                <p style="font-family:var(--font);font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name || 'Reserved'}</p>
+                <p style="font-family:var(--font);font-size:11px;color:var(--text-sub);margin-top:2px;font-weight:500;">${r.visitor_name || r.full_name || ''}</p>
+                <p style="font-family:var(--font);font-size:11px;color:#3730a3;margin-top:1px;font-weight:600;">${timeDisplay}</p>
             </div>
-            <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};flex-shrink:0;">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
+            <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};flex-shrink:0;">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
             list.appendChild(row);
         });
     } else {
         empty.classList.remove('hidden');
     }
+
     document.getElementById('dateModal').classList.add('show');
     document.body.style.overflow = 'hidden';
 }

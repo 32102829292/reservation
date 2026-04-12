@@ -1523,6 +1523,19 @@ $hhPHT = (int)$nowPHT->format('H');
         });
 
         /* Date modal */
+
+        /* Convert "HH:MM" or "HH:MM:SS" (24h PHT from DB) → "h:MM AM/PM" */
+        function to12hPHT(timeStr) {
+            if (!timeStr) return '—';
+            const parts = timeStr.split(':');
+            let h = parseInt(parts[0], 10);
+            const m = parts[1] ? parts[1].padStart(2, '0') : '00';
+            if (isNaN(h)) return timeStr;
+            const ampm = h < 12 ? 'AM' : 'PM';
+            h = h % 12 || 12;
+            return `${h}:${m} ${ampm}`;
+        }
+
         function openDateModal(dateStr, items) {
             const d = new Date(dateStr + 'T00:00:00');
             document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-PH', {
@@ -1544,8 +1557,10 @@ $hhPHT = (int)$nowPHT->format('H');
                         const isCl = r.claimed == 1 || r.claimed === true || r.claimed === 'true';
                         const s    = isCl ? 'claimed' : (r.status || 'pending').toLowerCase();
                         const displayName = resolveVisitorName(r);
-                        const t  = (r.start_time || '').slice(0, 5) || '—';
-                        const et = (r.end_time   || '').slice(0, 5) || '';
+                        /* PHT 12-hour formatted times */
+                        const tFmt  = to12hPHT(r.start_time);
+                        const etFmt = r.end_time ? to12hPHT(r.end_time) : '';
+                        const timeDisplay = etFmt ? `${tFmt} – ${etFmt} PHT` : tFmt;
                         const row = document.createElement('div');
                         row.className = 'date-row';
                         row.innerHTML = `
@@ -1554,7 +1569,8 @@ $hhPHT = (int)$nowPHT->format('H');
                             </div>
                             <div style="flex:1;min-width:0;">
                                 <p style="font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name || 'Resource'}</p>
-                                <p style="font-size:10px;color:var(--text-sub);margin-top:1px;font-family:var(--mono);">${displayName} · ${t}${et ? '–' + et : ''}</p>
+                                <p style="font-size:11px;color:var(--text-sub);margin-top:2px;font-family:var(--font);font-weight:500;">${displayName}</p>
+                                <p style="font-size:11px;color:var(--indigo);margin-top:1px;font-weight:600;">${timeDisplay}</p>
                             </div>
                             <span class="tag ${tagMap[s] || 'tag-expired'}">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
                         list.appendChild(row);

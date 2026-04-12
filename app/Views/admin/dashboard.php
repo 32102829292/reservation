@@ -1,6 +1,7 @@
 <?php
 /**
  * Admin Dashboard View — fully debugged + notification system fixed
+ * FIX: modal time now shows 12h PHT format in readable font (not mono)
  */
 ?>
 <!DOCTYPE html>
@@ -50,7 +51,6 @@
         .notif-item.unread { background: var(--indigo-light); }
         .notif-item:last-child { border-bottom: none; }
 
-        /* Fix: Mark all read button focus ring */
         #notifDD-mark-btn {
             font-size: 11px; color: var(--indigo); font-weight: 600;
             background: none; border: none; cursor: pointer;
@@ -156,13 +156,7 @@
 
     $JSON_FLAGS = JSON_HEX_TAG | JSON_HEX_APOS | JSON_UNESCAPED_UNICODE;
 
-    /*
-     * FIX: Normalize reservation records so JS always receives
-     * visitor_name and full_name as non-null strings.
-     * This prevents the date-modal row from silently omitting the name.
-     */
     $reservations = array_map(function(array $r): array {
-        // Resolve display name from every possible column alias
         $name = (string)(
             $r['visitor_name']  ??
             $r['full_name']     ??
@@ -596,10 +590,7 @@
         </p>
 
         <div class="grid-lib fade-up-4">
-
             <div style="display:flex;flex-direction:column;gap:14px;">
-
-                <!-- Banner -->
                 <div class="lib-banner">
                     <div style="position:relative;z-index:1;">
                         <div style="font-size:.6rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px;">Book Collection</div>
@@ -628,7 +619,6 @@
                     </div>
                 </div>
 
-                <!-- Borrow Requests -->
                 <div class="card card-p" style="flex:1;">
                     <div class="card-head">
                         <div style="display:flex;align-items:center;gap:10px;">
@@ -687,7 +677,6 @@
                 </div>
             </div>
 
-            <!-- Right column: books catalog -->
             <div class="card card-p-lg">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;min-width:0;">
@@ -716,7 +705,6 @@
                         <span class="stat-lbl" style="letter-spacing:.1em;">Title / Author</span>
                         <span class="stat-lbl" style="letter-spacing:.1em;">Stock</span>
                     </div>
-
                     <div style="display:flex;flex-direction:column;gap:2px;">
                         <?php foreach (array_slice($dashBooks, 0, 10) as $book):
                             $g  = strtolower((string)($book['genre'] ?? ''));
@@ -740,13 +728,11 @@
                             </a>
                         <?php endforeach; ?>
                     </div>
-
                     <?php if (count($dashBooks) > 10): ?>
                         <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(99,102,241,.07);text-align:center;">
                             <a href="/admin/books" class="link-sm">+<?= count($dashBooks) - 10 ?> more books →</a>
                         </div>
                     <?php endif; ?>
-
                 <?php else: ?>
                     <div style="text-align:center;padding:48px 12px;">
                         <i class="fa-solid fa-book-open" style="font-size:2.5rem;color:#e2e8f0;display:block;margin-bottom:10px;" aria-hidden="true"></i>
@@ -757,7 +743,6 @@
                     </div>
                 <?php endif; ?>
             </div>
-
         </div>
 
         <!-- ── SECTION 5: INSIGHTS ── -->
@@ -934,7 +919,6 @@
             totalCount:   <?= (int)($total) ?>
         };
 
-        /* ─── Utility helpers ─── */
         const clamp    = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
         const pct      = (v, max)    => max > 0 ? clamp(Math.round(v / max * 100), 0, 100) : 0;
         const isMob    = ()          => window.innerWidth < 640;
@@ -947,16 +931,9 @@
             return `${Math.floor(s/86400)}d ago`;
         };
         const escHtml = str => String(str ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 
-        /* ─── FIX: Robust name resolver ───
-         * Checks every possible field name so the date-modal always
-         * shows a real name instead of a blank line.
-         */
         const resolveVisitorName = r =>
             (r.visitor_name  || '').trim() ||
             (r.full_name     || '').trim() ||
@@ -965,9 +942,19 @@
             (r.name          || '').trim() ||
             'Guest';
 
-        /* ═══════════════════════════════════════════
-           NOTIFICATIONS  — matches user dashboard
-        ═══════════════════════════════════════════ */
+        /* ── FIX: 12-hour PHT time formatter ── */
+        const to12hPHT = ts => {
+            if (!ts) return '—';
+            const parts = ts.split(':');
+            let h = parseInt(parts[0], 10);
+            const m = parts[1] ? parts[1].padStart(2, '0') : '00';
+            if (isNaN(h)) return ts;
+            const ampm = h < 12 ? 'AM' : 'PM';
+            h = h % 12 || 12;
+            return `${h}:${m} ${ampm}`;
+        };
+
+        /* ══════ NOTIFICATIONS ══════ */
         const NOTIF_KEY  = 'admin_notif_seen_ids';
         let   notifications = [];
 
@@ -993,8 +980,7 @@
         function markAllRead() {
             saveSeenIds([...new Set([...getSeenIds(), ...notifications.map(n => n.id)])]);
             notifications.forEach(n => n.read = true);
-            updateBadge();
-            renderNotifs();
+            updateBadge(); renderNotifs();
         }
 
         function markRead(id) {
@@ -1016,11 +1002,7 @@
         function renderNotifs() {
             const list = document.getElementById('notifList');
             if (!notifications.length) {
-                list.innerHTML = `
-                    <div style="text-align:center;padding:24px 16px;">
-                        <i class="fa-regular fa-bell-slash" style="font-size:1.5rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
-                        <p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">All caught up!</p>
-                    </div>`;
+                list.innerHTML = `<div style="text-align:center;padding:24px 16px;"><p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">All caught up!</p></div>`;
                 return;
             }
             list.innerHTML = [...notifications]
@@ -1060,7 +1042,7 @@
             }
         });
 
-        /* ─────────────────── Date modal ─────────────────── */
+        /* ── Date modal — FIXED: 12h PHT, readable font, split lines ── */
         function openDateModal(dateStr, list) {
             const safe = (dateStr || '').slice(0, 10);
             const fmt  = new Date(safe + 'T00:00:00').toLocaleDateString('en-US', {
@@ -1085,11 +1067,13 @@
                         declined:'background:#fee2e2;color:#991b1b',
                         claimed :'background:#ede9fe;color:#5b21b6'
                     };
-                    const t  = (r.start_time || '').slice(0, 5) || '—';
-                    const et = (r.end_time   || '').slice(0, 5) || '';
 
-                    /* FIX: use resolveVisitorName so the name is never blank */
                     const displayName = resolveVisitorName(r);
+
+                    /* FIX: 12-hour PHT format, not raw 24h slice */
+                    const tFmt  = to12hPHT(r.start_time);
+                    const etFmt = r.end_time ? to12hPHT(r.end_time) : '';
+                    const timeDisplay = etFmt ? `${tFmt} – ${etFmt} PHT` : tFmt;
 
                     const row = document.createElement('div');
                     row.className = 'date-row';
@@ -1103,7 +1087,8 @@
                         </div>
                         <div style="flex:1;min-width:0;">
                             <p style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.resource_name || 'Resource')}</p>
-                            <p style="font-size:.7rem;color:var(--text-sub);">${escHtml(displayName)} · ${escHtml(t)}${et ? '–' + escHtml(et) : ''}</p>
+                            <p style="font-size:11px;color:var(--text-sub);margin-top:2px;font-weight:500;">${escHtml(displayName)}</p>
+                            <p style="font-size:11px;color:#3730a3;margin-top:1px;font-weight:600;">${escHtml(timeDisplay)}</p>
                         </div>
                         <span style="padding:2px 8px;border-radius:999px;font-size:.6rem;font-weight:700;text-transform:uppercase;${clr[st] || 'background:#f1f5f9;color:#64748b'};flex-shrink:0;">${escHtml(st)}</span>`;
                     c.appendChild(row);
@@ -1125,7 +1110,7 @@
             else if (dateOpen) closeDateModal();
         });
 
-        /* ─────────────────── Print modal ─────────────────── */
+        /* ── Print modal ── */
         const TL_LOGGED_KEY = 'tl_admin_print_logged';
         let tlSessions = {}, tlPrintQueue = [], tlCurrentPrint = null, tlPageCount = 1, tlPrinted = true;
         let tlInitialized = false;
@@ -1183,12 +1168,8 @@
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
                     body:    JSON.stringify({ reservation_id: tlCurrentPrint.id, printed: tlPrinted, pages })
                 });
-                if (res.ok) {
-                    tlMarkLogged(tlCurrentPrint.id);
-                    success = true;
-                } else {
-                    tlToast('warning', 'Could not save print log', `Server returned ${res.status}. Try again.`);
-                }
+                if (res.ok) { tlMarkLogged(tlCurrentPrint.id); success = true; }
+                else tlToast('warning', 'Could not save print log', `Server returned ${res.status}. Try again.`);
             } catch(e) {
                 tlToast('warning', 'Network error', 'Print log not saved. Check your connection.');
             }
@@ -1201,7 +1182,7 @@
         function tlClosePrintModal() { const pm = document.getElementById('tl-print-modal'); pm.style.display = 'none'; document.body.style.overflow = ''; tlCurrentPrint = null; }
         function tlNextPrintModal()  { if (tlPrintQueue.length > 0) setTimeout(() => tlOpenPrintModal(tlPrintQueue.shift()), 400); }
 
-        /* ─────────────────── Live sessions ─────────────────── */
+        /* ── Live sessions ── */
         const TL_WARN = 5 * 60 * 1000, TL_CRIT = 2 * 60 * 1000;
 
         function tlGetActiveSessions() {
@@ -1343,7 +1324,7 @@
             }
         }
 
-        /* ─────────────────── Charts ─────────────────── */
+        /* ── Charts ── */
         let trendChartInst = null, monthChartInst = null;
 
         function getChartColors(isDark) {
@@ -1375,7 +1356,7 @@
         window.addEventListener('beforeunload', _tlCleanup);
         window.addEventListener('pagehide',     _tlCleanup);
 
-        /* ─────────────────── Bootstrap ─────────────────── */
+        /* ── Bootstrap ── */
         document.addEventListener('DOMContentLoaded', () => {
             tlRender();
             _tlInterval = setInterval(tlRender, 1000);
@@ -1386,7 +1367,7 @@
             const chartFont = { family: 'Plus Jakarta Sans', size: mob ? 9 : 11 };
             const cc        = getChartColors(isDark);
 
-            /* ── Trend Chart ── */
+            /* Trend Chart */
             const tCtx = document.getElementById('trendChart')?.getContext('2d');
             if (tCtx) {
                 trendChartInst = new Chart(tCtx, {
@@ -1415,7 +1396,7 @@
                 });
             }
 
-            /* ── Resource doughnut ── */
+            /* Resource doughnut */
             const rCtx = document.getElementById('resourceChart')?.getContext('2d');
             const rL   = <?= json_encode($resourceLabels ?? ['No Data'], $JSON_FLAGS) ?>;
             const rD   = <?= json_encode($resourceData   ?? [1],         $JSON_FLAGS) ?>;
@@ -1445,7 +1426,7 @@
                 ).join('');
             }
 
-            /* ── Calendar ── */
+            /* Calendar */
             const byDate = {};
             allRes.forEach(r => {
                 if (!r.reservation_date) return;
@@ -1496,7 +1477,7 @@
                 }
             }).render();
 
-            /* ══════════════ Insights ══════════════ */
+            /* Insights */
             (function() {
                 const DOW   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
                 const MONTH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
