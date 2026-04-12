@@ -832,12 +832,6 @@ body.dark .warn-banner {
     border-color: rgba(234, 88, 12, .3) !important;
     color: #fb923c !important;
 }
-
-/* ── Tip / gradient banner stays readable ── */
-body.dark .tip-banner {
-    /* gradient banners are already dark-safe, keep as is */
-}
-
 /* ── Status tags (keep their semantic colors, just darken backgrounds) ── */
 body.dark .tag-pending {
     background: rgba(251, 191, 36, .15) !important;
