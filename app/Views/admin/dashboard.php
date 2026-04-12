@@ -2,6 +2,7 @@
 /**
  * Admin Dashboard View — fully debugged + notification system fixed
  * FIX: modal time now shows 12h PHT format in readable font (not mono)
+ * FIX: Calendar UI — taller cells, proper event pills, styled nav buttons
  */
 ?>
 <!DOCTYPE html>
@@ -62,6 +63,230 @@
 
         @media(max-width:479px) {
             .notif-dd { left: 12px; right: 12px; width: auto; top: 72px; }
+        }
+
+        /* ══════════════════════════════════════════
+           CALENDAR UI FIXES
+        ══════════════════════════════════════════ */
+
+        /* Cell sizing — give each day enough vertical room */
+        #calendar .fc-daygrid-day {
+            min-height: 96px;
+        }
+        #calendar .fc-daygrid-day-frame {
+            min-height: 96px;
+            padding: 5px 4px 4px;
+        }
+
+        /* Day number row */
+        #calendar .fc-daygrid-day-top {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2px 3px;
+        }
+        #calendar .fc-daygrid-day-number {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-family: var(--font);
+            text-decoration: none;
+            padding: 0;
+            line-height: 1;
+        }
+        #calendar .fc-day-today {
+            background: #eef2ff !important;
+        }
+        #calendar .fc-day-today .fc-daygrid-day-number {
+            color: var(--indigo);
+            font-weight: 800;
+        }
+        #calendar .fc-day-other .fc-daygrid-day-number {
+            color: var(--text-sub);
+            opacity: 0.5;
+        }
+        #calendar .fc-day-other {
+            background: transparent;
+        }
+
+        /* Event pills */
+        #calendar .fc-event {
+            border-radius: 5px !important;
+            border: none !important;
+            font-size: 10px !important;
+            font-weight: 600 !important;
+            padding: 2px 6px !important;
+            margin: 1px 3px !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: var(--font) !important;
+            line-height: 1.5 !important;
+            cursor: pointer;
+            transition: opacity .15s;
+        }
+        #calendar .fc-event:hover {
+            opacity: .85;
+        }
+        #calendar .fc-daygrid-event-dot {
+            display: none;
+        }
+        #calendar .fc-event-title {
+            font-weight: 600 !important;
+            font-family: var(--font) !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #calendar .fc-event-time {
+            font-weight: 700 !important;
+            font-family: var(--font) !important;
+            margin-right: 3px;
+        }
+
+        /* "+N more" link */
+        #calendar .fc-daygrid-more-link {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--indigo);
+            font-family: var(--font);
+            padding: 1px 4px;
+            border-radius: 4px;
+            margin: 1px 3px;
+            display: block;
+            text-decoration: none;
+            transition: background .12s;
+        }
+        #calendar .fc-daygrid-more-link:hover {
+            background: var(--indigo-light);
+        }
+
+        /* Column header (Sun Mon Tue …) */
+        #calendar .fc-col-header-cell {
+            border-bottom: 1px solid var(--border-subtle) !important;
+            padding-bottom: 4px;
+        }
+        #calendar .fc-col-header-cell-cushion {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            text-decoration: none;
+            font-family: var(--font);
+            padding: 6px 4px;
+            display: inline-block;
+        }
+
+        /* Toolbar: month title + nav buttons */
+        #calendar .fc-toolbar {
+            margin-bottom: 12px !important;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        #calendar .fc-toolbar-title {
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            font-family: var(--font) !important;
+            color: var(--text) !important;
+            letter-spacing: -.02em;
+        }
+        #calendar .fc-button,
+        #calendar .fc-button-primary {
+            background: var(--input-bg) !important;
+            border: 0.5px solid var(--border) !important;
+            color: var(--text) !important;
+            font-family: var(--font) !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            padding: 5px 12px !important;
+            transition: background .15s, border-color .15s;
+            text-transform: none !important;
+            letter-spacing: 0 !important;
+        }
+        #calendar .fc-button:hover,
+        #calendar .fc-button-primary:hover {
+            background: var(--border-subtle) !important;
+            border-color: var(--border) !important;
+        }
+        #calendar .fc-button:focus,
+        #calendar .fc-button-primary:focus {
+            outline: 2px solid var(--indigo) !important;
+            outline-offset: 1px;
+            box-shadow: none !important;
+        }
+        #calendar .fc-button-active,
+        #calendar .fc-button-primary:not(:disabled).fc-button-active {
+            background: var(--indigo) !important;
+            color: #fff !important;
+            border-color: var(--indigo) !important;
+        }
+        #calendar .fc-prev-button,
+        #calendar .fc-next-button {
+            width: 32px !important;
+            padding: 5px 0 !important;
+            text-align: center !important;
+        }
+
+        /* Grid borders */
+        #calendar .fc-scrollgrid {
+            border-color: var(--border-subtle) !important;
+            border-radius: var(--r-md);
+            overflow: hidden;
+        }
+        #calendar .fc-scrollgrid td,
+        #calendar .fc-scrollgrid th {
+            border-color: var(--border-subtle) !important;
+        }
+        #calendar .fc-scrollgrid-sync-inner {
+            border-color: var(--border-subtle) !important;
+        }
+        #calendar a {
+            text-decoration: none !important;
+        }
+
+        /* Popover (when clicking "+N more") */
+        #calendar .fc-popover {
+            background: var(--card) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--r-lg) !important;
+            box-shadow: var(--shadow-lg) !important;
+            font-family: var(--font) !important;
+            z-index: 50 !important;
+        }
+        #calendar .fc-popover-header {
+            background: var(--input-bg) !important;
+            color: var(--text) !important;
+            font-family: var(--font) !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            padding: 8px 12px !important;
+            border-bottom: 1px solid var(--border-subtle) !important;
+            border-radius: var(--r-lg) var(--r-lg) 0 0 !important;
+        }
+        #calendar .fc-popover-body {
+            padding: 8px !important;
+        }
+        #calendar .fc-popover-close {
+            color: var(--text-sub) !important;
+            font-size: 14px !important;
+        }
+
+        /* Dark mode overrides */
+        body.dark #calendar .fc-day-today {
+            background: rgba(55, 48, 163, 0.18) !important;
+        }
+        body.dark #calendar .fc-button,
+        body.dark #calendar .fc-button-primary {
+            background: rgba(255,255,255,.06) !important;
+            border-color: rgba(255,255,255,.12) !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark #calendar .fc-button:hover,
+        body.dark #calendar .fc-button-primary:hover {
+            background: rgba(255,255,255,.1) !important;
         }
     </style>
 </head>
@@ -942,7 +1167,7 @@
             (r.name          || '').trim() ||
             'Guest';
 
-        /* ── FIX: 12-hour PHT time formatter ── */
+        /* ── 12-hour PHT time formatter ── */
         const to12hPHT = ts => {
             if (!ts) return '—';
             const parts = ts.split(':');
@@ -1042,7 +1267,7 @@
             }
         });
 
-        /* ── Date modal — FIXED: 12h PHT, readable font, split lines ── */
+        /* ── Date modal ── */
         function openDateModal(dateStr, list) {
             const safe = (dateStr || '').slice(0, 10);
             const fmt  = new Date(safe + 'T00:00:00').toLocaleDateString('en-US', {
@@ -1069,8 +1294,6 @@
                     };
 
                     const displayName = resolveVisitorName(r);
-
-                    /* FIX: 12-hour PHT format, not raw 24h slice */
                     const tFmt  = to12hPHT(r.start_time);
                     const etFmt = r.end_time ? to12hPHT(r.end_time) : '';
                     const timeDisplay = etFmt ? `${tFmt} – ${etFmt} PHT` : tFmt;
@@ -1426,7 +1649,7 @@
                 ).join('');
             }
 
-            /* Calendar */
+            /* ── Calendar ── */
             const byDate = {};
             allRes.forEach(r => {
                 if (!r.reservation_date) return;
@@ -1438,44 +1661,55 @@
                 const dk  = (r.reservation_date || '').split('T')[0];
                 const st  = isClaimed(r) ? 'claimed' : (r.status || 'pending');
                 const clr = { approved:'#10b981', pending:'#fbbf24', declined:'#f87171', claimed:'#a855f7' };
+                const name = resolveVisitorName(r);
+                /* Short display title for pill: time + first name only */
+                const timeStr = r.start_time ? to12hPHT(r.start_time) : '';
+                const firstName = name.split(' ')[0];
                 return {
-                    title:           `${resolveVisitorName(r)} · ${r.resource_name || 'Res'}`,
+                    title:           timeStr ? `${timeStr} · ${firstName}` : firstName,
                     start:           dk + (r.start_time ? 'T' + r.start_time : ''),
                     end:             dk + (r.end_time   ? 'T' + r.end_time   : ''),
                     backgroundColor: clr[st] || '#94a3b8',
                     borderColor:     'transparent',
-                    textColor:       '#fff'
+                    textColor:       '#fff',
+                    extendedProps:   { fullName: name, resource: r.resource_name || 'Resource', status: st }
                 };
             });
 
-            new FullCalendar.Calendar(document.getElementById('calendar'), {
+            const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView:    'dayGridMonth',
                 headerToolbar:  { left:'prev,next', center:'title', right:'today' },
                 events,
-                height:         mob ? 260 : 380,
-                eventDisplay:   'block',
-                eventMaxStack:  mob ? 1 : 2,
-                dateClick:      info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
-                eventClick:     info => {
+                /* ── KEY FIX: taller cells, more pills before "+N more" ── */
+                height:        mob ? 340 : 480,
+                contentHeight: mob ? 340 : 480,
+                eventDisplay:  'block',
+                dayMaxEvents:  mob ? 2 : 3,
+                eventMaxStack: mob ? 2 : 3,
+                /* Remove default event time prefix (we embed it in title) */
+                displayEventTime: false,
+                eventClick: info => {
                     const d   = info.event.start;
                     const key = d
                         ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
                         : (info.event.startStr || '').slice(0, 10);
                     openDateModal(key, byDate[key] || []);
                 },
+                dateClick: info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
                 dayCellDidMount: info => {
                     const d   = info.date;
                     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
                     const cnt = (byDate[key] || []).length;
                     if (cnt) {
                         const b = document.createElement('div');
-                        b.style.cssText = 'font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;font-family:var(--mono);';
-                        b.textContent   = cnt;
+                        b.style.cssText = 'font-size:9px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:2px;font-family:var(--mono);flex-shrink:0;';
+                        b.textContent   = cnt > 9 ? '9+' : cnt;
                         b.setAttribute('aria-label', `${cnt} reservations`);
                         info.el.querySelector('.fc-daygrid-day-top')?.appendChild(b);
                     }
                 }
-            }).render();
+            });
+            cal.render();
 
             /* Insights */
             (function() {
