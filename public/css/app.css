@@ -973,6 +973,7 @@ body.dark .l-mobile-nav__badge        { border-color: var(--card); }
   color: var(--text);
   transition: all var(--ease);
   outline: none;
+  appearance: none;
   -webkit-appearance: none;
 }
 
