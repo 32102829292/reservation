@@ -1,6 +1,7 @@
 <?php
 /**
  * SK Officer Dashboard — Philippine Time (Asia/Manila) + visitor name fix
+ * FIX: getActiveSessions() timezone offset corrected (no longer subtracts PHT_OFFSET_MS)
  */
 
 /* ── Force Philippine Time for ALL date/time calls in this view ── */
@@ -221,309 +222,74 @@ $hhPHT = (int)$nowPHT->format('H');
     </script>
 
     <style>
-        body {
-            display: flex;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-        }
+        body { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
+        html.dark-pre body { background: #060e1e; }
 
-        html.dark-pre body {
-            background: #060e1e;
-        }
+        .reserve-btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px; background: var(--indigo); color: #fff; border-radius: var(--r-sm); font-size: .85rem; font-weight: 700; border: none; cursor: pointer; font-family: var(--font); letter-spacing: -.01em; transition: all var(--ease); text-decoration: none; box-shadow: 0 4px 12px rgba(55, 48, 163, .28); touch-action: manipulation; }
+        .reserve-btn:hover { background: #312e81; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(55, 48, 163, .35); }
 
-        .reserve-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 10px 18px;
-            background: var(--indigo);
-            color: #fff;
-            border-radius: var(--r-sm);
-            font-size: .85rem;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            font-family: var(--font);
-            letter-spacing: -.01em;
-            transition: all var(--ease);
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(55, 48, 163, .28);
-            touch-action: manipulation;
-        }
-
-        .reserve-btn:hover {
-            background: #312e81;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(55, 48, 163, .35);
-        }
-
-        .sync-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: .6rem;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 999px;
-            background: #eff6ff;
-            color: #1d4ed8;
-            border: 1px solid #bfdbfe;
-            white-space: nowrap;
-        }
-
-        body.dark .sync-badge {
-            background: rgba(29, 78, 216, .2);
-            color: #7fb3e8;
-            border-color: rgba(59, 130, 246, .2);
-        }
+        .sync-badge { display: inline-flex; align-items: center; gap: 4px; font-size: .6rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; white-space: nowrap; }
+        body.dark .sync-badge { background: rgba(29, 78, 216, .2); color: #7fb3e8; border-color: rgba(59, 130, 246, .2); }
 
         .notif-bell { position: relative; }
-
-        .notif-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ef4444;
-            color: white;
-            font-size: .55rem;
-            font-weight: 700;
-            padding: 2px 5px;
-            border-radius: 999px;
-            min-width: 17px;
-            text-align: center;
-            border: 2px solid var(--bg);
-            line-height: 1.3;
-            pointer-events: none;
-        }
-
-        .notif-dd {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 320px;
-            background: var(--card);
-            border-radius: var(--r-xl);
-            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99, 102, 241, .09);
-            z-index: 200;
-            display: none;
-            overflow: hidden;
-        }
-
+        .notif-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: .55rem; font-weight: 700; padding: 2px 5px; border-radius: 999px; min-width: 17px; text-align: center; border: 2px solid var(--bg); line-height: 1.3; pointer-events: none; }
+        .notif-dd { position: fixed; top: 80px; right: 20px; width: 320px; background: var(--card); border-radius: var(--r-xl); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99, 102, 241, .09); z-index: 200; display: none; overflow: hidden; }
         .notif-dd.show { display: block; animation: fadeIn .15s ease; }
-
-        .notif-item {
-            padding: .85rem 1.1rem;
-            border-bottom: 1px solid var(--border-subtle);
-            transition: background .15s;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-
+        .notif-item { padding: .85rem 1.1rem; border-bottom: 1px solid var(--border-subtle); transition: background .15s; cursor: pointer; touch-action: manipulation; }
         .notif-item:hover { background: var(--input-bg); }
         .notif-item.unread { background: var(--indigo-light); }
         .notif-item:last-child { border-bottom: none; }
+        @media(max-width:479px) { .notif-dd { left: 12px; right: 12px; width: auto; top: 72px; } }
 
-        @media(max-width:479px) {
-            .notif-dd { left: 12px; right: 12px; width: auto; top: 72px; }
-        }
-
-        .timer-banner {
-            border-radius: var(--r-md);
-            padding: 14px 18px;
-            margin-bottom: 18px;
-            border: 1px solid;
-            animation: slideDown .35s cubic-bezier(.34, 1.56, .64, 1) both;
-        }
-
+        .timer-banner { border-radius: var(--r-md); padding: 14px 18px; margin-bottom: 18px; border: 1px solid; animation: slideDown .35s cubic-bezier(.34, 1.56, .64, 1) both; }
         .timer-banner.active   { background: #f0fdf4; border-color: #86efac; color: #14532d; }
         .timer-banner.upcoming { background: var(--indigo-light); border-color: var(--indigo-border); color: #312e81; }
-
         body.dark .timer-banner.active   { background: rgba(20,83,45,.25); border-color: rgba(134,239,172,.2); color: #86efac; }
         body.dark .timer-banner.upcoming { background: rgba(55,48,163,.15); border-color: rgba(99,102,241,.3); color: #a5b4fc; }
 
-        .timer-pulse {
-            width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0;
-            animation: livePulse 1.5s infinite;
-        }
+        .timer-pulse { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; animation: livePulse 1.5s infinite; }
+        @keyframes livePulse { 0%,100% { transform: scale(1); opacity: 1 } 50% { transform: scale(1.4); opacity: .6 } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px) } to { opacity: 1; transform: none } }
 
-        @keyframes livePulse {
-            0%,100% { transform: scale(1); opacity: 1 }
-            50%     { transform: scale(1.4); opacity: .6 }
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-8px) }
-            to   { opacity: 1; transform: none }
-        }
-
-        .upcoming-pill {
-            background: var(--indigo-light);
-            border: 1px solid var(--indigo-border);
-            border-radius: var(--r-md);
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 20px;
-            animation: slideUp .4s ease both;
-            flex-wrap: wrap;
-        }
-
-        .up-icon {
-            width: 38px; height: 38px;
-            background: var(--indigo);
-            border-radius: 11px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(55,48,163,.28);
-        }
-
+        .upcoming-pill { background: var(--indigo-light); border: 1px solid var(--indigo-border); border-radius: var(--r-md); padding: 14px 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px; animation: slideUp .4s ease both; flex-wrap: wrap; }
+        .up-icon { width: 38px; height: 38px; background: var(--indigo); border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(55,48,163,.28); }
         .up-eyebrow { font-size: .6rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--indigo); margin-bottom: 2px; }
         .up-name    { font-size: .88rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
         .up-time    { font-size: .72rem; color: #4338ca; font-family: var(--mono); margin-top: 1px; }
-
-        .up-btn {
-            margin-left: auto;
-            font-size: .72rem; font-weight: 700; color: var(--indigo);
-            background: var(--card); border: 1px solid var(--indigo-border);
-            border-radius: 8px; padding: 8px 14px; text-decoration: none;
-            white-space: nowrap; transition: all var(--ease); touch-action: manipulation;
-        }
+        .up-btn { margin-left: auto; font-size: .72rem; font-weight: 700; color: var(--indigo); background: var(--card); border: 1px solid var(--indigo-border); border-radius: 8px; padding: 8px 14px; text-decoration: none; white-space: nowrap; transition: all var(--ease); touch-action: manipulation; }
         .up-btn:hover { background: var(--indigo); color: white; }
         body.dark .up-time { color: #818cf8; }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg);
-            padding: 18px 20px;
-            box-shadow: var(--shadow-sm);
-            transition: transform var(--ease), box-shadow var(--ease);
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px 20px; box-shadow: var(--shadow-sm); transition: transform var(--ease), box-shadow var(--ease); }
         .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-
         .stat-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
-
         .stat-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
         .stat-lbl  { font-size: .62rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--text-sub); }
         .stat-num  { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -.04em; font-family: var(--mono); }
         .stat-hint { font-size: .72rem; color: var(--text-sub); margin-top: 4px; }
         .stat-badge{ font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+        @media(max-width:639px) { .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .stat-card { padding: 14px 16px; } .stat-num { font-size: 1.6rem; } }
 
-        @media(max-width:639px) {
-            .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-            .stat-card  { padding: 14px 16px; }
-            .stat-num   { font-size: 1.6rem; }
-        }
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px;
-            margin-bottom: 18px;
-        }
-
-        .kpi-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--r-md);
-            padding: 14px 16px;
-            border-left-width: 4px;
-            box-shadow: var(--shadow-sm);
-            transition: transform var(--ease);
-        }
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+        .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 14px 16px; border-left-width: 4px; box-shadow: var(--shadow-sm); transition: transform var(--ease); }
         .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .kpi-num { font-size: 1.6rem; font-weight: 800; font-family: var(--mono); line-height: 1; margin-top: 6px; }
-
         @media(max-width:639px) { .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-        /* ── CHART FIXES ── */
-        .chart-wrap {
-            position: relative;
-            height: 220px;
-            width: 100%;
-        }
+        .chart-wrap { position: relative; height: 220px; width: 100%; }
+        .donut-wrap { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+        .donut-canvas { width: 130px !important; height: 130px !important; flex-shrink: 0; display: block; margin: 0 auto; }
+        #resourceLegend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; width: 100%; }
 
-        /* Donut chart: row on desktop, column on mobile */
-        .donut-wrap {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-
-        .donut-canvas {
-            width: 130px !important;
-            height: 130px !important;
-            flex-shrink: 0;
-            display: block;
-            margin: 0 auto;
-        }
-
-        #resourceLegend {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            width: 100%;
-        }
-
-        /* Charts grid: 2-col desktop, 1-col mobile */
-        .grid-two {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 14px;
-            margin-bottom: 18px;
-        }
-
-        @media(max-width:720px) {
-            .grid-two {
-                grid-template-columns: 1fr !important;
-            }
-            .chart-wrap {
-                height: 170px;
-            }
-            .donut-wrap {
-                flex-direction: column;
-                align-items: center;
-            }
-            .donut-canvas {
-                width: 110px !important;
-                height: 110px !important;
-            }
-            #resourceLegend {
-                width: 100%;
-                padding: 0 4px;
-            }
-        }
-
-        @media(max-width:479px) {
-            .chart-wrap { height: 145px; }
-            .donut-canvas {
-                width: 100px !important;
-                height: 100px !important;
-            }
-            .card-title { font-size: .82rem; }
-            .card-sub   { font-size: .62rem; }
-            .tag        { font-size: .58rem !important; padding: 3px 7px !important; }
-        }
-        /* ── END CHART FIXES ── */
+        .grid-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-bottom: 18px; }
+        @media(max-width:720px) { .grid-two { grid-template-columns: 1fr !important; } .chart-wrap { height: 170px; } .donut-wrap { flex-direction: column; align-items: center; } .donut-canvas { width: 110px !important; height: 110px !important; } #resourceLegend { width: 100%; padding: 0 4px; } }
+        @media(max-width:479px) { .chart-wrap { height: 145px; } .donut-canvas { width: 100px !important; height: 100px !important; } .card-title { font-size: .82rem; } .card-sub { font-size: .62rem; } .tag { font-size: .58rem !important; padding: 3px 7px !important; } }
 
         .grid-main  { display: grid; grid-template-columns: minmax(0,1.9fr) minmax(0,1fr); gap: 16px; margin-bottom: 18px; }
         .grid-three { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 14px; margin-bottom: 18px; }
         .grid-four  { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin-bottom: 18px; }
         .side-col   { display: flex; flex-direction: column; gap: 14px; }
-
         @media(max-width:900px) { .grid-main, .grid-three { grid-template-columns: 1fr; } }
 
         .card-head  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
@@ -531,10 +297,7 @@ $hhPHT = (int)$nowPHT->format('H');
         .card-title { font-size: .9rem; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
         .card-sub   { font-size: .7rem; color: var(--text-sub); margin-top: 2px; }
 
-        .section-lbl {
-            font-size: .62rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
-            color: var(--text-sub); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
-        }
+        .section-lbl { font-size: .62rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
         .section-lbl::before { content:''; display:inline-block; width:3px; height:14px; border-radius:2px; background:var(--indigo); flex-shrink:0; }
 
         .link-sm { font-size:.65rem; font-weight:700; color:var(--indigo); text-decoration:none; letter-spacing:.05em; text-transform:uppercase; transition:opacity .15s; touch-action:manipulation; }
@@ -556,11 +319,7 @@ $hhPHT = (int)$nowPHT->format('H');
         body.dark .fc-theme-standard td, body.dark .fc-theme-standard th, body.dark .fc-theme-standard .fc-scrollgrid { border-color:var(--input-bg)!important; }
         body.dark .fc-col-header-cell-cushion { color:var(--text-sub); }
         body.dark .fc-day-today { background:rgba(55,48,163,.15)!important; }
-        @media(max-width:479px) {
-            .fc .fc-toolbar { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:6px; }
-            .fc-toolbar-chunk:nth-child(2) { text-align:center; }
-            .fc-toolbar-title { font-size:.8rem!important; }
-        }
+        @media(max-width:479px) { .fc .fc-toolbar { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:6px; } .fc-toolbar-chunk:nth-child(2) { text-align:center; } .fc-toolbar-title { font-size:.8rem!important; } }
 
         .cal-legend { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
         .leg-item   { display:flex; align-items:center; gap:5px; }
@@ -628,7 +387,6 @@ $hhPHT = (int)$nowPHT->format('H');
 
         .rag-wrap    { position:relative; margin-top:12px; }
         .rag-icon-pos{ position:absolute; left:11px; top:50%; transform:translateY(-50%); pointer-events:none; }
-
         .search-input { width:100%; padding:11px 12px 11px 34px; border-radius:var(--r-sm); border:1px solid rgba(99,102,241,.15); font-size:.9rem; font-family:var(--font); background:var(--input-bg); color:var(--text); transition:all var(--ease); outline:none; }
         .search-input:focus { border-color:#818cf8; background:var(--card); box-shadow:0 0 0 3px rgba(99,102,241,.08); }
         .search-input::placeholder { color:var(--text-sub); }
@@ -650,15 +408,7 @@ $hhPHT = (int)$nowPHT->format('H');
         .login-toast.show { transform:none; opacity:1; pointer-events:auto; }
         @media(min-width:1024px) { .login-toast { bottom:24px; } }
 
-        .grid-lib {
-            display: grid !important;
-            grid-template-columns: repeat(2,minmax(0,1fr)) !important;
-            gap: 16px !important;
-            margin-bottom: 16px !important;
-            align-items: start !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-        }
+        .grid-lib { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 16px !important; margin-bottom: 16px !important; align-items: start !important; width: 100% !important; box-sizing: border-box !important; }
         @media(max-width:900px) { .grid-lib { grid-template-columns: 1fr !important; } }
 
         .main-area { min-width:0; overflow-x:hidden; }
@@ -744,9 +494,6 @@ $hhPHT = (int)$nowPHT->format('H');
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════
-     MAIN CONTENT
-    ══════════════════════════════════════════════════════════════ -->
     <main class="main-area">
 
         <!-- Topbar -->
@@ -937,10 +684,8 @@ $hhPHT = (int)$nowPHT->format('H');
             <?php endforeach; ?>
         </div>
 
-        <!-- ── CHARTS — fixed layout ── -->
+        <!-- Charts -->
         <div class="grid-two fade-up-3" style="margin-bottom:20px;">
-
-            <!-- Trend Line Chart -->
             <div class="card card-p">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
@@ -952,12 +697,8 @@ $hhPHT = (int)$nowPHT->format('H');
                     </div>
                     <span class="tag tag-approved" style="font-size:.65rem;padding:4px 10px;border-radius:999px;">System-wide</span>
                 </div>
-                <div class="chart-wrap">
-                    <canvas id="trendChart"></canvas>
-                </div>
+                <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
             </div>
-
-            <!-- Resource Donut Chart — fixed layout -->
             <div class="card card-p">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
@@ -969,13 +710,11 @@ $hhPHT = (int)$nowPHT->format('H');
                     </div>
                     <span class="tag tag-claimed" style="font-size:.65rem;padding:4px 10px;border-radius:999px;">Top 5</span>
                 </div>
-                <!-- Canvas centered, legend below on mobile / beside on desktop -->
                 <div class="donut-wrap">
                     <canvas id="resourceChart" class="donut-canvas"></canvas>
                     <div id="resourceLegend"></div>
                 </div>
             </div>
-
         </div>
 
         <!-- SECTION 3 — Schedule & Activity -->
@@ -1002,7 +741,6 @@ $hhPHT = (int)$nowPHT->format('H');
             </div>
 
             <div class="side-col">
-                <!-- System stats banner -->
                 <div style="background:linear-gradient(135deg,var(--indigo) 0%,#4338ca 60%,#6366f1 100%);border-radius:var(--r-lg);padding:18px;overflow:hidden;position:relative;">
                     <div style="position:absolute;inset:0;background:url('data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'18\' fill=\'none\' stroke=\'rgba(255,255,255,.05)\' stroke-width=\'1\'/%3E%3C/svg%3E') repeat;opacity:.4;pointer-events:none;"></div>
                     <div style="position:relative;z-index:1;">
@@ -1029,7 +767,6 @@ $hhPHT = (int)$nowPHT->format('H');
                     </div>
                 </div>
 
-                <!-- Quick actions -->
                 <div class="card card-p">
                     <div class="section-lbl">Quick Actions</div>
                     <div style="display:flex;flex-direction:column;gap:5px;">
@@ -1050,7 +787,6 @@ $hhPHT = (int)$nowPHT->format('H');
                     </div>
                 </div>
 
-                <!-- Recent bookings -->
                 <div class="card card-p" style="flex:1;">
                     <div class="card-head" style="margin-bottom:10px;">
                         <div class="section-lbl" style="margin-bottom:0;">Recent Bookings</div>
@@ -1071,10 +807,7 @@ $hhPHT = (int)$nowPHT->format('H');
                                 </div>
                                 <div style="flex:1;min-width:0;">
                                     <div class="bk-name"><?= esc($r['resource_name'] ?? 'Resource') ?></div>
-                                    <div class="bk-time">
-                                        <?= esc($r['visitor_name'] ?: 'Guest') ?>
-                                        · <?= $dt->format('M j') ?>
-                                    </div>
+                                    <div class="bk-time"><?= esc($r['visitor_name'] ?: 'Guest') ?> · <?= $dt->format('M j') ?></div>
                                 </div>
                                 <span class="tag tag-<?= $st ?>"><?= ucfirst($st) ?></span>
                             </a>
@@ -1165,7 +898,6 @@ $hhPHT = (int)$nowPHT->format('H');
             </div>
 
             <div style="display:flex;flex-direction:column;gap:14px;">
-                <!-- Books catalog -->
                 <div class="card card-p-lg" style="flex:1;">
                     <div class="card-head">
                         <div>
@@ -1204,15 +936,14 @@ $hhPHT = (int)$nowPHT->format('H');
                     <?php endif; ?>
                 </div>
 
-                <!-- My borrows -->
                 <?php if (!empty($myBorrowings)): ?>
                     <div class="card card-p">
                         <div class="section-lbl" style="margin-bottom:12px;"><?= sk_icon('bookmark', 13, '#16a34a') ?> My Active Borrows</div>
                         <div style="display:flex;flex-direction:column;gap:8px;">
                             <?php foreach (array_slice($myBorrowings, 0, 4) as $bw):
-                                $dueTs    = !empty($bw['due_date']) ? strtotime($bw['due_date']) : null;
-                                $overdue  = $dueTs && $dueTs < $nowTs;
-                                $dueSoon  = $dueTs && !$overdue && $dueTs < $nowTs + 3 * 86400;
+                                $dueTs   = !empty($bw['due_date']) ? strtotime($bw['due_date']) : null;
+                                $overdue = $dueTs && $dueTs < $nowTs;
+                                $dueSoon = $dueTs && !$overdue && $dueTs < $nowTs + 3 * 86400;
                             ?>
                                 <div style="display:flex;align-items:center;gap:10px;background:var(--input-bg);border-radius:10px;padding:9px 12px;border:1px solid var(--border-subtle);">
                                     <div class="book-letter" style="width:30px;height:30px;font-size:.72rem;"><?= mb_strtoupper(mb_substr($bw['book_title'] ?? 'B', 0, 1)) ?></div>
@@ -1406,8 +1137,6 @@ $hhPHT = (int)$nowPHT->format('H');
             'Guest';
 
         const PHT_OFFSET_MS = 8 * 60 * 60 * 1000;
-        const nowPHT  = () => Date.now() + PHT_OFFSET_MS;
-        const todayPHT = () => new Date(Date.now() + PHT_OFFSET_MS).toISOString().slice(0, 10);
 
         /* Dark mode */
         const _origToggle = window.layoutToggleDark;
@@ -1523,8 +1252,6 @@ $hhPHT = (int)$nowPHT->format('H');
         });
 
         /* Date modal */
-
-        /* Convert "HH:MM" or "HH:MM:SS" (24h PHT from DB) → "h:MM AM/PM" */
         function to12hPHT(timeStr) {
             if (!timeStr) return '—';
             const parts = timeStr.split(':');
@@ -1547,7 +1274,6 @@ $hhPHT = (int)$nowPHT->format('H');
             const list  = document.getElementById('modalList');
             const empty = document.getElementById('modalEmpty');
             list.innerHTML = '';
-
             if (items.length) {
                 empty.classList.add('hidden');
                 const tagMap = { approved:'tag-approved', pending:'tag-pending', declined:'tag-declined', claimed:'tag-claimed', canceled:'tag-canceled' };
@@ -1557,7 +1283,6 @@ $hhPHT = (int)$nowPHT->format('H');
                         const isCl = r.claimed == 1 || r.claimed === true || r.claimed === 'true';
                         const s    = isCl ? 'claimed' : (r.status || 'pending').toLowerCase();
                         const displayName = resolveVisitorName(r);
-                        /* PHT 12-hour formatted times */
                         const tFmt  = to12hPHT(r.start_time);
                         const etFmt = r.end_time ? to12hPHT(r.end_time) : '';
                         const timeDisplay = etFmt ? `${tFmt} – ${etFmt} PHT` : tFmt;
@@ -1569,7 +1294,7 @@ $hhPHT = (int)$nowPHT->format('H');
                             </div>
                             <div style="flex:1;min-width:0;">
                                 <p style="font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name || 'Resource'}</p>
-                                <p style="font-size:11px;color:var(--text-sub);margin-top:2px;font-family:var(--font);font-weight:500;">${displayName}</p>
+                                <p style="font-size:11px;color:var(--text-sub);margin-top:2px;font-weight:500;">${displayName}</p>
                                 <p style="font-size:11px;color:var(--indigo);margin-top:1px;font-weight:600;">${timeDisplay}</p>
                             </div>
                             <span class="tag ${tagMap[s] || 'tag-expired'}">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
@@ -1588,28 +1313,43 @@ $hhPHT = (int)$nowPHT->format('H');
         }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
 
-        /* Live sessions */
+        /* ══════════════════════════════════════════════════
+         * LIVE SESSIONS — TIMEZONE FIX
+         * DB stores times in PHT. JS Date() parses bare
+         * "YYYY-MM-DDTHH:MM:SS" strings as LOCAL time.
+         * Both sides must use the same reference frame.
+         * We shift nowMs by +PHT_OFFSET_MS so it matches
+         * the "fake-UTC" timestamps the DB strings produce.
+         * ══════════════════════════════════════════════════ */
         const TL_WARN = 5 * 60 * 1000, TL_CRIT = 2 * 60 * 1000;
         let sessionState = {};
 
         function getActiveSessions() {
-            const today = todayPHT();
-            const nowMs = Date.now();
+            const nowMs    = Date.now();
+            const nowAdj   = nowMs + PHT_OFFSET_MS; // treat PHT strings as if UTC
+            const todayPHT = new Date(nowAdj).toISOString().slice(0, 10);
+
             return allResData.filter(r => {
                 if (!r.start_time || !r.end_time) return false;
                 const rDate = (r.reservation_date || '').split('T')[0];
-                if (rDate !== today) return false;
+                if (rDate !== todayPHT) return false;
                 if ((r.status || '').toLowerCase() !== 'approved') return false;
-                const sMs = new Date(rDate + 'T' + r.start_time).getTime() - PHT_OFFSET_MS;
-                const eMs = new Date(rDate + 'T' + r.end_time  ).getTime() - PHT_OFFSET_MS;
-                return sMs <= nowMs && eMs >= nowMs;
+                // Must be claimed (QR scanned) to count as an active session
+                const isClaimed = r.claimed == 1 || r.claimed === true ||
+                                  r.claimed === 'true' || r.claimed === 't';
+                if (!isClaimed) return false;
+                // Parse DB time strings — JS treats them as local, so both
+                // sMs/eMs and nowAdj are shifted the same way → correct diff
+                const sMs = new Date(rDate + 'T' + r.start_time).getTime();
+                const eMs = new Date(rDate + 'T' + r.end_time  ).getTime();
+                return sMs <= nowAdj && eMs >= nowAdj;
             });
         }
 
         const fmtMs = ms => {
             if (ms <= 0) return 'Ended';
             const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60);
-            return h > 0 ? `${h}h ${m%60}m` : m > 0 ? `${m}m ${s%60}s` : `${s}s`;
+            return h > 0 ? `${h}h ${m % 60}m` : m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
         };
         const sessionClass = ms => ms <= 0 ? 's-ended' : ms <= TL_CRIT ? 's-critical' : ms <= TL_WARN ? 's-warning' : 's-ok';
 
@@ -1621,7 +1361,13 @@ $hhPHT = (int)$nowPHT->format('H');
             const ic = type === 'warning'
                 ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
                 : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
-            t.innerHTML = `<div class="tl-toast-icon" style="background:${bg};">${ic}</div><div style="flex:1;min-width:0;"><p style="font-weight:700;font-size:.75rem;">${title}</p><p style="font-size:.68rem;color:rgba(255,255,255,.6);margin-top:2px;">${sub}</p></div><button onclick="this.closest('.tl-toast').remove()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:.75rem;flex-shrink:0;">✕</button>`;
+            t.innerHTML = `
+                <div class="tl-toast-icon" style="background:${bg};">${ic}</div>
+                <div style="flex:1;min-width:0;">
+                    <p style="font-weight:700;font-size:.75rem;">${title}</p>
+                    <p style="font-size:.68rem;color:rgba(255,255,255,.6);margin-top:2px;">${sub}</p>
+                </div>
+                <button onclick="this.closest('.tl-toast').remove()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:.75rem;flex-shrink:0;">✕</button>`;
             c.appendChild(t);
             setTimeout(() => { t.classList.add('dismissing'); setTimeout(() => t.remove(), 220); }, 7000);
         }
@@ -1630,18 +1376,23 @@ $hhPHT = (int)$nowPHT->format('H');
             const sessions = getActiveSessions();
             const grid = document.getElementById('sessionsGrid');
             const noS  = document.getElementById('noSessions');
-            const nowMs = Date.now();
+            const nowMs  = Date.now();
+            const nowAdj = nowMs + PHT_OFFSET_MS;
+
             if (!sessions.length) {
                 grid.innerHTML = '';
                 noS.classList.remove('hidden');
                 return;
             }
             noS.classList.add('hidden');
+
             sessions.forEach(r => {
                 const rDate = (r.reservation_date || '').split('T')[0];
-                const eMs   = new Date(rDate + 'T' + r.end_time  ).getTime() - PHT_OFFSET_MS;
-                const sMs   = new Date(rDate + 'T' + r.start_time).getTime() - PHT_OFFSET_MS;
-                const totMs = eMs - sMs, remMs = eMs - nowMs, elMs = nowMs - sMs;
+                const eMs   = new Date(rDate + 'T' + r.end_time  ).getTime();
+                const sMs   = new Date(rDate + 'T' + r.start_time).getTime();
+                const totMs = eMs - sMs;
+                const remMs = eMs - nowAdj;
+                const elMs  = nowAdj - sMs;
                 const prog  = Math.min(100, Math.max(0, (elMs / totMs) * 100));
                 const cls   = sessionClass(remMs);
                 const name  = resolveVisitorName(r);
@@ -1669,6 +1420,7 @@ $hhPHT = (int)$nowPHT->format('H');
                         <span style="font-size:.65rem;font-weight:600;color:var(--text-muted);">${Math.max(0,Math.floor(elMs/60000))}m used</span>
                     </div>`;
             });
+
             const ids = sessions.map(r => `tl-${r.id}`);
             Array.from(grid.children).forEach(c => { if (!ids.includes(c.id)) c.remove(); });
         }
@@ -1746,7 +1498,6 @@ $hhPHT = (int)$nowPHT->format('H');
             });
         }
 
-        /* DOMContentLoaded */
         document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.classList.remove('dark-pre');
             syncDarkIcon();
@@ -1758,7 +1509,7 @@ $hhPHT = (int)$nowPHT->format('H');
             const cc     = getChartColors();
             const font   = { family: 'Plus Jakarta Sans', size: mobile ? 9 : 11 };
 
-            /* ── Trend line chart ── */
+            /* Trend chart */
             const tCtx = document.getElementById('trendChart')?.getContext('2d');
             if (tCtx) {
                 trendChart = new Chart(tCtx, {
@@ -1782,83 +1533,46 @@ $hhPHT = (int)$nowPHT->format('H');
                         maintainAspectRatio: false,
                         plugins: {
                             legend: { display: false },
-                            tooltip: {
-                                backgroundColor: '#0f172a',
-                                titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
-                                bodyFont:  { family: 'Plus Jakarta Sans' },
-                                padding: 10,
-                                cornerRadius: 10
-                            }
+                            tooltip: { backgroundColor: '#0f172a', titleFont: { family: 'Plus Jakarta Sans', weight: '700' }, bodyFont: { family: 'Plus Jakarta Sans' }, padding: 10, cornerRadius: 10 }
                         },
                         scales: {
-                            x: {
-                                grid: { display: false },
-                                ticks: { font, color: cc.tick }
-                            },
-                            y: {
-                                grid: { color: cc.grid },
-                                ticks: { font, color: cc.tick, stepSize: 1 },
-                                beginAtZero: true
-                            }
+                            x: { grid: { display: false }, ticks: { font, color: cc.tick } },
+                            y: { grid: { color: cc.grid }, ticks: { font, color: cc.tick, stepSize: 1 }, beginAtZero: true }
                         }
                     }
                 });
             }
 
-            /* ── Resource donut — fixed rendering ── */
+            /* Resource donut */
             const rCtx = document.getElementById('resourceChart')?.getContext('2d');
             const rL   = <?= json_encode($resourceLabels) ?>;
             const rD   = <?= json_encode($resourceData)   ?>;
             const pal  = ['#3730a3','#7c3aed','#16a34a','#d97706','#ec4899'];
-
             if (rCtx) {
                 resourceChart = new Chart(rCtx, {
                     type: 'doughnut',
-                    data: {
-                        labels: rL,
-                        datasets: [{
-                            data: rD,
-                            backgroundColor: pal,
-                            borderWidth: 3,
-                            borderColor: 'transparent',
-                            hoverOffset: 6
-                        }]
-                    },
+                    data: { labels: rL, datasets: [{ data: rD, backgroundColor: pal, borderWidth: 3, borderColor: 'transparent', hoverOffset: 6 }] },
                     options: {
                         responsive: false,
                         animation: { duration: 600, easing: 'easeInOutQuart' },
                         cutout: '62%',
                         plugins: {
                             legend: { display: false },
-                            tooltip: {
-                                backgroundColor: '#0f172a',
-                                titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
-                                bodyFont:  { family: 'Plus Jakarta Sans' },
-                                padding: 10,
-                                cornerRadius: 10
-                            }
+                            tooltip: { backgroundColor: '#0f172a', titleFont: { family: 'Plus Jakarta Sans', weight: '700' }, bodyFont: { family: 'Plus Jakarta Sans' }, padding: 10, cornerRadius: 10 }
                         }
                     }
                 });
-
-                /* Legend: icon + name + count — full width on mobile */
                 const leg = document.getElementById('resourceLegend');
                 if (leg) {
                     const total = rD.reduce((a, b) => a + b, 0) || 1;
                     leg.innerHTML = rL.map((l, i) => {
                         const share = Math.round(rD[i] / total * 100);
-                        return `
-                        <div style="display:flex;align-items:center;gap:8px;min-width:0;max-width:100%;">
-                            <span style="width:9px;height:9px;border-radius:50%;background:${pal[i]||'#94a3b8'};flex-shrink:0;"></span>
-                            <span style="font-size:.75rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;">${l}</span>
-                            <span style="font-size:.72rem;font-weight:800;color:var(--text);flex-shrink:0;">${rD[i]}</span>
-                            <span style="font-size:.65rem;color:var(--text-sub);flex-shrink:0;min-width:28px;text-align:right;">${share}%</span>
-                        </div>`;
+                        return `<div style="display:flex;align-items:center;gap:8px;min-width:0;max-width:100%;"><span style="width:9px;height:9px;border-radius:50%;background:${pal[i]||'#94a3b8'};flex-shrink:0;"></span><span style="font-size:.75rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;">${l}</span><span style="font-size:.72rem;font-weight:800;color:var(--text);flex-shrink:0;">${rD[i]}</span><span style="font-size:.65rem;color:var(--text-sub);flex-shrink:0;min-width:28px;text-align:right;">${share}%</span></div>`;
                     }).join('');
                 }
             }
 
-            /* ── Calendar ── */
+            /* Calendar */
             const byDate = {};
             allResData.forEach(r => {
                 if (!r.reservation_date) return;
@@ -1887,10 +1601,7 @@ $hhPHT = (int)$nowPHT->format('H');
                 eventDisplay: 'block',
                 eventMaxStack: mobile ? 1 : 2,
                 dateClick:  info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
-                eventClick: info => {
-                    const d = info.event.startStr.split('T')[0];
-                    openDateModal(d, byDate[d] || []);
-                },
+                eventClick: info => { const d = info.event.startStr.split('T')[0]; openDateModal(d, byDate[d] || []); },
                 dayCellDidMount: info => {
                     const d   = info.date.toISOString().split('T')[0];
                     const cnt = (byDate[d] || []).length;
@@ -1903,7 +1614,7 @@ $hhPHT = (int)$nowPHT->format('H');
                 }
             }).render();
 
-            /* ── Insights ── */
+            /* Insights */
             (function() {
                 const DOW   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
                 const DOW_S = ['S','M','T','W','T','F','S'];
@@ -1917,7 +1628,7 @@ $hhPHT = (int)$nowPHT->format('H');
                 if (sg) {
                     if      (noShowRate > 30)                               sg.textContent = `High no-show rate (${noShowRate}%). Consider sending reminders before sessions.`;
                     else if (declineRate > 25)                              sg.textContent = `Many requests declined (${declineRate}%). Book "${topResource}" earlier for better chances.`;
-                    else if (trendDir === 'up'   && trendPct > 20)         sg.textContent = `System activity up ${trendPct}% this week — high demand!`;
+                    else if (trendDir === 'up' && trendPct > 20)           sg.textContent = `System activity up ${trendPct}% this week — high demand!`;
                     else                                                    sg.textContent = `${peakDayLabel}s have highest demand. "${topResource}" is the most booked resource.`;
                 }
 
@@ -1980,25 +1691,11 @@ $hhPHT = (int)$nowPHT->format('H');
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: '#0f172a',
-                                    titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
-                                    bodyFont:  { family: 'Plus Jakarta Sans' },
-                                    padding: 10,
-                                    cornerRadius: 10,
-                                    callbacks: { label: ctx => ` ${ctx.raw} reservations` }
-                                }
+                                tooltip: { backgroundColor: '#0f172a', titleFont: { family: 'Plus Jakarta Sans', weight: '700' }, bodyFont: { family: 'Plus Jakarta Sans' }, padding: 10, cornerRadius: 10, callbacks: { label: ctx => ` ${ctx.raw} reservations` } }
                             },
                             scales: {
-                                x: {
-                                    grid: { display: false },
-                                    ticks: { font: { family: 'Plus Jakarta Sans', size: mobile?8:10 }, color: cc.tick }
-                                },
-                                y: {
-                                    grid: { color: cc.grid },
-                                    beginAtZero: true,
-                                    ticks: { font: { family: 'Plus Jakarta Sans', size: mobile?8:10 }, color: cc.tick, stepSize: 1 }
-                                }
+                                x: { grid: { display: false }, ticks: { font: { family: 'Plus Jakarta Sans', size: mobile?8:10 }, color: cc.tick } },
+                                y: { grid: { color: cc.grid }, beginAtZero: true, ticks: { font: { family: 'Plus Jakarta Sans', size: mobile?8:10 }, color: cc.tick, stepSize: 1 } }
                             }
                         }
                     });
