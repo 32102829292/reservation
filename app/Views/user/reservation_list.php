@@ -129,11 +129,11 @@ define('UNCLAIMED_GRACE_SECONDS', 3600);
 
 $processed = [];
 foreach (($reservations ?? []) as $res) {
-    // ── FIX: check all three possible indicators that a ticket was scanned.
-    // 1. claimed boolean column (== 1)
+    // ── FIX: mirror the SK admin view's robust claimed detection.
+    // 1. in_array strict — catches boolean true, int 1, strings '1','t','true' (matches sk_reservations.php)
     // 2. status column set to "claimed" by the scanner
     // 3. claimed_at timestamp — most reliable; only set when scanner processes the ticket
-    $isClaimed = (!empty($res['claimed']) && $res['claimed'] == 1)
+    $isClaimed = in_array($res['claimed'] ?? false, [true, 1, 't', 'true', '1'], true)
                  || strtolower($res['status'] ?? '') === 'claimed'
                  || !empty($res['claimed_at']);
 
