@@ -16,143 +16,98 @@
         })();
     </script>
     <style>
-        /* ── Page-specific layout ── */
-        .main-area {
-            padding: 24px 28px 60px;
+        /* ══════════════════════════════
+           BASE
+        ══════════════════════════════ */
+        .main-area { padding: 24px 20px 80px; }
+        @media(max-width:639px) { .main-area { padding: 14px 12px 80px; } }
+
+        /* ══════════════════════════════
+           PAGE HEADER
+        ══════════════════════════════ */
+        .page-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            gap: 12px;
+        }
+        .page-header-left p.eyebrow {
+            font-size: .62rem; font-weight: 700; letter-spacing: .2em;
+            text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px;
+        }
+        .page-header-left h2 {
+            font-size: 1.6rem; font-weight: 800; color: var(--text);
+            letter-spacing: -.04em; line-height: 1.1;
+        }
+        .page-header-left p.sub {
+            font-size: .78rem; color: var(--text-sub); font-weight: 500; margin-top: 4px;
+        }
+        .page-header-right {
+            display: flex; align-items: center; gap: 10px;
+            flex-wrap: wrap; flex-shrink: 0;
+        }
+        @media(max-width:480px) {
+            .page-header-left h2 { font-size: 1.3rem; }
+            .page-header-right { width: 100%; justify-content: flex-end; }
         }
 
+        /* ══════════════════════════════
+           STAT CARDS — responsive grid
+        ══════════════════════════════ */
+        .stat-grid-logs {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
         @media(max-width:639px) {
-            .main-area {
-                padding: 14px 12px 60px;
+            .stat-grid-logs {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
             }
+            /* Total card spans full width on mobile */
+            .stat-grid-logs .stat-total { grid-column: 1 / -1; }
         }
-
-        /* ── Badges ── */
-        .badge {
-            padding: 3px 10px;
-            border-radius: 99px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            white-space: nowrap;
-        }
-
-        /* ── Table row hover ── */
-        .log-row {
-            transition: background 0.12s;
-        }
-
-        .log-row:hover td {
-            background: rgba(99, 102, 241, .04);
-        }
-
-        /* ── Stat cards ── */
         .stat-card-log {
             background: var(--card);
-            border-radius: 20px;
-            padding: 1.1rem 1.25rem;
-            border: 1px solid rgba(99, 102, 241, .08);
+            border-radius: 16px;
+            padding: 14px 16px;
+            border: 1px solid rgba(99,102,241,.08);
             border-bottom-width: 3px;
             box-shadow: var(--shadow-sm);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform .2s, box-shadow .2s;
+            min-width: 0;
+        }
+        .stat-card-log:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-card-log .lbl {
+            font-size: .58rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: .16em; margin-bottom: 4px;
+        }
+        .stat-card-log .num {
+            font-size: 1.6rem; font-weight: 800; color: var(--text);
+            line-height: 1; font-family: var(--mono);
+        }
+        @media(max-width:639px) {
+            .stat-card-log .num { font-size: 1.4rem; }
+            .stat-card-log { padding: 12px 14px; }
         }
 
-        .stat-card-log:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+        /* ══════════════════════════════
+           FILTER BAR
+        ══════════════════════════════ */
+        .filter-bar {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(99,102,241,.07);
+            background: rgba(99,102,241,.02);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-
-        /* ── Table scroll wrapper ── */
-        .table-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .table-scroll::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .table-scroll::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, .15);
-            border-radius: 4px;
-        }
-
-        /* ── Tooltip ── */
-        .details-tooltip {
-            position: relative;
-            display: inline-block;
-        }
-
-        .tooltip-text {
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
-            position: absolute;
-            bottom: calc(100% + 8px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            color: white;
-            padding: 7px 11px;
-            border-radius: 10px;
-            font-size: 0.73rem;
-            white-space: nowrap;
-            max-width: min(280px, 80vw);
-            white-space: normal;
-            word-break: break-word;
-            line-height: 1.45;
-            transition: opacity 0.18s;
-            z-index: 50;
-            box-shadow: var(--shadow-md);
-        }
-
-        .tooltip-text::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border: 5px solid transparent;
-            border-top-color: #1e293b;
-        }
-
-        @media (max-width: 640px) {
-            .tooltip-text {
-                left: 0;
-                transform: none;
-            }
-
-            .tooltip-text::after {
-                left: 16px;
-            }
-        }
-
-        .details-tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* ── Mobile log card ── */
-        .mobile-log-card {
+        #searchInput, #actionFilter {
             background: var(--card);
-            padding: 1rem 1.1rem;
-            transition: box-shadow 0.15s;
-            border-bottom: 1px solid rgba(99, 102, 241, .06);
-        }
-
-        .mobile-log-card:hover {
-            box-shadow: inset 0 0 0 1px rgba(99, 102, 241, .12);
-        }
-
-        /* ── Filter bar ── */
-        #searchInput,
-        #actionFilter {
-            background: var(--card);
-            border: 1px solid rgba(99, 102, 241, .15);
+            border: 1px solid rgba(99,102,241,.15);
             border-radius: var(--r-sm);
             padding: 10px 14px;
             font-family: var(--font);
@@ -161,259 +116,240 @@
             outline: none;
             transition: border-color .2s, box-shadow .2s;
         }
-
-        #searchInput {
-            padding-left: 36px;
-        }
-
-        #searchInput:focus,
-        #actionFilter:focus {
+        #searchInput { padding-left: 36px; flex: 1; min-width: 0; }
+        #actionFilter { width: auto; min-width: 140px; cursor: pointer; }
+        #searchInput:focus, #actionFilter:focus {
             border-color: var(--indigo);
-            box-shadow: 0 0 0 4px rgba(55, 48, 163, .08);
+            box-shadow: 0 0 0 4px rgba(55,48,163,.08);
+        }
+        #searchInput::placeholder { color: var(--text-sub); }
+        @media(max-width:480px) {
+            #actionFilter { width: 100%; min-width: 0; }
         }
 
-        #searchInput::placeholder {
-            color: var(--text-sub);
+        /* ══════════════════════════════
+           BADGES
+        ══════════════════════════════ */
+        .badge {
+            padding: 3px 10px; border-radius: 99px; font-size: .7rem;
+            font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
+            display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
         }
 
-        /* ── Legend ── */
-        .legend-wrap {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px 16px;
-        }
+        /* ══════════════════════════════
+           TABLE
+        ══════════════════════════════ */
+        .log-row { transition: background .12s; }
+        .log-row:hover td { background: rgba(99,102,241,.04); }
+        .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-scroll::-webkit-scrollbar { height: 4px; }
+        .table-scroll::-webkit-scrollbar-thumb { background: rgba(99,102,241,.15); border-radius: 4px; }
 
-        /* ── Avatar color helpers ── */
-        .av-create {
-            background: #ecfdf5;
-            color: #059669;
+        /* ══════════════════════════════
+           TOOLTIP
+        ══════════════════════════════ */
+        .details-tooltip { position: relative; display: inline-block; }
+        .tooltip-text {
+            visibility: hidden; opacity: 0; pointer-events: none;
+            position: absolute; bottom: calc(100% + 8px); left: 50%;
+            transform: translateX(-50%); background: #1e293b; color: white;
+            padding: 7px 11px; border-radius: 10px; font-size: .73rem;
+            max-width: min(280px, 80vw); white-space: normal; word-break: break-word;
+            line-height: 1.45; transition: opacity .18s; z-index: 50; box-shadow: var(--shadow-md);
         }
-
-        .av-approve {
-            background: #eff6ff;
-            color: #2563eb;
+        .tooltip-text::after {
+            content: ''; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+            border: 5px solid transparent; border-top-color: #1e293b;
         }
-
-        .av-decline {
-            background: #fef2f2;
-            color: #dc2626;
+        @media(max-width:640px) {
+            .tooltip-text { left: 0; transform: none; }
+            .tooltip-text::after { left: 16px; }
         }
+        .details-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
 
-        .av-claim {
-            background: #f3e8ff;
-            color: #6b21a8;
-        }
-
-        .av-print {
-            background: #f0f9ff;
-            color: #0369a1;
-        }
-
-        .av-default {
-            background: #f1f5f9;
-            color: #64748b;
-        }
-
-        /* ── Dark mode extras ── */
-        body.dark .stat-card-log {
+        /* ══════════════════════════════
+           MOBILE LOG CARDS
+        ══════════════════════════════ */
+        .mobile-log-card {
             background: var(--card);
-            border-color: rgba(99, 102, 241, .12);
+            padding: 14px 16px;
+            transition: box-shadow .15s;
+            border-bottom: 1px solid rgba(99,102,241,.06);
+        }
+        .mobile-log-card:last-child { border-bottom: none; }
+        .mobile-log-card:hover { box-shadow: inset 0 0 0 1px rgba(99,102,241,.12); }
+
+        /* ══════════════════════════════
+           AVATAR COLOURS
+        ══════════════════════════════ */
+        .av-create  { background:#ecfdf5;color:#059669; }
+        .av-approve { background:#eff6ff;color:#2563eb; }
+        .av-decline { background:#fef2f2;color:#dc2626; }
+        .av-claim   { background:#f3e8ff;color:#6b21a8; }
+        .av-print   { background:#f0f9ff;color:#0369a1; }
+        .av-default { background:#f1f5f9;color:#64748b; }
+
+        /* ══════════════════════════════
+           LEGEND
+        ══════════════════════════════ */
+        .legend-wrap { display: flex; flex-wrap: wrap; gap: 10px 16px; }
+        .legend-footer {
+            margin-top: 18px;
+            display: flex; flex-wrap: wrap; align-items: center;
+            justify-content: space-between; gap: 12px;
         }
 
-        body.dark .log-row:hover td {
-            background: rgba(99, 102, 241, .06) !important;
+        /* ══════════════════════════════
+           ICON & ACTION BUTTONS
+        ══════════════════════════════ */
+        .icon-btn {
+            width: 44px; height: 44px; background: var(--card);
+            border: 1px solid rgba(99,102,241,.12); border-radius: var(--r-sm);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-sub); cursor: pointer; transition: all .2s;
+            box-shadow: var(--shadow-sm); flex-shrink: 0;
         }
 
-        body.dark .mobile-log-card {
-            background: var(--card);
-            border-color: rgba(99, 102, 241, .08);
-        }
+        /* ══════════════════════════════
+           SHOW / HIDE HELPERS
+        ══════════════════════════════ */
+        @media(max-width:767px)  { .hidden-mobile  { display:none!important } }
+        @media(min-width:768px)  { .show-mobile    { display:none!important } }
 
+        /* ══════════════════════════════
+           DARK MODE — unified palette
+        ══════════════════════════════ */
+        body.dark .stat-card-log { background: var(--card); border-color: rgba(99,102,241,.12); }
+        body.dark .log-row:hover td { background: rgba(99,102,241,.06)!important; }
+        body.dark .mobile-log-card { background: var(--card); border-color: rgba(99,102,241,.08); }
         body.dark #searchInput,
-        body.dark #actionFilter {
-            background: var(--input-bg);
-            border-color: rgba(99, 102, 241, .18);
-            color: var(--text);
-        }
-
-        body.dark #searchInput::placeholder {
-            color: var(--text-sub);
-        }
-
-        body.dark #actionFilter option {
-            background: #0b1628;
-        }
-
-        body.dark .tooltip-text {
-            background: #1e3a5f;
-        }
-
-        body.dark .tooltip-text::after {
-            border-top-color: #1e3a5f;
-        }
-
-        body.dark .av-create {
-            background: rgba(5, 150, 105, .2);
-            color: #34d399;
-        }
-
-        body.dark .av-approve {
-            background: rgba(37, 99, 235, .2);
-            color: #60a5fa;
-        }
-
-        body.dark .av-decline {
-            background: rgba(220, 38, 38, .2);
-            color: #f87171;
-        }
-
-        body.dark .av-claim {
-            background: rgba(107, 33, 168, .25);
-            color: #c084fc;
-        }
-
-        body.dark .av-print {
-            background: rgba(3, 105, 161, .2);
-            color: #38bdf8;
-        }
-
-        body.dark .av-default {
-            background: rgba(100, 116, 139, .2);
-            color: #94a3b8;
-        }
-
-        body.dark #noResults {
-            color: var(--text-sub);
-        }
+        body.dark #actionFilter { background: var(--input-bg); border-color: rgba(99,102,241,.18); color: var(--text); }
+        body.dark #searchInput::placeholder { color: var(--text-sub); }
+        body.dark #actionFilter option { background: #0b1628; }
+        body.dark .tooltip-text { background: #1e3a5f; }
+        body.dark .tooltip-text::after { border-top-color: #1e3a5f; }
+        body.dark .av-create  { background:rgba(5,150,105,.2);  color:#34d399; }
+        body.dark .av-approve { background:rgba(37,99,235,.2);  color:#60a5fa; }
+        body.dark .av-decline { background:rgba(220,38,38,.2);  color:#f87171; }
+        body.dark .av-claim   { background:rgba(107,33,168,.25);color:#c084fc; }
+        body.dark .av-print   { background:rgba(3,105,161,.2);  color:#38bdf8; }
+        body.dark .av-default { background:rgba(100,116,139,.2);color:#94a3b8; }
+        body.dark .icon-btn   { background:#101e35; border-color:rgba(99,102,241,.18); color:#7fb3e8; }
+        body.dark .icon-btn:hover { background:rgba(99,102,241,.12); color:#a5b4fc; }
+        body.dark .page-header-left h2 { color:#e2eaf8; }
+        body.dark .page-header-left p { color:#4a6fa5; }
 
         @media print {
-
-            .l-sidebar,
-            .l-mobile-nav,
-            header button {
-                display: none !important;
-            }
-
-            .main-area {
-                margin: 0 !important;
-                padding: 1rem !important;
-            }
-
-            .mobile-cards {
-                display: none !important;
-            }
-
-            .desktop-table {
-                display: block !important;
-            }
+            .l-sidebar,.l-mobile-nav,header button { display:none!important; }
+            .main-area { margin:0!important; padding:1rem!important; }
+            .mobile-cards { display:none!important; }
+            .desktop-table { display:block!important; }
         }
     </style>
 </head>
 
 <body>
-
     <?php
     date_default_timezone_set('Asia/Manila');
     $page = 'activity-logs';
-
     include APPPATH . 'Views/partials/admin_layout.php';
 
-    $actionLabel = function (string $a): string {
-        return match ($a) {
-            'create'                              => 'Created',
-            'approve', 'approve_user_request'     => 'Approved',
-            'decline', 'decline_user_request'     => 'Declined',
-            'claim'                               => 'Claimed',
-            'print'                               => 'Print',
-            default                               => ucfirst(str_replace('_', ' ', $a)),
+    $actionLabel = function(string $a): string {
+        return match($a) {
+            'create'                          => 'Created',
+            'approve','approve_user_request'  => 'Approved',
+            'decline','decline_user_request'  => 'Declined',
+            'claim'                           => 'Claimed',
+            'print'                           => 'Print',
+            default                           => ucfirst(str_replace('_',' ',$a)),
         };
     };
-    $actionSentence = function (string $a): string {
-        return match ($a) {
-            'create'                              => 'Created reservation',
-            'approve', 'approve_user_request'     => 'Approved reservation',
-            'decline', 'decline_user_request'     => 'Declined reservation',
-            'claim'                               => 'Claimed e-ticket',
-            'print'                               => 'Logged print',
-            default                               => ucfirst(str_replace('_', ' ', $a)),
+    $actionSentence = function(string $a): string {
+        return match($a) {
+            'create'                          => 'Created reservation',
+            'approve','approve_user_request'  => 'Approved reservation',
+            'decline','decline_user_request'  => 'Declined reservation',
+            'claim'                           => 'Claimed e-ticket',
+            'print'                           => 'Logged print',
+            default                           => ucfirst(str_replace('_',' ',$a)),
         };
     };
-    $badgeClass = function (string $a): string {
-        return match ($a) {
-            'create'                              => 'badge-create',
-            'approve', 'approve_user_request'     => 'badge-approve',
-            'decline', 'decline_user_request'     => 'badge-decline',
-            'claim'                               => 'badge-claim',
-            'print'                               => 'badge-print',
-            default                               => 'badge-default',
+    $badgeClass = function(string $a): string {
+        return match($a) {
+            'create'                          => 'badge-create',
+            'approve','approve_user_request'  => 'badge-approve',
+            'decline','decline_user_request'  => 'badge-decline',
+            'claim'                           => 'badge-claim',
+            'print'                           => 'badge-print',
+            default                           => 'badge-default',
         };
     };
-    $avatarClass = function (string $a): string {
-        return match ($a) {
-            'create'                              => 'av-create',
-            'approve', 'approve_user_request'     => 'av-approve',
-            'decline', 'decline_user_request'     => 'av-decline',
-            'claim'                               => 'av-claim',
-            'print'                               => 'av-print',
-            default                               => 'av-default',
+    $avatarClass = function(string $a): string {
+        return match($a) {
+            'create'                          => 'av-create',
+            'approve','approve_user_request'  => 'av-approve',
+            'decline','decline_user_request'  => 'av-decline',
+            'claim'                           => 'av-claim',
+            'print'                           => 'av-print',
+            default                           => 'av-default',
         };
     };
     ?>
 
-    <!-- ════════ MAIN ════════ -->
     <main class="main-area">
 
-        <!-- Header -->
-        <header style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;margin-bottom:28px;gap:12px">
-            <div>
-                <p style="font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--text-sub);margin-bottom:4px">Administration</p>
-                <h2 style="font-size:1.75rem;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1.1">Activity Logs</h2>
-                <p style="font-size:.78rem;color:var(--text-sub);font-weight:500;margin-top:4px">Complete audit trail of all system actions.</p>
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-header-left">
+                <p class="eyebrow">Administration</p>
+                <h2>Activity Logs</h2>
+                <p class="sub">Complete audit trail of all system actions.</p>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap">
+            <div class="page-header-right">
                 <div onclick="adminToggleDark()" title="Toggle dark mode" class="icon-btn">
                     <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem"></i></span>
                 </div>
                 <button onclick="window.print()" class="action-btn-outline" style="gap:7px">
-                    <i class="fa-solid fa-print" style="font-size:.8rem"></i> Print Report
+                    <i class="fa-solid fa-print" style="font-size:.8rem"></i>
+                    <span class="hide-xs">Print Report</span>
                 </button>
             </div>
         </header>
 
-        <!-- Stat cards -->
-        <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:24px">
-            <div class="stat-card-log" style="border-bottom-color:#94a3b8">
-                <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:var(--text-sub);margin-bottom:4px">Total</p>
-                <p style="font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;font-family:var(--mono)"><?= count($logs) ?></p>
+        <!-- Stat Cards -->
+        <div class="stat-grid-logs">
+            <div class="stat-card-log stat-total" style="border-bottom-color:#94a3b8">
+                <p class="lbl" style="color:var(--text-sub)">Total</p>
+                <p class="num"><?= count($logs) ?></p>
             </div>
             <div class="stat-card-log" style="border-bottom-color:#10b981">
-                <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#10b981;margin-bottom:4px">Created</p>
-                <p style="font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;font-family:var(--mono)"><?= $createCount ?? 0 ?></p>
+                <p class="lbl" style="color:#10b981">Created</p>
+                <p class="num"><?= $createCount ?? 0 ?></p>
             </div>
             <div class="stat-card-log" style="border-bottom-color:#3b82f6">
-                <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#3b82f6;margin-bottom:4px">Approved</p>
-                <p style="font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;font-family:var(--mono)"><?= $approveCount ?? 0 ?></p>
+                <p class="lbl" style="color:#3b82f6">Approved</p>
+                <p class="num"><?= $approveCount ?? 0 ?></p>
             </div>
             <div class="stat-card-log" style="border-bottom-color:#ef4444">
-                <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#ef4444;margin-bottom:4px">Declined</p>
-                <p style="font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;font-family:var(--mono)"><?= $declineCount ?? 0 ?></p>
+                <p class="lbl" style="color:#ef4444">Declined</p>
+                <p class="num"><?= $declineCount ?? 0 ?></p>
             </div>
             <div class="stat-card-log" style="border-bottom-color:#a855f7">
-                <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#a855f7;margin-bottom:4px">Claimed</p>
-                <p style="font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;font-family:var(--mono)"><?= $claimCount ?? 0 ?></p>
+                <p class="lbl" style="color:#a855f7">Claimed</p>
+                <p class="num"><?= $claimCount ?? 0 ?></p>
             </div>
         </div>
 
         <!-- Table / Card container -->
         <div class="tbl-wrap">
 
-            <!-- Filters -->
-            <div style="padding:16px 20px;border-bottom:1px solid rgba(99,102,241,.07);background:rgba(99,102,241,.02);display:flex;flex-wrap:wrap;gap:10px">
-                <div class="search-wrap" style="flex:1;min-width:200px">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="search-wrap" style="flex:1;min-width:180px">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="searchInput" placeholder="Search user, action, details…" style="width:100%">
                 </div>
-                <select id="actionFilter" style="width:auto;min-width:160px;cursor:pointer">
+                <select id="actionFilter" style="cursor:pointer">
                     <option value="">All Actions</option>
                     <option value="create">Created</option>
                     <option value="approve">Approved</option>
@@ -518,25 +454,25 @@
                         <div class="mobile-log-card"
                             data-action="<?= htmlspecialchars($action) ?>"
                             data-search="<?= strtolower(htmlspecialchars("$name $action $details $resId")) ?>">
-                            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
                                 <div style="display:flex;align-items:center;gap:8px;min-width:0">
-                                    <div style="width:30px;height:30px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800" class="<?= $avatarClass($action) ?>">
+                                    <div style="width:32px;height:32px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800" class="<?= $avatarClass($action) ?>">
                                         <?= $initials ?>
                                     </div>
-                                    <span style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><?= htmlspecialchars($name) ?></span>
+                                    <span style="font-size:.84rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= htmlspecialchars($name) ?></span>
                                 </div>
                                 <span class="badge <?= $badgeClass($action) ?>" style="flex-shrink:0"><?= $actionLabel($action) ?></span>
                             </div>
-                            <p style="font-size:.82rem;color:var(--text-muted);font-weight:500">
+                            <p style="font-size:.82rem;color:var(--text-muted);font-weight:500;margin-bottom:4px">
                                 <?= $sentence ?>
                                 <?php if ($resId): ?>
                                     <strong style="color:var(--text)">#<?= htmlspecialchars($resId) ?></strong>
                                 <?php endif; ?>
                             </p>
                             <?php if (!empty($details)): ?>
-                                <p style="font-size:.72rem;color:var(--text-sub);margin-top:4px;line-height:1.5"><?= htmlspecialchars($details) ?></p>
+                                <p style="font-size:.72rem;color:var(--text-sub);margin-bottom:6px;line-height:1.5"><?= htmlspecialchars($details) ?></p>
                             <?php endif; ?>
-                            <p style="font-size:.62rem;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin-top:8px"><?= $dateStr ?> · <?= $timeStr ?></p>
+                            <p style="font-size:.62rem;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin-top:6px"><?= $dateStr ?> · <?= $timeStr ?></p>
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -547,19 +483,19 @@
                 <?php endif; ?>
             </div>
 
-            <!-- No results state -->
+            <!-- No results -->
             <div id="noResults" style="display:none;padding:48px 24px;text-align:center">
                 <i class="fa-solid fa-filter-circle-xmark" style="font-size:1.75rem;color:var(--text-faint);display:block;margin-bottom:10px"></i>
                 <p style="font-weight:700;color:var(--text-sub)">No logs match your search.</p>
             </div>
 
-            <div style="padding:10px 20px;border-top:1px solid rgba(99,102,241,.07);background:rgba(99,102,241,.02)">
+            <div style="padding:10px 16px;border-top:1px solid rgba(99,102,241,.07);background:rgba(99,102,241,.02)">
                 <p id="resultCount" style="font-size:.72rem;font-weight:700;color:var(--text-sub)"></p>
             </div>
         </div>
 
         <!-- Footer legend -->
-        <div style="margin-top:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+        <div class="legend-footer">
             <div class="legend-wrap">
                 <span style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--text-sub)"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;flex-shrink:0"></span>Created</span>
                 <span style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--text-sub)"><span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0"></span>Approved</span>
@@ -572,35 +508,20 @@
 
     </main>
 
-    <style>
-        @media(max-width:767px) {
-            .hidden-mobile {
-                display: none !important
-            }
-        }
-
-        @media(min-width:768px) {
-            .show-mobile {
-                display: none !important
-            }
-        }
-    </style>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('searchInput');
+            const searchInput  = document.getElementById('searchInput');
             const actionFilter = document.getElementById('actionFilter');
-            const noResults = document.getElementById('noResults');
-            const countEl = document.getElementById('resultCount');
-
-            const tableRows = Array.from(document.querySelectorAll('.log-row'));
-            const mobileCards = Array.from(document.querySelectorAll('.mobile-log-card'));
-            const total = tableRows.length || mobileCards.length;
+            const noResults    = document.getElementById('noResults');
+            const countEl     = document.getElementById('resultCount');
+            const tableRows    = Array.from(document.querySelectorAll('.log-row'));
+            const mobileCards  = Array.from(document.querySelectorAll('.mobile-log-card'));
+            const total        = tableRows.length || mobileCards.length;
 
             function filterAll() {
-                const q = searchInput.value.toLowerCase().trim();
+                const q      = searchInput.value.toLowerCase().trim();
                 const action = actionFilter.value.toLowerCase();
-                let visible = 0;
+                let visible  = 0;
 
                 tableRows.forEach(row => {
                     const matchAction = !action || row.dataset.action === action ||
@@ -620,9 +541,9 @@
                     card.style.display = (matchAction && matchSearch) ? '' : 'none';
                 });
 
-                const count = tableRows.length ?
-                    visible :
-                    mobileCards.filter(c => c.style.display !== 'none').length;
+                const count = tableRows.length
+                    ? visible
+                    : mobileCards.filter(c => c.style.display !== 'none').length;
                 noResults.style.display = (count === 0 && total > 0) ? 'block' : 'none';
                 countEl.textContent = `Showing ${count} of ${total} log${total !== 1 ? 's' : ''}`;
             }
@@ -633,5 +554,4 @@
         });
     </script>
 </body>
-
 </html>

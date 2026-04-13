@@ -54,6 +54,7 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
                 opacity: .5
             }
         }
+
         .dur-bar {
             height: 4px;
             border-radius: 2px;
@@ -217,6 +218,226 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
         body.dark .date-input:focus {
             background: var(--card);
             border-color: #818cf8;
+        }
+
+        /* ══════════════════════════════════════════════
+           PATCH: STAT GRID — 6 columns responsive
+           Desktop: 3×2 | Mobile: 2×3
+        ══════════════════════════════════════════════ */
+        .stats-grid[style*="repeat(6"] {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+
+        @media(max-width:639px) {
+            .stats-grid[style*="repeat(6"] {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 8px !important;
+            }
+
+            .stat-card {
+                padding: 11px 12px !important;
+            }
+
+            .stat-num {
+                font-size: 1.35rem !important;
+            }
+
+            .stat-lbl {
+                font-size: .56rem !important;
+            }
+        }
+
+        /* ══════════════════════════════════════════════
+           PATCH: PAGE HEADER — wrap on mobile
+        ══════════════════════════════════════════════ */
+        .topbar-right {
+            flex-wrap: wrap;
+        }
+
+        @media(max-width:480px) {
+            .page-title {
+                font-size: 1.3rem !important;
+            }
+
+            .topbar-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .btn-export span.hide-xs {
+                display: none;
+            }
+        }
+
+        /* ══════════════════════════════════════════════
+           PATCH: FILTER BAR — stack on mobile
+        ══════════════════════════════════════════════ */
+        @media(max-width:639px) {
+            .card > div[style*="flex-wrap:wrap"] {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+
+            .card > div > div[style*="width:160px"] {
+                width: 100% !important;
+            }
+
+            .card > div > .reset-btn {
+                width: 100% !important;
+            }
+        }
+
+        /* ══════════════════════════════════════════════
+           PATCH: RES CARDS — better mobile spacing
+        ══════════════════════════════════════════════ */
+        @media(max-width:639px) {
+            .res-card {
+                padding: 12px 14px !important;
+                border-radius: 14px !important;
+            }
+        }
+
+        /* ══════════════════════════════════════════════
+           PATCH: DARK MODE — unified palette
+        ══════════════════════════════════════════════ */
+        /* Stat cards */
+        body.dark .stat-card {
+            background: #0b1628 !important;
+            border-color: rgba(99, 102, 241, .15) !important;
+        }
+
+        /* Filter card */
+        body.dark .card {
+            background: #0b1628 !important;
+            border-color: rgba(99, 102, 241, .1) !important;
+        }
+
+        /* Search input */
+        body.dark .search-input {
+            background: #101e35 !important;
+            border-color: rgba(99, 102, 241, .18) !important;
+            color: #e2eaf8 !important;
+        }
+
+        body.dark .search-input::placeholder {
+            color: #4a6fa5 !important;
+        }
+
+        /* Date input */
+        body.dark #dateInput {
+            background: #101e35 !important;
+            border-color: rgba(99, 102, 241, .18) !important;
+            color: #e2eaf8 !important;
+            color-scheme: dark;
+        }
+
+        /* Res cards */
+        body.dark .res-card {
+            background: #0b1628 !important;
+            border-color: rgba(99, 102, 241, .1) !important;
+        }
+
+        body.dark .res-card:hover {
+            border-color: var(--indigo) !important;
+        }
+
+        /* Modal */
+        body.dark .modal-box {
+            background: #0b1628 !important;
+        }
+
+        body.dark .modal-box::-webkit-scrollbar-thumb {
+            background: #1e3a5f;
+        }
+
+        body.dark #dPrintLogForm {
+            background: #060e1e !important;
+            border-color: rgba(99, 102, 241, .12) !important;
+        }
+
+        body.dark #dPrintLogForm input[type=number] {
+            background: #101e35 !important;
+            border-color: rgba(99, 102, 241, .18) !important;
+            color: #e2eaf8 !important;
+        }
+
+        body.dark #dPrintLog {
+            background: #060e1e !important;
+            border-color: rgba(99, 102, 241, .1) !important;
+        }
+
+        body.dark .unclaimed-banner {
+            background: rgba(251, 146, 60, .1) !important;
+            border-color: rgba(251, 146, 60, .3) !important;
+        }
+
+        body.dark .ticket-section {
+            background: rgba(99, 102, 241, .08) !important;
+            border-color: rgba(99, 102, 241, .3) !important;
+        }
+
+        /* Icon button */
+        body.dark .icon-btn {
+            background: #101e35 !important;
+            border-color: rgba(99, 102, 241, .18) !important;
+            color: #7fb3e8 !important;
+        }
+
+        body.dark .icon-btn:hover {
+            background: rgba(99, 102, 241, .12) !important;
+            color: #a5b4fc !important;
+        }
+
+        /* Table wrapper */
+        body.dark .tbl-wrap {
+            background: #0b1628 !important;
+            border-color: rgba(99, 102, 241, .1) !important;
+        }
+
+        body.dark .res-row:hover td {
+            background: rgba(99, 102, 241, .06) !important;
+        }
+
+        /* Export button dark */
+        body.dark .btn-export {
+            box-shadow: 0 4px 12px rgba(55, 48, 163, .4) !important;
+        }
+
+        /* Page header text */
+        body.dark .page-eyebrow {
+            color: #4a6fa5 !important;
+        }
+
+        body.dark .page-title {
+            color: #e2eaf8 !important;
+        }
+
+        body.dark .page-sub {
+            color: #4a6fa5 !important;
+        }
+
+        /* Flash messages */
+        body.dark .flash-ok {
+            background: rgba(55, 48, 163, .2) !important;
+            border-color: rgba(99, 102, 241, .3) !important;
+            color: #a5b4fc !important;
+        }
+
+        body.dark .flash-err {
+            background: rgba(220, 38, 38, .1) !important;
+            border-color: rgba(248, 113, 113, .3) !important;
+            color: #f87171 !important;
+        }
+
+        /* Auto-refresh indicator */
+        body.dark #autoRefreshIndicator {
+            background: rgba(11, 22, 40, .95) !important;
+        }
+
+        /* Result count */
+        body.dark #resultCount,
+        body.dark #tableFooter {
+            color: #4a6fa5 !important;
         }
     </style>
 </head>
