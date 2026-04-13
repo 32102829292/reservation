@@ -1,6 +1,9 @@
 <?php
-$page    = $page    ?? 'reservations';
-$sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
+date_default_timezone_set('Asia/Manila');
+$page    = $page ?? 'new-reservation';
+$sk_name = session()->get('name') ?? 'SK Officer';
+$pendingUserCount = $pendingUserCount ?? 0;
+$avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,1950 +11,899 @@ $sk_name = session()->get('name') ?? session()->get('username') ?? 'SK Officer';
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>All Reservations | SK</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-    <link rel="icon" type="image/png" href="/assets/img/icon-192.png">
+    <title>New Reservation | SK</title>
     <link rel="stylesheet" href="<?= base_url('css/sk_app.css') ?>">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
-    <meta name="csrf-token" content="<?= csrf_hash() ?>">
-    <meta name="csrf-name" content="<?= csrf_token() ?>">
+
     <style>
-        body {
-            display: flex;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-        }
+        /* ══════════════════════════════
+           BASE LAYOUT
+        ══════════════════════════════ */
+        .main-area { padding: 24px 20px; }
+        @media(max-width:639px) { .main-area { padding: 16px 14px; } }
 
-        /* ── Stat cards ── */
-        .stat-card {
-            background: var(--card);
-            border: 1px solid rgba(99, 102, 241, .08);
-            border-radius: var(--r-lg);
-            padding: 16px 18px;
-            border-left-width: 4px;
-            box-shadow: var(--shadow-sm);
-            transition: transform var(--ease), box-shadow var(--ease);
-            cursor: pointer;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .stat-card.ring {
-            box-shadow: 0 0 0 2px var(--indigo);
-        }
-
-        /* ── Quick tabs ── */
-        .qtab {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: .4rem .9rem;
-            border-radius: var(--r-sm);
-            font-size: .78rem;
-            font-weight: 700;
-            transition: all var(--ease);
-            cursor: pointer;
-            border: 1px solid #e2e8f0;
-            white-space: nowrap;
-            color: #64748b;
-            background: white;
-        }
-
-        .qtab:hover {
-            border-color: var(--indigo);
-            color: var(--indigo);
-        }
-
-        .qtab.active {
-            background: var(--indigo);
-            color: white;
-            border-color: var(--indigo);
-            box-shadow: 0 4px 12px -2px rgba(55, 48, 163, .3);
-        }
-
-        /* ── Search field ── */
-        .search-field {
-            background: white;
-            border: 1px solid rgba(99, 102, 241, .12);
-            border-radius: var(--r-sm);
-            padding: .7rem 1rem .7rem 2.5rem;
-            font-size: .875rem;
-            font-family: var(--font);
-            color: #0f172a;
-            transition: all .2s;
-            width: 100%;
-            outline: none;
-        }
-
-        .search-field:focus {
-            border-color: #818cf8;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
-        }
-
-        /* ── Table ── */
-        .table-wrap {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 720px;
-        }
-
-        thead th {
-            background: #f8fafc;
-            font-weight: 800;
-            text-transform: uppercase;
-            font-size: .6rem;
-            letter-spacing: .12em;
-            color: #94a3b8;
-            padding: .85rem 1rem;
-            border-bottom: 1px solid #e2e8f0;
-            white-space: nowrap;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        thead th:hover {
-            color: var(--indigo);
-        }
-
-        thead th .sort-icon {
-            opacity: .35;
-            margin-left: 4px;
-            font-size: .6rem;
-        }
-
-        thead th.sorted .sort-icon {
-            opacity: 1;
-            color: var(--indigo);
-        }
-
-        td {
-            padding: .875rem 1rem;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
-        }
-
-        tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        tbody tr {
-            transition: background .12s;
-            cursor: pointer;
-        }
-
-        tbody tr:hover td {
-            background: #eef2ff;
-        }
-
-        /* ── Mobile cards ── */
-        .res-card {
-            background: var(--card);
-            border-radius: var(--r-lg);
-            border: 1px solid rgba(99, 102, 241, .08);
-            padding: 1rem 1.1rem;
-            cursor: pointer;
-            transition: all .18s;
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .res-card:hover {
-            border-color: var(--indigo-border);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
-        }
-
-        .res-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            border-radius: 0 4px 4px 0;
-        }
-
-        .res-card[data-status="pending"]::before {
-            background: #fbbf24;
-        }
-
-        .res-card[data-status="approved"]::before {
-            background: #6366f1;
-        }
-
-        .res-card[data-status="claimed"]::before {
-            background: #a855f7;
-        }
-
-        .res-card[data-status="declined"]::before,
-        .res-card[data-status="canceled"]::before {
-            background: #ef4444;
-        }
-
-        .res-card[data-status="unclaimed"]::before {
-            background: #fb923c;
-        }
-
-        .res-card[data-status="expired"]::before {
-            background: #94a3b8;
-        }
-
-        /* ── Badges ── */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: .28rem .7rem;
-            border-radius: 9px;
-            font-size: .62rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            white-space: nowrap;
-        }
-
-        .badge-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-approved {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-
-        .badge-declined,
-        .badge-canceled {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .badge-claimed {
-            background: #f3e8ff;
-            color: #6b21a8;
-        }
-
-        .badge-expired {
-            background: #f1f5f9;
-            color: #64748b;
-        }
-
-        .badge-unclaimed {
-            background: #fff7ed;
-            color: #c2410c;
-            border: 1px dashed #fdba74;
-        }
-
-        /* ── Action buttons ── */
-        .btn-approve {
-            background: #e0e7ff;
-            color: #3730a3;
-            border: none;
-            border-radius: 9px;
-            padding: .45rem .85rem;
-            font-size: .72rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all .18s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-family: var(--font);
-        }
-
-        .btn-approve:hover {
-            background: var(--indigo);
-            color: white;
-        }
-
-        .btn-decline {
-            background: #fee2e2;
-            color: #991b1b;
-            border: none;
-            border-radius: 9px;
-            padding: .45rem .6rem;
-            font-size: .72rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all .18s;
-            display: inline-flex;
-            align-items: center;
-            font-family: var(--font);
-        }
-
-        .btn-decline:hover {
-            background: #ef4444;
-            color: white;
-        }
-
-        /* ── Print pills ── */
-        .print-pill-yes {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: .18rem .55rem;
-            border-radius: 999px;
-            font-size: .62rem;
-            font-weight: 800;
-            background: #e0e7ff;
-            color: #3730a3;
-            white-space: nowrap;
-        }
-
-        .print-pill-no {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: .18rem .55rem;
-            border-radius: 999px;
-            font-size: .62rem;
-            font-weight: 800;
-            background: #f1f5f9;
-            color: #64748b;
-            white-space: nowrap;
-        }
-
-        /* ── Overlays & Modals ── */
-        .overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .overlay.open {
-            display: flex;
-        }
-
-        .overlay-bg {
-            position: absolute;
-            inset: 0;
-            background: rgba(15, 23, 42, .55);
-            backdrop-filter: blur(6px);
-        }
-
-        /* FIX: modal-box base */
-        .modal-box {
-            position: relative;
-            margin: auto;
-            background: white;
-            border-radius: var(--r-xl);
-            width: 94%;
-            max-width: 520px;
-            max-height: 92vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-            animation: popIn .22s cubic-bezier(.34, 1.56, .64, 1) both;
-        }
-
-        /* FIX: sm modal needs overflow visible so icon isn't clipped, plus extra top padding */
-        .modal-box.sm {
-            max-width: 380px;
-            overflow: visible;
-        }
-
-        .modal-box.sm .modal-inner {
-            background: white;
-            border-radius: var(--r-xl);
-            overflow: hidden;
-        }
-
-        .sheet-handle {
-            display: none;
-            width: 40px;
-            height: 4px;
-            background: #e2e8f0;
-            border-radius: 999px;
-            margin: 10px auto 0;
-        }
-
-        @media(max-width:639px) {
-            .overlay#detailModal {
-                align-items: flex-end;
-            }
-
-            .overlay#detailModal .modal-box {
-                margin: 0;
-                width: 100%;
-                max-width: 100%;
-                border-radius: 28px 28px 0 0;
-                max-height: 92vh;
-                animation: slideUp .28s cubic-bezier(.34, 1.2, .64, 1) both;
-            }
-
-            .sheet-handle {
-                display: block;
-            }
-        }
-
-        @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: scale(.92) translateY(16px);
-            }
-
-            to {
-                opacity: 1;
-                transform: none;
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(60px);
-            }
-
-            to {
-                opacity: 1;
-                transform: none;
-            }
-        }
-
-        /* ── Detail rows ── */
-        .drow {
+        /* ══════════════════════════════
+           PAGE HEADER — matches admin
+        ══════════════════════════════ */
+        .page-header {
             display: flex;
             align-items: flex-start;
-            gap: 12px;
-            padding: .7rem 0;
-            border-bottom: 1px solid #f1f5f9;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
         }
-
-        .drow:last-child {
-            border-bottom: none;
-        }
-
-        .dicon {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            background: var(--indigo-light);
-            color: var(--indigo);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .8rem;
-            flex-shrink: 0;
-        }
-
-        .dlabel {
-            font-size: .6rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: #94a3b8;
-            margin-bottom: 3px;
-        }
-
-        .dvalue {
-            font-size: .88rem;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        /* ── Confirm buttons ── */
-        .btn-confirm-approve {
-            background: var(--indigo);
-            color: white;
-            border: none;
-            border-radius: var(--r-sm);
-            padding: .85rem;
-            font-size: .875rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all .18s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            font-family: var(--font);
-            flex: 1;
-        }
-
-        .btn-confirm-approve:hover:not(:disabled) {
-            background: #312e81;
-        }
-
-        .btn-confirm-decline {
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: var(--r-sm);
-            padding: .85rem;
-            font-size: .875rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all .18s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            font-family: var(--font);
-            flex: 1;
-        }
-
-        .btn-confirm-decline:hover:not(:disabled) {
-            background: #dc2626;
-        }
-
-        .btn-cancel {
-            background: #f1f5f9;
-            color: #475569;
-            border: none;
-            border-radius: var(--r-sm);
-            padding: .85rem;
-            font-size: .875rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all .18s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            font-family: var(--font);
-            flex: 1;
-        }
-
-        .btn-cancel:hover {
-            background: #e2e8f0;
-        }
-
-        /* FIX: modal close button */
-        .modal-close-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 12px;
-            background: #f1f5f9;
-            border: none;
-            color: #64748b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-            margin-top: 2px;
-            font-size: .85rem;
-            transition: background .15s, color .15s;
-        }
-
-        .modal-close-btn:hover {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
-
-        /* ── Ticket & banners ── */
-        .ticket-section {
-            border: 2px dashed var(--indigo-border);
-            border-radius: var(--r-lg);
-            padding: 1.5rem;
-            background: var(--indigo-light);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .unclaimed-banner {
-            background: #fff7ed;
-            border: 1.5px dashed #fdba74;
-            border-radius: var(--r-md);
-            padding: .75rem 1rem;
+        .topbar-right {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin: 0 1.75rem 1rem;
-        }
-
-        .unclaimed-banner .ub-icon {
-            width: 32px;
-            height: 32px;
-            background: #fed7aa;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #c2410c;
-            font-size: .8rem;
+            flex-wrap: wrap;
             flex-shrink: 0;
         }
-
-        /* ── Print log form ── */
-        #dPrintLogForm {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: var(--r-lg);
-            padding: 1rem 1.25rem;
-            margin: 0 1.75rem 1rem;
-        }
-
-        #dPrintLogForm label {
-            font-size: .6rem;
-            font-weight: 800;
+        .page-eyebrow {
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: .2em;
             text-transform: uppercase;
-            letter-spacing: .08em;
-            color: #94a3b8;
-            display: block;
-            margin-bottom: 6px;
+            color: var(--text-sub);
+            margin-bottom: 3px;
         }
-
-        #dPrintLogForm input[type=number] {
-            width: 100%;
-            border: 1px solid #e2e8f0;
-            border-radius: 9px;
-            padding: .55rem .8rem;
-            font-size: .875rem;
-            font-family: var(--font);
-            color: #0f172a;
-        }
-
-        #dPrintLogForm input[type=number]:focus {
-            outline: none;
-            border-color: #818cf8;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
-        }
-
-        .btn-save-print {
-            background: var(--indigo);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: .6rem 1.1rem;
-            font-size: .78rem;
+        .page-title {
+            font-size: 1.6rem;
             font-weight: 800;
-            cursor: pointer;
-            transition: all .18s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: var(--font);
+            color: var(--text);
+            letter-spacing: -.04em;
+            line-height: 1.1;
+        }
+        .page-sub {
+            font-size: .78rem;
+            color: var(--text-sub);
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        @media(max-width:480px) {
+            .page-title { font-size: 1.3rem !important; }
+            .topbar-right { width: 100%; justify-content: flex-end; }
+        }
+
+        /* ══════════════════════════════
+           ICON BTN & BACK BTN
+        ══════════════════════════════ */
+        .icon-btn {
+            width: 44px; height: 44px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-sub); cursor: pointer;
+            transition: all var(--ease); box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+        .icon-btn:hover { background: var(--indigo-light); border-color: var(--indigo-border); color: var(--indigo); }
+
+        .back-btn {
+            display: flex; align-items: center; gap: 7px;
+            padding: 10px 16px; background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            font-size: .82rem; font-weight: 700; color: var(--text-muted);
+            text-decoration: none; transition: all var(--ease); box-shadow: var(--shadow-sm);
             white-space: nowrap;
         }
+        .back-btn:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-light); }
 
-        .btn-save-print:hover:not(:disabled) {
-            background: #312e81;
-        }
-
-        .btn-save-print:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
-
-        #printSaveMsg {
-            font-size: .72rem;
-            font-weight: 700;
-            margin-top: 6px;
-            min-height: 18px;
-        }
-
-        /* ── Empty states ── */
-        .empty-state {
-            padding: 5rem 2rem;
-            text-align: center;
-        }
-
-        .card-empty {
-            padding: 3rem 1.5rem;
-            text-align: center;
+        /* ══════════════════════════════
+           FORM CARD — matches .tbl-wrap / .card pattern
+        ══════════════════════════════ */
+        .form-card {
             background: var(--card);
             border-radius: var(--r-lg);
-            border: 1px dashed #e2e8f0;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            padding: 28px 32px;
+            max-width: 780px;
+            margin: 0 auto;
         }
+        @media(max-width:639px) { .form-card { padding: 18px 16px; } }
 
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-
-            to {
-                opacity: 1;
-                transform: none;
-            }
-        }
-
-        .fade-up {
-            animation: fadeUp .35s ease both;
-        }
-
-        /* ── Auto-refresh indicator ── */
-        #autoRefreshIndicator {
-            position: fixed;
-            bottom: calc(90px + env(safe-area-inset-bottom, 16px));
-            right: 16px;
-            background: rgba(15, 23, 42, .88);
-            backdrop-filter: blur(8px);
-            color: white;
-            font-family: var(--font);
-            font-size: .68rem;
-            font-weight: 700;
-            padding: 6px 12px;
-            border-radius: 999px;
-            z-index: 90;
+        /* ══════════════════════════════
+           SECTION COMPONENTS
+        ══════════════════════════════ */
+        .section-head {
             display: flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: var(--shadow-md);
+            gap: 10px;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .section-icon {
+            width: 36px; height: 36px;
+            background: var(--indigo-light);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .section-title { font-size: .9rem; font-weight: 700; color: var(--text); }
+        .divider { border: none; border-top: 1px solid var(--border-subtle); margin: 20px 0; }
+
+        /* ══════════════════════════════
+           FIELD GRIDS
+        ══════════════════════════════ */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+        @media(max-width:639px) {
+            .grid-2 { grid-template-columns: 1fr; gap: 12px; }
+            .grid-3 { grid-template-columns: 1fr; gap: 12px; }
+        }
+
+        /* ══════════════════════════════
+           TYPE TOGGLE — matches admin filter tabs aesthetic
+        ══════════════════════════════ */
+        .type-toggle {
+            display: flex;
+            background: var(--input-bg, #f1f5f9);
+            padding: 5px;
+            border-radius: var(--r-md);
+            gap: 4px;
+        }
+        .type-btn {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: var(--r-sm);
             cursor: pointer;
+            font-weight: 700;
+            font-size: .82rem;
+            transition: all var(--ease);
+            color: var(--text-sub);
+            border: none;
+            background: transparent;
+            font-family: var(--font);
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px;
+        }
+        .type-btn.active { background: var(--indigo); color: white; box-shadow: 0 4px 12px rgba(55,48,163,.25); }
+
+        /* ══════════════════════════════
+           AUTOCOMPLETE
+        ══════════════════════════════ */
+        .autocomplete-wrap { position: relative; }
+        .autocomplete-list {
+            position: absolute; z-index: 50;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            box-shadow: var(--shadow-lg);
+            max-height: 220px; overflow-y: auto;
+            width: 100%; top: calc(100% + 4px); left: 0;
+        }
+        .autocomplete-item { padding: 12px 16px; cursor: pointer; font-size: .87rem; transition: background .15s; font-weight: 500; color: var(--text); }
+        .autocomplete-item:hover { background: var(--indigo-light); color: var(--indigo); }
+        .autocomplete-item .sub { font-size: .72rem; color: var(--text-sub); margin-top: 2px; }
+
+        /* ══════════════════════════════
+           PC SECTION
+        ══════════════════════════════ */
+        .pc-section {
+            background: var(--indigo-light);
+            border: 1px solid var(--indigo-border);
+            border-radius: var(--r-md);
+            padding: 18px;
+        }
+        .pc-btn {
+            padding: 9px 12px;
+            border-radius: 9px; font-size: .75rem; font-weight: 700;
+            border: 1px solid var(--border);
+            background: var(--card); color: var(--text-muted);
+            cursor: pointer; transition: all var(--ease);
+        }
+        .pc-btn:hover { border-color: var(--indigo); color: var(--indigo); }
+        .pc-btn.selected { background: var(--indigo); color: white; border-color: var(--indigo); }
+
+        /* ══════════════════════════════
+           SUBMIT BUTTON — matches btn-export / btn-confirm-approve
+        ══════════════════════════════ */
+        .submit-btn {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; width: 100%; padding: 14px;
+            background: var(--indigo); color: white;
+            border-radius: var(--r-sm);
+            font-size: .9rem; font-weight: 700;
+            border: none; cursor: pointer; font-family: var(--font);
+            transition: all var(--ease);
+            box-shadow: 0 4px 12px rgba(55,48,163,.28);
+        }
+        .submit-btn:hover { background: #312e81; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(55,48,163,.35); }
+
+        /* ══════════════════════════════
+           FLASH MESSAGES — matches admin
+        ══════════════════════════════ */
+        .flash-ok {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 16px; padding: 13px 18px;
+            background: var(--indigo-light); border: 1px solid var(--indigo-border);
+            color: var(--indigo); font-weight: 600; border-radius: var(--r-md); font-size: .875rem;
+        }
+        .flash-err {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 16px; padding: 13px 18px;
+            background: #fef2f2; border: 1px solid #fecaca;
+            color: #dc2626; font-weight: 600; border-radius: var(--r-md); font-size: .875rem;
         }
 
-        /* ── Responsive show/hide ── */
-        @media (min-width: 768px) {
-            #mobileCardList {
-                display: none !important;
+        /* ══════════════════════════════
+           CONFIRM MODAL — matches admin overlay/modal-box pattern
+        ══════════════════════════════ */
+        .overlay {
+            display: none; position: fixed; inset: 0; z-index: 300;
+            align-items: center; justify-content: center;
+        }
+        .overlay.open { display: flex; animation: fadeIn .15s ease; }
+        .overlay-bg {
+            position: absolute; inset: 0;
+            background: rgba(15,23,42,.55); backdrop-filter: blur(6px);
+        }
+        .modal-box {
+            position: relative; margin: auto; background: var(--card);
+            border-radius: 28px; width: 94%; max-width: 480px;
+            max-height: 92vh; overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,.35);
+            animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        @media(max-width:639px) {
+            .overlay#confirmModal { align-items: flex-end !important; }
+            .overlay#confirmModal .modal-box {
+                margin: 0; width: 100%; max-width: 100%;
+                border-radius: 28px 28px 0 0; max-height: 92vh;
+                animation: sheetUp .28s cubic-bezier(.34,1.2,.64,1) both;
             }
+        }
+        .modal-box::-webkit-scrollbar { width: 4px; }
+        .modal-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .sheet-handle { display: none; width: 36px; height: 4px; background: var(--border); border-radius: 999px; margin: 12px auto 0; }
+        @media(max-width:639px) { .sheet-handle { display: block; } }
 
-            #mobileEmpty {
-                display: none !important;
-            }
+        /* modal rows — matches admin .drow */
+        .mrow {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 9px 0; border-bottom: 1px solid var(--border-subtle); gap: 12px;
+        }
+        .mrow:last-child { border-bottom: none; }
+        .mrow-label { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--text-sub); flex-shrink: 0; padding-top: 1px; }
+        .mrow-value { font-weight: 600; color: var(--text); font-size: .83rem; text-align: right; word-break: break-word; }
+
+        /* modal action buttons — matches admin */
+        .btn-cancel {
+            flex: 1; padding: 12px; background: var(--input-bg);
+            border-radius: var(--r-sm); font-weight: 700; color: var(--text-muted);
+            border: 1px solid var(--border); cursor: pointer; font-size: .82rem; font-family: var(--font);
+            transition: all var(--ease);
+        }
+        .btn-cancel:hover { background: var(--indigo-light); border-color: var(--indigo); color: var(--indigo); }
+        .btn-confirm {
+            flex: 2; padding: 12px; background: var(--indigo); color: white;
+            border-radius: var(--r-sm); font-weight: 700; border: none; cursor: pointer;
+            font-size: .82rem; font-family: var(--font);
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            box-shadow: 0 4px 12px rgba(55,48,163,.28); transition: all var(--ease);
+        }
+        .btn-confirm:hover { background: #312e81; }
+        .btn-confirm:disabled { opacity: .7; cursor: not-allowed; }
+
+        /* ticket section inside modal */
+        .ticket-section {
+            border: 2px dashed var(--indigo-border);
+            border-radius: 20px; padding: 20px;
+            background: var(--indigo-light);
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            margin: 0 24px 14px;
         }
 
-        @media (max-width: 767px) {
-            #desktopTableWrap {
-                display: none !important;
-            }
+        /* ══════════════════════════════
+           CUSTOM DATE / TIME PICKERS
+        ══════════════════════════════ */
+        #resDate, #startTime, #endTime { display: none !important; }
+
+        .dt-trigger {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; width: 100%; padding: 10px 13px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--r-sm); font-family: var(--font);
+            font-size: .87rem; font-weight: 500; color: var(--text-sub);
+            cursor: pointer; transition: border .2s, box-shadow .2s;
+            user-select: none; -webkit-user-select: none;
+        }
+        .dt-trigger.has-value { color: var(--text); }
+        .dt-trigger:hover { border-color: var(--indigo-border); }
+        .dt-trigger.open { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+
+        .dt-drop { position: absolute; top: calc(100%+6px); left: 0; z-index: 9999; border-radius: 14px; animation: dtDrop .15s cubic-bezier(.4,0,.2,1); }
+        .dt-drop.cal { width: 288px; padding: 18px 16px 14px; }
+        .dt-drop.tim { width: 232px; padding: 16px 14px 14px; }
+        body:not(.dark) .dt-drop { background:#fff; border:1px solid rgba(99,102,241,.18); box-shadow:0 20px 50px rgba(15,23,42,.18); }
+        body.dark .dt-drop { background:#0e1828; border:1px solid rgba(99,102,241,.22); box-shadow:0 20px 60px rgba(0,0,0,.65); }
+        @media(max-width:639px) {
+            .dt-drop.cal { width: calc(100vw - 32px) !important; max-width: 320px; }
+            .dt-drop.tim { width: 220px; }
         }
 
-        /* ── Dark mode overrides ── */
-        body.dark .qtab {
-            background: #0b1628 !important;
-            border-color: rgba(99, 102, 241, .1) !important;
-            color: #7fb3e8 !important;
-        }
+        .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+        .cal-month-label { font-size:.88rem; font-weight:700; cursor:pointer; padding:4px 8px; border-radius:7px; transition:background .15s; color:var(--text); }
+        .cal-month-label:hover { background: var(--indigo-light); }
+        .cal-nav-btn { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.75rem; transition:all .15s; background: var(--input-bg); border:1px solid var(--border); color:var(--text-sub); }
+        .cal-nav-btn:hover { border-color:var(--indigo); color:var(--indigo); background:var(--indigo-light); }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+        .cal-dow { font-size:.6rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; text-align:center; padding:3px 0 9px; color:var(--text-sub); }
+        .cal-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:.8rem; font-weight:500; cursor:pointer; transition:all .12s; border:1px solid transparent; color:var(--text-muted); }
+        .cal-day:hover:not(.cal-other):not(.cal-selected) { background: var(--indigo-light); color:var(--indigo); border-color:var(--indigo-border); }
+        .cal-day.cal-other { pointer-events:none; color:var(--border); }
+        .cal-day.cal-today { color:var(--indigo); font-weight:700; }
+        .cal-day.cal-selected { background:var(--indigo)!important; color:#fff!important; font-weight:700; border-color:var(--indigo)!important; box-shadow:0 2px 10px rgba(99,102,241,.4); }
+        .cal-footer { display:flex; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--border-subtle); }
+        .cal-foot-btn { font-size:.72rem; font-weight:700; cursor:pointer; padding:5px 9px; border-radius:7px; transition:all .15s; color:var(--text-sub); }
+        .cal-foot-btn:hover { color:var(--indigo); background:var(--indigo-light); }
+        .cal-foot-btn.today { color:var(--indigo); }
 
-        body.dark .qtab.active {
-            background: var(--indigo) !important;
-            color: white !important;
-        }
+        .tim-title { font-size:.65rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; text-align:center; margin-bottom:12px; color:var(--text-sub); }
+        .tim-cols { display:flex; align-items:flex-start; gap:4px; }
+        .tim-col { flex:1; display:flex; flex-direction:column; gap:2px; max-height:192px; overflow-y:auto; scrollbar-width:thin; scrollbar-color: var(--border) transparent; }
+        .tim-col::-webkit-scrollbar { width:3px; }
+        .tim-col::-webkit-scrollbar-thumb { background: var(--border); border-radius:4px; }
+        .tim-item { padding:7px 6px; border-radius:7px; font-size:.81rem; font-weight:500; text-align:center; cursor:pointer; transition:all .1s; border:1px solid transparent; color:var(--text-sub); }
+        .tim-item:hover:not(.sel) { background:var(--indigo-light); color:var(--indigo); }
+        .tim-item.sel { background:var(--indigo)!important; color:#fff!important; font-weight:700; box-shadow:0 2px 8px rgba(99,102,241,.4); }
+        .tim-sep { font-size:1rem; font-weight:700; padding:6px 0; align-self:flex-start; margin-top:4px; color:var(--border); }
+        .ampm-col { display:flex; flex-direction:column; gap:5px; padding-top:2px; }
+        .ampm-btn { padding:8px 10px; border-radius:8px; font-size:.75rem; font-weight:700; cursor:pointer; text-align:center; transition:all .15s; border:1px solid var(--border); color:var(--text-sub); background:var(--input-bg); }
+        .ampm-btn:hover:not(.sel) { color:var(--indigo); border-color:var(--indigo-border); }
+        .ampm-btn.sel { background:var(--indigo)!important; color:#fff!important; border-color:var(--indigo)!important; box-shadow:0 2px 8px rgba(99,102,241,.4); }
+        .tim-set-btn { width:100%; margin-top:12px; padding:9px; background:var(--indigo); color:#fff; border:none; border-radius:9px; font-size:.8rem; font-weight:700; font-family:var(--font); cursor:pointer; transition:background .15s; }
+        .tim-set-btn:hover { background:#4f46e5; }
+        .picker-wrap { position: relative; }
 
-        body.dark .search-field {
-            background: #101e35 !important;
-            border-color: rgba(99, 102, 241, .18) !important;
-            color: #e2eaf8 !important;
-        }
+        /* ══════════════════════════════
+           ANIMATIONS — matches admin
+        ══════════════════════════════ */
+        @keyframes popIn  { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:none; } }
+        @keyframes sheetUp { from { opacity:0; transform:translateY(60px); } to { opacity:1; transform:none; } }
+        @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+        @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+        @keyframes dtDrop  { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+        .fade-up   { animation: slideUp .4s ease both; }
+        .fade-up-1 { animation: slideUp .45s .05s ease both; }
 
-        body.dark thead th {
-            background: #0f1a2e !important;
-            color: #4a6fa5 !important;
-        }
-
-        body.dark td {
-            border-color: #101e35 !important;
-        }
-
-        body.dark tbody tr:hover td {
-            background: rgba(99, 102, 241, .08) !important;
-        }
-
-        body.dark .modal-box {
-            background: #0b1628 !important;
-        }
-
-        /* FIX: dark mode sm modal inner */
-        body.dark .modal-box.sm .modal-inner {
-            background: #0b1628 !important;
-        }
-
-        body.dark .overlay-bg {
-            background: rgba(6, 14, 30, .7) !important;
-        }
-
-        body.dark .drow {
-            border-color: #101e35 !important;
-        }
-
-        body.dark .dvalue {
-            color: #e2eaf8 !important;
-        }
-
-        body.dark .dlabel {
-            color: #4a6fa5 !important;
-        }
-
-        body.dark .res-card {
-            background: #0b1628 !important;
-            border-color: rgba(99, 102, 241, .1) !important;
-        }
-
-        body.dark .badge-pending {
-            background: rgba(251, 191, 36, .12) !important;
-            color: #fcd34d !important;
-        }
-
-        body.dark .badge-approved {
-            background: rgba(99, 102, 241, .15) !important;
-            color: #a5b4fc !important;
-        }
-
-        body.dark .badge-declined,
-        body.dark .badge-canceled {
-            background: rgba(239, 68, 68, .15) !important;
-            color: #f87171 !important;
-        }
-
-        body.dark .badge-claimed {
-            background: rgba(168, 85, 247, .15) !important;
-            color: #c084fc !important;
-        }
-
-        body.dark .badge-expired {
-            background: #101e35 !important;
-            color: #4a6fa5 !important;
-        }
-
-        body.dark .badge-unclaimed {
-            background: rgba(249, 115, 22, .12) !important;
-            color: #fb923c !important;
-            border-color: rgba(249, 115, 22, .3) !important;
-        }
-
-        body.dark .ticket-section {
-            background: rgba(55, 48, 163, .12) !important;
-            border-color: rgba(99, 102, 241, .25) !important;
-        }
-
-        body.dark #dPrintLogForm {
-            background: #101e35 !important;
-            border-color: rgba(99, 102, 241, .12) !important;
-        }
-
-        body.dark #dPrintLogForm input[type=number] {
-            background: #0b1628 !important;
-            border-color: rgba(99, 102, 241, .18) !important;
-            color: #e2eaf8 !important;
-        }
-
-        body.dark .print-pill-yes {
-            background: rgba(99, 102, 241, .18) !important;
-            color: #a5b4fc !important;
-        }
-
-        body.dark .print-pill-no {
-            background: #101e35 !important;
-            color: #4a6fa5 !important;
-        }
-
-        body.dark .unclaimed-banner {
-            background: rgba(194, 65, 12, .1) !important;
-            border-color: rgba(249, 115, 22, .3) !important;
-        }
-
-        body.dark .unclaimed-banner .ub-icon {
-            background: rgba(249, 115, 22, .2) !important;
-        }
-
-        body.dark .btn-cancel {
-            background: #101e35 !important;
-            color: #7fb3e8 !important;
-        }
-
-        body.dark .card-empty {
-            background: #0b1628 !important;
-            border-color: rgba(99, 102, 241, .1) !important;
-        }
-
-        body.dark #dPrintLog {
-            background: #101e35 !important;
-            border-color: rgba(99, 102, 241, .08) !important;
-        }
-
-        /* FIX: dark mode close button */
-        body.dark .modal-close-btn {
-            background: #101e35 !important;
-            color: #7fb3e8 !important;
-        }
-
-        body.dark .modal-close-btn:hover {
-            background: #0b1628 !important;
-            color: #e2eaf8 !important;
-        }
+        /* ══════════════════════════════
+           DARK MODE — unified with admin palette
+        ══════════════════════════════ */
+        body.dark .page-eyebrow { color: #4a6fa5 !important; }
+        body.dark .page-title   { color: #e2eaf8 !important; }
+        body.dark .page-sub     { color: #4a6fa5 !important; }
+        body.dark .icon-btn     { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #7fb3e8 !important; }
+        body.dark .icon-btn:hover { background: rgba(99,102,241,.12) !important; color: #a5b4fc !important; }
+        body.dark .back-btn     { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #7fb3e8 !important; }
+        body.dark .back-btn:hover { background: rgba(99,102,241,.12) !important; border-color: var(--indigo) !important; color: #a5b4fc !important; }
+        body.dark .form-card    { background: #0b1628 !important; border-color: rgba(99,102,241,.1) !important; }
+        body.dark .section-head { border-color: rgba(99,102,241,.1) !important; }
+        body.dark .section-icon { background: rgba(55,48,163,.2) !important; }
+        body.dark .section-title { color: #e2eaf8 !important; }
+        body.dark .divider      { border-color: rgba(99,102,241,.1) !important; }
+        body.dark .type-toggle  { background: #101e35 !important; }
+        body.dark .type-btn     { color: #7fb3e8 !important; }
+        body.dark .pc-section   { background: rgba(55,48,163,.1) !important; border-color: rgba(99,102,241,.2) !important; }
+        body.dark .pc-btn       { background: #101e35 !important; border-color: rgba(99,102,241,.22) !important; color: #7fb3e8 !important; }
+        body.dark .pc-btn:hover { border-color: var(--indigo) !important; color: #a5b4fc !important; }
+        body.dark .pc-btn.selected { background: var(--indigo) !important; color: #fff !important; }
+        body.dark .autocomplete-list { background: #0b1628 !important; border-color: rgba(99,102,241,.18) !important; }
+        body.dark .autocomplete-item { color: #e2eaf8 !important; }
+        body.dark .autocomplete-item:hover { background: rgba(99,102,241,.12) !important; color: #a5b4fc !important; }
+        body.dark .autocomplete-item .sub { color: #4a6fa5 !important; }
+        body.dark .flash-err { background: rgba(220,38,38,.1) !important; border-color: rgba(248,113,113,.3) !important; color: #f87171 !important; }
+        body.dark .flash-ok  { background: rgba(55,48,163,.2) !important; border-color: rgba(99,102,241,.3) !important; color: #a5b4fc !important; }
+        body.dark .modal-box { background: #0b1628 !important; }
+        body.dark .modal-box::-webkit-scrollbar-thumb { background: #1e3a5f; }
+        body.dark .mrow-label { color: #4a6fa5 !important; }
+        body.dark .mrow-value { color: #e2eaf8 !important; }
+        body.dark .mrow       { border-color: rgba(99,102,241,.08) !important; }
+        body.dark .sheet-handle { background: #1e3a5f !important; }
+        body.dark .ticket-section { background: rgba(55,48,163,.1) !important; border-color: rgba(99,102,241,.25) !important; }
+        body.dark .btn-cancel { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #7fb3e8 !important; }
+        body.dark .btn-cancel:hover { background: rgba(99,102,241,.12) !important; color: #a5b4fc !important; }
+        body.dark .submit-btn { box-shadow: 0 4px 12px rgba(55,48,163,.4); }
+        body.dark #modalSummaryBox { background: #060e1e !important; border-color: rgba(99,102,241,.1) !important; }
+        body.dark .modal-header-icon { background: rgba(55,48,163,.2) !important; }
+        body.dark .modal-h3 { color: #e2eaf8 !important; }
+        body.dark .modal-sub { color: #4a6fa5 !important; }
     </style>
 </head>
 
 <body>
-    <?php
-    $processed = [];
-    foreach (($reservations ?? []) as $res) {
-        $s = strtolower($res['status'] ?? 'pending');
-        $isClaimed = in_array($res['claimed'] ?? false, [true, 1, 't', 'true', '1'], true);
-        if ($isClaimed) {
-            $s = 'claimed';
-        } elseif ($s === 'approved') {
-            $edt = strtotime(($res['reservation_date'] ?? '') . ' ' . ($res['end_time'] ?? '23:59'));
-            if ($edt && $edt < time()) $s = 'unclaimed';
-        } elseif ($s === 'pending') {
-            $rdt = strtotime($res['reservation_date'] ?? '');
-            if ($rdt && $rdt < strtotime('today')) $s = 'expired';
-        }
-        $res['_status']    = $s;
-        $res['_unclaimed'] = ($s === 'unclaimed');
-        $processed[]       = $res;
-    }
-    $counts = [
-        'all'       => count($processed),
-        'pending'   => count(array_filter($processed, fn($r) => $r['_status'] === 'pending')),
-        'approved'  => count(array_filter($processed, fn($r) => $r['_status'] === 'approved')),
-        'claimed'   => count(array_filter($processed, fn($r) => $r['_status'] === 'claimed')),
-        'declined'  => count(array_filter($processed, fn($r) => in_array($r['_status'], ['declined', 'canceled']))),
-        'expired'   => count(array_filter($processed, fn($r) => $r['_status'] === 'expired')),
-        'unclaimed' => count(array_filter($processed, fn($r) => $r['_status'] === 'unclaimed')),
-    ];
-    $printLogMap      = $printLogMap ?? [];
-    $statusIcons      = ['pending' => 'fa-clock', 'approved' => 'fa-circle-check', 'claimed' => 'fa-check-double', 'declined' => 'fa-xmark', 'canceled' => 'fa-ban', 'expired' => 'fa-hourglass-end', 'unclaimed' => 'fa-ticket'];
-    $pendingUserCount = $counts['pending'];
-    $user_name        = $sk_name;
+    <?php include APPPATH . 'Views/partials/sk_layout.php'; ?>
 
-    include APPPATH . 'Views/partials/sk_layout.php';
-    ?>
-
-    <form id="approveForm" method="POST" action="<?= base_url('sk/approve') ?>" style="display:none"><?= csrf_field() ?><input type="hidden" name="id" id="approveId"></form>
-    <form id="declineForm" method="POST" action="<?= base_url('sk/decline') ?>" style="display:none"><?= csrf_field() ?><input type="hidden" name="id" id="declineId"></form>
-
-    <!-- ═══════════════════════════════════════════
-     DETAIL MODAL
-═══════════════════════════════════════════ -->
-    <div id="detailModal" class="overlay" role="dialog" aria-modal="true">
-        <div class="overlay-bg" onclick="closeModal('detail')"></div>
+    <!-- CONFIRM MODAL — matches admin overlay/modal-box -->
+    <div id="confirmModal" class="overlay" role="dialog" aria-modal="true">
+        <div class="overlay-bg" onclick="closeModal()"></div>
         <div class="modal-box">
             <div class="sheet-handle"></div>
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:1.25rem 1.75rem .75rem">
+
+            <!-- Modal header -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:20px 24px 12px">
                 <div>
-                    <p id="dId" style="font-size:.7rem;font-weight:800;letter-spacing:.1em;color:#94a3b8;font-family:var(--mono);margin-bottom:4px"></p>
-                    <h3 style="font-size:1.2rem;font-weight:800;color:#0f172a;letter-spacing:-.03em;line-height:1.2">Reservation Details</h3>
+                    <p style="font-size:11px;font-weight:800;color:var(--text-sub);margin-bottom:3px">New Reservation</p>
+                    <h3 class="modal-h3" style="font-size:18px;font-weight:800;">Confirm Reservation</h3>
                 </div>
-                <!-- FIX: inline-styled close button, no Tailwind classes needed -->
-                <button class="modal-close-btn" onclick="closeModal('detail')" aria-label="Close">
+                <button onclick="closeModal()" style="width:32px;height:32px;border-radius:10px;background:var(--input-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-sub);margin-top:2px;font-size:.85rem;font-family:var(--font);transition:all var(--ease);" onmouseover="this.style.background='var(--indigo-light)';this.style.color='var(--indigo)'" onmouseout="this.style.background='var(--input-bg)';this.style.color='var(--text-sub)'">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <div id="dStatusBar" style="margin:0 1.75rem .75rem;padding:.65rem 1rem;border-radius:14px;display:flex;align-items:center;gap:8px;font-size:.875rem;font-weight:700"></div>
-
-            <div id="dUnclaimedBanner" class="unclaimed-banner" style="display:none">
-                <div class="ub-icon"><i class="fa-solid fa-ticket"></i></div>
-                <div>
-                    <p style="font-weight:800;font-size:.875rem;color:#c2410c">Not Yet Claimed</p>
-                    <p style="font-size:.75rem;color:#ea580c;font-weight:500;margin-top:2px">Approved but the e-ticket was never scanned.</p>
-                </div>
+            <!-- Status bar — green "ready to save" -->
+            <div style="margin:0 24px 14px;padding:10px 14px;border-radius:14px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;background:#dcfce7;color:#166534;">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Ready to save — please review details below</span>
             </div>
 
-            <div style="padding:0 1.75rem .5rem">
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-user"></i></div>
-                    <div>
-                        <p class="dlabel">Requestor</p>
-                        <p id="dName" class="dvalue"></p>
-                        <p id="dEmail" style="font-size:.72rem;color:#94a3b8;font-weight:600;margin-top:2px"></p>
-                    </div>
-                </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-desktop"></i></div>
-                    <div>
-                        <p class="dlabel">Resource</p>
-                        <p id="dResource" class="dvalue"></p>
-                        <p id="dPc" style="font-size:.72rem;color:#94a3b8;font-weight:600;margin-top:2px"></p>
-                    </div>
-                </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-calendar-day"></i></div>
-                    <div>
-                        <p class="dlabel">Schedule</p>
-                        <p id="dDate" class="dvalue"></p>
-                        <p id="dTime" style="font-size:.72rem;color:#94a3b8;font-weight:600;margin-top:2px"></p>
-                    </div>
-                </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div>
-                    <div>
-                        <p class="dlabel">Purpose</p>
-                        <p id="dPurpose" class="dvalue"></p>
-                    </div>
-                </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-id-badge"></i></div>
-                    <div>
-                        <p class="dlabel">Visitor Type</p>
-                        <p id="dType" class="dvalue"></p>
-                    </div>
-                </div>
-                <div class="drow" id="dApprovedByRow" style="display:none">
-                    <div class="dicon" id="dApprovedByIcon"><i class="fa-solid fa-user-check"></i></div>
-                    <div>
-                        <p class="dlabel" id="dApprovedByLabel">Approved By</p>
-                        <p id="dApprovedByName" class="dvalue"></p>
-                        <p id="dApprovedByEmail" style="font-size:.72rem;color:#94a3b8;font-weight:600;margin-top:2px"></p>
-                        <p id="dApprovedAt" style="font-size:.72rem;color:#94a3b8;font-weight:600;margin-top:2px"></p>
-                    </div>
-                </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-regular fa-clock"></i></div>
-                    <div>
-                        <p class="dlabel">Submitted</p>
-                        <p id="dCreated" class="dvalue"></p>
-                    </div>
-                </div>
-            </div>
+            <!-- Summary rows -->
+            <div id="modalSummaryBox" style="background:var(--input-bg);border-radius:var(--r-md);padding:14px 16px;border:1px solid var(--border-subtle);margin:0 24px 14px"></div>
 
-            <!-- QR ticket -->
-            <div id="dQr" class="mx-7 mb-4 ticket-section" style="display:none;margin:0 1.75rem 1rem">
-                <p style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:#6366f1;margin-bottom:.75rem">E-Ticket</p>
-                <canvas id="qrCanvas" style="border-radius:12px"></canvas>
-                <p id="dTicketCode" style="font-size:.72rem;color:#94a3b8;font-family:var(--mono);margin-top:.5rem;text-align:center;word-break:break-all;padding:0 .5rem"></p>
-                <button onclick="downloadTicket()" style="margin-top:.75rem;display:flex;align-items:center;gap:8px;padding:.5rem 1.25rem;background:#3730a3;color:white;border:none;border-radius:12px;font-weight:700;font-size:.875rem;cursor:pointer;transition:background .15s;font-family:var(--font)" onmouseover="this.style.background='#312e81'" onmouseout="this.style.background='#3730a3'">
-                    <i class="fa-solid fa-download" style="font-size:.75rem"></i> Download E-Ticket
+            <!-- QR / E-ticket section -->
+            <div id="qrWrap" style="display:none" class="ticket-section">
+                <p style="font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--indigo)">E-Ticket Preview</p>
+                <canvas id="qrCanvas" style="border-radius:10px"></canvas>
+                <p id="qrText" style="font-size:11px;color:var(--text-sub);font-family:var(--mono);text-align:center;word-break:break-all"></p>
+                <button onclick="downloadQR()" style="display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-size:.78rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font)">
+                    <i class="fa-solid fa-download" style="font-size:.7rem"></i> Download E-Ticket
                 </button>
             </div>
 
-            <!-- Claimed section -->
-            <div id="dClaimed" style="display:none;margin:0 1.75rem 1rem;background:#faf5ff;border:2px dashed #d8b4fe;border-radius:16px;padding:1.25rem;text-align:center">
-                <i class="fa-solid fa-check-double" style="font-size:1.5rem;color:#a855f7;display:block;margin-bottom:.25rem"></i>
-                <p style="font-weight:800;color:#6b21a8;font-size:.875rem">Ticket Already Claimed</p>
-                <p style="font-size:.75rem;color:#a855f7;margin-top:2px">This reservation has been used.</p>
-            </div>
-
-            <!-- Print log strip -->
-            <div id="dPrintLog" style="display:none;margin:0 1.75rem .75rem;border-radius:16px;padding:.75rem 1rem;border:1px solid #e2e8f0;background:#f8fafc;align-items:center;gap:12px">
-                <div style="width:36px;height:36px;background:#eef2ff;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-print" style="color:#4f46e5;font-size:.875rem"></i></div>
-                <div style="flex:1;min-width:0">
-                    <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:2px">Print Log</p>
-                    <p id="dPrintText" style="font-size:.875rem;font-weight:700;color:#334155"></p>
-                </div>
-                <span id="dPrintBadge" style="font-size:.65rem;font-weight:800;padding:.2rem .65rem;border-radius:999px;flex-shrink:0"></span>
-            </div>
-
-            <!-- Print log form -->
-            <div id="dPrintLogForm">
-                <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:.75rem;display:flex;align-items:center;gap:6px"><i class="fa-solid fa-print" style="color:#6366f1"></i> Log Print for this Reservation</p>
-                <div style="display:flex;align-items:flex-end;gap:12px">
-                    <div style="flex:1">
-                        <label>Pages Printed <span style="color:#cbd5e1;font-weight:400;font-size:.6rem;text-transform:none;letter-spacing:0">(0 = not printed)</span></label>
-                        <input type="number" id="printPagesInput" min="0" max="999" value="0" placeholder="0">
-                    </div>
-                    <button id="savePrintBtn" class="btn-save-print" onclick="savePrintLog()">
-                        <i class="fa-solid fa-floppy-disk" style="font-size:.75rem"></i> Save
-                    </button>
-                </div>
-                <p id="printSaveMsg" style="font-size:.72rem;font-weight:700;margin-top:6px;min-height:18px;color:#94a3b8"></p>
-            </div>
-
-            <div id="dActions" style="padding:1rem 1.75rem 1.25rem;border-top:1px solid #f1f5f9;display:flex;gap:10px;flex-wrap:wrap;margin-top:.5rem"></div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════
-     APPROVE MODAL — FIX: modal-inner wrapper keeps bg, overflow:visible on modal-box lets icon show
-═══════════════════════════════════════════ -->
-    <div id="approveModal" class="overlay">
-        <div class="overlay-bg" onclick="closeModal('approve')"></div>
-        <div class="modal-box sm">
-            <div class="modal-inner">
-                <div style="padding:2rem 1.75rem 1.25rem;text-align:center">
-                    <!-- FIX: icon placed inside padding, not overflowing top -->
-                    <div style="width:64px;height:64px;background:#eef2ff;color:#4f46e5;border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.75rem">
-                        <i class="fa-solid fa-circle-check"></i>
-                    </div>
-                    <h3 style="font-size:1.15rem;font-weight:800;color:#0f172a;letter-spacing:-.03em">Approve Reservation?</h3>
-                    <p style="color:#94a3b8;font-size:.875rem;margin-top:.25rem;font-weight:500">This will confirm the reservation.</p>
-                    <p id="approveConfirmName" style="color:#334155;font-size:.875rem;margin-top:.75rem;font-weight:800"></p>
-                </div>
-                <div style="padding:0 1.75rem 1.75rem;display:flex;gap:10px">
-                    <button class="btn-cancel" onclick="closeModal('approve')"><i class="fa-solid fa-xmark" style="font-size:.75rem"></i> Cancel</button>
-                    <button id="confirmApproveBtn" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button>
-                </div>
+            <!-- Action buttons — matches admin modal pattern -->
+            <div id="modalActions" style="padding:16px 24px;border-top:1px solid var(--border-subtle);display:flex;gap:10px;margin-top:8px">
+                <button type="button" class="btn-cancel" onclick="closeModal()">
+                    <i class="fa-solid fa-xmark" style="font-size:11px"></i> Cancel
+                </button>
+                <button type="button" id="confirmBtn" class="btn-confirm" onclick="submitReservation()">
+                    <i class="fa-solid fa-check" style="font-size:.8rem"></i> Confirm & Save
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-     DECLINE MODAL
-═══════════════════════════════════════════ -->
-    <div id="declineModal" class="overlay">
-        <div class="overlay-bg" onclick="closeModal('decline')"></div>
-        <div class="modal-box sm">
-            <div class="modal-inner">
-                <div style="padding:2rem 1.75rem 1.25rem;text-align:center">
-                    <div style="width:64px;height:64px;background:#fef2f2;color:#ef4444;border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.75rem">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    </div>
-                    <h3 style="font-size:1.15rem;font-weight:800;color:#0f172a;letter-spacing:-.03em">Decline Reservation?</h3>
-                    <p style="color:#94a3b8;font-size:.875rem;margin-top:.25rem;font-weight:500">This action cannot be undone.</p>
-                    <p id="declineConfirmName" style="color:#334155;font-size:.875rem;margin-top:.75rem;font-weight:800"></p>
-                </div>
-                <div style="padding:0 1.75rem 1.75rem;display:flex;gap:10px">
-                    <button class="btn-cancel" onclick="closeModal('decline')"><i class="fa-solid fa-xmark" style="font-size:.75rem"></i> Cancel</button>
-                    <button id="confirmDeclineBtn" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════
-     MAIN CONTENT
-═══════════════════════════════════════════ -->
+    <!-- MAIN -->
     <main class="main-area">
 
-        <!-- Header -->
-        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:24px" class="fade-up">
+        <!-- Page header — matches admin manage-reservations -->
+        <div class="page-header fade-up">
             <div>
-                <p style="font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">SK Portal</p>
-                <h2 style="font-size:1.75rem;font-weight:800;color:#0f172a;letter-spacing:-.04em;line-height:1.1">All Reservations</h2>
-                <p style="font-size:.78rem;color:#94a3b8;font-weight:500;margin-top:4px">
-                    <?= $counts['all'] ?> total record<?= $counts['all'] != 1 ? 's' : '' ?>
-                    <?php if ($counts['unclaimed'] > 0): ?>
-                        &nbsp;·&nbsp;<span style="color:#f59e0b;font-weight:700"><?= $counts['unclaimed'] ?> unclaimed</span>
-                    <?php endif; ?>
-                </p>
+                <div class="page-eyebrow">SK Portal</div>
+                <div class="page-title">New Reservation</div>
+                <div class="page-sub">Register a manual entry into the system.</div>
             </div>
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                <div class="icon-btn" onclick="layoutToggleDark()" title="Toggle dark mode">
+            <div class="topbar-right">
+                <div class="icon-btn" onclick="layoutToggleDark()" id="darkBtn" title="Toggle dark mode">
                     <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem"></i></span>
                 </div>
-                <button onclick="exportCSV()" style="display:flex;align-items:center;gap:7px;padding:10px 18px;background:var(--indigo);color:white;border:none;border-radius:var(--r-sm);font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font);box-shadow:0 4px 12px rgba(55,48,163,.28);transition:background var(--ease)" onmouseover="this.style.background='#312e81'" onmouseout="this.style.background='var(--indigo)'">
-                    <i class="fa-solid fa-file-csv" style="font-size:.8rem"></i> Export CSV
-                </button>
+                <a href="/sk/my-reservations" class="back-btn">
+                    <i class="fa-solid fa-chevron-left" style="font-size:.75rem"></i> Back
+                </a>
             </div>
         </div>
 
-        <!-- Stat cards -->
-        <div style="display:grid;gap:12px;margin-bottom:20px" id="statGrid">
-            <?php foreach (
-                [
-                    ['Total',     $counts['all'],       'border-color:#3730a3', 'color:#3730a3', 'all'],
-                    ['Pending',   $counts['pending'],   'border-color:#d97706', 'color:#d97706', 'pending'],
-                    ['Approved',  $counts['approved'],  'border-color:#4338ca', 'color:#4338ca', 'approved'],
-                    ['Claimed',   $counts['claimed'],   'border-color:#7c3aed', 'color:#7c3aed', 'claimed'],
-                    ['Declined',  $counts['declined'],  'border-color:#dc2626', 'color:#dc2626', 'declined'],
-                    ['Unclaimed', $counts['unclaimed'], 'border-color:#f59e0b', 'color:#f59e0b', 'unclaimed'],
-                ] as [$lbl, $val, $bc, $c, $key]
-            ): ?>
-                <div class="stat-card" style="<?= $bc ?>" onclick="filterByStatus('<?= $key ?>')" data-filter="<?= $key ?>">
-                    <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#94a3b8;margin-bottom:6px"><?= $lbl ?></p>
-                    <p style="font-size:1.8rem;font-weight:800;<?= $c ?>;font-family:var(--mono);line-height:1;letter-spacing:-.04em"><?= $val ?></p>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Flash messages -->
-        <?php if (session()->getFlashdata('success')): ?>
-            <div style="margin-bottom:16px;padding:13px 18px;background:#eef2ff;border:1px solid var(--indigo-border);color:var(--indigo);font-weight:700;border-radius:var(--r-md);display:flex;align-items:center;gap:10px;font-size:.875rem" class="fade-up">
-                <i class="fa-solid fa-circle-check"></i><?= session()->getFlashdata('success') ?>
-            </div>
-        <?php endif; ?>
         <?php if (session()->getFlashdata('error')): ?>
-            <div style="margin-bottom:16px;padding:13px 18px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-weight:700;border-radius:var(--r-md);display:flex;align-items:center;gap:10px;font-size:.875rem" class="fade-up">
-                <i class="fa-solid fa-circle-exclamation"></i><?= session()->getFlashdata('error') ?>
-            </div>
+            <div class="flash-err fade-up"><i class="fa-solid fa-circle-exclamation"></i><?= session()->getFlashdata('error') ?></div>
+        <?php endif; ?>
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="flash-ok fade-up"><i class="fa-solid fa-circle-check"></i><?= session()->getFlashdata('success') ?></div>
         <?php endif; ?>
 
-        <!-- Filters -->
-        <div class="card" style="padding:16px 20px;margin-bottom:14px">
-            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-                <div style="position:relative;flex:1;min-width:200px">
-                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.75rem;pointer-events:none"></i>
-                    <input id="searchInput" type="text" placeholder="Search name, resource, purpose…" class="search-field" oninput="applyFilters()">
-                </div>
-                <div style="position:relative;width:160px">
-                    <i class="fa-regular fa-calendar" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.75rem;pointer-events:none"></i>
-                    <input id="dateInput" type="date" class="search-field" style="padding-left:2.5rem" onchange="applyFilters()">
-                </div>
-                <button onclick="clearFilters()" style="display:flex;align-items:center;gap:6px;padding:10px 16px;background:#f1f5f9;border:none;border-radius:var(--r-sm);font-size:.8rem;font-weight:700;color:#475569;cursor:pointer;font-family:var(--font);transition:background var(--ease)" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
-                    <i class="fa-solid fa-rotate-left" style="font-size:.75rem"></i> Reset
-                </button>
-            </div>
-            <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px">
-                <button class="qtab active" data-tab="all" onclick="setTab(this,'all')"> <i class="fa-solid fa-layer-group" style="font-size:.7rem"></i> All <span style="font-size:.62rem;font-weight:800;opacity:.7"><?= $counts['all'] ?></span></button>
-                <button class="qtab" data-tab="pending" onclick="setTab(this,'pending')"> <i class="fa-solid fa-clock" style="font-size:.7rem"></i> Pending <?php if ($counts['pending'] > 0): ?><span style="background:#f59e0b;color:white;font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:999px"><?= $counts['pending'] ?></span><?php endif; ?></button>
-                <button class="qtab" data-tab="approved" onclick="setTab(this,'approved')"> <i class="fa-solid fa-circle-check" style="font-size:.7rem"></i> Approved</button>
-                <button class="qtab" data-tab="unclaimed" onclick="setTab(this,'unclaimed')"><i class="fa-solid fa-ticket" style="font-size:.7rem"></i> Unclaimed <?php if ($counts['unclaimed'] > 0): ?><span style="background:#f59e0b;color:white;font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:999px"><?= $counts['unclaimed'] ?></span><?php endif; ?></button>
-                <button class="qtab" data-tab="claimed" onclick="setTab(this,'claimed')"> <i class="fa-solid fa-check-double" style="font-size:.7rem"></i> Claimed</button>
-                <button class="qtab" data-tab="declined" onclick="setTab(this,'declined')"> <i class="fa-solid fa-xmark" style="font-size:.7rem"></i> Declined</button>
-                <button class="qtab" data-tab="expired" onclick="setTab(this,'expired')"> <i class="fa-solid fa-hourglass-end" style="font-size:.7rem"></i> Expired</button>
-            </div>
-        </div>
+        <!-- Form card -->
+        <div class="form-card fade-up-1">
+            <form id="reservationForm" method="POST" action="<?= base_url('sk/create-reservation') ?>">
+                <?= csrf_field() ?>
+                <input type="hidden" name="visitor_name" id="finalVisitorName">
+                <input type="hidden" name="user_email"   id="finalUserEmail">
+                <input type="hidden" name="user_id"      id="finalUserId">
+                <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
+                <input type="hidden" name="purpose"      id="finalPurpose">
+                <input type="hidden" name="pcs"          id="finalPcs" value="[]">
 
-        <div style="padding:0 2px;margin-bottom:10px">
-            <p id="resultCount" style="font-size:.72rem;font-weight:700;color:#94a3b8"></p>
-        </div>
-
-        <!-- ── Desktop table ── -->
-        <div id="desktopTableWrap" class="card" style="overflow:hidden;margin-bottom:20px">
-            <div class="table-wrap">
-                <table id="resTable">
-                    <thead>
-                        <tr>
-                            <th style="width:52px">ID</th>
-                            <th onclick="sortTable(1)">User <i class="fa-solid fa-sort sort-icon"></i></th>
-                            <th onclick="sortTable(2)">Resource <i class="fa-solid fa-sort sort-icon"></i></th>
-                            <th onclick="sortTable(3)">Schedule <i class="fa-solid fa-sort sort-icon"></i></th>
-                            <th>Purpose</th>
-                            <th onclick="sortTable(5)">Status <i class="fa-solid fa-sort sort-icon"></i></th>
-                            <th onclick="sortTable(6)">Approved By <i class="fa-solid fa-sort sort-icon"></i></th>
-                            <th>Print</th>
-                            <th style="text-align:right;width:140px">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <?php if (empty($processed)): ?>
-                            <tr>
-                                <td colspan="9">
-                                    <div class="empty-state"><i class="fa-solid fa-calendar-xmark" style="font-size:3rem;color:#e2e8f0;display:block;margin-bottom:14px"></i>
-                                        <p style="font-weight:800;color:#94a3b8;font-size:1rem">No reservations yet</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($processed as $res):
-                                $s          = $res['_status'];
-                                $isUnclaimed = $res['_unclaimed'];
-                                $name       = htmlspecialchars($res['visitor_name'] ?? $res['full_name'] ?? 'Guest');
-                                $email      = htmlspecialchars($res['visitor_email'] ?? $res['user_email'] ?? '');
-                                $resource   = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
-                                $pc         = htmlspecialchars($res['pc_number'] ?? $res['pc_numbers'] ?? '');
-                                $rawDate    = $res['reservation_date'] ?? '';
-                                $date       = $rawDate ? date('M j, Y', strtotime($rawDate)) : '—';
-                                $start      = !empty($res['start_time']) ? date('g:i A', strtotime($res['start_time'])) : '—';
-                                $end        = !empty($res['end_time'])   ? date('g:i A', strtotime($res['end_time']))   : '—';
-                                $purpose    = htmlspecialchars($res['purpose'] ?? '—');
-                                $type       = htmlspecialchars($res['visitor_type'] ?? '—');
-                                $created    = !empty($res['created_at']) ? date('M j, Y · g:i A', strtotime($res['created_at'])) : '—';
-                                $code       = $res['e_ticket_code'] ?? ('RES-' . $res['id'] . '-' . $rawDate);
-                                $icon       = $statusIcons[$s] ?? 'fa-circle';
-                                $approverName  = htmlspecialchars($res['approver_name']  ?? $res['approved_by_name']  ?? '');
-                                $approverEmail = htmlspecialchars($res['approver_email'] ?? $res['approved_by_email'] ?? '');
-                                $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved', 'claimed', 'declined', 'expired', 'unclaimed']) ? date('M j, Y · g:i A', strtotime($res['updated_at'])) : '';
-                                $pl        = $printLogMap[(int)$res['id']] ?? null;
-                                $plPrinted = $pl !== null ? (bool)$pl['printed'] : null;
-                                $plPages   = $pl ? (int)($pl['pages'] ?? 0) : 0;
-                                $plAt      = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
-                                $isClaimed = in_array($res['claimed'] ?? false, [true, 1, 't', 'true', '1'], true);
-                                $mdata     = json_encode(['id' => $res['id'], 'status' => $s, 'name' => $name, 'email' => $email, 'resource' => $resource, 'pc' => $pc, 'date' => $date, 'rawDate' => $rawDate, 'start' => $start, 'end' => $end, 'purpose' => $purpose, 'type' => $type, 'created' => $created, 'code' => $code, 'claimed' => $isClaimed, 'unclaimed' => $isUnclaimed, 'approverName' => $approverName, 'approverEmail' => $approverEmail, 'approvedAt' => $approvedAt, 'plPrinted' => $plPrinted, 'plPages' => $plPages, 'plAt' => $plAt]);
-                            ?>
-                                <tr class="res-row"
-                                    data-id="<?= $res['id'] ?>"
-                                    data-status="<?= $s ?>"
-                                    data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
-                                    data-search="<?= strtolower("$name $resource $purpose $email $approverName") ?>"
-                                    data-date="<?= $rawDate ?>"
-                                    data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
-                                    data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
-                                    data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
-                                    onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
-                                    <td><span style="font-size:.72rem;font-weight:800;color:#94a3b8;font-family:var(--mono)">#<?= $res['id'] ?></span></td>
-                                    <td>
-                                        <p style="font-weight:700;font-size:.85rem;color:#0f172a;line-height:1.3"><?= $name ?></p>
-                                        <?php if ($email): ?><p style="font-size:.7rem;color:#94a3b8;margin-top:2px"><?= $email ?></p><?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <p style="font-weight:700;font-size:.85rem;color:#0f172a;line-height:1.3"><?= $resource ?></p>
-                                        <?php if ($pc): ?><p style="font-size:.7rem;color:#94a3b8;margin-top:2px"><i class="fa-solid fa-desktop" style="font-size:.65rem"></i> <?= $pc ?></p><?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <p style="font-size:.85rem;font-weight:700;color:#0f172a"><?= $date ?></p>
-                                        <p style="font-size:.7rem;color:var(--indigo);font-weight:600;margin-top:2px"><?= $start ?> – <?= $end ?></p>
-                                    </td>
-                                    <td><span style="font-size:.82rem;color:#64748b;font-weight:500;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:130px"><?= $purpose ?></span></td>
-                                    <td><span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?>" style="font-size:.6rem"></i><?= ucfirst($s) ?></span></td>
-                                    <td onclick="event.stopPropagation()">
-                                        <?php if ($approverName && in_array($s, ['approved', 'claimed', 'declined', 'expired', 'unclaimed'])): ?>
-                                            <div style="display:flex;align-items:center;gap:7px">
-                                                <div style="width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0;<?= $s === 'declined' ? 'background:#fee2e2;color:#dc2626' : 'background:#e0e7ff;color:#3730a3' ?>"><?= mb_strtoupper(mb_substr($approverName, 0, 1)) ?></div>
-                                                <div style="min-width:0">
-                                                    <p style="font-size:.78rem;font-weight:700;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px"><?= $approverName ?></p>
-                                                    <?php if ($approvedAt): ?><p style="font-size:.65rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $approvedAt ?></p><?php endif; ?>
-                                                </div>
-                                            </div>
-                                        <?php else: ?><span style="font-size:.72rem;color:#cbd5e1;font-weight:700">—</span><?php endif; ?>
-                                    </td>
-                                    <td onclick="event.stopPropagation()">
-                                        <?php if ($plPrinted === true): ?>
-                                            <span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:.6rem"></i> <?= $plPages ?>pg</span>
-                                        <?php elseif ($plPrinted === false): ?>
-                                            <span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:.6rem"></i> No print</span>
-                                        <?php else: ?>
-                                            <span style="font-size:.7rem;color:#cbd5e1;font-weight:700">—</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td style="text-align:right" onclick="event.stopPropagation()">
-                                        <?php if ($s === 'pending'): ?>
-                                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
-                                                <button onclick="triggerApprove(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-approve"><i class="fa-solid fa-check" style="font-size:.65rem"></i> Approve</button>
-                                                <button onclick="triggerDecline(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-decline"><i class="fa-solid fa-xmark" style="font-size:.65rem"></i></button>
-                                            </div>
-                                        <?php elseif ($s === 'unclaimed'): ?>
-                                            <span style="font-size:.72rem;color:#f59e0b;font-weight:800;display:flex;align-items:center;gap:4px;justify-content:flex-end"><i class="fa-solid fa-ticket"></i> Unclaimed</span>
-                                        <?php elseif ($s === 'approved'): ?>
-                                            <span style="font-size:.72rem;color:var(--indigo);font-weight:800;display:flex;align-items:center;gap:4px;justify-content:flex-end"><i class="fa-solid fa-circle-check"></i> Approved</span>
-                                        <?php elseif ($s === 'claimed'): ?>
-                                            <span style="font-size:.72rem;color:#7c3aed;font-weight:800;display:flex;align-items:center;gap:4px;justify-content:flex-end"><i class="fa-solid fa-check-double"></i> Claimed</span>
-                                        <?php else: ?>
-                                            <span style="font-size:.72rem;color:#cbd5e1;font-weight:600;font-style:italic">—</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-            <div style="padding:10px 20px;border-top:1px solid #f1f5f9;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">
-                <p id="tableFooter" style="font-size:.72rem;font-weight:700;color:#94a3b8"></p>
-            </div>
-        </div>
-
-        <!-- ── Mobile cards ── -->
-        <div id="mobileCardList" style="display:flex;flex-direction:column;gap:10px">
-            <?php if (empty($processed)): ?>
-                <div class="card-empty">
-                    <i class="fa-solid fa-calendar-xmark" style="font-size:2.5rem;color:#e2e8f0;display:block;margin-bottom:10px"></i>
-                    <p style="font-weight:800;color:#94a3b8">No reservations yet</p>
+                <!-- Visitor type toggle -->
+                <div style="margin-bottom:20px">
+                    <label class="field-label" style="margin-bottom:8px;display:block">Visitor Classification</label>
+                    <div class="type-toggle">
+                        <button type="button" class="type-btn active" id="btnUser" onclick="setType('User')">
+                            <i class="fa-solid fa-user" style="font-size:.8rem"></i> Registered User
+                        </button>
+                        <button type="button" class="type-btn" id="btnVisitor" onclick="setType('Visitor')">
+                            <i class="fa-solid fa-person-walking" style="font-size:.8rem"></i> Walk-in Visitor
+                        </button>
+                    </div>
                 </div>
-            <?php else: ?>
-                <?php foreach ($processed as $res):
-                    $s          = $res['_status'];
-                    $isUnclaimed = $res['_unclaimed'];
-                    $name       = htmlspecialchars($res['visitor_name'] ?? $res['full_name'] ?? 'Guest');
-                    $email      = htmlspecialchars($res['visitor_email'] ?? $res['user_email'] ?? '');
-                    $resource   = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
-                    $pc         = htmlspecialchars($res['pc_number'] ?? $res['pc_numbers'] ?? '');
-                    $rawDate    = $res['reservation_date'] ?? '';
-                    $date       = $rawDate ? date('M j, Y', strtotime($rawDate)) : '—';
-                    $start      = !empty($res['start_time']) ? date('g:i A', strtotime($res['start_time'])) : '—';
-                    $end        = !empty($res['end_time'])   ? date('g:i A', strtotime($res['end_time']))   : '—';
-                    $purpose    = htmlspecialchars($res['purpose'] ?? '—');
-                    $type       = htmlspecialchars($res['visitor_type'] ?? '—');
-                    $created    = !empty($res['created_at']) ? date('M j, Y · g:i A', strtotime($res['created_at'])) : '—';
-                    $code       = $res['e_ticket_code'] ?? ('RES-' . $res['id'] . '-' . $rawDate);
-                    $icon       = $statusIcons[$s] ?? 'fa-circle';
-                    $approverName  = htmlspecialchars($res['approver_name']  ?? $res['approved_by_name']  ?? '');
-                    $approverEmail = htmlspecialchars($res['approver_email'] ?? $res['approved_by_email'] ?? '');
-                    $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved', 'claimed', 'declined', 'expired', 'unclaimed']) ? date('M j, Y · g:i A', strtotime($res['updated_at'])) : '';
-                    $pl        = $printLogMap[(int)$res['id']] ?? null;
-                    $plPrinted = $pl !== null ? (bool)$pl['printed'] : null;
-                    $plPages   = $pl ? (int)($pl['pages'] ?? 0) : 0;
-                    $plAt      = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
-                    $isClaimed = in_array($res['claimed'] ?? false, [true, 1, 't', 'true', '1'], true);
-                    $mdata     = json_encode(['id' => $res['id'], 'status' => $s, 'name' => $name, 'email' => $email, 'resource' => $resource, 'pc' => $pc, 'date' => $date, 'rawDate' => $rawDate, 'start' => $start, 'end' => $end, 'purpose' => $purpose, 'type' => $type, 'created' => $created, 'code' => $code, 'claimed' => $isClaimed, 'unclaimed' => $isUnclaimed, 'approverName' => $approverName, 'approverEmail' => $approverEmail, 'approvedAt' => $approvedAt, 'plPrinted' => $plPrinted, 'plPages' => $plPages, 'plAt' => $plAt]);
-                    $avatarStyles = ['pending' => 'background:#fef3c7;color:#92400e', 'approved' => 'background:#e0e7ff;color:#3730a3', 'claimed' => 'background:#f3e8ff;color:#6b21a8', 'declined' => 'background:#fee2e2;color:#dc2626', 'canceled' => 'background:#fee2e2;color:#dc2626', 'expired' => 'background:#f1f5f9;color:#64748b', 'unclaimed' => 'background:#fff7ed;color:#c2410c'];
-                    $avatarBg = $avatarStyles[$s] ?? 'background:#f1f5f9;color:#64748b';
-                ?>
-                    <div class="res-card"
-                        data-id="<?= $res['id'] ?>"
-                        data-status="<?= $s ?>"
-                        data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
-                        data-search="<?= strtolower("$name $resource $purpose $email $approverName") ?>"
-                        data-date="<?= $rawDate ?>"
-                        data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
-                        data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
-                        data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
-                        onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
-                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                            <div style="width:38px;height:38px;border-radius:12px;<?= $avatarBg ?>;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0"><?= mb_strtoupper(mb_substr(strip_tags($name), 0, 1)) ?></div>
-                            <div style="flex:1;min-width:0">
-                                <p style="font-weight:700;font-size:.85rem;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $name ?></p>
-                                <?php if ($email): ?><p style="font-size:.7rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
-                            </div>
-                            <span class="badge badge-<?= $s ?>" style="flex-shrink:0"><i class="fa-solid <?= $icon ?>" style="font-size:.6rem"></i><?= ucfirst($s) ?></span>
-                        </div>
-                        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
-                            <div style="flex:1;min-width:0">
-                                <p style="font-size:.78rem;font-weight:700;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><i class="fa-solid fa-desktop" style="font-size:.65rem;color:#94a3b8;margin-right:3px"></i><?= $resource ?><?= $pc ? ' · ' . $pc : '' ?></p>
-                                <p style="font-size:.72rem;color:#94a3b8;margin-top:2px"><i class="fa-regular fa-calendar" style="font-size:.65rem;margin-right:3px"></i><?= $date ?> <span style="color:var(--indigo);font-weight:700"><?= $start ?> – <?= $end ?></span></p>
-                            </div>
-                            <div class="card-print-pill" style="flex-shrink:0">
-                                <?php if ($plPrinted === true): ?>
-                                    <span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:.6rem"></i> <?= $plPages ?>pg</span>
-                                <?php elseif ($plPrinted === false): ?>
-                                    <span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:.6rem"></i> No print</span>
-                                <?php endif; ?>
+                <hr class="divider">
+
+                <!-- Personal details -->
+                <div style="margin-bottom:20px">
+                    <div class="section-head">
+                        <div class="section-icon"><i class="fa-solid fa-id-badge" style="color:var(--indigo);font-size:.9rem"></i></div>
+                        <div><div class="section-title">Personal Details</div></div>
+                    </div>
+
+                    <div id="userFields" class="grid-2">
+                        <div>
+                            <label class="field-label">Full Name</label>
+                            <div class="autocomplete-wrap">
+                                <input type="text" id="userNameInput" class="field-input" placeholder="Type to search users…" autocomplete="off">
+                                <ul id="autocompleteList" class="autocomplete-list" style="display:none"></ul>
                             </div>
                         </div>
-                        <p style="font-size:.72rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:10px"><?= $purpose ?></p>
-                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid #f1f5f9">
-                            <div style="display:flex;align-items:center;gap:6px;min-width:0">
-                                <?php if ($approverName && in_array($s, ['approved', 'claimed', 'declined', 'expired', 'unclaimed'])): ?>
-                                    <div style="width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;flex-shrink:0;<?= $s === 'declined' ? 'background:#fee2e2;color:#dc2626' : 'background:#e0e7ff;color:#3730a3' ?>"><?= mb_strtoupper(mb_substr($approverName, 0, 1)) ?></div>
-                                    <p style="font-size:.68rem;color:#64748b;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $s === 'declined' ? 'Declined' : 'Approved' ?> by <?= $approverName ?></p>
-                                <?php else: ?>
-                                    <p style="font-size:.68rem;color:#cbd5e1;font-weight:600">#<?= $res['id'] ?></p>
-                                <?php endif; ?>
-                            </div>
-                            <?php if ($s === 'pending'): ?>
-                                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
-                                    <button onclick="triggerApprove(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-approve" style="padding:.35rem .7rem;font-size:.68rem"><i class="fa-solid fa-check" style="font-size:.6rem"></i> Approve</button>
-                                    <button onclick="triggerDecline(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-decline" style="padding:.35rem .6rem;font-size:.68rem"><i class="fa-solid fa-xmark" style="font-size:.6rem"></i></button>
-                                </div>
-                            <?php endif; ?>
+                        <div>
+                            <label class="field-label">Email Address</label>
+                            <input type="email" id="userEmailDisplay" class="field-input" placeholder="Auto-filled on selection" readonly>
+                            <p style="font-size:.65rem;color:var(--text-sub);margin-top:4px">Fills automatically when a user is selected</p>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
 
-        <div id="mobileEmpty" class="card-empty" style="display:none">
-            <i class="fa-solid fa-filter-circle-xmark" style="font-size:2.5rem;color:#e2e8f0;display:block;margin-bottom:10px"></i>
-            <p style="font-weight:800;color:#94a3b8">No reservations match</p>
-            <p style="color:#cbd5e1;font-size:.85rem;margin-top:4px">Try adjusting your search or filters.</p>
-        </div>
+                    <div id="visitorFields" style="display:none" class="grid-2">
+                        <div><label class="field-label">Full Name</label><input type="text" id="visitorNameInput" class="field-input" placeholder="Enter visitor's full name"></div>
+                        <div><label class="field-label">Email Address</label><input type="email" id="visitorEmailInput" class="field-input" placeholder="Enter email (optional)"></div>
+                    </div>
+                </div>
+                <hr class="divider">
 
+                <!-- Resource & Schedule -->
+                <div style="margin-bottom:20px">
+                    <div class="section-head">
+                        <div class="section-icon"><i class="fa-solid fa-calendar-days" style="color:var(--indigo);font-size:.9rem"></i></div>
+                        <div><div class="section-title">Resource & Schedule</div></div>
+                    </div>
+
+                    <div style="margin-bottom:14px">
+                        <label class="field-label">Select Asset / Resource</label>
+                        <select id="resourceSelect" name="resource_id" class="field-input" required>
+                            <option value="">— Choose a resource —</option>
+                            <?php foreach ($resources as $res): ?>
+                                <option value="<?= $res['id'] ?>" data-name="<?= htmlspecialchars($res['name']) ?>"><?= htmlspecialchars($res['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- PC workstation picker -->
+                    <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
+                        <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block">Assign Workstation(s)</label>
+                        <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
+                            <?php foreach ($pcs as $pc): ?>
+                                <button type="button" onclick="togglePc('<?= htmlspecialchars($pc['pc_number']) ?>',this)" data-pc="<?= htmlspecialchars($pc['pc_number']) ?>" class="pc-btn"><?= htmlspecialchars($pc['pc_number']) ?></button>
+                            <?php endforeach; ?>
+                        </div>
+                        <p style="font-size:.72rem;color:var(--indigo);font-weight:600;margin-top:10px">Selected: <span id="pcSelectedLabel">None</span></p>
+                    </div>
+
+                    <!-- Date / time pickers -->
+                    <div class="grid-3" style="margin-bottom:14px">
+                        <div>
+                            <label class="field-label">Date</label>
+                            <div class="picker-wrap" id="dateWrap">
+                                <div class="dt-trigger" id="dateTrigger">
+                                    <span id="dateLabel">Pick a date</span>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="2.5" stroke="#818cf8" stroke-width="1.4"/><path d="M5 1v3M11 1v3M1 7h14" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round"/></svg>
+                                </div>
+                                <div class="dt-drop cal" id="calDrop" style="display:none"></div>
+                            </div>
+                            <input type="hidden" name="reservation_date" id="resDate" value="<?= date('Y-m-d') ?>">
+                        </div>
+                        <div>
+                            <label class="field-label">Start Time</label>
+                            <div class="picker-wrap" id="startWrap">
+                                <div class="dt-trigger" id="startTrigger">
+                                    <span id="startLabel">Select time</span>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#818cf8" stroke-width="1.4"/><path d="M8 4.5V8l2.5 2.5" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round"/></svg>
+                                </div>
+                                <div class="dt-drop tim" id="startDrop" style="display:none"></div>
+                            </div>
+                            <input type="hidden" name="start_time" id="startTime">
+                        </div>
+                        <div>
+                            <label class="field-label">End Time</label>
+                            <div class="picker-wrap" id="endWrap">
+                                <div class="dt-trigger" id="endTrigger">
+                                    <span id="endLabel">Select time</span>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#818cf8" stroke-width="1.4"/><path d="M8 4.5V8l2.5 2.5" stroke="#818cf8" stroke-width="1.4" stroke-linecap="round"/></svg>
+                                </div>
+                                <div class="dt-drop tim" id="endDrop" style="display:none"></div>
+                            </div>
+                            <input type="hidden" name="end_time" id="endTime">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:14px">
+                        <label class="field-label">Purpose of Visit</label>
+                        <select id="purposeSelect" class="field-input" required>
+                            <option value="">— Select purpose —</option>
+                            <option>Work</option>
+                            <option>Personal</option>
+                            <option>Study</option>
+                            <option>SK Activity</option>
+                            <option>Others</option>
+                        </select>
+                    </div>
+                    <div id="purposeOtherWrap" style="display:none;margin-bottom:14px">
+                        <label class="field-label">Please Specify</label>
+                        <input type="text" id="purposeOther" class="field-input" placeholder="Describe the purpose…">
+                    </div>
+                </div>
+
+                <button type="button" onclick="previewReservation()" class="submit-btn">
+                    <i class="fa-solid fa-eye" style="font-size:.85rem"></i> Preview & Confirm
+                </button>
+            </form>
+        </div>
     </main>
 
     <script>
-        const allTableRows = Array.from(document.querySelectorAll('#tableBody .res-row'));
-        const allCards = Array.from(document.querySelectorAll('#mobileCardList .res-card'));
-        let curTab = 'all',
-            approveTargetId = null,
-            declineTargetId = null;
-        let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
-        let csrfName = document.querySelector('meta[name="csrf-name"]')?.getAttribute('content') ?? 'csrf_token';
+        const allUsers = <?= json_encode($users ?? []) ?>;
+        let currentType = 'User', selectedUser = null, selectedPcs = [];
 
-        function refreshCsrf(data) {
-            if (data.csrf_hash && data.csrf_token) {
-                csrfToken = data.csrf_hash;
-                csrfName = data.csrf_token;
-                document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', csrfToken);
-                document.querySelector('meta[name="csrf-name"]')?.setAttribute('content', csrfName);
-            }
+        function setType(type) {
+            currentType = type;
+            document.getElementById('finalVisitorType').value = type;
+            const isUser = type === 'User';
+            document.getElementById('btnUser').classList.toggle('active', isUser);
+            document.getElementById('btnVisitor').classList.toggle('active', !isUser);
+            document.getElementById('userFields').style.display = isUser ? 'grid' : 'none';
+            document.getElementById('visitorFields').style.display = isUser ? 'none' : 'grid';
+            selectedUser = null;
+            ['userNameInput','userEmailDisplay','visitorNameInput','visitorEmailInput'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            document.getElementById('finalUserId').value = '';
         }
 
-        const printLogMap = {};
-        <?php foreach ($printLogMap as $resId => $pl): ?>
-            printLogMap[<?= (int)$resId ?>] = {
-                printed: <?= isset($pl['printed']) ? (in_array($pl['printed'], [true, 1, 't', 'true', '1'], true) ? 'true' : 'false') : 'false' ?>,
-                pages: <?= (int)($pl['pages'] ?? 0) ?>,
-                at: "<?= !empty($pl['printed_at']) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '' ?>"
-            };
-        <?php endforeach; ?>
+        const userNameInput    = document.getElementById('userNameInput');
+        const autocompleteList = document.getElementById('autocompleteList');
 
-        let _currentReservationId = null;
-
-        /* ── Save print log ── */
-        async function savePrintLog() {
-            const rid = _currentReservationId;
-            const pages = parseInt(document.getElementById('printPagesInput').value, 10) || 0;
-            const btn = document.getElementById('savePrintBtn');
-            const msg = document.getElementById('printSaveMsg');
-            if (!rid) {
-                msg.textContent = 'No reservation selected.';
-                msg.style.color = '#ef4444';
-                return;
-            }
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:.75rem"></i> Saving…';
-            msg.textContent = '';
-            msg.style.color = '';
-            const body = new FormData();
-            body.append(csrfName, csrfToken);
-            body.append('reservation_id', rid);
-            body.append('printed', pages > 0 ? 1 : 0);
-            body.append('pages', pages);
-            try {
-                const res = await fetch('<?= base_url('sk/log-print') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body
+        userNameInput.addEventListener('input', () => {
+            const q = userNameInput.value.toLowerCase().trim();
+            autocompleteList.innerHTML = '';
+            selectedUser = null;
+            if (!q) { autocompleteList.style.display = 'none'; return; }
+            const matches = allUsers.filter(u =>
+                (u.name || '').toLowerCase().includes(q) ||
+                (u.full_name || '').toLowerCase().includes(q) ||
+                (u.email || '').toLowerCase().includes(q)
+            ).slice(0, 8);
+            if (!matches.length) { autocompleteList.style.display = 'none'; return; }
+            matches.forEach(u => {
+                const displayName = u.full_name || u.name || '';
+                const li = document.createElement('li');
+                li.className = 'autocomplete-item';
+                li.innerHTML = `<div style="font-weight:600">${displayName}</div><div class="sub">${u.email}</div>`;
+                li.addEventListener('mousedown', () => {
+                    selectedUser = u;
+                    userNameInput.value = displayName;
+                    document.getElementById('userEmailDisplay').value = u.email;
+                    document.getElementById('finalUserId').value = u.id;
+                    autocompleteList.style.display = 'none';
                 });
-                const data = JSON.parse(await res.text());
-                if (data.ok) {
-                    refreshCsrf(data);
-                    const now = new Date();
-                    const fmt = now.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric'
-                    }) + ' · ' + now.toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit'
-                    });
-                    printLogMap[rid] = {
-                        printed: pages > 0,
-                        pages,
-                        at: fmt
-                    };
-                    refreshPrintLogStrip(rid);
-                    refreshBothPrintCells(rid, pages);
-                    msg.textContent = pages > 0 ? `✓ Saved — ${pages} page${pages!==1?'s':''} printed` : '✓ Saved — no printing logged';
-                    msg.style.color = '#3730a3';
-                    btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:.75rem"></i> Saved';
-                    setTimeout(() => {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:.75rem"></i> Save';
-                    }, 2000);
-                } else {
-                    throw new Error(data.error ?? 'Unknown error');
-                }
-            } catch (err) {
-                msg.textContent = '✗ Failed: ' + err.message;
-                msg.style.color = '#ef4444';
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:.75rem"></i> Save';
-            }
-        }
-
-        function refreshPrintLogStrip(rid) {
-            const plog = printLogMap[rid];
-            const logEl = document.getElementById('dPrintLog');
-            if (!plog) {
-                logEl.style.display = 'none';
-                return;
-            }
-            logEl.style.display = 'flex';
-            const logText = document.getElementById('dPrintText');
-            const logBadge = document.getElementById('dPrintBadge');
-            if (plog.printed) {
-                logText.textContent = `Printed ${plog.pages} page${plog.pages!==1?'s':''}` + (plog.at ? ` · ${plog.at}` : '');
-                logBadge.textContent = `${plog.pages}pg`;
-                logBadge.style.cssText = 'background:#e0e7ff;color:#3730a3;font-size:.65rem;font-weight:800;padding:.2rem .65rem;border-radius:999px;flex-shrink:0';
-            } else {
-                logText.textContent = 'No printing during this session';
-                logBadge.textContent = 'No print';
-                logBadge.style.cssText = 'background:#f1f5f9;color:#64748b;font-size:.65rem;font-weight:800;padding:.2rem .65rem;border-radius:999px;flex-shrink:0';
-            }
-        }
-
-        function refreshBothPrintCells(rid, pages) {
-            allTableRows.forEach(row => {
-                if (row.dataset.id == rid) {
-                    row.cells[7].innerHTML = pages > 0 ?
-                        `<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:.6rem"></i> ${pages}pg</span>` :
-                        `<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:.6rem"></i> No print</span>`;
-                    row.dataset.plPrinted = pages > 0 ? 'Yes' : 'No';
-                    row.dataset.plPages = pages > 0 ? pages : '';
-                }
+                autocompleteList.appendChild(li);
             });
-            allCards.forEach(card => {
-                if (card.dataset.id == rid) {
-                    const w = card.querySelector('.card-print-pill');
-                    if (w) w.innerHTML = pages > 0 ?
-                        `<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:.6rem"></i> ${pages}pg</span>` :
-                        `<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:.6rem"></i> No print</span>`;
-                    card.dataset.plPrinted = pages > 0 ? 'Yes' : 'No';
-                    card.dataset.plPages = pages > 0 ? pages : '';
-                }
-            });
+            autocompleteList.style.display = 'block';
+        });
+        userNameInput.addEventListener('blur', () => setTimeout(() => autocompleteList.style.display = 'none', 150));
+
+        document.getElementById('resourceSelect').addEventListener('change', function() {
+            const name = (this.options[this.selectedIndex]?.dataset.name || '').toLowerCase();
+            const showPcs = name.includes('computer') || name.includes('pc') || name.includes('lab');
+            document.getElementById('pcSection').style.display = showPcs ? 'block' : 'none';
+            selectedPcs = []; updatePcHidden();
+            document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
+        });
+
+        function togglePc(num, btn) {
+            const idx = selectedPcs.indexOf(num);
+            if (idx === -1) { selectedPcs.push(num); btn.classList.add('selected'); }
+            else            { selectedPcs.splice(idx, 1); btn.classList.remove('selected'); }
+            updatePcHidden();
+        }
+        function updatePcHidden() {
+            document.getElementById('finalPcs').value = JSON.stringify(selectedPcs);
+            document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
         }
 
-        /* ── Export CSV ── */
-        function exportCSV() {
-            const visibleRows = allTableRows.filter(r => r.style.display !== 'none');
-            const headers = ['ID', 'User Name', 'Email', 'Resource Name', 'PC Number', 'Date', 'Start Time', 'End Time', 'Purpose', 'Visitor Type', 'Status', 'Approved By', 'Approved At', 'Printed', 'Pages Printed', 'Submitted At'];
-            const escape = v => {
-                const s = String(v ?? '');
-                return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
-            };
-            const lines = [headers.map(escape).join(',')];
-            visibleRows.forEach(row => {
-                try {
-                    const d = JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/, '').replace(/\)$/, ''));
-                    lines.push([d.id ?? '', d.name ?? '', d.email ?? '', d.resource ?? '', d.pc ?? '', d.date ?? '', d.start ?? '', d.end ?? '', d.purpose ?? '', d.type ?? '', d.status ?? '', d.approverName ?? '', d.approvedAt ?? '', row.dataset.plPrinted ?? '', row.dataset.plPages ?? '', d.created ?? ''].map(escape).join(','));
-                } catch (e) {}
-            });
-            const blob = new Blob([lines.join('\r\n')], {
-                type: 'text/csv;charset=utf-8;'
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `sk-reservations-${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
+        document.getElementById('purposeSelect').addEventListener('change', function() {
+            document.getElementById('purposeOtherWrap').style.display = this.value === 'Others' ? 'block' : 'none';
+        });
 
-        /* ── Tabs & filters ── */
-        function setTab(btn, tab) {
-            document.querySelectorAll('.qtab').forEach(t => t.classList.remove('active'));
-            btn.classList.add('active');
-            curTab = tab;
-            syncCards(tab);
-            applyFilters();
-        }
+        function previewReservation() {
+            const isUser = currentType === 'User';
+            const name   = isUser ? userNameInput.value.trim() : document.getElementById('visitorNameInput').value.trim();
+            const email  = isUser ? document.getElementById('userEmailDisplay').value.trim() : document.getElementById('visitorEmailInput').value.trim();
+            const resourceEl   = document.getElementById('resourceSelect');
+            const resourceName = resourceEl.options[resourceEl.selectedIndex]?.text || '—';
+            const showPcs      = document.getElementById('pcSection').style.display !== 'none';
+            const date      = document.getElementById('resDate').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime   = document.getElementById('endTime').value;
+            const purposeVal   = document.getElementById('purposeSelect').value;
+            const purposeOther = document.getElementById('purposeOther').value.trim();
+            const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
 
-        function filterByStatus(tab) {
-            curTab = tab;
-            document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-            syncCards(tab);
-            applyFilters();
-        }
+            if (!name)             return alert('Please enter a name.');
+            if (!resourceEl.value) return alert('Please select a resource.');
+            if (showPcs && !selectedPcs.length) return alert('Please select at least one workstation.');
+            if (!date)             return alert('Please select a date.');
+            if (!startTime)        return alert('Please enter a start time.');
+            if (!endTime)          return alert('Please enter an end time.');
+            if (!purposeVal)       return alert('Please select a purpose.');
+            if (isUser && !selectedUser && !document.getElementById('finalUserId').value)
+                return alert('Please select a registered user from the dropdown.');
 
-        function syncCards(tab) {
-            document.querySelectorAll('[data-filter]').forEach(c => c.classList.toggle('ring', c.dataset.filter === tab));
-        }
+            document.getElementById('finalVisitorName').value = name;
+            document.getElementById('finalUserEmail').value   = email;
+            document.getElementById('finalPurpose').value     = purposeFinal;
 
-        function applyFilters() {
-            const q = document.getElementById('searchInput').value.toLowerCase().trim();
-            const date = document.getElementById('dateInput').value;
-            const matchesFilters = el => {
-                const matchTab = curTab === 'all' ? true : curTab === 'declined' ? ['declined', 'canceled'].includes(el.dataset.status) : el.dataset.status === curTab;
-                return matchTab && (!q || el.dataset.search.includes(q)) && (!date || el.dataset.date === date);
-            };
-            let n = 0;
-            allTableRows.forEach(row => {
-                const show = matchesFilters(row);
-                row.style.display = show ? '' : 'none';
-                if (show) n++;
-            });
-            let cv = 0;
-            allCards.forEach(card => {
-                const show = matchesFilters(card);
-                card.style.display = show ? '' : 'none';
-                if (show) cv++;
-            });
-            if (allCards.length > 0) document.getElementById('mobileEmpty').style.display = cv === 0 ? 'block' : 'none';
-            const total = allTableRows.length;
-            document.getElementById('resultCount').textContent = `Showing ${n} of ${total} reservation${total!==1?'s':''}`;
-            document.getElementById('tableFooter').textContent = `${n} result${n!==1?'s':''} displayed`;
-        }
-
-        function clearFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('dateInput').value = '';
-            curTab = 'all';
-            document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'all'));
-            syncCards('all');
-            applyFilters();
-        }
-
-        /* ── Sort ── */
-        let sortDir = {};
-
-        function sortTable(col) {
-            sortDir[col] = !sortDir[col];
-            const tbody = document.getElementById('tableBody');
-            Array.from(tbody.querySelectorAll('.res-row'))
-                .sort((a, b) => {
-                    const at = (a.cells[col]?.innerText ?? '').trim().toLowerCase(),
-                        bt = (b.cells[col]?.innerText ?? '').trim().toLowerCase();
-                    return sortDir[col] ? at.localeCompare(bt) : bt.localeCompare(at);
-                })
-                .forEach(r => tbody.appendChild(r));
-            document.querySelectorAll('thead th').forEach((th, i) => {
-                th.classList.toggle('sorted', i === col);
-                const ic = th.querySelector('.sort-icon');
-                if (ic) ic.className = `fa-solid ${i===col?(sortDir[col]?'fa-sort-up':'fa-sort-down'):'fa-sort'} sort-icon`;
-            });
-        }
-
-        /* ── Status meta ── */
-        const STATUS_META = {
-            pending: {
-                icon: 'fa-clock',
-                bg: '#fef3c7',
-                color: '#92400e',
-                label: 'Pending — Awaiting approval'
-            },
-            approved: {
-                icon: 'fa-circle-check',
-                bg: '#eef2ff',
-                color: '#3730a3',
-                label: 'Approved'
-            },
-            claimed: {
-                icon: 'fa-check-double',
-                bg: '#f3e8ff',
-                color: '#6b21a8',
-                label: 'Claimed — Ticket used'
-            },
-            declined: {
-                icon: 'fa-xmark-circle',
-                bg: '#fee2e2',
-                color: '#991b1b',
-                label: 'Declined'
-            },
-            canceled: {
-                icon: 'fa-ban',
-                bg: '#fee2e2',
-                color: '#991b1b',
-                label: 'Cancelled'
-            },
-            expired: {
-                icon: 'fa-hourglass-end',
-                bg: '#f1f5f9',
-                color: '#475569',
-                label: 'Expired — Was never approved'
-            },
-            unclaimed: {
-                icon: 'fa-ticket',
-                bg: '#fff7ed',
-                color: '#c2410c',
-                label: 'Unclaimed — Approved but did not show up'
-            },
-        };
-
-        /* ── Open detail modal ── */
-        function openDetail(d) {
-            _currentReservationId = d.id;
-            const plog = printLogMap[d.id];
-            document.getElementById('printPagesInput').value = plog ? (plog.printed ? plog.pages : 0) : 0;
-            document.getElementById('printSaveMsg').textContent = '';
-            const saveBtn = document.getElementById('savePrintBtn');
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:.75rem"></i> Save';
-            const m = STATUS_META[d.status] || STATUS_META.pending;
-            document.getElementById('dId').textContent = 'Reservation #' + d.id;
-            document.getElementById('dName').textContent = d.name;
-            document.getElementById('dEmail').textContent = d.email;
-            document.getElementById('dResource').textContent = d.resource;
-            document.getElementById('dPc').textContent = d.pc ? 'PC: ' + d.pc : '';
-            document.getElementById('dDate').textContent = d.date;
-            document.getElementById('dTime').textContent = d.start + ' – ' + d.end;
-            document.getElementById('dPurpose').textContent = d.purpose;
-            document.getElementById('dType').textContent = d.type;
-            document.getElementById('dCreated').textContent = d.created;
-            const approverRow = document.getElementById('dApprovedByRow');
-            if (d.approverName && ['approved', 'claimed', 'declined', 'expired', 'unclaimed'].includes(d.status)) {
-                approverRow.style.display = 'flex';
-                const isDeclined = d.status === 'declined';
-                document.getElementById('dApprovedByLabel').textContent = isDeclined ? 'Declined By' : 'Approved By';
-                document.getElementById('dApprovedByIcon').className = 'dicon' + (isDeclined ? ' bg-red-50 text-red-500' : '');
-                document.getElementById('dApprovedByIcon').innerHTML = `<i class="fa-solid ${isDeclined?'fa-user-xmark':'fa-user-check'}"></i>`;
-                document.getElementById('dApprovedByName').textContent = d.approverName;
-                document.getElementById('dApprovedByEmail').textContent = d.approverEmail || '';
-                document.getElementById('dApprovedAt').textContent = d.approvedAt ? `on ${d.approvedAt}` : '';
-            } else {
-                approverRow.style.display = 'none';
-            }
-            const bar = document.getElementById('dStatusBar');
-            bar.style.background = m.bg;
-            bar.style.color = m.color;
-            bar.innerHTML = `<i class="fa-solid ${m.icon}"></i> <span>${m.label}</span>`;
-            document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
-            const qrSec = document.getElementById('dQr'),
-                clSec = document.getElementById('dClaimed');
-            if (d.claimed || d.status === 'claimed') {
-                qrSec.style.display = 'none';
-                clSec.style.display = 'block';
-            } else if (d.status === 'approved' || d.status === 'unclaimed') {
-                clSec.style.display = 'none';
-                qrSec.style.display = 'flex';
-                QRCode.toCanvas(document.getElementById('qrCanvas'), d.code, {
-                    width: 150,
-                    margin: 1,
-                    color: {
-                        dark: '#1e293b',
-                        light: '#ffffff'
-                    }
-                });
-                document.getElementById('dTicketCode').textContent = d.code;
-            } else {
-                qrSec.style.display = 'none';
-                clSec.style.display = 'none';
-            }
-            refreshPrintLogStrip(d.id);
-            const acts = document.getElementById('dActions');
-            if (d.status === 'pending') {
-                acts.innerHTML = `<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve flex-1"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline flex-1"><i class="fa-solid fa-xmark"></i> Decline</button>`;
-            } else {
-                acts.innerHTML = `<button onclick="closeModal('detail')" class="btn-cancel" style="width:100%"><i class="fa-solid fa-xmark" style="font-size:.75rem"></i> Close</button>`;
-            }
-            document.getElementById('detailModal').classList.add('open');
+            const rows = [
+                ['Type',         isUser ? 'Registered User' : 'Walk-in Visitor'],
+                ['Name',         name || '—'],
+                ['Email',        email || '—'],
+                ['Resource',     resourceName],
+                ['Workstations', selectedPcs.length ? selectedPcs.join(', ') : '—'],
+                ['Date',         document.getElementById('dateLabel').textContent],
+                ['Time',         `${document.getElementById('startLabel').textContent} – ${document.getElementById('endLabel').textContent}`],
+                ['Purpose',      purposeFinal || '—']
+            ];
+            document.getElementById('modalSummaryBox').innerHTML =
+                rows.map(([l,v]) => `<div class="mrow"><span class="mrow-label">${l}</span><span class="mrow-value">${v}</span></div>`).join('');
+            document.getElementById('qrWrap').style.display = 'none';
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = false; btn.style.display = 'flex';
+            btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:.8rem"></i> Confirm & Save';
+            document.getElementById('confirmModal').classList.add('open');
             document.body.style.overflow = 'hidden';
         }
 
-        function downloadTicket() {
+        function submitReservation() {
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:.8rem"></i> Saving…';
+            const code = `SK-${Date.now()}`;
+            document.getElementById('qrText').textContent = code;
+            QRCode.toCanvas(document.getElementById('qrCanvas'), code,
+                { width: 160, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } },
+                () => {
+                    document.getElementById('qrWrap').style.display = 'flex';
+                    btn.style.display = 'none';
+                    // Update actions row to remove buttons
+                    document.getElementById('modalActions').innerHTML = '';
+                    setTimeout(() => document.getElementById('reservationForm').submit(), 800);
+                }
+            );
+        }
+
+        function downloadQR() {
             const canvas = document.getElementById('qrCanvas');
-            const code = document.getElementById('dTicketCode').textContent;
-            const link = document.createElement('a');
+            const code   = document.getElementById('qrText').textContent;
+            const link   = document.createElement('a');
             link.download = `E-Ticket-${code}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.href     = canvas.toDataURL('image/png');
             link.click();
         }
 
-        function triggerApprove(id, name) {
-            approveTargetId = id;
-            document.getElementById('approveConfirmName').textContent = name ? `"${name}"` : '';
-            openModal('approve');
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('open');
+            document.body.style.overflow = '';
         }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    </script>
 
-        function triggerDecline(id, name) {
-            declineTargetId = id;
-            document.getElementById('declineConfirmName').textContent = name ? `"${name}"` : '';
-            openModal('decline');
+    <!-- Custom Date / Time Picker JS -->
+    <script>
+    (function() {
+        'use strict';
+        const TODAY = new Date();
+        let calView  = { y: TODAY.getFullYear(), m: TODAY.getMonth() };
+        let selDate  = null;
+        let tState   = { start: { h: 9, min: 0, ampm: 'am' }, end: { h: 5, min: 0, ampm: 'pm' } };
+        let activeDrop = null;
+        const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const DOWS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+        const MINS   = [0,5,10,15,20,25,30,35,40,45,50,55];
+        function $(id){ return document.getElementById(id); }
+
+        function closeAll() {
+            ['calDrop','startDrop','endDrop'].forEach(id => { const el=$(id); if(el) el.style.display='none'; });
+            ['dateTrigger','startTrigger','endTrigger'].forEach(id => { const el=$(id); if(el) el.classList.remove('open'); });
+            activeDrop = null;
         }
-
-        document.getElementById('confirmApproveBtn').addEventListener('click', function() {
-            if (!approveTargetId) return;
-            this.disabled = true;
-            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving…';
-            document.getElementById('approveId').value = approveTargetId;
-            document.getElementById('approveForm').submit();
-        });
-        document.getElementById('confirmDeclineBtn').addEventListener('click', function() {
-            if (!declineTargetId) return;
-            this.disabled = true;
-            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Declining…';
-            document.getElementById('declineId').value = declineTargetId;
-            document.getElementById('declineForm').submit();
-        });
-
-        const modalIds = {
-            detail: 'detailModal',
-            approve: 'approveModal',
-            decline: 'declineModal'
-        };
-
-        function openModal(key) {
-            const el = document.getElementById(modalIds[key]);
-            if (el) {
-                el.classList.add('open');
-                document.body.style.overflow = 'hidden';
+        function toggle(dropId, triggerId) {
+            if (activeDrop === dropId) { closeAll(); return; }
+            closeAll(); activeDrop = dropId;
+            const drop = $(dropId);
+            drop.style.left = '0'; drop.style.right = '';
+            drop.style.display = 'block';
+            $(triggerId).classList.add('open');
+            const rect = drop.getBoundingClientRect(), vw = window.innerWidth;
+            if (rect.right > vw - 8) {
+                const overflow = rect.right - (vw - 8);
+                drop.style.left = Math.max(-rect.left + 8, -overflow) + 'px';
             }
         }
+        document.addEventListener('click', e => { if (!e.target.closest('.picker-wrap')) closeAll(); });
 
-        function closeModal(key) {
-            const el = document.getElementById(modalIds[key]);
-            if (el) {
-                el.classList.remove('open');
-                document.body.style.overflow = '';
+        function renderCal() {
+            const {y,m} = calView;
+            const firstDow=new Date(y,m,1).getDay(), daysInM=new Date(y,m+1,0).getDate(), prevTotal=new Date(y,m,0).getDate();
+            let html=`<div class="cal-head"><div class="cal-nav-btn" id="_calPrev">&#8249;</div><div class="cal-month-label">${MONTHS[m]} ${y}</div><div class="cal-nav-btn" id="_calNext">&#8250;</div></div><div class="cal-grid">${DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
+            for(let i=0;i<firstDow;i++) html+=`<div class="cal-day cal-other">${prevTotal-firstDow+1+i}</div>`;
+            for(let d=1;d<=daysInM;d++){
+                const isToday=d===TODAY.getDate()&&m===TODAY.getMonth()&&y===TODAY.getFullYear();
+                const isSel=selDate&&selDate.d===d&&selDate.m===m&&selDate.y===y;
+                html+=`<div class="${['cal-day',isToday&&!isSel?'cal-today':'',isSel?'cal-selected':''].filter(Boolean).join(' ')}" data-d="${d}">${d}</div>`;
             }
-            if (key === 'detail') _currentReservationId = null;
-            if (key === 'approve') {
-                const b = document.getElementById('confirmApproveBtn');
-                b.disabled = false;
-                b.innerHTML = '<i class="fa-solid fa-check"></i> Approve';
-            }
-            if (key === 'decline') {
-                const b = document.getElementById('confirmDeclineBtn');
-                b.disabled = false;
-                b.innerHTML = '<i class="fa-solid fa-xmark"></i> Decline';
-            }
+            const trail=(7-(firstDow+daysInM)%7)%7;
+            for(let i=1;i<=trail;i++) html+=`<div class="cal-day cal-other">${i}</div>`;
+            html+=`</div><div class="cal-footer"><span class="cal-foot-btn" id="_calClear">Clear</span><span class="cal-foot-btn today" id="_calToday">Today</span></div>`;
+            $('calDrop').innerHTML=html;
+            $('_calPrev').addEventListener('click',e=>{e.stopPropagation();moveMonth(-1);});
+            $('_calNext').addEventListener('click',e=>{e.stopPropagation();moveMonth(1);});
+            $('_calClear').addEventListener('click',e=>{e.stopPropagation();clearDate();});
+            $('_calToday').addEventListener('click',e=>{e.stopPropagation();gotoToday();});
+            $('calDrop').querySelectorAll('.cal-day[data-d]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();pickDay(+el.dataset.d);}));
         }
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') {
-                closeModal('detail');
-                closeModal('approve');
-                closeModal('decline');
-            }
-        });
-
-        /* ── Stat grid responsive columns ── */
-        function fixStatGrid() {
-            const g = document.getElementById('statGrid');
-            if (!g) return;
-            g.style.gridTemplateColumns = window.innerWidth < 640 ? 'repeat(3,minmax(0,1fr))' : window.innerWidth < 900 ? 'repeat(3,minmax(0,1fr))' : 'repeat(6,minmax(0,1fr))';
+        function moveMonth(dir){ calView.m+=dir; if(calView.m>11){calView.m=0;calView.y++;} if(calView.m<0){calView.m=11;calView.y--;} renderCal(); }
+        function pickDay(d){
+            selDate={d,m:calView.m,y:calView.y};
+            const dt=new Date(calView.y,calView.m,d);
+            const iso=`${calView.y}-${String(calView.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            $('resDate').value=iso;
+            $('dateLabel').textContent=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+            $('dateTrigger').classList.add('has-value');
+            renderCal(); setTimeout(closeAll,180);
         }
-        fixStatGrid();
-        window.addEventListener('resize', fixStatGrid);
-        applyFilters();
+        function clearDate(){ selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');renderCal(); }
+        function gotoToday(){ calView={y:TODAY.getFullYear(),m:TODAY.getMonth()};pickDay(TODAY.getDate()); }
 
-        /* ── Auto-refresh ── */
-        const AUTO_REFRESH_INTERVAL = 30;
-        let autoRefreshTimer = null,
-            countdownTimer = null,
-            secondsLeft = AUTO_REFRESH_INTERVAL,
-            refreshPaused = false;
-        const refreshIndicator = document.createElement('div');
-        refreshIndicator.id = 'autoRefreshIndicator';
-        refreshIndicator.innerHTML = `<span id="refreshDot" style="width:7px;height:7px;border-radius:50%;background:#6366f1;display:inline-block"></span><span id="refreshCountdown">Refresh in ${AUTO_REFRESH_INTERVAL}s</span>`;
-        refreshIndicator.title = 'Click to refresh now';
-        document.body.appendChild(refreshIndicator);
-        refreshIndicator.addEventListener('click', () => doAutoRefresh(true));
-
-        function updateCountdown() {
-            const el = document.getElementById('refreshCountdown'),
-                dot = document.getElementById('refreshDot');
-            if (!el) return;
-            if (refreshPaused) {
-                el.textContent = 'Refresh paused';
-                dot.style.background = '#f59e0b';
-            } else {
-                el.textContent = `Refresh in ${secondsLeft}s`;
-                dot.style.background = '#6366f1';
-            }
+        function renderTime(which){
+            const dropId=which==='start'?'startDrop':'endDrop';
+            const st=tState[which];
+            const hItems=Array.from({length:12},(_,i)=>i+1).map(h=>`<div class="tim-item${st.h===h?' sel':''}" data-part="h" data-val="${h}">${String(h).padStart(2,'0')}</div>`).join('');
+            const mItems=MINS.map(mn=>`<div class="tim-item${st.min===mn?' sel':''}" data-part="min" data-val="${mn}">${String(mn).padStart(2,'0')}</div>`).join('');
+            $(dropId).innerHTML=`<div class="tim-title">Select Time</div><div class="tim-cols"><div class="tim-col" id="_tc_h_${which}">${hItems}</div><div class="tim-sep">:</div><div class="tim-col" id="_tc_m_${which}">${mItems}</div><div class="ampm-col"><div class="ampm-btn${st.ampm==='am'?' sel':''}" data-ampm="am">AM</div><div class="ampm-btn${st.ampm==='pm'?' sel':''}" data-ampm="pm">PM</div></div></div><button class="tim-set-btn" id="_timSet_${which}">Set Time</button>`;
+            setTimeout(()=>{
+                const sH=$(dropId).querySelector('#_tc_h_'+which+' .sel');
+                const sM=$(dropId).querySelector('#_tc_m_'+which+' .sel');
+                if(sH)sH.scrollIntoView({block:'center',behavior:'instant'});
+                if(sM)sM.scrollIntoView({block:'center',behavior:'instant'});
+            },0);
+            $(dropId).querySelectorAll('.tim-item').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();tState[which][el.dataset.part]=+el.dataset.val;renderTime(which);}));
+            $(dropId).querySelectorAll('.ampm-btn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();tState[which].ampm=el.dataset.ampm;renderTime(which);}));
+            $(`_timSet_${which}`).addEventListener('click',e=>{e.stopPropagation();applyTime(which);});
         }
-
-        function startCountdown() {
-            clearInterval(countdownTimer);
-            secondsLeft = AUTO_REFRESH_INTERVAL;
-            updateCountdown();
-            countdownTimer = setInterval(() => {
-                if (!refreshPaused) {
-                    secondsLeft--;
-                    if (secondsLeft <= 0) secondsLeft = AUTO_REFRESH_INTERVAL;
-                }
-                updateCountdown();
-            }, 1000);
+        function applyTime(which){
+            const st=tState[which];
+            const label=`${String(st.h).padStart(2,'0')}:${String(st.min).padStart(2,'0')} ${st.ampm.toUpperCase()}`;
+            let h24=st.h;
+            if(st.ampm==='am'&&st.h===12)h24=0;
+            if(st.ampm==='pm'&&st.h!==12)h24=st.h+12;
+            const iso24=`${String(h24).padStart(2,'0')}:${String(st.min).padStart(2,'0')}`;
+            const labelId=which==='start'?'startLabel':'endLabel';
+            const inputId=which==='start'?'startTime':'endTime';
+            const triggerId=which==='start'?'startTrigger':'endTrigger';
+            $(labelId).textContent=label;$(inputId).value=iso24;$(triggerId).classList.add('has-value');
+            closeAll();
         }
 
-        async function doAutoRefresh(force = false) {
-            if (!force && document.querySelector('.overlay.open')) return;
-            const search = document.getElementById('searchInput'),
-                date = document.getElementById('dateInput');
-            if (!force && (document.activeElement === search || document.activeElement === date)) return;
-            try {
-                const dot = document.getElementById('refreshDot'),
-                    el = document.getElementById('refreshCountdown');
-                if (dot) dot.style.background = '#818cf8';
-                if (el) el.textContent = 'Refreshing…';
-                const response = await fetch(window.location.href, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'text/html'
-                    },
-                    credentials: 'same-origin'
-                });
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                const html = await response.text(),
-                    parser = new DOMParser(),
-                    newDoc = parser.parseFromString(html, 'text/html');
-                const newTbody = newDoc.querySelector('#tableBody'),
-                    oldTbody = document.querySelector('#tableBody');
-                if (newTbody && oldTbody) oldTbody.innerHTML = newTbody.innerHTML;
-                const newCards = newDoc.querySelector('#mobileCardList'),
-                    oldCards = document.querySelector('#mobileCardList');
-                if (newCards && oldCards) oldCards.innerHTML = newCards.innerHTML;
-                allTableRows.length = 0;
-                document.querySelectorAll('#tableBody .res-row').forEach(r => allTableRows.push(r));
-                allCards.length = 0;
-                document.querySelectorAll('#mobileCardList .res-card').forEach(c => allCards.push(c));
-                applyFilters();
-                secondsLeft = AUTO_REFRESH_INTERVAL;
-                updateCountdown();
-                if (dot) dot.style.background = '#6366f1';
-            } catch (err) {
-                console.warn('Auto-refresh failed:', err.message);
-                const dot = document.getElementById('refreshDot');
-                if (dot) {
-                    dot.style.background = '#ef4444';
-                    setTimeout(() => {
-                        dot.style.background = '#6366f1';
-                    }, 3000);
-                }
-            }
-        }
+        $('dateTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('calDrop','dateTrigger');if(activeDrop==='calDrop')renderCal();});
+        $('startTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('startDrop','startTrigger');if(activeDrop==='startDrop')renderTime('start');});
+        $('endTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('endDrop','endTrigger');if(activeDrop==='endDrop')renderTime('end');});
 
-        const observer = new MutationObserver(() => {
-            refreshPaused = !!document.querySelector('.overlay.open');
-            updateCountdown();
-        });
-        document.querySelectorAll('.overlay').forEach(el => observer.observe(el, {
-            attributes: true,
-            attributeFilter: ['class']
-        }));
-        ['searchInput', 'dateInput'].forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.addEventListener('focus', () => {
-                refreshPaused = true;
-                updateCountdown();
-            });
-            el.addEventListener('blur', () => {
-                refreshPaused = !!document.querySelector('.overlay.open');
-                updateCountdown();
-            });
-        });
-        autoRefreshTimer = setInterval(() => doAutoRefresh(), AUTO_REFRESH_INTERVAL * 1000);
-        startCountdown();
+        (function(){
+            const t=new Date();
+            $('dateLabel').textContent=t.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+            $('dateTrigger').classList.add('has-value');
+            selDate={d:t.getDate(),m:t.getMonth(),y:t.getFullYear()};
+        })();
+    })();
     </script>
 </body>
-
 </html>
