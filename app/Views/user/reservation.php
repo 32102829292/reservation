@@ -117,9 +117,7 @@
             .grid-2 { grid-template-columns: 1fr; gap: 12px; }
             .grid-3 { grid-template-columns: 1fr; gap: 12px; }
         }
-        @media(min-width:400px) and (max-width:639px) {
-            .grid-3 { grid-template-columns: 1fr 1fr; }
-        }
+
 
         /* ══════════════════════════════
            INPUTS
@@ -296,12 +294,16 @@
 
         .dt-drop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 9999; border-radius: 14px; animation: dtDrop .15s cubic-bezier(.4,0,.2,1); }
         @keyframes dtDrop { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+        @media(max-width:639px) {
+            .dt-drop.cal { width: calc(100vw - 32px) !important; max-width: 320px; }
+            .dt-drop.tim { width: 220px; }
+        }
 
         body:not(.dark) .dt-drop { background: #fff; border: 1px solid rgba(99,102,241,.18); box-shadow: 0 20px 50px rgba(15,23,42,.18); }
         body.dark .dt-drop { background: #0b1628; border: 1px solid rgba(99,102,241,.22); box-shadow: 0 20px 60px rgba(0,0,0,.65); }
 
         .dt-drop.cal { width: 288px; padding: 18px 16px 14px; }
-        @media(max-width:380px) { .dt-drop.cal { width: 260px; } }
+
 
         .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
         .cal-month-label { font-size:.88rem; font-weight:700; cursor:pointer; padding:4px 8px; border-radius:7px; transition:background .15s; }
@@ -768,7 +770,12 @@
         function toggle(dropId, triggerId) {
             if(activeDrop===dropId){closeAll();return;}
             closeAll(); activeDrop=dropId;
-            $(dropId).style.display='block'; $(triggerId).classList.add('open');
+            const drop=$(dropId);
+            drop.style.left='0'; drop.style.right='';
+            drop.style.display='block';
+            $(triggerId).classList.add('open');
+            const rect=drop.getBoundingClientRect(), vw=window.innerWidth;
+            if(rect.right>vw-8){ const ov=rect.right-(vw-8); drop.style.left=Math.max(-rect.left+8,-ov)+'px'; }
         }
         document.addEventListener('click',e=>{ if(!e.target.closest('.picker-wrap'))closeAll(); });
 
