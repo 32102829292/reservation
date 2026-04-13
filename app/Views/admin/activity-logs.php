@@ -11,9 +11,7 @@
     <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
-        (function() {
-            if (localStorage.getItem('admin_theme') === 'dark') document.documentElement.classList.add('dark-pre')
-        })();
+        (function() { if (localStorage.getItem('admin_theme') === 'dark') document.documentElement.classList.add('dark-pre') })();
     </script>
     <style>
         /* ══════════════════════════════
@@ -26,12 +24,8 @@
            PAGE HEADER
         ══════════════════════════════ */
         .page-header {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 24px;
-            gap: 12px;
+            display: flex; flex-wrap: wrap; justify-content: space-between;
+            align-items: flex-start; margin-bottom: 24px; gap: 12px;
         }
         .page-header-left p.eyebrow {
             font-size: .62rem; font-weight: 700; letter-spacing: .2em;
@@ -41,17 +35,8 @@
             font-size: 1.6rem; font-weight: 800; color: var(--text);
             letter-spacing: -.04em; line-height: 1.1;
         }
-        .page-header-left p.sub {
-            font-size: .78rem; color: var(--text-sub); font-weight: 500; margin-top: 4px;
-        }
-        .page-header-right {
-            display: flex; align-items: center; gap: 10px;
-            flex-wrap: wrap; flex-shrink: 0;
-        }
-        @media(max-width:480px) {
-            .page-header-left h2 { font-size: 1.3rem; }
-            .page-header-right { width: 100%; justify-content: flex-end; }
-        }
+        .page-header-left p.sub { font-size: .78rem; color: var(--text-sub); font-weight: 500; margin-top: 4px; }
+        .page-header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex-shrink: 0; }
 
         /* ══════════════════════════════
            STAT CARDS — responsive grid
@@ -67,65 +52,35 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 8px;
             }
-            /* Total card spans full width on mobile */
             .stat-grid-logs .stat-total { grid-column: 1 / -1; }
         }
         .stat-card-log {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 14px 16px;
-            border: 1px solid rgba(99,102,241,.08);
-            border-bottom-width: 3px;
-            box-shadow: var(--shadow-sm);
-            transition: transform .2s, box-shadow .2s;
-            min-width: 0;
+            background: var(--card); border-radius: 16px; padding: 14px 16px;
+            border: 1px solid rgba(99,102,241,.08); border-bottom-width: 3px;
+            box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s; min-width: 0;
         }
         .stat-card-log:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .stat-card-log .lbl {
-            font-size: .58rem; font-weight: 800; text-transform: uppercase;
-            letter-spacing: .16em; margin-bottom: 4px;
-        }
-        .stat-card-log .num {
-            font-size: 1.6rem; font-weight: 800; color: var(--text);
-            line-height: 1; font-family: var(--mono);
-        }
-        @media(max-width:639px) {
-            .stat-card-log .num { font-size: 1.4rem; }
-            .stat-card-log { padding: 12px 14px; }
-        }
+        .stat-card-log .lbl { font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .16em; margin-bottom: 4px; }
+        .stat-card-log .num { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1; font-family: var(--mono); }
+        @media(max-width:639px) { .stat-card-log .num { font-size: 1.4rem; } .stat-card-log { padding: 12px 14px; } }
 
         /* ══════════════════════════════
            FILTER BAR
         ══════════════════════════════ */
         .filter-bar {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(99,102,241,.07);
-            background: rgba(99,102,241,.02);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            padding: 14px 16px; border-bottom: 1px solid rgba(99,102,241,.07);
+            background: rgba(99,102,241,.02); display: flex; flex-wrap: wrap; gap: 10px;
         }
         #searchInput, #actionFilter {
-            background: var(--card);
-            border: 1px solid rgba(99,102,241,.15);
-            border-radius: var(--r-sm);
-            padding: 10px 14px;
-            font-family: var(--font);
-            font-size: .875rem;
-            color: var(--text);
-            outline: none;
-            transition: border-color .2s, box-shadow .2s;
+            background: var(--card); border: 1px solid rgba(99,102,241,.15); border-radius: var(--r-sm);
+            padding: 10px 14px; font-family: var(--font); font-size: .875rem; color: var(--text);
+            outline: none; transition: border-color .2s, box-shadow .2s;
         }
         #searchInput { padding-left: 36px; flex: 1; min-width: 0; }
         #actionFilter { width: auto; min-width: 140px; cursor: pointer; }
-        #searchInput:focus, #actionFilter:focus {
-            border-color: var(--indigo);
-            box-shadow: 0 0 0 4px rgba(55,48,163,.08);
-        }
+        #searchInput:focus, #actionFilter:focus { border-color: var(--indigo); box-shadow: 0 0 0 4px rgba(55,48,163,.08); }
         #searchInput::placeholder { color: var(--text-sub); }
-        @media(max-width:480px) {
-            #actionFilter { width: 100%; min-width: 0; }
-        }
+        @media(max-width:480px) { #actionFilter { width: 100%; min-width: 0; } }
 
         /* ══════════════════════════════
            BADGES
@@ -151,29 +106,20 @@
         .details-tooltip { position: relative; display: inline-block; }
         .tooltip-text {
             visibility: hidden; opacity: 0; pointer-events: none;
-            position: absolute; bottom: calc(100% + 8px); left: 50%;
-            transform: translateX(-50%); background: #1e293b; color: white;
-            padding: 7px 11px; border-radius: 10px; font-size: .73rem;
-            max-width: min(280px, 80vw); white-space: normal; word-break: break-word;
+            position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: white; padding: 7px 11px; border-radius: 10px;
+            font-size: .73rem; max-width: min(280px, 80vw); white-space: normal; word-break: break-word;
             line-height: 1.45; transition: opacity .18s; z-index: 50; box-shadow: var(--shadow-md);
         }
-        .tooltip-text::after {
-            content: ''; position: absolute; top: 100%; left: 50%; margin-left: -5px;
-            border: 5px solid transparent; border-top-color: #1e293b;
-        }
-        @media(max-width:640px) {
-            .tooltip-text { left: 0; transform: none; }
-            .tooltip-text::after { left: 16px; }
-        }
+        .tooltip-text::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -5px; border: 5px solid transparent; border-top-color: #1e293b; }
+        @media(max-width:640px) { .tooltip-text { left: 0; transform: none; } .tooltip-text::after { left: 16px; } }
         .details-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
 
         /* ══════════════════════════════
            MOBILE LOG CARDS
         ══════════════════════════════ */
         .mobile-log-card {
-            background: var(--card);
-            padding: 14px 16px;
-            transition: box-shadow .15s;
+            background: var(--card); padding: 14px 16px; transition: box-shadow .15s;
             border-bottom: 1px solid rgba(99,102,241,.06);
         }
         .mobile-log-card:last-child { border-bottom: none; }
@@ -193,11 +139,7 @@
            LEGEND
         ══════════════════════════════ */
         .legend-wrap { display: flex; flex-wrap: wrap; gap: 10px 16px; }
-        .legend-footer {
-            margin-top: 18px;
-            display: flex; flex-wrap: wrap; align-items: center;
-            justify-content: space-between; gap: 12px;
-        }
+        .legend-footer { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 
         /* ══════════════════════════════
            ICON & ACTION BUTTONS
@@ -217,16 +159,33 @@
         @media(min-width:768px)  { .show-mobile    { display:none!important } }
 
         /* ══════════════════════════════
+           PATCH: PAGE HEADER — wrap on mobile
+        ══════════════════════════════ */
+        .page-header-right { flex-wrap: wrap; }
+        @media(max-width:480px) {
+            .page-header-left h2 { font-size: 1.3rem !important; }
+            .page-header-right { width: 100%; justify-content: flex-end; }
+        }
+
+        /* ══════════════════════════════
+           PATCH: FILTER BAR — stack on mobile
+        ══════════════════════════════ */
+        @media(max-width:639px) {
+            .filter-bar { flex-direction: column; gap: 8px; }
+            #actionFilter { width: 100%; min-width: 0; }
+        }
+
+        /* ══════════════════════════════
            DARK MODE — unified palette
         ══════════════════════════════ */
-        body.dark .stat-card-log { background: var(--card); border-color: rgba(99,102,241,.12); }
+        body.dark .stat-card-log  { background: var(--card); border-color: rgba(99,102,241,.12); }
         body.dark .log-row:hover td { background: rgba(99,102,241,.06)!important; }
-        body.dark .mobile-log-card { background: var(--card); border-color: rgba(99,102,241,.08); }
+        body.dark .mobile-log-card  { background: var(--card); border-color: rgba(99,102,241,.08); }
         body.dark #searchInput,
-        body.dark #actionFilter { background: var(--input-bg); border-color: rgba(99,102,241,.18); color: var(--text); }
-        body.dark #searchInput::placeholder { color: var(--text-sub); }
+        body.dark #actionFilter     { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #e2eaf8 !important; }
+        body.dark #searchInput::placeholder { color: #4a6fa5 !important; }
         body.dark #actionFilter option { background: #0b1628; }
-        body.dark .tooltip-text { background: #1e3a5f; }
+        body.dark .tooltip-text     { background: #1e3a5f; }
         body.dark .tooltip-text::after { border-top-color: #1e3a5f; }
         body.dark .av-create  { background:rgba(5,150,105,.2);  color:#34d399; }
         body.dark .av-approve { background:rgba(37,99,235,.2);  color:#60a5fa; }
@@ -234,10 +193,12 @@
         body.dark .av-claim   { background:rgba(107,33,168,.25);color:#c084fc; }
         body.dark .av-print   { background:rgba(3,105,161,.2);  color:#38bdf8; }
         body.dark .av-default { background:rgba(100,116,139,.2);color:#94a3b8; }
-        body.dark .icon-btn   { background:#101e35; border-color:rgba(99,102,241,.18); color:#7fb3e8; }
-        body.dark .icon-btn:hover { background:rgba(99,102,241,.12); color:#a5b4fc; }
-        body.dark .page-header-left h2 { color:#e2eaf8; }
-        body.dark .page-header-left p { color:#4a6fa5; }
+        body.dark .icon-btn   { background:#101e35 !important; border-color:rgba(99,102,241,.18) !important; color:#7fb3e8 !important; }
+        body.dark .icon-btn:hover { background:rgba(99,102,241,.12) !important; color:#a5b4fc !important; }
+        body.dark .page-header-left h2 { color:#e2eaf8 !important; }
+        body.dark .page-header-left p  { color:#4a6fa5 !important; }
+        body.dark .tbl-wrap  { background: #0b1628 !important; border-color: rgba(99,102,241,.1) !important; }
+        body.dark .filter-bar { background: rgba(99,102,241,.04); border-color: rgba(99,102,241,.08); }
 
         @media print {
             .l-sidebar,.l-mobile-nav,header button { display:none!important; }
@@ -256,42 +217,42 @@
 
     $actionLabel = function(string $a): string {
         return match($a) {
-            'create'                          => 'Created',
-            'approve','approve_user_request'  => 'Approved',
-            'decline','decline_user_request'  => 'Declined',
-            'claim'                           => 'Claimed',
-            'print'                           => 'Print',
-            default                           => ucfirst(str_replace('_',' ',$a)),
+            'create'                         => 'Created',
+            'approve','approve_user_request' => 'Approved',
+            'decline','decline_user_request' => 'Declined',
+            'claim'                          => 'Claimed',
+            'print'                          => 'Print',
+            default                          => ucfirst(str_replace('_',' ',$a)),
         };
     };
     $actionSentence = function(string $a): string {
         return match($a) {
-            'create'                          => 'Created reservation',
-            'approve','approve_user_request'  => 'Approved reservation',
-            'decline','decline_user_request'  => 'Declined reservation',
-            'claim'                           => 'Claimed e-ticket',
-            'print'                           => 'Logged print',
-            default                           => ucfirst(str_replace('_',' ',$a)),
+            'create'                         => 'Created reservation',
+            'approve','approve_user_request' => 'Approved reservation',
+            'decline','decline_user_request' => 'Declined reservation',
+            'claim'                          => 'Claimed e-ticket',
+            'print'                          => 'Logged print',
+            default                          => ucfirst(str_replace('_',' ',$a)),
         };
     };
     $badgeClass = function(string $a): string {
         return match($a) {
-            'create'                          => 'badge-create',
-            'approve','approve_user_request'  => 'badge-approve',
-            'decline','decline_user_request'  => 'badge-decline',
-            'claim'                           => 'badge-claim',
-            'print'                           => 'badge-print',
-            default                           => 'badge-default',
+            'create'                         => 'badge-create',
+            'approve','approve_user_request' => 'badge-approve',
+            'decline','decline_user_request' => 'badge-decline',
+            'claim'                          => 'badge-claim',
+            'print'                          => 'badge-print',
+            default                          => 'badge-default',
         };
     };
     $avatarClass = function(string $a): string {
         return match($a) {
-            'create'                          => 'av-create',
-            'approve','approve_user_request'  => 'av-approve',
-            'decline','decline_user_request'  => 'av-decline',
-            'claim'                           => 'av-claim',
-            'print'                           => 'av-print',
-            default                           => 'av-default',
+            'create'                         => 'av-create',
+            'approve','approve_user_request' => 'av-approve',
+            'decline','decline_user_request' => 'av-decline',
+            'claim'                          => 'av-claim',
+            'print'                          => 'av-print',
+            default                          => 'av-default',
         };
     };
     ?>
@@ -349,7 +310,7 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="searchInput" placeholder="Search user, action, details…" style="width:100%">
                 </div>
-                <select id="actionFilter" style="cursor:pointer">
+                <select id="actionFilter">
                     <option value="">All Actions</option>
                     <option value="create">Created</option>
                     <option value="approve">Approved</option>
@@ -392,23 +353,17 @@
                                         </td>
                                         <td>
                                             <div style="display:flex;align-items:center;gap:8px;min-width:0">
-                                                <div style="width:30px;height:30px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800" class="<?= $avatarClass($action) ?>">
-                                                    <?= $initials ?>
-                                                </div>
+                                                <div style="width:30px;height:30px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800" class="<?= $avatarClass($action) ?>"><?= $initials ?></div>
                                                 <span style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px"><?= htmlspecialchars($name) ?></span>
                                             </div>
                                         </td>
-                                        <td>
-                                            <span class="badge <?= $badgeClass($action) ?>"><?= $actionLabel($action) ?></span>
-                                        </td>
+                                        <td><span class="badge <?= $badgeClass($action) ?>"><?= $actionLabel($action) ?></span></td>
                                         <td>
                                             <div style="display:flex;align-items:flex-start;gap:6px;min-width:0">
                                                 <div style="min-width:0">
                                                     <p style="font-size:.82rem;color:var(--text-muted);font-weight:500">
                                                         <?= $sentence ?>
-                                                        <?php if ($resId): ?>
-                                                            <strong style="color:var(--text)">#<?= htmlspecialchars($resId) ?></strong>
-                                                        <?php endif; ?>
+                                                        <?php if ($resId): ?><strong style="color:var(--text)">#<?= htmlspecialchars($resId) ?></strong><?php endif; ?>
                                                     </p>
                                                     <?php if (!empty($details)): ?>
                                                         <p style="font-size:.72rem;color:var(--text-sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px"><?= htmlspecialchars($details) ?></p>
@@ -456,18 +411,14 @@
                             data-search="<?= strtolower(htmlspecialchars("$name $action $details $resId")) ?>">
                             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
                                 <div style="display:flex;align-items:center;gap:8px;min-width:0">
-                                    <div style="width:32px;height:32px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800" class="<?= $avatarClass($action) ?>">
-                                        <?= $initials ?>
-                                    </div>
+                                    <div style="width:32px;height:32px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800" class="<?= $avatarClass($action) ?>"><?= $initials ?></div>
                                     <span style="font-size:.84rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= htmlspecialchars($name) ?></span>
                                 </div>
                                 <span class="badge <?= $badgeClass($action) ?>" style="flex-shrink:0"><?= $actionLabel($action) ?></span>
                             </div>
                             <p style="font-size:.82rem;color:var(--text-muted);font-weight:500;margin-bottom:4px">
                                 <?= $sentence ?>
-                                <?php if ($resId): ?>
-                                    <strong style="color:var(--text)">#<?= htmlspecialchars($resId) ?></strong>
-                                <?php endif; ?>
+                                <?php if ($resId): ?><strong style="color:var(--text)">#<?= htmlspecialchars($resId) ?></strong><?php endif; ?>
                             </p>
                             <?php if (!empty($details)): ?>
                                 <p style="font-size:.72rem;color:var(--text-sub);margin-bottom:6px;line-height:1.5"><?= htmlspecialchars($details) ?></p>
@@ -513,7 +464,7 @@
             const searchInput  = document.getElementById('searchInput');
             const actionFilter = document.getElementById('actionFilter');
             const noResults    = document.getElementById('noResults');
-            const countEl     = document.getElementById('resultCount');
+            const countEl      = document.getElementById('resultCount');
             const tableRows    = Array.from(document.querySelectorAll('.log-row'));
             const mobileCards  = Array.from(document.querySelectorAll('.mobile-log-card'));
             const total        = tableRows.length || mobileCards.length;

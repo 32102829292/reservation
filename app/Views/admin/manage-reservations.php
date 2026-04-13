@@ -42,7 +42,6 @@ $statusIcons = [
     'unclaimed' => 'fa-ticket',
 ];
 
-/* pass pending count to layout for nav badge */
 $pendingCount = $counts['pending'];
 ?>
 <!DOCTYPE html>
@@ -73,56 +72,25 @@ $pendingCount = $counts['pending'];
             position: relative;
             overflow: hidden;
         }
-
         .res-card:hover {
             border-color: var(--indigo-border);
             box-shadow: var(--shadow-md);
             transform: translateY(-1px);
         }
-
         .res-card::before {
             content: '';
             position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
+            left: 0; top: 0; bottom: 0;
             width: 4px;
             border-radius: 0 4px 4px 0;
         }
-
-        .res-card[data-status="pending"]::before {
-            background: #fbbf24;
-        }
-
-        .res-card[data-status="approved"]::before {
-            background: #10b981;
-        }
-
-        .res-card[data-status="claimed"]::before {
-            background: #a855f7;
-        }
-
+        .res-card[data-status="pending"]::before   { background: #fbbf24; }
+        .res-card[data-status="approved"]::before  { background: #10b981; }
+        .res-card[data-status="claimed"]::before   { background: #a855f7; }
         .res-card[data-status="declined"]::before,
-        .res-card[data-status="canceled"]::before {
-            background: #ef4444;
-        }
-
-        .res-card[data-status="unclaimed"]::before {
-            background: #fb923c;
-        }
-
-        .res-card[data-status="expired"]::before {
-            background: #94a3b8;
-        }
-
-        body.dark .res-card {
-            background: var(--card);
-            border-color: var(--border);
-        }
-
-        body.dark .res-card:hover {
-            border-color: var(--indigo);
-        }
+        .res-card[data-status="canceled"]::before  { background: #ef4444; }
+        .res-card[data-status="unclaimed"]::before { background: #fb923c; }
+        .res-card[data-status="expired"]::before   { background: #94a3b8; }
 
         /* ── Ticket section ── */
         .ticket-section {
@@ -135,11 +103,6 @@ $pendingCount = $counts['pending'];
             align-items: center;
         }
 
-        body.dark .ticket-section {
-            background: rgba(99, 102, 241, .08);
-            border-color: rgba(99, 102, 241, .3);
-        }
-
         /* ── Print log form ── */
         #dPrintLogForm {
             background: var(--input-bg);
@@ -148,234 +111,172 @@ $pendingCount = $counts['pending'];
             padding: 16px 18px;
             margin: 0 24px 14px;
         }
-
         #dPrintLogForm label {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: var(--text-sub);
-            display: block;
-            margin-bottom: 6px;
+            font-size: 10px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: .08em; color: var(--text-sub); display: block; margin-bottom: 6px;
         }
-
         #dPrintLogForm input[type=number] {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-family: var(--font);
-            color: var(--text);
-            background: var(--card);
-            outline: none;
+            width: 100%; border: 1px solid var(--border); border-radius: 10px;
+            padding: 8px 12px; font-size: 14px; font-family: var(--font);
+            color: var(--text); background: var(--card); outline: none;
         }
-
         #dPrintLogForm input[type=number]:focus {
             border-color: var(--indigo);
-            box-shadow: 0 0 0 3px rgba(67, 56, 202, .1);
-        }
-
-        body.dark #dPrintLogForm {
-            background: var(--input-bg);
-            border-color: var(--border);
-        }
-
-        body.dark #dPrintLogForm input[type=number] {
-            background: var(--card);
-            border-color: var(--border);
-            color: var(--text);
+            box-shadow: 0 0 0 3px rgba(67,56,202,.1);
         }
 
         .btn-save-print {
-            background: var(--indigo);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            padding: 9px 16px;
-            font-size: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            font-family: var(--font);
-            transition: all .15s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            background: var(--indigo); color: #fff; border: none; border-radius: 10px;
+            padding: 9px 16px; font-size: 12px; font-weight: 800; cursor: pointer;
+            font-family: var(--font); transition: all .15s;
+            display: flex; align-items: center; gap: 6px;
         }
-
-        .btn-save-print:hover:not(:disabled) {
-            background: #312e81;
-        }
-
-        .btn-save-print:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
+        .btn-save-print:hover:not(:disabled) { background: #312e81; }
+        .btn-save-print:disabled { opacity: .6; cursor: not-allowed; }
 
         /* ── Unclaimed banner ── */
         .unclaimed-banner {
             background: var(--orange-bg, #fff7ed);
             border: 1.5px dashed #fdba74;
-            border-radius: 14px;
-            padding: 12px 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            border-radius: 14px; padding: 12px 14px;
+            display: flex; align-items: center; gap: 10px;
             margin: 0 24px 14px;
         }
-
         .ub-icon {
-            width: 34px;
-            height: 34px;
-            background: #fed7aa;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #c2410c;
-            font-size: 13px;
-            flex-shrink: 0;
-        }
-
-        body.dark .unclaimed-banner {
-            background: rgba(251, 146, 60, .1);
-            border-color: rgba(251, 146, 60, .3);
+            width: 34px; height: 34px; background: #fed7aa; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #c2410c; font-size: 13px; flex-shrink: 0;
         }
 
         /* ── Print log strip ── */
         #dPrintLog {
-            display: none;
-            margin: 0 24px 12px;
-            border-radius: 18px;
-            padding: 12px 14px;
-            border: 1px solid var(--border);
-            background: var(--input-bg);
-            align-items: center;
-            gap: 12px;
-        }
-
-        body.dark #dPrintLog {
-            background: var(--input-bg);
-            border-color: var(--border);
-        }
-
-        /* ── Auto-refresh indicator ── */
-        #autoRefreshIndicator {
-            background: rgba(55, 48, 163, .9);
-        }
-
-        body.dark #autoRefreshIndicator {
-            background: rgba(11, 22, 40, .95);
+            display: none; margin: 0 24px 12px; border-radius: 18px; padding: 12px 14px;
+            border: 1px solid var(--border); background: var(--input-bg);
+            align-items: center; gap: 12px;
         }
 
         /* ── Export button ── */
         .btn-export {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 9px 18px;
-            background: var(--indigo);
-            color: #fff;
-            border-radius: var(--r-sm);
-            font-size: 13px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            font-family: var(--font);
-            transition: all .15s;
-            box-shadow: 0 4px 12px rgba(55, 48, 163, .28);
+            display: flex; align-items: center; gap: 7px; padding: 9px 18px;
+            background: var(--indigo); color: #fff; border-radius: var(--r-sm);
+            font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+            font-family: var(--font); transition: all .15s;
+            box-shadow: 0 4px 12px rgba(55,48,163,.28);
         }
+        .btn-export:hover { background: #312e81; }
 
-        .btn-export:hover {
-            background: #312e81;
-        }
-
-        /* ── Overlay (reservation uses .overlay pattern) ── */
+        /* ── Overlay ── */
         .overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 300;
-            align-items: center;
-            justify-content: center;
+            display: none; position: fixed; inset: 0; z-index: 300;
+            align-items: center; justify-content: center;
         }
-
-        .overlay.open {
-            display: flex;
-            animation: fadeIn .15s ease;
-        }
-
+        .overlay.open { display: flex; animation: fadeIn .15s ease; }
         .overlay-bg {
-            position: absolute;
-            inset: 0;
-            background: rgba(15, 23, 42, .55);
-            backdrop-filter: blur(6px);
+            position: absolute; inset: 0;
+            background: rgba(15,23,42,.55); backdrop-filter: blur(6px);
         }
-
         .modal-box {
-            position: relative;
-            margin: auto;
-            background: var(--card);
-            border-radius: 28px;
-            width: 94%;
-            max-width: 520px;
-            max-height: 92vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, .35);
-            animation: popIn .22s cubic-bezier(.34, 1.56, .64, 1) both;
+            position: relative; margin: auto; background: var(--card);
+            border-radius: 28px; width: 94%; max-width: 520px;
+            max-height: 92vh; overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,.35);
+            animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both;
         }
-
-        .modal-box.sm {
-            max-width: 380px;
-        }
+        .modal-box.sm { max-width: 380px; }
 
         @media(max-width:639px) {
-            .overlay#detailModal {
-                align-items: flex-end;
-            }
-
+            .overlay#detailModal { align-items: flex-end; }
             .overlay#detailModal .modal-box {
-                margin: 0;
-                width: 100%;
-                max-width: 100%;
-                border-radius: 28px 28px 0 0;
-                max-height: 92vh;
-                animation: slideUp .28s cubic-bezier(.34, 1.2, .64, 1) both;
+                margin: 0; width: 100%; max-width: 100%;
+                border-radius: 28px 28px 0 0; max-height: 92vh;
+                animation: slideUp .28s cubic-bezier(.34,1.2,.64,1) both;
             }
         }
-
-        .modal-box::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .modal-box::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-
-        body.dark .modal-box {
-            background: var(--card);
-        }
-
-        body.dark .modal-box::-webkit-scrollbar-thumb {
-            background: var(--border);
-        }
+        .modal-box::-webkit-scrollbar { width: 4px; }
+        .modal-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
         @media(min-width:768px) {
-            #mobileCardList {
-                display: none !important;
-            }
+            #mobileCardList { display: none !important; }
+            #mobileEmpty    { display: none !important; }
+        }
+        @media(max-width:767px) { .hidden-on-mobile { display: none !important; } }
 
-            #mobileEmpty {
-                display: none !important;
+        /* ══════════════════════════════════════════════
+           PATCH: STAT GRID — 6 columns responsive
+           Desktop: 3×2 | Mobile: 2×3
+        ══════════════════════════════════════════════ */
+        .stats-grid[style*="repeat(6"] {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+        @media(max-width:639px) {
+            .stats-grid[style*="repeat(6"] {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 8px !important;
             }
+            .stat-card  { padding: 11px 12px !important; }
+            .stat-num   { font-size: 1.35rem !important; }
+            .stat-lbl   { font-size: .56rem !important; }
         }
 
-        @media(max-width:767px) {
-            .hidden-on-mobile {
-                display: none !important;
-            }
+        /* ══════════════════════════════════════════════
+           PATCH: PAGE HEADER — wrap on mobile
+        ══════════════════════════════════════════════ */
+        .topbar-right { flex-wrap: wrap; }
+        @media(max-width:480px) {
+            .page-title { font-size: 1.3rem !important; }
+            .topbar-right { width: 100%; justify-content: flex-end; }
+            .btn-export span.hide-xs { display: none; }
         }
+
+        /* ══════════════════════════════════════════════
+           PATCH: FILTER BAR — stack on mobile
+        ══════════════════════════════════════════════ */
+        @media(max-width:639px) {
+            .card > div[style*="flex-wrap:wrap"] {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+            .card > div > div[style*="width:160px"] { width: 100% !important; }
+            .card > div > .reset-btn { width: 100% !important; }
+        }
+
+        /* ══════════════════════════════════════════════
+           PATCH: RES CARDS — better mobile spacing
+        ══════════════════════════════════════════════ */
+        @media(max-width:639px) {
+            .res-card { padding: 12px 14px !important; border-radius: 14px !important; }
+        }
+
+        /* ══════════════════════════════════════════════
+           PATCH: DARK MODE — unified palette
+        ══════════════════════════════════════════════ */
+        body.dark .stat-card          { background: #0b1628 !important; border-color: rgba(99,102,241,.15) !important; }
+        body.dark .card               { background: #0b1628 !important; border-color: rgba(99,102,241,.1) !important; }
+        body.dark .search-input       { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #e2eaf8 !important; }
+        body.dark .search-input::placeholder { color: #4a6fa5 !important; }
+        body.dark #dateInput          { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #e2eaf8 !important; color-scheme: dark; }
+        body.dark .res-card           { background: #0b1628 !important; border-color: rgba(99,102,241,.1) !important; }
+        body.dark .res-card:hover     { border-color: var(--indigo) !important; }
+        body.dark .modal-box          { background: #0b1628 !important; }
+        body.dark .modal-box::-webkit-scrollbar-thumb { background: #1e3a5f; }
+        body.dark #dPrintLogForm      { background: #060e1e !important; border-color: rgba(99,102,241,.12) !important; }
+        body.dark #dPrintLogForm input[type=number] { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #e2eaf8 !important; }
+        body.dark #dPrintLog          { background: #060e1e !important; border-color: rgba(99,102,241,.1) !important; }
+        body.dark .unclaimed-banner   { background: rgba(251,146,60,.1) !important; border-color: rgba(251,146,60,.3) !important; }
+        body.dark .ticket-section     { background: rgba(99,102,241,.08) !important; border-color: rgba(99,102,241,.3) !important; }
+        body.dark .icon-btn           { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #7fb3e8 !important; }
+        body.dark .icon-btn:hover     { background: rgba(99,102,241,.12) !important; color: #a5b4fc !important; }
+        body.dark .tbl-wrap           { background: #0b1628 !important; border-color: rgba(99,102,241,.1) !important; }
+        body.dark .res-row:hover td   { background: rgba(99,102,241,.06) !important; }
+        body.dark .btn-export         { box-shadow: 0 4px 12px rgba(55,48,163,.4) !important; }
+        body.dark .page-eyebrow       { color: #4a6fa5 !important; }
+        body.dark .page-title         { color: #e2eaf8 !important; }
+        body.dark .page-sub           { color: #4a6fa5 !important; }
+        body.dark .flash-ok           { background: rgba(55,48,163,.2) !important; border-color: rgba(99,102,241,.3) !important; color: #a5b4fc !important; }
+        body.dark .flash-err          { background: rgba(220,38,38,.1) !important; border-color: rgba(248,113,113,.3) !important; color: #f87171 !important; }
+        body.dark #autoRefreshIndicator { background: rgba(11,22,40,.95) !important; }
+        body.dark #resultCount,
+        body.dark #tableFooter        { color: #4a6fa5 !important; }
     </style>
 </head>
 
@@ -413,60 +314,16 @@ $pendingCount = $counts['pending'];
             </div>
 
             <div style="padding:0 24px 8px">
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-user"></i></div>
-                    <div>
-                        <p class="dlabel">Requestor</p>
-                        <p id="dName" class="dvalue"></p>
-                        <p id="dEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
-                    </div>
-                </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-desktop"></i></div>
-                    <div>
-                        <p class="dlabel">Resource</p>
-                        <p id="dResource" class="dvalue"></p>
-                        <p id="dPc" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
-                    </div>
-                </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-calendar-day"></i></div>
-                    <div>
-                        <p class="dlabel">Schedule</p>
-                        <p id="dDate" class="dvalue"></p>
-                        <p id="dTime" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
-                    </div>
-                </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div>
-                    <div>
-                        <p class="dlabel">Purpose</p>
-                        <p id="dPurpose" class="dvalue"></p>
-                    </div>
-                </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-solid fa-id-badge"></i></div>
-                    <div>
-                        <p class="dlabel">Visitor Type</p>
-                        <p id="dType" class="dvalue"></p>
-                    </div>
-                </div>
+                <div class="drow"><div class="dicon"><i class="fa-solid fa-user"></i></div><div><p class="dlabel">Requestor</p><p id="dName" class="dvalue"></p><p id="dEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
+                <div class="drow"><div class="dicon"><i class="fa-solid fa-desktop"></i></div><div><p class="dlabel">Resource</p><p id="dResource" class="dvalue"></p><p id="dPc" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
+                <div class="drow"><div class="dicon"><i class="fa-solid fa-calendar-day"></i></div><div><p class="dlabel">Schedule</p><p id="dDate" class="dvalue"></p><p id="dTime" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
+                <div class="drow"><div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div><div><p class="dlabel">Purpose</p><p id="dPurpose" class="dvalue"></p></div></div>
+                <div class="drow"><div class="dicon"><i class="fa-solid fa-id-badge"></i></div><div><p class="dlabel">Visitor Type</p><p id="dType" class="dvalue"></p></div></div>
                 <div class="drow" id="dApprovedByRow" style="display:none">
                     <div class="dicon" id="dApprovedByIcon"><i class="fa-solid fa-user-check"></i></div>
-                    <div>
-                        <p class="dlabel" id="dApprovedByLabel">Approved By</p>
-                        <p id="dApprovedByName" class="dvalue"></p>
-                        <p id="dApprovedByEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
-                        <p id="dApprovedAt" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
-                    </div>
+                    <div><p class="dlabel" id="dApprovedByLabel">Approved By</p><p id="dApprovedByName" class="dvalue"></p><p id="dApprovedByEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p><p id="dApprovedAt" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div>
                 </div>
-                <div class="drow">
-                    <div class="dicon"><i class="fa-regular fa-clock"></i></div>
-                    <div>
-                        <p class="dlabel">Submitted</p>
-                        <p id="dCreated" class="dvalue"></p>
-                    </div>
-                </div>
+                <div class="drow"><div class="dicon"><i class="fa-regular fa-clock"></i></div><div><p class="dlabel">Submitted</p><p id="dCreated" class="dvalue"></p></div></div>
             </div>
 
             <div id="dQr" class="ticket-section" style="display:none;margin:0 24px 14px">
@@ -482,10 +339,7 @@ $pendingCount = $counts['pending'];
             </div>
             <div id="dPrintLog" style="display:none;align-items:center;gap:12px;">
                 <div style="width:36px;height:36px;background:#dcfce7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-print" style="color:#16a34a;font-size:13px"></i></div>
-                <div style="flex:1;min-width:0">
-                    <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:2px">Print Log</p>
-                    <p id="dPrintText" style="font-size:13px;font-weight:700;"></p>
-                </div>
+                <div style="flex:1;min-width:0"><p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:2px">Print Log</p><p id="dPrintText" style="font-size:13px;font-weight:700;"></p></div>
                 <span id="dPrintBadge" style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:999px;flex-shrink:0"></span>
             </div>
             <div id="dPrintLogForm">
@@ -553,23 +407,24 @@ $pendingCount = $counts['pending'];
                 </div>
                 <div class="topbar-right">
                     <div class="icon-btn" onclick="adminToggleDark()"><span id="darkIcon"><i class="fa-regular fa-sun"></i></span></div>
-                    <button onclick="exportCSV()" class="btn-export"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                    <button onclick="exportCSV()" class="btn-export">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <span class="hide-xs">Export CSV</span>
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Stat cards -->
         <div class="stats-grid fade-up" style="grid-template-columns:repeat(6,minmax(0,1fr));">
-            <?php foreach (
-                [
-                    ['Total',     $counts['all'],       '#3730a3', 'fa-layer-group', 'all'],
-                    ['Pending',   $counts['pending'],   '#d97706', 'fa-clock',       'pending'],
-                    ['Approved',  $counts['approved'],  '#16a34a', 'fa-circle-check', 'approved'],
-                    ['Claimed',   $counts['claimed'],   '#7c3aed', 'fa-check-double', 'claimed'],
-                    ['Declined',  $counts['declined'],  '#dc2626', 'fa-xmark-circle', 'declined'],
-                    ['Unclaimed', $counts['unclaimed'], '#c2410c', 'fa-ticket',      'unclaimed'],
-                ] as [$lbl, $val, $color, $icon, $key]
-            ): ?>
+            <?php foreach ([
+                ['Total',     $counts['all'],       '#3730a3', 'fa-layer-group',  'all'],
+                ['Pending',   $counts['pending'],   '#d97706', 'fa-clock',        'pending'],
+                ['Approved',  $counts['approved'],  '#16a34a', 'fa-circle-check', 'approved'],
+                ['Claimed',   $counts['claimed'],   '#7c3aed', 'fa-check-double', 'claimed'],
+                ['Declined',  $counts['declined'],  '#dc2626', 'fa-xmark-circle', 'declined'],
+                ['Unclaimed', $counts['unclaimed'], '#c2410c', 'fa-ticket',       'unclaimed'],
+            ] as [$lbl, $val, $color, $icon, $key]): ?>
                 <div class="stat-card" style="border-left-color:<?= $color ?>" onclick="filterByStatus('<?= $key ?>')" data-filter="<?= $key ?>">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                         <p class="stat-lbl"><?= $lbl ?></p>
@@ -601,13 +456,13 @@ $pendingCount = $counts['pending'];
                 <button onclick="clearFilters()" class="reset-btn"><i class="fa-solid fa-rotate-left" style="font-size:11px"></i> Reset</button>
             </div>
             <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px">
-                <button class="qtab active" data-tab="all" onclick="setTab(this,'all')"><i class="fa-solid fa-layer-group" style="font-size:11px"></i> All <span style="font-size:9px;font-weight:800;opacity:.7"><?= $counts['all'] ?></span></button>
-                <button class="qtab" data-tab="pending" onclick="setTab(this,'pending')"><i class="fa-solid fa-clock" style="font-size:11px"></i> Pending<?php if ($counts['pending'] > 0): ?><span style="background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;"><?= $counts['pending'] ?></span><?php endif; ?></button>
-                <button class="qtab" data-tab="approved" onclick="setTab(this,'approved')"><i class="fa-solid fa-circle-check" style="font-size:11px"></i> Approved</button>
-                <button class="qtab" data-tab="unclaimed" onclick="setTab(this,'unclaimed')"><i class="fa-solid fa-ticket" style="font-size:11px"></i> Unclaimed<?php if ($counts['unclaimed'] > 0): ?><span style="background:#fb923c;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;"><?= $counts['unclaimed'] ?></span><?php endif; ?></button>
-                <button class="qtab" data-tab="claimed" onclick="setTab(this,'claimed')"><i class="fa-solid fa-check-double" style="font-size:11px"></i> Claimed</button>
-                <button class="qtab" data-tab="declined" onclick="setTab(this,'declined')"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Declined</button>
-                <button class="qtab" data-tab="expired" onclick="setTab(this,'expired')"><i class="fa-solid fa-hourglass-end" style="font-size:11px"></i> Expired</button>
+                <button class="qtab active" data-tab="all"       onclick="setTab(this,'all')"><i class="fa-solid fa-layer-group" style="font-size:11px"></i> All <span style="font-size:9px;font-weight:800;opacity:.7"><?= $counts['all'] ?></span></button>
+                <button class="qtab"        data-tab="pending"   onclick="setTab(this,'pending')"><i class="fa-solid fa-clock" style="font-size:11px"></i> Pending<?php if ($counts['pending'] > 0): ?><span style="background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;"><?= $counts['pending'] ?></span><?php endif; ?></button>
+                <button class="qtab"        data-tab="approved"  onclick="setTab(this,'approved')"><i class="fa-solid fa-circle-check" style="font-size:11px"></i> Approved</button>
+                <button class="qtab"        data-tab="unclaimed" onclick="setTab(this,'unclaimed')"><i class="fa-solid fa-ticket" style="font-size:11px"></i> Unclaimed<?php if ($counts['unclaimed'] > 0): ?><span style="background:#fb923c;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;"><?= $counts['unclaimed'] ?></span><?php endif; ?></button>
+                <button class="qtab"        data-tab="claimed"   onclick="setTab(this,'claimed')"><i class="fa-solid fa-check-double" style="font-size:11px"></i> Claimed</button>
+                <button class="qtab"        data-tab="declined"  onclick="setTab(this,'declined')"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Declined</button>
+                <button class="qtab"        data-tab="expired"   onclick="setTab(this,'expired')"><i class="fa-solid fa-hourglass-end" style="font-size:11px"></i> Expired</button>
             </div>
         </div>
 
@@ -631,14 +486,7 @@ $pendingCount = $counts['pending'];
                 </thead>
                 <tbody id="tableBody">
                     <?php if (empty($processed)): ?>
-                        <tr>
-                            <td colspan="9">
-                                <div style="padding:80px 24px;text-align:center">
-                                    <i class="fa-solid fa-calendar-xmark" style="font-size:2.5rem;color:var(--border);display:block;margin-bottom:12px"></i>
-                                    <p style="font-weight:800;color:var(--text-sub);font-size:15px">No reservations yet</p>
-                                </div>
-                            </td>
-                        </tr>
+                        <tr><td colspan="9"><div style="padding:80px 24px;text-align:center"><i class="fa-solid fa-calendar-xmark" style="font-size:2.5rem;color:var(--border);display:block;margin-bottom:12px"></i><p style="font-weight:800;color:var(--text-sub);font-size:15px">No reservations yet</p></div></td></tr>
                     <?php else: ?>
                         <?php foreach ($processed as $res):
                             $s           = $res['_status'];
@@ -658,37 +506,14 @@ $pendingCount = $counts['pending'];
                             $icon        = $statusIcons[$s] ?? 'fa-circle';
                             $approverName  = htmlspecialchars($res['approver_name']  ?? $res['approved_by_name']  ?? '');
                             $approverEmail = htmlspecialchars($res['approver_email'] ?? $res['approved_by_email'] ?? '');
-                            $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved', 'claimed', 'declined', 'expired', 'unclaimed'])
+                            $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved','claimed','declined','expired','unclaimed'])
                                 ? date('M j, Y · g:i A', strtotime($res['updated_at'])) : '';
                             $pl          = $printLogMap[(int)$res['id']] ?? null;
                             $plPrinted   = $pl !== null ? (bool)$pl['printed'] : null;
                             $plPages     = $pl ? (int)($pl['pages'] ?? 0) : 0;
                             $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
-                            $isClaimed   = in_array($res['claimed'] ?? false, [true, 1, 't', 'true', '1'], true);
-                            $mdata       = json_encode([
-                                'id' => $res['id'],
-                                'status' => $s,
-                                'name' => $name,
-                                'email' => $email,
-                                'resource' => $resource,
-                                'pc' => $pc,
-                                'date' => $date,
-                                'rawDate' => $rawDate,
-                                'start' => $start,
-                                'end' => $end,
-                                'purpose' => $purpose,
-                                'type' => $type,
-                                'created' => $created,
-                                'code' => $code,
-                                'claimed' => $isClaimed,
-                                'unclaimed' => $isUnclaimed,
-                                'approverName' => $approverName,
-                                'approverEmail' => $approverEmail,
-                                'approvedAt' => $approvedAt,
-                                'plPrinted' => $plPrinted,
-                                'plPages' => $plPages,
-                                'plAt' => $plAt,
-                            ]);
+                            $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
+                            $mdata       = json_encode(['id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,'created'=>$created,'code'=>$code,'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt]);
                         ?>
                             <tr class="res-row"
                                 data-id="<?= $res['id'] ?>"
@@ -716,9 +541,9 @@ $pendingCount = $counts['pending'];
                                 <td><span style="font-size:12px;color:var(--text-muted);font-weight:500;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:130px"><?= $purpose ?></span></td>
                                 <td><span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?>" style="font-size:9px"></i><?= ucfirst($s) ?></span></td>
                                 <td onclick="event.stopPropagation()">
-                                    <?php if ($approverName && in_array($s, ['approved', 'claimed', 'declined', 'expired', 'unclaimed'])): ?>
+                                    <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired','unclaimed'])): ?>
                                         <div style="display:flex;align-items:center;gap:7px">
-                                            <div style="width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;<?= $s === 'declined' ? 'background:#fee2e2;color:#dc2626' : 'background:#dcfce7;color:#16a34a' ?>"><?= mb_strtoupper(mb_substr($approverName, 0, 1)) ?></div>
+                                            <div style="width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;<?= $s==='declined'?'background:#fee2e2;color:#dc2626':'background:#dcfce7;color:#16a34a' ?>"><?= mb_strtoupper(mb_substr($approverName,0,1)) ?></div>
                                             <div style="min-width:0">
                                                 <p style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px"><?= $approverName ?></p>
                                                 <?php if ($approvedAt): ?><p style="font-size:10px;color:var(--text-sub);font-weight:500"><?= $approvedAt ?></p><?php endif; ?>
@@ -736,15 +561,10 @@ $pendingCount = $counts['pending'];
                                         <?php if ($s === 'pending'): ?>
                                             <button onclick="triggerApprove(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-approve-sm"><i class="fa-solid fa-check" style="font-size:10px"></i> Approve</button>
                                             <button onclick="triggerDecline(<?= $res['id'] ?>,'<?= addslashes($name) ?>')" class="btn-decline-sm"><i class="fa-solid fa-xmark" style="font-size:10px"></i></button>
-                                        <?php elseif ($s === 'unclaimed'): ?>
-                                            <span style="font-size:11px;color:#c2410c;font-weight:800;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-ticket" style="font-size:10px"></i> Unclaimed</span>
-                                        <?php elseif ($s === 'approved'): ?>
-                                            <span style="font-size:11px;color:#16a34a;font-weight:800;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-circle-check" style="font-size:10px"></i> Approved</span>
-                                        <?php elseif ($s === 'claimed'): ?>
-                                            <span style="font-size:11px;color:#7c3aed;font-weight:800;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-check-double" style="font-size:10px"></i> Claimed</span>
-                                        <?php else: ?>
-                                            <span style="font-size:11px;color:var(--text-sub);font-style:italic">—</span>
-                                        <?php endif; ?>
+                                        <?php elseif ($s === 'unclaimed'): ?><span style="font-size:11px;color:#c2410c;font-weight:800;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-ticket" style="font-size:10px"></i> Unclaimed</span>
+                                        <?php elseif ($s === 'approved'):  ?><span style="font-size:11px;color:#16a34a;font-weight:800;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-circle-check" style="font-size:10px"></i> Approved</span>
+                                        <?php elseif ($s === 'claimed'):   ?><span style="font-size:11px;color:#7c3aed;font-weight:800;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-check-double" style="font-size:10px"></i> Claimed</span>
+                                        <?php else: ?><span style="font-size:11px;color:var(--text-sub);font-style:italic">—</span><?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
@@ -761,9 +581,7 @@ $pendingCount = $counts['pending'];
         <!-- MOBILE CARDS -->
         <div id="mobileCardList" style="display:flex;flex-direction:column;gap:10px">
             <?php if (empty($processed)): ?>
-                <div class="empty-state"><i class="fa-solid fa-calendar-xmark" style="font-size:2rem;color:var(--border);display:block;margin-bottom:10px"></i>
-                    <p style="font-weight:800;color:var(--text-sub)">No reservations yet</p>
-                </div>
+                <div class="empty-state"><i class="fa-solid fa-calendar-xmark" style="font-size:2rem;color:var(--border);display:block;margin-bottom:10px"></i><p style="font-weight:800;color:var(--text-sub)">No reservations yet</p></div>
             <?php else: ?>
                 <?php foreach ($processed as $res):
                     $s           = $res['_status'];
@@ -783,38 +601,15 @@ $pendingCount = $counts['pending'];
                     $icon        = $statusIcons[$s] ?? 'fa-circle';
                     $approverName  = htmlspecialchars($res['approver_name']  ?? $res['approved_by_name']  ?? '');
                     $approverEmail = htmlspecialchars($res['approver_email'] ?? $res['approved_by_email'] ?? '');
-                    $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved', 'claimed', 'declined', 'expired', 'unclaimed'])
+                    $approvedAt    = !empty($res['updated_at']) && in_array($s, ['approved','claimed','declined','expired','unclaimed'])
                         ? date('M j, Y · g:i A', strtotime($res['updated_at'])) : '';
                     $pl          = $printLogMap[(int)$res['id']] ?? null;
                     $plPrinted   = $pl !== null ? (bool)$pl['printed'] : null;
                     $plPages     = $pl ? (int)($pl['pages'] ?? 0) : 0;
                     $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
-                    $isClaimed   = in_array($res['claimed'] ?? false, [true, 1, 't', 'true', '1'], true);
-                    $mdata       = json_encode([
-                        'id' => $res['id'],
-                        'status' => $s,
-                        'name' => $name,
-                        'email' => $email,
-                        'resource' => $resource,
-                        'pc' => $pc,
-                        'date' => $date,
-                        'rawDate' => $rawDate,
-                        'start' => $start,
-                        'end' => $end,
-                        'purpose' => $purpose,
-                        'type' => $type,
-                        'created' => $created,
-                        'code' => $code,
-                        'claimed' => $isClaimed,
-                        'unclaimed' => $isUnclaimed,
-                        'approverName' => $approverName,
-                        'approverEmail' => $approverEmail,
-                        'approvedAt' => $approvedAt,
-                        'plPrinted' => $plPrinted,
-                        'plPages' => $plPages,
-                        'plAt' => $plAt,
-                    ]);
-                    $avatarBg = ['pending' => 'background:#fef3c7;color:#92400e', 'approved' => 'background:#dcfce7;color:#166534', 'claimed' => 'background:#ede9fe;color:#6b21a8', 'declined' => 'background:#fee2e2;color:#991b1b', 'canceled' => 'background:#fee2e2;color:#991b1b', 'expired' => 'background:#f1f5f9;color:#64748b', 'unclaimed' => 'background:#fff7ed;color:#c2410c'][$s] ?? 'background:#f1f5f9;color:#64748b';
+                    $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
+                    $mdata       = json_encode(['id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,'created'=>$created,'code'=>$code,'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt]);
+                    $avatarBg = ['pending'=>'background:#fef3c7;color:#92400e','approved'=>'background:#dcfce7;color:#166534','claimed'=>'background:#ede9fe;color:#6b21a8','declined'=>'background:#fee2e2;color:#991b1b','canceled'=>'background:#fee2e2;color:#991b1b','expired'=>'background:#f1f5f9;color:#64748b','unclaimed'=>'background:#fff7ed;color:#c2410c'][$s] ?? 'background:#f1f5f9;color:#64748b';
                 ?>
                     <div class="res-card"
                         data-id="<?= $res['id'] ?>"
@@ -827,7 +622,7 @@ $pendingCount = $counts['pending'];
                         data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
                         onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
                         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                            <div style="width:38px;height:38px;border-radius:14px;<?= $avatarBg ?>;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0"><?= mb_strtoupper(mb_substr(strip_tags($name), 0, 1)) ?></div>
+                            <div style="width:38px;height:38px;border-radius:14px;<?= $avatarBg ?>;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0"><?= mb_strtoupper(mb_substr(strip_tags($name),0,1)) ?></div>
                             <div style="flex:1;min-width:0">
                                 <p style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $name ?></p>
                                 <?php if ($email): ?><p style="font-size:11px;color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
@@ -836,15 +631,8 @@ $pendingCount = $counts['pending'];
                         </div>
                         <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
                             <div style="flex:1;min-width:0">
-                                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                                    <i class="fa-solid fa-desktop" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i>
-                                    <p style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $resource ?><?= $pc ? ' · ' . $pc : '' ?></p>
-                                </div>
-                                <div style="display:flex;align-items:center;gap:6px">
-                                    <i class="fa-regular fa-calendar" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i>
-                                    <p style="font-size:11px;color:var(--text-muted);font-weight:600"><?= $date ?></p>
-                                    <span style="font-size:10px;color:var(--indigo);font-weight:700"><?= $start ?> – <?= $end ?></span>
-                                </div>
+                                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="fa-solid fa-desktop" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i><p style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $resource ?><?= $pc ? ' · '.$pc : '' ?></p></div>
+                                <div style="display:flex;align-items:center;gap:6px"><i class="fa-regular fa-calendar" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i><p style="font-size:11px;color:var(--text-muted);font-weight:600"><?= $date ?></p><span style="font-size:10px;color:var(--indigo);font-weight:700"><?= $start ?> – <?= $end ?></span></div>
                             </div>
                             <div class="card-print-pill" style="flex-shrink:0">
                                 <?php if ($plPrinted === true): ?><span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> <?= $plPages ?>pg</span>
@@ -854,12 +642,10 @@ $pendingCount = $counts['pending'];
                         <p style="font-size:11px;color:var(--text-sub);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:10px"><?= $purpose ?></p>
                         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--border-subtle)">
                             <div style="display:flex;align-items:center;gap:6px;min-width:0">
-                                <?php if ($approverName && in_array($s, ['approved', 'claimed', 'declined', 'expired', 'unclaimed'])): ?>
-                                    <div style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0;<?= $s === 'declined' ? 'background:#fee2e2;color:#dc2626' : 'background:#dcfce7;color:#16a34a' ?>"><?= mb_strtoupper(mb_substr($approverName, 0, 1)) ?></div>
-                                    <p style="font-size:10px;color:var(--text-muted);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $s === 'declined' ? 'Declined' : 'Approved' ?> by <?= $approverName ?></p>
-                                <?php else: ?>
-                                    <p style="font-size:10px;color:var(--border);font-weight:600">#<?= $res['id'] ?></p>
-                                <?php endif; ?>
+                                <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired','unclaimed'])): ?>
+                                    <div style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0;<?= $s==='declined'?'background:#fee2e2;color:#dc2626':'background:#dcfce7;color:#16a34a' ?>"><?= mb_strtoupper(mb_substr($approverName,0,1)) ?></div>
+                                    <p style="font-size:10px;color:var(--text-muted);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $s==='declined'?'Declined':'Approved' ?> by <?= $approverName ?></p>
+                                <?php else: ?><p style="font-size:10px;color:var(--border);font-weight:600">#<?= $res['id'] ?></p><?php endif; ?>
                             </div>
                             <?php if ($s === 'pending'): ?>
                                 <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
@@ -882,18 +668,14 @@ $pendingCount = $counts['pending'];
 
     <script>
         const allTableRows = Array.from(document.querySelectorAll('#tableBody .res-row'));
-        const allCards = Array.from(document.querySelectorAll('#mobileCardList .res-card'));
-        let curTab = 'all';
-        let approveTargetId = null,
-            declineTargetId = null;
-
+        const allCards     = Array.from(document.querySelectorAll('#mobileCardList .res-card'));
+        let curTab = 'all', approveTargetId = null, declineTargetId = null;
         let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
-        let csrfName = document.querySelector('meta[name="csrf-name"]')?.getAttribute('content') ?? 'csrf_token';
+        let csrfName  = document.querySelector('meta[name="csrf-name"]')?.getAttribute('content') ?? 'csrf_token';
 
         function refreshCsrf(data) {
             if (data.csrf_hash && data.csrf_token) {
-                csrfToken = data.csrf_hash;
-                csrfName = data.csrf_token;
+                csrfToken = data.csrf_hash; csrfName = data.csrf_token;
                 document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', csrfToken);
                 document.querySelector('meta[name="csrf-name"]')?.setAttribute('content', csrfName);
             }
@@ -901,540 +683,197 @@ $pendingCount = $counts['pending'];
 
         const printLogMap = {};
         <?php foreach ($printLogMap as $resId => $pl): ?>
-            printLogMap[<?= (int)$resId ?>] = {
-                printed: <?= isset($pl['printed']) ? (in_array($pl['printed'], [true, 1, 't', 'true', '1'], true) ? 'true' : 'false') : 'false' ?>,
-                pages: <?= (int)($pl['pages'] ?? 0) ?>,
-                at: "<?= !empty($pl['printed_at']) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '' ?>"
-            };
+        printLogMap[<?= (int)$resId ?>] = {
+            printed: <?= isset($pl['printed']) ? (in_array($pl['printed'],[true,1,'t','true','1'],true)?'true':'false') : 'false' ?>,
+            pages: <?= (int)($pl['pages'] ?? 0) ?>,
+            at: "<?= !empty($pl['printed_at']) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '' ?>"
+        };
         <?php endforeach; ?>
 
         let _currentReservationId = null;
 
         async function savePrintLog() {
-            const rid = _currentReservationId,
-                pages = parseInt(document.getElementById('printPagesInput').value, 10) || 0;
-            const btn = document.getElementById('savePrintBtn'),
-                msg = document.getElementById('printSaveMsg');
-            if (!rid) {
-                msg.textContent = 'No reservation selected.';
-                msg.style.color = '#dc2626';
-                return;
-            }
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:11px"></i> Saving…';
-            msg.textContent = '';
-            const body = new FormData();
-            body.append(csrfName, csrfToken);
-            body.append('reservation_id', rid);
-            body.append('printed', pages > 0 ? 1 : 0);
-            body.append('pages', pages);
+            const rid = _currentReservationId, pages = parseInt(document.getElementById('printPagesInput').value,10)||0;
+            const btn = document.getElementById('savePrintBtn'), msg = document.getElementById('printSaveMsg');
+            if (!rid) { msg.textContent='No reservation selected.'; msg.style.color='#dc2626'; return; }
+            btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin" style="font-size:11px"></i> Saving…'; msg.textContent='';
+            const body=new FormData(); body.append(csrfName,csrfToken); body.append('reservation_id',rid); body.append('printed',pages>0?1:0); body.append('pages',pages);
             try {
-                const res = await fetch('<?= base_url('admin/log-print') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body
-                });
-                const text = await res.text();
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch {
-                    throw new Error(`Server error (${res.status})`);
-                }
-                if (data.ok) {
+                const res=await fetch('<?= base_url('admin/log-print') ?>',{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'},body});
+                const text=await res.text(); let data;
+                try{data=JSON.parse(text);}catch{throw new Error(`Server error (${res.status})`);}
+                if(data.ok){
                     refreshCsrf(data);
-                    const now = new Date();
-                    const fmt = now.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric'
-                    }) + ' · ' + now.toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit'
-                    });
-                    printLogMap[rid] = {
-                        printed: pages > 0,
-                        pages,
-                        at: fmt
-                    };
-                    refreshPrintLogStrip(rid);
-                    refreshBothPrintCells(rid, pages);
-                    msg.textContent = pages > 0 ? `✓ Saved — ${pages} page${pages!==1?'s':''} printed` : '✓ Saved — no printing logged';
-                    msg.style.color = '#16a34a';
-                    btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:11px"></i> Saved';
-                    setTimeout(() => {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
-                    }, 2000);
-                } else {
-                    throw new Error(data.error ?? 'Unknown error');
-                }
-            } catch (err) {
-                msg.textContent = '✗ Failed: ' + err.message;
-                msg.style.color = '#dc2626';
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
+                    const now=new Date(), fmt=now.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+                    printLogMap[rid]={printed:pages>0,pages,at:fmt};
+                    refreshPrintLogStrip(rid); refreshBothPrintCells(rid,pages);
+                    msg.textContent=pages>0?`✓ Saved — ${pages} page${pages!==1?'s':''} printed`:'✓ Saved — no printing logged'; msg.style.color='#16a34a';
+                    btn.innerHTML='<i class="fa-solid fa-check" style="font-size:11px"></i> Saved';
+                    setTimeout(()=>{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';},2000);
+                } else {throw new Error(data.error??'Unknown error');}
+            } catch(err){
+                msg.textContent='✗ Failed: '+err.message; msg.style.color='#dc2626';
+                btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
             }
         }
 
         function refreshPrintLogStrip(rid) {
-            const plog = printLogMap[rid],
-                logEl = document.getElementById('dPrintLog');
-            if (!plog) {
-                logEl.style.display = 'none';
-                return;
-            }
-            logEl.style.display = 'flex';
-            const logText = document.getElementById('dPrintText'),
-                logBadge = document.getElementById('dPrintBadge');
-            if (plog.printed) {
-                logText.textContent = `Printed ${plog.pages} page${plog.pages!==1?'s':''}${plog.at?' · '+plog.at:''}`;
-                logBadge.textContent = `${plog.pages}pg`;
-                logBadge.style.cssText = 'background:#dcfce7;color:#16a34a';
-            } else {
-                logText.textContent = 'No printing during this session';
-                logBadge.textContent = 'No print';
-                logBadge.style.cssText = 'background:#f1f5f9;color:#64748b';
-            }
+            const plog=printLogMap[rid], logEl=document.getElementById('dPrintLog');
+            if(!plog){logEl.style.display='none';return;}
+            logEl.style.display='flex';
+            const logText=document.getElementById('dPrintText'), logBadge=document.getElementById('dPrintBadge');
+            if(plog.printed){logText.textContent=`Printed ${plog.pages} page${plog.pages!==1?'s':''}${plog.at?' · '+plog.at:''}`;logBadge.textContent=`${plog.pages}pg`;logBadge.style.cssText='background:#dcfce7;color:#16a34a';}
+            else{logText.textContent='No printing during this session';logBadge.textContent='No print';logBadge.style.cssText='background:#f1f5f9;color:#64748b';}
         }
 
-        function refreshBothPrintCells(rid, pages) {
-            allTableRows.forEach(row => {
-                if (row.dataset.id == rid) {
-                    const cell = row.cells[7];
-                    if (pages > 0) {
-                        cell.innerHTML = `<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`;
-                        row.dataset.plPrinted = 'Yes';
-                        row.dataset.plPages = pages;
-                    } else {
-                        cell.innerHTML = `<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;
-                        row.dataset.plPrinted = 'No';
-                        row.dataset.plPages = '';
-                    }
-                }
-            });
-            allCards.forEach(card => {
-                if (card.dataset.id == rid) {
-                    const w = card.querySelector('.card-print-pill');
-                    if (w) {
-                        w.innerHTML = pages > 0 ? `<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>` : `<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;
-                    }
-                    card.dataset.plPrinted = pages > 0 ? 'Yes' : 'No';
-                    card.dataset.plPages = pages > 0 ? pages : '';
-                }
-            });
+        function refreshBothPrintCells(rid,pages){
+            allTableRows.forEach(row=>{if(row.dataset.id==rid){const cell=row.cells[7];if(pages>0){cell.innerHTML=`<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`;row.dataset.plPrinted='Yes';row.dataset.plPages=pages;}else{cell.innerHTML=`<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;row.dataset.plPrinted='No';row.dataset.plPages='';}}}); 
+            allCards.forEach(card=>{if(card.dataset.id==rid){const w=card.querySelector('.card-print-pill');if(w){w.innerHTML=pages>0?`<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`:`<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;}card.dataset.plPrinted=pages>0?'Yes':'No';card.dataset.plPages=pages>0?pages:'';}});
         }
 
-        function exportCSV() {
-            const visibleRows = allTableRows.filter(r => r.style.display !== 'none');
-            const headers = ['ID', 'User Name', 'Email', 'Resource Name', 'PC Number', 'Date', 'Start Time', 'End Time', 'Purpose', 'Visitor Type', 'Status', 'Approved By', 'Approved At', 'Printed', 'Pages Printed', 'Submitted At'];
-            const escape = v => {
-                const s = String(v ?? '');
-                return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
-            };
-            const lines = [headers.map(escape).join(',')];
-            visibleRows.forEach(row => {
-                try {
-                    const d = JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/, '').replace(/\)$/, ''));
-                    lines.push([d.id ?? '', d.name ?? '', d.email ?? '', d.resource ?? '', d.pc ?? '', d.date ?? '', d.start ?? '', d.end ?? '', d.purpose ?? '', d.type ?? '', d.status ?? '', d.approverName ?? '', d.approvedAt ?? '', row.dataset.plPrinted ?? '', row.dataset.plPages ?? '', d.created ?? ''].map(escape).join(','));
-                } catch (e) {}
-            });
-            const blob = new Blob([lines.join('\r\n')], {
-                type: 'text/csv;charset=utf-8;'
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `admin-reservations-${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
+        function exportCSV(){
+            const visibleRows=allTableRows.filter(r=>r.style.display!=='none');
+            const headers=['ID','User Name','Email','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
+            const escape=v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
+            const lines=[headers.map(escape).join(',')];
+            visibleRows.forEach(row=>{try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));lines.push([d.id??'',d.name??'',d.email??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));}catch(e){}});
+            const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+            const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`admin-reservations-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
         }
 
-        function setTab(btn, tab) {
-            document.querySelectorAll('.qtab').forEach(t => t.classList.remove('active'));
-            btn.classList.add('active');
-            curTab = tab;
-            syncCards(tab);
-            applyFilters();
+        function setTab(btn,tab){document.querySelectorAll('.qtab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');curTab=tab;syncCards(tab);applyFilters();}
+        function filterByStatus(tab){curTab=tab;document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));syncCards(tab);applyFilters();}
+        function syncCards(tab){document.querySelectorAll('[data-filter]').forEach(c=>c.classList.toggle('ring',c.dataset.filter===tab));}
+
+        function applyFilters(){
+            const q=document.getElementById('searchInput').value.toLowerCase().trim(), date=document.getElementById('dateInput').value;
+            const matchesFilters=el=>{let matchTab;if(curTab==='all')matchTab=true;else if(curTab==='declined')matchTab=['declined','canceled'].includes(el.dataset.status);else matchTab=el.dataset.status===curTab;return matchTab&&(!q||el.dataset.search.includes(q))&&(!date||el.dataset.date===date);};
+            let n=0; allTableRows.forEach(row=>{const show=matchesFilters(row);row.style.display=show?'':'none';if(show)n++;});
+            let m=0; allCards.forEach(card=>{const show=matchesFilters(card);card.style.display=show?'':'none';if(show)m++;});
+            if(allCards.length>0)document.getElementById('mobileEmpty').style.display=m===0?'block':'none';
+            const total=allTableRows.length;
+            document.getElementById('resultCount').textContent=`Showing ${n} of ${total} reservation${total!==1?'s':''}`;
+            document.getElementById('tableFooter').textContent=`${n} result${n!==1?'s':''} displayed`;
         }
 
-        function filterByStatus(tab) {
-            curTab = tab;
-            document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-            syncCards(tab);
-            applyFilters();
+        function clearFilters(){document.getElementById('searchInput').value='';document.getElementById('dateInput').value='';curTab='all';document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='all'));syncCards('all');applyFilters();}
+
+        let sortDir={};
+        function sortTable(col){
+            sortDir[col]=!sortDir[col];
+            const tbody=document.getElementById('tableBody');
+            Array.from(tbody.querySelectorAll('.res-row')).sort((a,b)=>{const at=(a.cells[col]?.innerText??'').trim().toLowerCase(),bt=(b.cells[col]?.innerText??'').trim().toLowerCase();return sortDir[col]?at.localeCompare(bt):bt.localeCompare(at);}).forEach(r=>tbody.appendChild(r));
+            document.querySelectorAll('thead th').forEach((th,i)=>{th.classList.toggle('sorted',i===col);const ic=th.querySelector('.sort-icon');if(ic)ic.className=`fa-solid ${i===col?(sortDir[col]?'fa-sort-up':'fa-sort-down'):'fa-sort'} sort-icon`;});
         }
 
-        function syncCards(tab) {
-            document.querySelectorAll('[data-filter]').forEach(c => c.classList.toggle('ring', c.dataset.filter === tab));
-        }
-
-        function applyFilters() {
-            const q = document.getElementById('searchInput').value.toLowerCase().trim();
-            const date = document.getElementById('dateInput').value;
-            const matchesFilters = el => {
-                let matchTab;
-                if (curTab === 'all') matchTab = true;
-                else if (curTab === 'declined') matchTab = ['declined', 'canceled'].includes(el.dataset.status);
-                else matchTab = el.dataset.status === curTab;
-                return matchTab && (!q || el.dataset.search.includes(q)) && (!date || el.dataset.date === date);
-            };
-            let n = 0;
-            allTableRows.forEach(row => {
-                const show = matchesFilters(row);
-                row.style.display = show ? '' : 'none';
-                if (show) n++;
-            });
-            let m = 0;
-            allCards.forEach(card => {
-                const show = matchesFilters(card);
-                card.style.display = show ? '' : 'none';
-                if (show) m++;
-            });
-            if (allCards.length > 0) document.getElementById('mobileEmpty').style.display = m === 0 ? 'block' : 'none';
-            const total = allTableRows.length;
-            document.getElementById('resultCount').textContent = `Showing ${n} of ${total} reservation${total!==1?'s':''}`;
-            document.getElementById('tableFooter').textContent = `${n} result${n!==1?'s':''} displayed`;
-        }
-
-        function clearFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('dateInput').value = '';
-            curTab = 'all';
-            document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'all'));
-            syncCards('all');
-            applyFilters();
-        }
-
-        let sortDir = {};
-
-        function sortTable(col) {
-            sortDir[col] = !sortDir[col];
-            const tbody = document.getElementById('tableBody');
-            Array.from(tbody.querySelectorAll('.res-row')).sort((a, b) => {
-                const at = (a.cells[col]?.innerText ?? '').trim().toLowerCase();
-                const bt = (b.cells[col]?.innerText ?? '').trim().toLowerCase();
-                return sortDir[col] ? at.localeCompare(bt) : bt.localeCompare(at);
-            }).forEach(r => tbody.appendChild(r));
-            document.querySelectorAll('thead th').forEach((th, i) => {
-                th.classList.toggle('sorted', i === col);
-                const ic = th.querySelector('.sort-icon');
-                if (ic) ic.className = `fa-solid ${i===col?(sortDir[col]?'fa-sort-up':'fa-sort-down'):'fa-sort'} sort-icon`;
-            });
-        }
-
-        const STATUS_META = {
-            pending: {
-                icon: 'fa-clock',
-                bg: '#fef3c7',
-                color: '#92400e',
-                label: 'Pending — Awaiting approval'
-            },
-            approved: {
-                icon: 'fa-circle-check',
-                bg: '#dcfce7',
-                color: '#166534',
-                label: 'Approved'
-            },
-            claimed: {
-                icon: 'fa-check-double',
-                bg: '#f3e8ff',
-                color: '#6b21a8',
-                label: 'Claimed — Ticket used'
-            },
-            declined: {
-                icon: 'fa-xmark-circle',
-                bg: '#fee2e2',
-                color: '#991b1b',
-                label: 'Declined'
-            },
-            canceled: {
-                icon: 'fa-ban',
-                bg: '#fee2e2',
-                color: '#991b1b',
-                label: 'Cancelled'
-            },
-            expired: {
-                icon: 'fa-hourglass-end',
-                bg: '#f1f5f9',
-                color: '#475569',
-                label: 'Expired — Was never approved'
-            },
-            unclaimed: {
-                icon: 'fa-ticket',
-                bg: '#fff7ed',
-                color: '#c2410c',
-                label: 'Unclaimed — Approved but did not show up'
-            },
+        const STATUS_META={
+            pending:{icon:'fa-clock',bg:'#fef3c7',color:'#92400e',label:'Pending — Awaiting approval'},
+            approved:{icon:'fa-circle-check',bg:'#dcfce7',color:'#166534',label:'Approved'},
+            claimed:{icon:'fa-check-double',bg:'#f3e8ff',color:'#6b21a8',label:'Claimed — Ticket used'},
+            declined:{icon:'fa-xmark-circle',bg:'#fee2e2',color:'#991b1b',label:'Declined'},
+            canceled:{icon:'fa-ban',bg:'#fee2e2',color:'#991b1b',label:'Cancelled'},
+            expired:{icon:'fa-hourglass-end',bg:'#f1f5f9',color:'#475569',label:'Expired — Was never approved'},
+            unclaimed:{icon:'fa-ticket',bg:'#fff7ed',color:'#c2410c',label:'Unclaimed — Approved but did not show up'},
         };
 
-        function openDetail(d) {
-            _currentReservationId = d.id;
-            const plog = printLogMap[d.id];
-            document.getElementById('printPagesInput').value = plog ? (plog.printed ? plog.pages : 0) : 0;
-            document.getElementById('printSaveMsg').textContent = '';
-            const saveBtn = document.getElementById('savePrintBtn');
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
-
-            const m = STATUS_META[d.status] || STATUS_META.pending;
-            document.getElementById('dId').textContent = 'Reservation #' + d.id;
-            document.getElementById('dName').textContent = d.name;
-            document.getElementById('dEmail').textContent = d.email;
-            document.getElementById('dResource').textContent = d.resource;
-            document.getElementById('dPc').textContent = d.pc ? 'PC: ' + d.pc : '';
-            document.getElementById('dDate').textContent = d.date;
-            document.getElementById('dTime').textContent = d.start + ' – ' + d.end;
-            document.getElementById('dPurpose').textContent = d.purpose;
-            document.getElementById('dType').textContent = d.type;
-            document.getElementById('dCreated').textContent = d.created;
-
-            const approverRow = document.getElementById('dApprovedByRow');
-            if (d.approverName && ['approved', 'claimed', 'declined', 'expired', 'unclaimed'].includes(d.status)) {
-                approverRow.style.display = 'flex';
-                const isDeclined = d.status === 'declined';
-                document.getElementById('dApprovedByLabel').textContent = isDeclined ? 'Declined By' : 'Approved By';
-                const iconEl = document.getElementById('dApprovedByIcon');
-                iconEl.className = 'dicon';
-                iconEl.style.background = isDeclined ? '#fee2e2' : '#dcfce7';
-                iconEl.style.color = isDeclined ? '#dc2626' : '#16a34a';
-                iconEl.innerHTML = `<i class="fa-solid ${isDeclined?'fa-user-xmark':'fa-user-check'}"></i>`;
-                document.getElementById('dApprovedByName').textContent = d.approverName;
-                document.getElementById('dApprovedByEmail').textContent = d.approverEmail || '';
-                document.getElementById('dApprovedAt').textContent = d.approvedAt ? `on ${d.approvedAt}` : '';
-            } else {
-                approverRow.style.display = 'none';
-            }
-
-            const bar = document.getElementById('dStatusBar');
-            bar.style.background = m.bg;
-            bar.style.color = m.color;
-            bar.innerHTML = `<i class="fa-solid ${m.icon}"></i> <span style="font-weight:700">${m.label}</span>`;
-
-            document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
-
-            const qrSec = document.getElementById('dQr'),
-                clSec = document.getElementById('dClaimed');
-            if (d.claimed || d.status === 'claimed') {
-                qrSec.style.display = 'none';
-                clSec.style.display = 'block';
-            } else if (d.status === 'approved' || d.status === 'unclaimed') {
-                clSec.style.display = 'none';
-                qrSec.style.display = 'flex';
-                QRCode.toCanvas(document.getElementById('qrCanvas'), d.code, {
-                    width: 150,
-                    margin: 1,
-                    color: {
-                        dark: '#1e293b',
-                        light: '#ffffff'
-                    }
-                });
-                document.getElementById('dTicketCode').textContent = d.code;
-            } else {
-                qrSec.style.display = 'none';
-                clSec.style.display = 'none';
-            }
-
+        function openDetail(d){
+            _currentReservationId=d.id;
+            const plog=printLogMap[d.id];
+            document.getElementById('printPagesInput').value=plog?(plog.printed?plog.pages:0):0;
+            document.getElementById('printSaveMsg').textContent='';
+            const saveBtn=document.getElementById('savePrintBtn');saveBtn.disabled=false;saveBtn.innerHTML='<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
+            const m=STATUS_META[d.status]||STATUS_META.pending;
+            document.getElementById('dId').textContent='Reservation #'+d.id;
+            document.getElementById('dName').textContent=d.name;
+            document.getElementById('dEmail').textContent=d.email;
+            document.getElementById('dResource').textContent=d.resource;
+            document.getElementById('dPc').textContent=d.pc?'PC: '+d.pc:'';
+            document.getElementById('dDate').textContent=d.date;
+            document.getElementById('dTime').textContent=d.start+' – '+d.end;
+            document.getElementById('dPurpose').textContent=d.purpose;
+            document.getElementById('dType').textContent=d.type;
+            document.getElementById('dCreated').textContent=d.created;
+            const approverRow=document.getElementById('dApprovedByRow');
+            if(d.approverName&&['approved','claimed','declined','expired','unclaimed'].includes(d.status)){
+                approverRow.style.display='flex';const isDeclined=d.status==='declined';
+                document.getElementById('dApprovedByLabel').textContent=isDeclined?'Declined By':'Approved By';
+                const iconEl=document.getElementById('dApprovedByIcon');iconEl.className='dicon';
+                iconEl.style.background=isDeclined?'#fee2e2':'#dcfce7';iconEl.style.color=isDeclined?'#dc2626':'#16a34a';
+                iconEl.innerHTML=`<i class="fa-solid ${isDeclined?'fa-user-xmark':'fa-user-check'}"></i>`;
+                document.getElementById('dApprovedByName').textContent=d.approverName;
+                document.getElementById('dApprovedByEmail').textContent=d.approverEmail||'';
+                document.getElementById('dApprovedAt').textContent=d.approvedAt?`on ${d.approvedAt}`:'';
+            }else{approverRow.style.display='none';}
+            const bar=document.getElementById('dStatusBar');bar.style.background=m.bg;bar.style.color=m.color;
+            bar.innerHTML=`<i class="fa-solid ${m.icon}"></i> <span style="font-weight:700">${m.label}</span>`;
+            document.getElementById('dUnclaimedBanner').style.display=d.unclaimed?'flex':'none';
+            const qrSec=document.getElementById('dQr'),clSec=document.getElementById('dClaimed');
+            if(d.claimed||d.status==='claimed'){qrSec.style.display='none';clSec.style.display='block';}
+            else if(d.status==='approved'||d.status==='unclaimed'){clSec.style.display='none';qrSec.style.display='flex';QRCode.toCanvas(document.getElementById('qrCanvas'),d.code,{width:150,margin:1,color:{dark:'#1e293b',light:'#ffffff'}});document.getElementById('dTicketCode').textContent=d.code;}
+            else{qrSec.style.display='none';clSec.style.display='none';}
             refreshPrintLogStrip(d.id);
-
-            const acts = document.getElementById('dActions');
-            if (d.status === 'pending') {
-                acts.innerHTML = `<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>`;
-            } else {
-                acts.innerHTML = `<button onclick="closeModal('detail')" class="btn-cancel" style="width:100%"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Close</button>`;
-            }
-            document.getElementById('detailModal').classList.add('open');
-            document.body.style.overflow = 'hidden';
+            const acts=document.getElementById('dActions');
+            if(d.status==='pending'){acts.innerHTML=`<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>`;}
+            else{acts.innerHTML=`<button onclick="closeModal('detail')" class="btn-cancel" style="width:100%"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Close</button>`;}
+            document.getElementById('detailModal').classList.add('open');document.body.style.overflow='hidden';
         }
 
-        function downloadTicket() {
-            const canvas = document.getElementById('qrCanvas'),
-                code = document.getElementById('dTicketCode').textContent;
-            const link = document.createElement('a');
-            link.download = `E-Ticket-${code}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+        function downloadTicket(){const canvas=document.getElementById('qrCanvas'),code=document.getElementById('dTicketCode').textContent;const link=document.createElement('a');link.download=`E-Ticket-${code}.png`;link.href=canvas.toDataURL('image/png');link.click();}
+        function triggerApprove(id,name){approveTargetId=id;document.getElementById('approveConfirmName').textContent=name?`"${name}"`:'';openModal('approve');}
+        function triggerDecline(id,name){declineTargetId=id;document.getElementById('declineConfirmName').textContent=name?`"${name}"`:'';openModal('decline');}
+
+        document.getElementById('confirmApproveBtn').addEventListener('click',function(){if(!approveTargetId)return;this.disabled=true;this.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Approving…';document.getElementById('approveId').value=approveTargetId;document.getElementById('approveForm').submit();});
+        document.getElementById('confirmDeclineBtn').addEventListener('click',function(){if(!declineTargetId)return;this.disabled=true;this.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Declining…';document.getElementById('declineId').value=declineTargetId;document.getElementById('declineForm').submit();});
+
+        const modalIds={detail:'detailModal',approve:'approveModal',decline:'declineModal'};
+        function openModal(key){const el=document.getElementById(modalIds[key]);if(el){el.classList.add('open');document.body.style.overflow='hidden';}}
+        function closeModal(key){
+            const el=document.getElementById(modalIds[key]);if(el){el.classList.remove('open');document.body.style.overflow='';}
+            if(key==='detail')_currentReservationId=null;
+            if(key==='approve'){const b=document.getElementById('confirmApproveBtn');b.disabled=false;b.innerHTML='<i class="fa-solid fa-check"></i> Approve';}
+            if(key==='decline'){const b=document.getElementById('confirmDeclineBtn');b.disabled=false;b.innerHTML='<i class="fa-solid fa-xmark"></i> Decline';}
         }
-
-        function triggerApprove(id, name) {
-            approveTargetId = id;
-            document.getElementById('approveConfirmName').textContent = name ? `"${name}"` : '';
-            openModal('approve');
-        }
-
-        function triggerDecline(id, name) {
-            declineTargetId = id;
-            document.getElementById('declineConfirmName').textContent = name ? `"${name}"` : '';
-            openModal('decline');
-        }
-
-        document.getElementById('confirmApproveBtn').addEventListener('click', function() {
-            if (!approveTargetId) return;
-            this.disabled = true;
-            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving…';
-            document.getElementById('approveId').value = approveTargetId;
-            document.getElementById('approveForm').submit();
-        });
-        document.getElementById('confirmDeclineBtn').addEventListener('click', function() {
-            if (!declineTargetId) return;
-            this.disabled = true;
-            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Declining…';
-            document.getElementById('declineId').value = declineTargetId;
-            document.getElementById('declineForm').submit();
-        });
-
-        const modalIds = {
-            detail: 'detailModal',
-            approve: 'approveModal',
-            decline: 'declineModal'
-        };
-
-        function openModal(key) {
-            const el = document.getElementById(modalIds[key]);
-            if (el) {
-                el.classList.add('open');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeModal(key) {
-            const el = document.getElementById(modalIds[key]);
-            if (el) {
-                el.classList.remove('open');
-                document.body.style.overflow = '';
-            }
-            if (key === 'detail') _currentReservationId = null;
-            if (key === 'approve') {
-                const b = document.getElementById('confirmApproveBtn');
-                b.disabled = false;
-                b.innerHTML = '<i class="fa-solid fa-check"></i> Approve';
-            }
-            if (key === 'decline') {
-                const b = document.getElementById('confirmDeclineBtn');
-                b.disabled = false;
-                b.innerHTML = '<i class="fa-solid fa-xmark"></i> Decline';
-            }
-        }
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') {
-                closeModal('detail');
-                closeModal('approve');
-                closeModal('decline');
-            }
-        });
+        document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('detail');closeModal('approve');closeModal('decline');}});
 
         applyFilters();
 
         /* Auto-refresh */
-        const AUTO_REFRESH_INTERVAL = 30;
-        let autoRefreshTimer = null,
-            countdownTimer = null,
-            secondsLeft = AUTO_REFRESH_INTERVAL,
-            refreshPaused = false;
-        const refreshIndicator = document.createElement('div');
-        refreshIndicator.id = 'autoRefreshIndicator';
-        refreshIndicator.style.cssText = 'position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,16px));right:16px;backdrop-filter:blur(8px);color:white;font-family:var(--font);font-size:11px;font-weight:700;padding:6px 12px;border-radius:999px;z-index:90;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(55,48,163,.3);cursor:pointer;';
-        refreshIndicator.title = 'Click to refresh now';
-        refreshIndicator.innerHTML = `<span id="refreshDot" style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block"></span><span id="refreshCountdown">Refresh in ${AUTO_REFRESH_INTERVAL}s</span>`;
+        const AUTO_REFRESH_INTERVAL=30;
+        let autoRefreshTimer=null,countdownTimer=null,secondsLeft=AUTO_REFRESH_INTERVAL,refreshPaused=false;
+        const refreshIndicator=document.createElement('div');
+        refreshIndicator.id='autoRefreshIndicator';
+        refreshIndicator.style.cssText='position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,16px));right:16px;backdrop-filter:blur(8px);color:white;font-family:var(--font);font-size:11px;font-weight:700;padding:6px 12px;border-radius:999px;z-index:90;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(55,48,163,.3);cursor:pointer;background:rgba(55,48,163,.9);';
+        refreshIndicator.title='Click to refresh now';
+        refreshIndicator.innerHTML=`<span id="refreshDot" style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block"></span><span id="refreshCountdown">Refresh in ${AUTO_REFRESH_INTERVAL}s</span>`;
         document.body.appendChild(refreshIndicator);
-        refreshIndicator.addEventListener('click', () => doAutoRefresh(true));
+        refreshIndicator.addEventListener('click',()=>doAutoRefresh(true));
 
-        function updateCountdown() {
-            const el = document.getElementById('refreshCountdown'),
-                dot = document.getElementById('refreshDot');
-            if (!el) return;
-            if (refreshPaused) {
-                el.textContent = 'Refresh paused';
-                dot.style.background = '#fbbf24';
-            } else {
-                el.textContent = `Refresh in ${secondsLeft}s`;
-                dot.style.background = '#4ade80';
-            }
+        function updateCountdown(){const el=document.getElementById('refreshCountdown'),dot=document.getElementById('refreshDot');if(!el)return;if(refreshPaused){el.textContent='Refresh paused';dot.style.background='#fbbf24';}else{el.textContent=`Refresh in ${secondsLeft}s`;dot.style.background='#4ade80';}}
+        function startCountdown(){clearInterval(countdownTimer);secondsLeft=AUTO_REFRESH_INTERVAL;updateCountdown();countdownTimer=setInterval(()=>{if(!refreshPaused){secondsLeft--;if(secondsLeft<=0)secondsLeft=AUTO_REFRESH_INTERVAL;}updateCountdown();},1000);}
+
+        async function doAutoRefresh(force=false){
+            const anyOpen=document.querySelector('.overlay.open');if(anyOpen&&!force)return;
+            const search=document.getElementById('searchInput'),date=document.getElementById('dateInput');
+            if(!force&&(document.activeElement===search||document.activeElement===date))return;
+            try{
+                const dot=document.getElementById('refreshDot'),el=document.getElementById('refreshCountdown');
+                if(dot)dot.style.background='#818cf8';if(el)el.textContent='Refreshing…';
+                const response=await fetch(window.location.href,{headers:{'X-Requested-With':'XMLHttpRequest','Accept':'text/html'},credentials:'same-origin'});
+                if(!response.ok)throw new Error('HTTP '+response.status);
+                const html=await response.text(),parser=new DOMParser(),newDoc=parser.parseFromString(html,'text/html');
+                const newTbody=newDoc.querySelector('#tableBody'),oldTbody=document.querySelector('#tableBody');if(newTbody&&oldTbody)oldTbody.innerHTML=newTbody.innerHTML;
+                const newCards=newDoc.querySelector('#mobileCardList'),oldCards=document.querySelector('#mobileCardList');if(newCards&&oldCards)oldCards.innerHTML=newCards.innerHTML;
+                allTableRows.length=0;document.querySelectorAll('#tableBody .res-row').forEach(r=>allTableRows.push(r));
+                allCards.length=0;document.querySelectorAll('#mobileCardList .res-card').forEach(c=>allCards.push(c));
+                applyFilters();secondsLeft=AUTO_REFRESH_INTERVAL;updateCountdown();if(dot)dot.style.background='#4ade80';
+            }catch(err){console.warn('Auto-refresh failed:',err.message);const dot=document.getElementById('refreshDot');if(dot){dot.style.background='#f87171';setTimeout(()=>{if(dot)dot.style.background='#4ade80';},3000);}}
         }
 
-        function startCountdown() {
-            clearInterval(countdownTimer);
-            secondsLeft = AUTO_REFRESH_INTERVAL;
-            updateCountdown();
-            countdownTimer = setInterval(() => {
-                if (!refreshPaused) {
-                    secondsLeft--;
-                    if (secondsLeft <= 0) secondsLeft = AUTO_REFRESH_INTERVAL;
-                }
-                updateCountdown();
-            }, 1000);
-        }
-        async function doAutoRefresh(force = false) {
-            const anyOpen = document.querySelector('.overlay.open');
-            if (anyOpen && !force) return;
-            const search = document.getElementById('searchInput'),
-                date = document.getElementById('dateInput');
-            if (!force && (document.activeElement === search || document.activeElement === date)) return;
-            try {
-                const dot = document.getElementById('refreshDot'),
-                    el = document.getElementById('refreshCountdown');
-                if (dot) dot.style.background = '#818cf8';
-                if (el) el.textContent = 'Refreshing…';
-                const response = await fetch(window.location.href, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'text/html'
-                    },
-                    credentials: 'same-origin'
-                });
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                const html = await response.text();
-                const parser = new DOMParser(),
-                    newDoc = parser.parseFromString(html, 'text/html');
-                const newTbody = newDoc.querySelector('#tableBody'),
-                    oldTbody = document.querySelector('#tableBody');
-                if (newTbody && oldTbody) oldTbody.innerHTML = newTbody.innerHTML;
-                const newCards = newDoc.querySelector('#mobileCardList'),
-                    oldCards = document.querySelector('#mobileCardList');
-                if (newCards && oldCards) oldCards.innerHTML = newCards.innerHTML;
-                allTableRows.length = 0;
-                document.querySelectorAll('#tableBody .res-row').forEach(r => allTableRows.push(r));
-                allCards.length = 0;
-                document.querySelectorAll('#mobileCardList .res-card').forEach(c => allCards.push(c));
-                applyFilters();
-                secondsLeft = AUTO_REFRESH_INTERVAL;
-                updateCountdown();
-                if (dot) dot.style.background = '#4ade80';
-            } catch (err) {
-                console.warn('Auto-refresh failed:', err.message);
-                const dot = document.getElementById('refreshDot');
-                if (dot) {
-                    dot.style.background = '#f87171';
-                    setTimeout(() => {
-                        if (dot) dot.style.background = '#4ade80';
-                    }, 3000);
-                }
-            }
-        }
-        const observer = new MutationObserver(() => {
-            refreshPaused = !!document.querySelector('.overlay.open');
-            updateCountdown();
-        });
-        document.querySelectorAll('.overlay').forEach(el => observer.observe(el, {
-            attributes: true,
-            attributeFilter: ['class']
-        }));
-        ['searchInput', 'dateInput'].forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.addEventListener('focus', () => {
-                refreshPaused = true;
-                updateCountdown();
-            });
-            el.addEventListener('blur', () => {
-                refreshPaused = !!document.querySelector('.overlay.open');
-                updateCountdown();
-            });
-        });
-        autoRefreshTimer = setInterval(() => doAutoRefresh(), AUTO_REFRESH_INTERVAL * 1000);
+        const observer=new MutationObserver(()=>{refreshPaused=!!document.querySelector('.overlay.open');updateCountdown();});
+        document.querySelectorAll('.overlay').forEach(el=>observer.observe(el,{attributes:true,attributeFilter:['class']}));
+        ['searchInput','dateInput'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.addEventListener('focus',()=>{refreshPaused=true;updateCountdown();});el.addEventListener('blur',()=>{refreshPaused=!!document.querySelector('.overlay.open');updateCountdown();});});
+        autoRefreshTimer=setInterval(()=>doAutoRefresh(),AUTO_REFRESH_INTERVAL*1000);
         startCountdown();
     </script>
 </body>
-
 </html>
