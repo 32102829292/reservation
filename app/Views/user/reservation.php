@@ -435,12 +435,6 @@
                 <div class="page-title">New Reservation</div>
                 <div class="page-sub">Book a resource for your upcoming visit.</div>
             </div>
-            <div class="page-header-actions">
-                <a href="<?= base_url('/reservation-list') ?>" class="back-btn">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                    My Reservations
-                </a>
-            </div>
         </div>
 
         <!-- Flash messages -->
