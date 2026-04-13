@@ -560,15 +560,26 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
 
         <div class="card fade-up-1" style="padding:16px 20px;margin-bottom:16px;">
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-                <div class="search-wrap" style="flex:1;min-width:180px;">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Search by name, email, or role…" oninput="applyFilters()">
+                <!-- Search with inline clear X -->
+                <div class="search-wrap" style="flex:1;min-width:180px;position:relative;">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.75rem;pointer-events:none;z-index:1;"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search by name, email, or role…" oninput="applyFilters();toggleClear('searchInput','searchClear')" style="padding-right:30px;">
+                    <button id="searchClear" onclick="document.getElementById('searchInput').value='';applyFilters();toggleClear('searchInput','searchClear');" title="Clear search"
+                        style="display:none;position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:.75rem;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s;"
+                        onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='#94a3b8'">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
+                <!-- Date with inline clear X -->
                 <div style="position:relative;">
                     <i class="fa-regular fa-calendar" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.72rem;pointer-events:none;"></i>
-                    <input type="date" id="dateInput" class="date-input" onchange="applyFilters()">
+                    <input type="date" id="dateInput" class="date-input" onchange="applyFilters();toggleClear('dateInput','dateClear')" style="padding-right:30px;">
+                    <button id="dateClear" onclick="document.getElementById('dateInput').value='';applyFilters();toggleClear('dateInput','dateClear');" title="Clear date"
+                        style="display:none;position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:.75rem;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s;"
+                        onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='#94a3b8'">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <button class="reset-btn" onclick="clearFilters()"><i class="fa-solid fa-rotate-left" style="font-size:.7rem;"></i> Reset</button>
             </div>
             <div style="display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none;">
                 <button class="qtab active" data-tab="all" onclick="setFilter('all')"><i class="fa-solid fa-list" style="font-size:.7rem;"></i> All <span style="font-size:.6rem;opacity:.7;font-family:var(--mono);"><?= $totalSessions ?></span></button>
@@ -777,9 +788,16 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
             document.getElementById('noResultsMsg').classList.toggle('hidden', n > 0);
         }
 
+        function toggleClear(inputId, btnId) {
+            const val = document.getElementById(inputId).value;
+            document.getElementById(btnId).style.display = val ? 'block' : 'none';
+        }
+
         function clearFilters() {
             document.getElementById('searchInput').value = '';
             document.getElementById('dateInput').value = '';
+            document.getElementById('searchClear').style.display = 'none';
+            document.getElementById('dateClear').style.display = 'none';
             setFilter('all');
         }
 

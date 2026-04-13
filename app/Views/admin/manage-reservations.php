@@ -229,16 +229,9 @@ $pendingCount = $counts['pending'];
         }
 
         /* ══════════════════════════════════════════════
-           PATCH: FILTER BAR — stack on mobile
+           FIX: FILTER TABS — prevent text clipping
         ══════════════════════════════════════════════ */
-        @media(max-width:639px) {
-            .card > div[style*="flex-wrap:wrap"] {
-                flex-direction: column !important;
-                gap: 8px !important;
-            }
-            .card > div > div[style*="width:160px"] { width: 100% !important; }
-            .card > div > .reset-btn { width: 100% !important; }
-        }
+        .qtab { white-space: nowrap; flex-shrink: 0; }
 
         /* ══════════════════════════════════════════════
            PATCH: RES CARDS — better mobile spacing
@@ -442,20 +435,31 @@ $pendingCount = $counts['pending'];
             <div class="flash-err fade-up"><i class="fa-solid fa-circle-exclamation"></i><?= session()->getFlashdata('error') ?></div>
         <?php endif; ?>
 
-        <!-- Filter bar -->
+        <!-- Filter bar — Reset button removed; X icons inside inputs -->
         <div class="card fade-up" style="padding:16px 18px;margin-bottom:14px;">
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
-                <div class="search-wrap" style="flex:1;min-width:180px;">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input id="searchInput" type="text" placeholder="Search name, resource, purpose…" class="search-input" oninput="applyFilters()">
+                <!-- Search with inline clear X -->
+                <div style="flex:1;min-width:180px;position:relative;">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.75rem;pointer-events:none;z-index:1;"></i>
+                    <input id="searchInput" type="text" placeholder="Search name, resource, purpose…" class="search-input" style="padding-left:32px;padding-right:30px;width:100%;" oninput="applyFilters();toggleClear('searchInput','searchClear')">
+                    <button id="searchClear" onclick="document.getElementById('searchInput').value='';applyFilters();toggleClear('searchInput','searchClear');" title="Clear search"
+                        style="display:none;position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:.75rem;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s;"
+                        onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='#94a3b8'">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <div style="position:relative;width:160px">
-                    <i class="fa-regular fa-calendar" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-sub);font-size:11px;pointer-events:none"></i>
-                    <input id="dateInput" type="date" class="search-input" style="padding-left:36px;width:100%;" onchange="applyFilters()">
+                <!-- Date with inline clear X -->
+                <div style="position:relative;width:160px;">
+                    <i class="fa-regular fa-calendar" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-sub);font-size:11px;pointer-events:none;z-index:1;"></i>
+                    <input id="dateInput" type="date" class="search-input" style="padding-left:36px;padding-right:30px;width:100%;" onchange="applyFilters();toggleClear('dateInput','dateClear')">
+                    <button id="dateClear" onclick="document.getElementById('dateInput').value='';applyFilters();toggleClear('dateInput','dateClear');" title="Clear date"
+                        style="display:none;position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:.75rem;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s;"
+                        onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='#94a3b8'">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <button onclick="clearFilters()" class="reset-btn"><i class="fa-solid fa-rotate-left" style="font-size:11px"></i> Reset</button>
             </div>
-            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px">
+            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;">
                 <button class="qtab active" data-tab="all"       onclick="setTab(this,'all')"><i class="fa-solid fa-layer-group" style="font-size:11px"></i> All <span style="font-size:9px;font-weight:800;opacity:.7"><?= $counts['all'] ?></span></button>
                 <button class="qtab"        data-tab="pending"   onclick="setTab(this,'pending')"><i class="fa-solid fa-clock" style="font-size:11px"></i> Pending<?php if ($counts['pending'] > 0): ?><span style="background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;"><?= $counts['pending'] ?></span><?php endif; ?></button>
                 <button class="qtab"        data-tab="approved"  onclick="setTab(this,'approved')"><i class="fa-solid fa-circle-check" style="font-size:11px"></i> Approved</button>
@@ -692,6 +696,12 @@ $pendingCount = $counts['pending'];
 
         let _currentReservationId = null;
 
+        /* ── Inline clear X helpers ── */
+        function toggleClear(inputId, btnId) {
+            const val = document.getElementById(inputId).value;
+            document.getElementById(btnId).style.display = val ? 'block' : 'none';
+        }
+
         async function savePrintLog() {
             const rid = _currentReservationId, pages = parseInt(document.getElementById('printPagesInput').value,10)||0;
             const btn = document.getElementById('savePrintBtn'), msg = document.getElementById('printSaveMsg');
@@ -756,7 +766,16 @@ $pendingCount = $counts['pending'];
             document.getElementById('tableFooter').textContent=`${n} result${n!==1?'s':''} displayed`;
         }
 
-        function clearFilters(){document.getElementById('searchInput').value='';document.getElementById('dateInput').value='';curTab='all';document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='all'));syncCards('all');applyFilters();}
+        function clearFilters(){
+            document.getElementById('searchInput').value='';
+            document.getElementById('dateInput').value='';
+            document.getElementById('searchClear').style.display='none';
+            document.getElementById('dateClear').style.display='none';
+            curTab='all';
+            document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='all'));
+            syncCards('all');
+            applyFilters();
+        }
 
         let sortDir={};
         function sortTable(col){
