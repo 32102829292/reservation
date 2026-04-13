@@ -213,6 +213,8 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
             background: var(--input-bg);
             border-color: rgba(99, 102, 241, .18);
             color: var(--text);
+            /* FIX: ensure calendar picker UI also goes dark */
+            color-scheme: dark;
         }
 
         body.dark .date-input:focus {
@@ -221,16 +223,13 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
         }
 
         /* ══════════════════════════════════════════════
-           PATCH: STAT GRID — 6 columns responsive
-           Desktop: 3×2 | Mobile: 2×3
+           FIX: STAT GRID — 3-column responsive
+           Was targeting "repeat(6" (never matched).
+           Now targets all .stats-grid on mobile.
         ══════════════════════════════════════════════ */
-        .stats-grid[style*="repeat(6"] {
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-        }
-
         @media(max-width:639px) {
-            .stats-grid[style*="repeat(6"] {
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            .stats-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
                 gap: 8px !important;
             }
 
@@ -239,12 +238,20 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
             }
 
             .stat-num {
-                font-size: 1.35rem !important;
+                font-size: 1.25rem !important;
             }
 
             .stat-lbl {
                 font-size: .56rem !important;
             }
+        }
+
+        /* ══════════════════════════════════════════════
+           FIX: FILTER TABS — prevent text clipping
+        ══════════════════════════════════════════════ */
+        .qtab {
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         /* ══════════════════════════════════════════════
@@ -323,12 +330,11 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
             color: #4a6fa5 !important;
         }
 
-        /* Date input */
+        /* Date input — id selector kept for specificity, class already has color-scheme:dark above */
         body.dark #dateInput {
             background: #101e35 !important;
             border-color: rgba(99, 102, 241, .18) !important;
             color: #e2eaf8 !important;
-            color-scheme: dark;
         }
 
         /* Res cards */
@@ -564,7 +570,7 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
                 </div>
                 <button class="reset-btn" onclick="clearFilters()"><i class="fa-solid fa-rotate-left" style="font-size:.7rem;"></i> Reset</button>
             </div>
-            <div style="display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;">
+            <div style="display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none;">
                 <button class="qtab active" data-tab="all" onclick="setFilter('all')"><i class="fa-solid fa-list" style="font-size:.7rem;"></i> All <span style="font-size:.6rem;opacity:.7;font-family:var(--mono);"><?= $totalSessions ?></span></button>
                 <button class="qtab" data-tab="active" onclick="setFilter('active')"><i class="fa-solid fa-circle" style="font-size:.55rem;color:#10b981;"></i> Active<?php if ($activeSessions > 0): ?><span style="background:#10b981;color:white;font-size:.55rem;font-weight:800;padding:1px 6px;border-radius:999px;"><?= $activeSessions ?></span><?php endif; ?></button>
                 <button class="qtab" data-tab="closed" onclick="setFilter('closed')"><i class="fa-solid fa-circle-xmark" style="font-size:.7rem;"></i> Closed</button>
@@ -734,9 +740,13 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
         function applyFilters() {
             const q = document.getElementById('searchInput').value.toLowerCase().trim();
             const date = document.getElementById('dateInput').value;
+
+            // FIX: count from whichever list is visible (table rows on desktop, cards on mobile)
+            const isMobile = window.innerWidth < 768;
             const tableRows = document.querySelectorAll('#logTableBody .log-row');
             const cards = document.querySelectorAll('#logCardList .log-card');
             let n = 0;
+
             const match = el => {
                 const mf = curFilter === 'all' ||
                     (curFilter === 'active' && el.dataset.status === 'active') ||
@@ -744,15 +754,24 @@ $roleIcons = ['user' => 'fa-user', 'sk' => 'fa-user-shield', 'admin' => 'fa-crow
                     el.dataset.role === curFilter;
                 return mf && (!q || el.dataset.search.includes(q)) && (!date || el.dataset.date === date);
             };
+
             tableRows.forEach(r => {
                 const s = match(r);
                 r.style.display = s ? '' : 'none';
-                if (s) n++;
+                if (s && !isMobile) n++;
             });
             cards.forEach(c => {
-                c.style.display = match(c) ? '' : 'none';
+                const s = match(c);
+                c.style.display = s ? '' : 'none';
+                if (s && isMobile) n++;
             });
-            const total = tableRows.length;
+
+            // If neither branch ran (edge case during resize), fall back to table count
+            if (n === 0 && !isMobile) {
+                tableRows.forEach(r => { if (r.style.display !== 'none') n++; });
+            }
+
+            const total = tableRows.length; // total is always consistent with PHP output
             document.getElementById('resultCount').textContent = `Showing ${n} of ${total} session${total !== 1 ? 's' : ''}`;
             document.getElementById('tableFooter').textContent = `${n} result${n !== 1 ? 's' : ''} displayed`;
             document.getElementById('noResultsMsg').classList.toggle('hidden', n > 0);

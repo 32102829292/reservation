@@ -3,6 +3,7 @@
  * Admin Dashboard View — fully debugged + notification system fixed
  * FIX: modal time now shows 12h PHT format in readable font (not mono)
  * FIX: Calendar UI — taller cells, proper event pills, styled nav buttons
+ * FIX: Chart mobile layout — grid-two responsive, doughnut fixed size
  */
 ?>
 <!DOCTYPE html>
@@ -68,225 +69,166 @@
         /* ══════════════════════════════════════════
            CALENDAR UI FIXES
         ══════════════════════════════════════════ */
-
-        /* Cell sizing — give each day enough vertical room */
-        #calendar .fc-daygrid-day {
-            min-height: 96px;
-        }
-        #calendar .fc-daygrid-day-frame {
-            min-height: 96px;
-            padding: 5px 4px 4px;
-        }
-
-        /* Day number row */
+        #calendar .fc-daygrid-day { min-height: 96px; }
+        #calendar .fc-daygrid-day-frame { min-height: 96px; padding: 5px 4px 4px; }
         #calendar .fc-daygrid-day-top {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2px 3px;
+            flex-direction: row; justify-content: space-between;
+            align-items: center; padding: 0 2px 3px;
         }
         #calendar .fc-daygrid-day-number {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-            font-family: var(--font);
-            text-decoration: none;
-            padding: 0;
-            line-height: 1;
+            font-size: 12px; font-weight: 600; color: var(--text-muted);
+            font-family: var(--font); text-decoration: none; padding: 0; line-height: 1;
         }
-        #calendar .fc-day-today {
-            background: #eef2ff !important;
-        }
-        #calendar .fc-day-today .fc-daygrid-day-number {
-            color: var(--indigo);
-            font-weight: 800;
-        }
-        #calendar .fc-day-other .fc-daygrid-day-number {
-            color: var(--text-sub);
-            opacity: 0.5;
-        }
-        #calendar .fc-day-other {
-            background: transparent;
-        }
+        #calendar .fc-day-today { background: #eef2ff !important; }
+        #calendar .fc-day-today .fc-daygrid-day-number { color: var(--indigo); font-weight: 800; }
+        #calendar .fc-day-other .fc-daygrid-day-number { color: var(--text-sub); opacity: 0.5; }
+        #calendar .fc-day-other { background: transparent; }
 
-        /* Event pills */
         #calendar .fc-event {
-            border-radius: 5px !important;
-            border: none !important;
-            font-size: 10px !important;
-            font-weight: 600 !important;
-            padding: 2px 6px !important;
-            margin: 1px 3px !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-family: var(--font) !important;
-            line-height: 1.5 !important;
-            cursor: pointer;
-            transition: opacity .15s;
+            border-radius: 5px !important; border: none !important;
+            font-size: 10px !important; font-weight: 600 !important;
+            padding: 2px 6px !important; margin: 1px 3px !important;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            font-family: var(--font) !important; line-height: 1.5 !important;
+            cursor: pointer; transition: opacity .15s;
         }
-        #calendar .fc-event:hover {
-            opacity: .85;
-        }
-        #calendar .fc-daygrid-event-dot {
-            display: none;
-        }
+        #calendar .fc-event:hover { opacity: .85; }
+        #calendar .fc-daygrid-event-dot { display: none; }
         #calendar .fc-event-title {
-            font-weight: 600 !important;
-            font-family: var(--font) !important;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: 600 !important; font-family: var(--font) !important;
+            overflow: hidden; text-overflow: ellipsis;
         }
         #calendar .fc-event-time {
-            font-weight: 700 !important;
-            font-family: var(--font) !important;
-            margin-right: 3px;
+            font-weight: 700 !important; font-family: var(--font) !important; margin-right: 3px;
         }
-
-        /* "+N more" link */
         #calendar .fc-daygrid-more-link {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--indigo);
-            font-family: var(--font);
-            padding: 1px 4px;
-            border-radius: 4px;
-            margin: 1px 3px;
-            display: block;
-            text-decoration: none;
-            transition: background .12s;
+            font-size: 10px; font-weight: 700; color: var(--indigo); font-family: var(--font);
+            padding: 1px 4px; border-radius: 4px; margin: 1px 3px;
+            display: block; text-decoration: none; transition: background .12s;
         }
-        #calendar .fc-daygrid-more-link:hover {
-            background: var(--indigo-light);
-        }
-
-        /* Column header (Sun Mon Tue …) */
-        #calendar .fc-col-header-cell {
-            border-bottom: 1px solid var(--border-subtle) !important;
-            padding-bottom: 4px;
-        }
+        #calendar .fc-daygrid-more-link:hover { background: var(--indigo-light); }
+        #calendar .fc-col-header-cell { border-bottom: 1px solid var(--border-subtle) !important; padding-bottom: 4px; }
         #calendar .fc-col-header-cell-cushion {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            text-decoration: none;
-            font-family: var(--font);
-            padding: 6px 4px;
-            display: inline-block;
+            font-size: 11px; font-weight: 700; color: var(--text-sub);
+            text-transform: uppercase; letter-spacing: 0.06em; text-decoration: none;
+            font-family: var(--font); padding: 6px 4px; display: inline-block;
         }
-
-        /* Toolbar: month title + nav buttons */
-        #calendar .fc-toolbar {
-            margin-bottom: 12px !important;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
+        #calendar .fc-toolbar { margin-bottom: 12px !important; align-items: center; flex-wrap: wrap; gap: 8px; }
         #calendar .fc-toolbar-title {
-            font-size: 15px !important;
-            font-weight: 700 !important;
-            font-family: var(--font) !important;
-            color: var(--text) !important;
-            letter-spacing: -.02em;
+            font-size: 15px !important; font-weight: 700 !important;
+            font-family: var(--font) !important; color: var(--text) !important; letter-spacing: -.02em;
         }
         #calendar .fc-button,
         #calendar .fc-button-primary {
-            background: var(--input-bg) !important;
-            border: 0.5px solid var(--border) !important;
-            color: var(--text) !important;
-            font-family: var(--font) !important;
-            font-size: 12px !important;
-            font-weight: 600 !important;
-            border-radius: 8px !important;
-            box-shadow: none !important;
-            padding: 5px 12px !important;
-            transition: background .15s, border-color .15s;
-            text-transform: none !important;
-            letter-spacing: 0 !important;
+            background: var(--input-bg) !important; border: 0.5px solid var(--border) !important;
+            color: var(--text) !important; font-family: var(--font) !important;
+            font-size: 12px !important; font-weight: 600 !important;
+            border-radius: 8px !important; box-shadow: none !important;
+            padding: 5px 12px !important; transition: background .15s, border-color .15s;
+            text-transform: none !important; letter-spacing: 0 !important;
         }
         #calendar .fc-button:hover,
-        #calendar .fc-button-primary:hover {
-            background: var(--border-subtle) !important;
-            border-color: var(--border) !important;
-        }
+        #calendar .fc-button-primary:hover { background: var(--border-subtle) !important; border-color: var(--border) !important; }
         #calendar .fc-button:focus,
-        #calendar .fc-button-primary:focus {
-            outline: 2px solid var(--indigo) !important;
-            outline-offset: 1px;
-            box-shadow: none !important;
-        }
+        #calendar .fc-button-primary:focus { outline: 2px solid var(--indigo) !important; outline-offset: 1px; box-shadow: none !important; }
         #calendar .fc-button-active,
-        #calendar .fc-button-primary:not(:disabled).fc-button-active {
-            background: var(--indigo) !important;
-            color: #fff !important;
-            border-color: var(--indigo) !important;
-        }
+        #calendar .fc-button-primary:not(:disabled).fc-button-active { background: var(--indigo) !important; color: #fff !important; border-color: var(--indigo) !important; }
         #calendar .fc-prev-button,
-        #calendar .fc-next-button {
-            width: 32px !important;
-            padding: 5px 0 !important;
-            text-align: center !important;
+        #calendar .fc-next-button { width: 32px !important; padding: 5px 0 !important; text-align: center !important; }
+        #calendar .fc-scrollgrid { border-color: var(--border-subtle) !important; border-radius: var(--r-md); overflow: hidden; }
+        #calendar .fc-scrollgrid td,
+        #calendar .fc-scrollgrid th { border-color: var(--border-subtle) !important; }
+        #calendar .fc-scrollgrid-sync-inner { border-color: var(--border-subtle) !important; }
+        #calendar a { text-decoration: none !important; }
+        #calendar .fc-popover { background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: var(--r-lg) !important; box-shadow: var(--shadow-lg) !important; font-family: var(--font) !important; z-index: 50 !important; }
+        #calendar .fc-popover-header { background: var(--input-bg) !important; color: var(--text) !important; font-family: var(--font) !important; font-size: 12px !important; font-weight: 700 !important; padding: 8px 12px !important; border-bottom: 1px solid var(--border-subtle) !important; border-radius: var(--r-lg) var(--r-lg) 0 0 !important; }
+        #calendar .fc-popover-body { padding: 8px !important; }
+        #calendar .fc-popover-close { color: var(--text-sub) !important; font-size: 14px !important; }
+
+        body.dark #calendar .fc-day-today { background: rgba(55,48,163,0.18) !important; }
+        body.dark #calendar .fc-button,
+        body.dark #calendar .fc-button-primary { background: rgba(255,255,255,.06) !important; border-color: rgba(255,255,255,.12) !important; color: #e2e8f0 !important; }
+        body.dark #calendar .fc-button:hover,
+        body.dark #calendar .fc-button-primary:hover { background: rgba(255,255,255,.1) !important; }
+
+        /* ══════════════════════════════════════════
+           CHART MOBILE PATCH
+        ══════════════════════════════════════════ */
+
+        /* 1. grid-two: stack on mobile, side-by-side on md+ */
+        .grid-two {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        @media(min-width: 640px) {
+            .grid-two { grid-template-columns: 1fr 1fr; }
         }
 
-        /* Grid borders */
-        #calendar .fc-scrollgrid {
-            border-color: var(--border-subtle) !important;
-            border-radius: var(--r-md);
+        /* 2. Trend chart height */
+        .chart-wrap {
+            position: relative;
+            height: 180px;
+            width: 100%;
+        }
+        @media(min-width: 640px) {
+            .chart-wrap { height: 220px; }
+        }
+
+        /* 3. Resource chart wrapper: always horizontal */
+        .resource-chart-wrap {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            min-height: 140px;
+        }
+
+        /* 4. Doughnut canvas: fixed, never shrinks */
+        .resource-chart-canvas {
+            flex-shrink: 0 !important;
+            width: 120px !important;
+            height: 120px !important;
+            min-width: 120px !important;
+            min-height: 120px !important;
+        }
+        @media(min-width: 400px) {
+            .resource-chart-canvas {
+                width: 140px !important;
+                height: 140px !important;
+                min-width: 140px !important;
+                min-height: 140px !important;
+            }
+        }
+
+        /* 5. Legend: truncate long names */
+        #resourceLegend {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
             overflow: hidden;
         }
-        #calendar .fc-scrollgrid td,
-        #calendar .fc-scrollgrid th {
-            border-color: var(--border-subtle) !important;
-        }
-        #calendar .fc-scrollgrid-sync-inner {
-            border-color: var(--border-subtle) !important;
-        }
-        #calendar a {
-            text-decoration: none !important;
+        #resourceLegend > div {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
         }
 
-        /* Popover (when clicking "+N more") */
-        #calendar .fc-popover {
-            background: var(--card) !important;
-            border: 1px solid var(--border) !important;
-            border-radius: var(--r-lg) !important;
-            box-shadow: var(--shadow-lg) !important;
-            font-family: var(--font) !important;
-            z-index: 50 !important;
-        }
-        #calendar .fc-popover-header {
-            background: var(--input-bg) !important;
-            color: var(--text) !important;
-            font-family: var(--font) !important;
-            font-size: 12px !important;
-            font-weight: 700 !important;
-            padding: 8px 12px !important;
-            border-bottom: 1px solid var(--border-subtle) !important;
-            border-radius: var(--r-lg) var(--r-lg) 0 0 !important;
-        }
-        #calendar .fc-popover-body {
-            padding: 8px !important;
-        }
-        #calendar .fc-popover-close {
-            color: var(--text-sub) !important;
-            font-size: 14px !important;
+        /* 6. Card padding on mobile */
+        @media(max-width: 639px) {
+            .card-p { padding: 14px 14px !important; }
+            .card-head { margin-bottom: 12px !important; flex-wrap: wrap; gap: 8px; }
         }
 
-        /* Dark mode overrides */
-        body.dark #calendar .fc-day-today {
-            background: rgba(55, 48, 163, 0.18) !important;
-        }
-        body.dark #calendar .fc-button,
-        body.dark #calendar .fc-button-primary {
-            background: rgba(255,255,255,.06) !important;
-            border-color: rgba(255,255,255,.12) !important;
-            color: #e2e8f0 !important;
-        }
-        body.dark #calendar .fc-button:hover,
-        body.dark #calendar .fc-button-primary:hover {
-            background: rgba(255,255,255,.1) !important;
+        /* 7. Dark mode chart cards */
+        body.dark .card {
+            background: #0b1628;
+            border-color: rgba(99,102,241,.1);
         }
     </style>
 </head>
@@ -639,7 +581,7 @@
         </div>
 
         <!-- Charts -->
-        <div class="grid-two fade-up-3" style="margin-bottom:20px;">
+        <div class="grid-two fade-up-3">
             <div class="card card-p">
                 <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
@@ -670,9 +612,8 @@
                 </div>
                 <div class="resource-chart-wrap">
                     <canvas id="resourceChart" class="resource-chart-canvas"
-                            style="width:140px;height:140px;min-width:140px;"
                             role="img" aria-label="Popular resources doughnut chart"></canvas>
-                    <div id="resourceLegend" style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;"></div>
+                    <div id="resourceLegend"></div>
                 </div>
             </div>
         </div>
@@ -1156,8 +1097,8 @@
             return `${Math.floor(s/86400)}d ago`;
         };
         const escHtml = str => String(str ?? '')
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 
         const resolveVisitorName = r =>
             (r.visitor_name  || '').trim() ||
@@ -1167,12 +1108,11 @@
             (r.name          || '').trim() ||
             'Guest';
 
-        /* ── 12-hour PHT time formatter ── */
         const to12hPHT = ts => {
             if (!ts) return '—';
             const parts = ts.split(':');
             let h = parseInt(parts[0], 10);
-            const m = parts[1] ? parts[1].padStart(2, '0') : '00';
+            const m = parts[1] ? parts[1].padStart(2,'0') : '00';
             if (isNaN(h)) return ts;
             const ampm = h < 12 ? 'AM' : 'PM';
             h = h % 12 || 12;
@@ -1192,11 +1132,11 @@
                 .filter(r => r.status === 'pending')
                 .slice(0, 20)
                 .map(r => ({
-                    id:    parseInt(r.id),
-                    title: 'New Pending Request',
-                    msg:   `${escHtml(resolveVisitorName(r))} → ${escHtml(r.resource_name || 'Resource')}`,
-                    time:  r.created_at || new Date().toISOString(),
-                    read:  seen.includes(parseInt(r.id))
+                    id:   parseInt(r.id),
+                    title:'New Pending Request',
+                    msg:  `${escHtml(resolveVisitorName(r))} → ${escHtml(r.resource_name || 'Resource')}`,
+                    time: r.created_at || new Date().toISOString(),
+                    read: seen.includes(parseInt(r.id))
                 }));
             updateBadge();
             renderNotifs();
@@ -1231,9 +1171,9 @@
                 return;
             }
             list.innerHTML = [...notifications]
-                .sort((a, b) => new Date(b.time) - new Date(a.time))
+                .sort((a,b) => new Date(b.time) - new Date(a.time))
                 .map(n => `
-                <div class="notif-item${!n.read ? ' unread' : ''}"
+                <div class="notif-item${!n.read?' unread':''}"
                      onclick="markRead(${n.id}); location='/admin/manage-reservations?id=${encodeURIComponent(n.id)}'"
                      role="button" tabindex="0"
                      onkeydown="if(event.key==='Enter')this.click()">
@@ -1246,7 +1186,7 @@
                             <p style="font-family:var(--font);font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p>
                             <p style="font-family:var(--font);font-size:9px;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
                         </div>
-                        ${!n.read ? '<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;" aria-hidden="true"></span>' : ''}
+                        ${!n.read?'<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;" aria-hidden="true"></span>':''}
                     </div>
                 </div>`).join('');
         }
@@ -1263,7 +1203,7 @@
             const bell = document.querySelector('.notif-bell');
             if (!bell?.contains(e.target) && !dd?.contains(e.target)) {
                 dd?.classList.remove('show');
-                document.getElementById('notifBellBtn')?.setAttribute('aria-expanded', 'false');
+                document.getElementById('notifBellBtn')?.setAttribute('aria-expanded','false');
             }
         });
 
@@ -1283,7 +1223,7 @@
             empty.classList.add('hidden');
 
             [...list]
-                .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))
+                .sort((a,b) => (a.start_time||'').localeCompare(b.start_time||''))
                 .forEach(r => {
                     const st  = isClaimed(r) ? 'claimed' : (r.status || 'pending');
                     const clr = {
@@ -1292,28 +1232,25 @@
                         declined:'background:#fee2e2;color:#991b1b',
                         claimed :'background:#ede9fe;color:#5b21b6'
                     };
-
                     const displayName = resolveVisitorName(r);
                     const tFmt  = to12hPHT(r.start_time);
                     const etFmt = r.end_time ? to12hPHT(r.end_time) : '';
                     const timeDisplay = etFmt ? `${tFmt} – ${etFmt} PHT` : tFmt;
-
                     const row = document.createElement('div');
                     row.className = 'date-row';
-                    row.setAttribute('role', 'button');
-                    row.setAttribute('tabindex', '0');
+                    row.setAttribute('role','button'); row.setAttribute('tabindex','0');
                     row.onclick   = () => location = `/admin/manage-reservations?id=${encodeURIComponent(r.id)}`;
-                    row.onkeydown = e => { if (e.key === 'Enter') row.onclick(); };
+                    row.onkeydown = e => { if (e.key==='Enter') row.onclick(); };
                     row.innerHTML = `
                         <div style="width:30px;height:30px;background:#eef2ff;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                             <i class="fa-solid fa-desktop" style="font-size:.7rem;color:#3730a3;"></i>
                         </div>
                         <div style="flex:1;min-width:0;">
-                            <p style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.resource_name || 'Resource')}</p>
+                            <p style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.resource_name||'Resource')}</p>
                             <p style="font-size:11px;color:var(--text-sub);margin-top:2px;font-weight:500;">${escHtml(displayName)}</p>
                             <p style="font-size:11px;color:#3730a3;margin-top:1px;font-weight:600;">${escHtml(timeDisplay)}</p>
                         </div>
-                        <span style="padding:2px 8px;border-radius:999px;font-size:.6rem;font-weight:700;text-transform:uppercase;${clr[st] || 'background:#f1f5f9;color:#64748b'};flex-shrink:0;">${escHtml(st)}</span>`;
+                        <span style="padding:2px 8px;border-radius:999px;font-size:.6rem;font-weight:700;text-transform:uppercase;${clr[st]||'background:#f1f5f9;color:#64748b'};flex-shrink:0;">${escHtml(st)}</span>`;
                     c.appendChild(row);
                 });
             document.getElementById('dateModal').classList.add('show');
@@ -1338,7 +1275,7 @@
         let tlSessions = {}, tlPrintQueue = [], tlCurrentPrint = null, tlPageCount = 1, tlPrinted = true;
         let tlInitialized = false;
 
-        const tlGetLogged  = () => { try { return JSON.parse(localStorage.getItem(TL_LOGGED_KEY) || '[]'); } catch(e) { return []; } };
+        const tlGetLogged  = () => { try { return JSON.parse(localStorage.getItem(TL_LOGGED_KEY)||'[]'); } catch(e) { return []; } };
         const tlMarkLogged = id => {
             try {
                 const ids = tlGetLogged();
@@ -1350,26 +1287,22 @@
         function tlOpenPrintModal(r) {
             tlCurrentPrint = r; tlPageCount = 1; tlPrinted = true;
             document.getElementById('tl-modal-title').textContent = resolveVisitorName(r);
-            document.getElementById('tl-modal-sub').textContent   = `${r.resource_name || 'Resource'} · Session ended`;
+            document.getElementById('tl-modal-sub').textContent   = `${r.resource_name||'Resource'} · Session ended`;
             document.getElementById('tl-page-num').textContent    = '1';
             document.getElementById('tl-page-section').style.display = 'block';
-            const yesBtn = document.getElementById('tl-yes-btn');
-            const noBtn  = document.getElementById('tl-no-btn');
-            yesBtn.classList.add('active');    yesBtn.setAttribute('aria-pressed', 'true');
-            noBtn.classList.remove('active');  noBtn.setAttribute('aria-pressed', 'false');
+            const yesBtn = document.getElementById('tl-yes-btn'), noBtn = document.getElementById('tl-no-btn');
+            yesBtn.classList.add('active');   yesBtn.setAttribute('aria-pressed','true');
+            noBtn.classList.remove('active'); noBtn.setAttribute('aria-pressed','false');
             const pm = document.getElementById('tl-print-modal');
-            pm.style.display = 'flex';
-            pm.style.alignItems = 'center';
-            pm.style.justifyContent = 'center';
+            pm.style.display = 'flex'; pm.style.alignItems = 'center'; pm.style.justifyContent = 'center';
             document.body.style.overflow = 'hidden';
         }
 
         function tlSetPrinted(v) {
             tlPrinted = v;
-            const yesBtn = document.getElementById('tl-yes-btn');
-            const noBtn  = document.getElementById('tl-no-btn');
-            yesBtn.classList.toggle('active', v);    yesBtn.setAttribute('aria-pressed', v ? 'true' : 'false');
-            noBtn.classList.toggle('active', !v);    noBtn.setAttribute('aria-pressed', !v ? 'true' : 'false');
+            const yesBtn = document.getElementById('tl-yes-btn'), noBtn = document.getElementById('tl-no-btn');
+            yesBtn.classList.toggle('active', v);   yesBtn.setAttribute('aria-pressed', v?'true':'false');
+            noBtn.classList.toggle('active', !v);   noBtn.setAttribute('aria-pressed', !v?'true':'false');
             document.getElementById('tl-page-section').style.display = v ? 'block' : 'none';
         }
 
@@ -1383,61 +1316,59 @@
             const btn = document.getElementById('tl-save-btn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Saving…';
-            const pages = tlPrinted ? clamp(tlPageCount, 1, 999) : 0;
+            const pages = tlPrinted ? clamp(tlPageCount,1,999) : 0;
             let success = false;
             try {
                 const res = await fetch(PRINT_EP, {
-                    method:  'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
-                    body:    JSON.stringify({ reservation_id: tlCurrentPrint.id, printed: tlPrinted, pages })
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','X-CSRF-TOKEN':CSRF_TOKEN},
+                    body: JSON.stringify({reservation_id:tlCurrentPrint.id, printed:tlPrinted, pages})
                 });
                 if (res.ok) { tlMarkLogged(tlCurrentPrint.id); success = true; }
-                else tlToast('warning', 'Could not save print log', `Server returned ${res.status}. Try again.`);
+                else tlToast('warning','Could not save print log',`Server returned ${res.status}. Try again.`);
             } catch(e) {
-                tlToast('warning', 'Network error', 'Print log not saved. Check your connection.');
+                tlToast('warning','Network error','Print log not saved. Check your connection.');
             }
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="margin-right:8px;"></i>Save & Log';
             if (success) { tlClosePrintModal(); tlNextPrintModal(); }
         }
 
-        function tlSkipPrint()      { if (tlCurrentPrint) tlMarkLogged(tlCurrentPrint.id); tlClosePrintModal(); tlNextPrintModal(); }
-        function tlClosePrintModal() { const pm = document.getElementById('tl-print-modal'); pm.style.display = 'none'; document.body.style.overflow = ''; tlCurrentPrint = null; }
-        function tlNextPrintModal()  { if (tlPrintQueue.length > 0) setTimeout(() => tlOpenPrintModal(tlPrintQueue.shift()), 400); }
+        function tlSkipPrint()       { if (tlCurrentPrint) tlMarkLogged(tlCurrentPrint.id); tlClosePrintModal(); tlNextPrintModal(); }
+        function tlClosePrintModal() { const pm = document.getElementById('tl-print-modal'); pm.style.display='none'; document.body.style.overflow=''; tlCurrentPrint=null; }
+        function tlNextPrintModal()  { if (tlPrintQueue.length>0) setTimeout(()=>tlOpenPrintModal(tlPrintQueue.shift()),400); }
 
         /* ── Live sessions ── */
-        const TL_WARN = 5 * 60 * 1000, TL_CRIT = 2 * 60 * 1000;
+        const TL_WARN = 5*60*1000, TL_CRIT = 2*60*1000;
 
         function tlGetActiveSessions() {
             const today = new Date().toISOString().split('T')[0], nowMs = Date.now();
             return allRes.filter(r => {
-                if (!r.start_time || !r.end_time || !r.reservation_date) return false;
-                if ((r.reservation_date || '').split('T')[0] !== today)  return false;
-                if ((r.status || '').toLowerCase() !== 'approved') return false;
+                if (!r.start_time||!r.end_time||!r.reservation_date) return false;
+                if ((r.reservation_date||'').split('T')[0]!==today)  return false;
+                if ((r.status||'').toLowerCase()!=='approved')        return false;
                 if (!isClaimed(r)) return false;
-                const s = new Date(r.reservation_date.split('T')[0] + 'T' + r.start_time).getTime();
-                const e = new Date(r.reservation_date.split('T')[0] + 'T' + r.end_time).getTime();
-                return s <= nowMs && e >= nowMs;
+                const s = new Date(r.reservation_date.split('T')[0]+'T'+r.start_time).getTime();
+                const e = new Date(r.reservation_date.split('T')[0]+'T'+r.end_time).getTime();
+                return s<=nowMs && e>=nowMs;
             });
         }
 
         const tlFmt   = ms => {
-            if (ms <= 0) return 'Ended';
-            const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60);
-            if (h > 0) return `${h}h ${m % 60}m`;
-            if (m > 0) return `${m}m ${s % 60}s`;
+            if (ms<=0) return 'Ended';
+            const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);
+            if (h>0) return `${h}h ${m%60}m`;
+            if (m>0) return `${m}m ${s%60}s`;
             return `${s}s`;
         };
-        const tlState = ms => ms <= 0 ? 'tl-ended' : ms <= TL_CRIT ? 'tl-critical' : ms <= TL_WARN ? 'tl-warning' : 'tl-ok';
+        const tlState = ms => ms<=0?'tl-ended':ms<=TL_CRIT?'tl-critical':ms<=TL_WARN?'tl-warning':'tl-ok';
 
         function tlToast(type, title, sub) {
-            const c = document.getElementById('tl-toast-container');
-            if (!c) return;
-            const t  = document.createElement('div');
-            t.className = 'tl-toast';
-            const ic = type === 'warning' ? 'fa-triangle-exclamation' : 'fa-clock-rotate-left';
-            const bg = type === 'warning' ? 'rgba(245,158,11,.2)' : 'rgba(239,68,68,.2)';
-            t.innerHTML = `
+            const c = document.getElementById('tl-toast-container'); if (!c) return;
+            const t = document.createElement('div'); t.className='tl-toast';
+            const ic = type==='warning'?'fa-triangle-exclamation':'fa-clock-rotate-left';
+            const bg = type==='warning'?'rgba(245,158,11,.2)':'rgba(239,68,68,.2)';
+            t.innerHTML=`
                 <div class="tl-toast-icon" style="background:${bg};">
                     <i class="fa-solid ${ic}" style="color:${type==='warning'?'#f59e0b':'#ef4444'};font-size:.8rem;"></i>
                 </div>
@@ -1449,7 +1380,7 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>`;
             c.appendChild(t);
-            setTimeout(() => { t.classList.add('dismissing'); setTimeout(() => t.remove(), 220); }, 7000);
+            setTimeout(()=>{ t.classList.add('dismissing'); setTimeout(()=>t.remove(),220); },7000);
         }
 
         function tlRender() {
@@ -1458,59 +1389,38 @@
                 const grid     = document.getElementById('tl-sessions-grid');
                 const noS      = document.getElementById('tl-no-sessions');
                 if (!grid) return;
-
                 if (!sessions.length) {
-                    grid.innerHTML = '';
-                    noS?.classList.remove('hidden');
-                    tlSessions = {};
-                    tlInitialized = true;
-                    return;
+                    grid.innerHTML=''; noS?.classList.remove('hidden'); tlSessions={}; tlInitialized=true; return;
                 }
                 noS?.classList.add('hidden');
-
-                const nowMs     = Date.now();
-                const activeIds = new Set(sessions.map(r => `tl-card-${r.id}`));
-                Array.from(grid.children).forEach(c => { if (!activeIds.has(c.id)) c.remove(); });
-
+                const nowMs    = Date.now();
+                const activeIds= new Set(sessions.map(r=>`tl-card-${r.id}`));
+                Array.from(grid.children).forEach(c=>{ if(!activeIds.has(c.id)) c.remove(); });
                 sessions.forEach(r => {
-                    const datePart = (r.reservation_date || '').split('T')[0];
-                    const eMs      = new Date(datePart + 'T' + r.end_time).getTime();
-                    const sMs      = new Date(datePart + 'T' + r.start_time).getTime();
-                    const totMs    = eMs - sMs;
-                    const remMs    = eMs - nowMs;
-                    const elMs     = nowMs - sMs;
-                    const prog     = Math.min(100, Math.max(0, (elMs / totMs) * 100));
-                    const state    = tlState(remMs);
-                    const name     = resolveVisitorName(r);
-                    const res      = r.resource_name || 'Resource';
-
-                    if (!tlSessions[r.id]) tlSessions[r.id] = { warned: false, expired: false };
-                    const s = tlSessions[r.id];
-
-                    if (!s.warned && remMs > 0 && remMs <= TL_WARN) {
-                        s.warned = true;
-                        if (tlInitialized) tlToast('warning', `${name} — 5 min left`, `${res} ending soon`);
-                    }
-                    if (!s.expired && remMs <= 0) {
-                        s.expired = true;
+                    const datePart=(r.reservation_date||'').split('T')[0];
+                    const eMs=new Date(datePart+'T'+r.end_time).getTime();
+                    const sMs=new Date(datePart+'T'+r.start_time).getTime();
+                    const totMs=eMs-sMs, remMs=eMs-nowMs, elMs=nowMs-sMs;
+                    const prog=Math.min(100,Math.max(0,(elMs/totMs)*100));
+                    const state=tlState(remMs);
+                    const name=resolveVisitorName(r), res=r.resource_name||'Resource';
+                    if (!tlSessions[r.id]) tlSessions[r.id]={warned:false,expired:false};
+                    const s=tlSessions[r.id];
+                    if (!s.warned&&remMs>0&&remMs<=TL_WARN) { s.warned=true; if(tlInitialized) tlToast('warning',`${name} — 5 min left`,`${res} ending soon`); }
+                    if (!s.expired&&remMs<=0) {
+                        s.expired=true;
                         if (tlInitialized) {
-                            tlToast('expired', `${name}'s session ended`, `${res} time limit reached`);
-                            if (!tlIsLogged(r.id)) {
-                                if (!tlCurrentPrint) setTimeout(() => tlOpenPrintModal(r), 1200);
-                                else tlPrintQueue.push(r);
-                            }
+                            tlToast('expired',`${name}'s session ended`,`${res} time limit reached`);
+                            if (!tlIsLogged(r.id)) { if (!tlCurrentPrint) setTimeout(()=>tlOpenPrintModal(r),1200); else tlPrintQueue.push(r); }
                         }
                     }
-
-                    let card = document.getElementById(`tl-card-${r.id}`);
+                    let card=document.getElementById(`tl-card-${r.id}`);
                     if (!card) {
-                        card = document.createElement('div');
-                        card.id = `tl-card-${r.id}`;
-                        const sf     = (r.start_time || '').substring(0, 5) || '–';
-                        const ef     = (r.end_time   || '').substring(0, 5) || '–';
-                        const logged = tlIsLogged(r.id);
-                        card.className = `tl-session-card ${state}`;
-                        card.innerHTML = `
+                        card=document.createElement('div'); card.id=`tl-card-${r.id}`;
+                        const sf=(r.start_time||'').substring(0,5)||'–', ef=(r.end_time||'').substring(0,5)||'–';
+                        const logged=tlIsLogged(r.id);
+                        card.className=`tl-session-card ${state}`;
+                        card.innerHTML=`
                             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">
                                 <div style="min-width:0;flex:1;">
                                     <p style="font-weight:700;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(name)}</p>
@@ -1523,97 +1433,93 @@
                             <div class="tl-prog-track"><div class="tl-prog-fill" id="tl-pf-${r.id}" style="width:${prog}%"></div></div>
                             <div style="display:flex;justify-content:space-between;margin-top:7px;">
                                 <span style="font-size:.65rem;color:var(--text-sub);font-family:var(--mono);">${escHtml(sf)}–${escHtml(ef)}</span>
-                                <span class="tl-used-${r.id}" style="font-size:.65rem;font-weight:600;color:var(--text-muted);">${Math.max(0, Math.floor(elMs/60000))}m used</span>
+                                <span class="tl-used-${r.id}" style="font-size:.65rem;font-weight:600;color:var(--text-muted);">${Math.max(0,Math.floor(elMs/60000))}m used</span>
                             </div>
-                            ${logged && remMs <= 0 ? `<div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check" style="font-size:.6rem;"></i>Logged</div>` : ''}`;
+                            ${logged&&remMs<=0?`<div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check" style="font-size:.6rem;"></i>Logged</div>`:''}`;
                         grid.appendChild(card);
                     } else {
-                        card.className = `tl-session-card ${state}`;
-                        const cdEl = document.getElementById(`tl-cd-${r.id}`);
-                        const pfEl = document.getElementById(`tl-pf-${r.id}`);
-                        const usEl = card.querySelector(`.tl-used-${r.id}`);
-                        if (cdEl) cdEl.innerHTML = `<i class="fa-regular fa-clock" style="font-size:.6rem;"></i>${escHtml(tlFmt(remMs))}`;
-                        if (pfEl) pfEl.style.width = `${prog}%`;
-                        if (usEl) usEl.textContent = `${Math.max(0, Math.floor(elMs/60000))}m used`;
+                        card.className=`tl-session-card ${state}`;
+                        const cdEl=document.getElementById(`tl-cd-${r.id}`);
+                        const pfEl=document.getElementById(`tl-pf-${r.id}`);
+                        const usEl=card.querySelector(`.tl-used-${r.id}`);
+                        if(cdEl) cdEl.innerHTML=`<i class="fa-regular fa-clock" style="font-size:.6rem;"></i>${escHtml(tlFmt(remMs))}`;
+                        if(pfEl) pfEl.style.width=`${prog}%`;
+                        if(usEl) usEl.textContent=`${Math.max(0,Math.floor(elMs/60000))}m used`;
                     }
                 });
-
-                const activeRIds = new Set(sessions.map(r => r.id));
-                Object.keys(tlSessions).forEach(id => { if (!activeRIds.has(id)) delete tlSessions[id]; });
-                tlInitialized = true;
-
-            } catch(err) {
-                console.error('tlRender error:', err);
-            }
+                const activeRIds=new Set(sessions.map(r=>r.id));
+                Object.keys(tlSessions).forEach(id=>{ if(!activeRIds.has(id)) delete tlSessions[id]; });
+                tlInitialized=true;
+            } catch(err) { console.error('tlRender error:',err); }
         }
 
         /* ── Charts ── */
-        let trendChartInst = null, monthChartInst = null;
+        let trendChartInst=null, monthChartInst=null;
 
         function getChartColors(isDark) {
-            return { grid: isDark ? '#101e35' : '#f1f5f9', tick: isDark ? '#4a6fa5' : '#94a3b8' };
+            return { grid:isDark?'#101e35':'#f1f5f9', tick:isDark?'#4a6fa5':'#94a3b8' };
         }
 
         function updateChartsForTheme(isDark) {
-            const c = getChartColors(isDark);
-            [trendChartInst, monthChartInst].forEach(chart => {
+            const c=getChartColors(isDark);
+            [trendChartInst,monthChartInst].forEach(chart=>{
                 if (!chart) return;
-                if (chart.options.scales?.x) { chart.options.scales.x.grid.color  = c.grid; chart.options.scales.x.ticks.color = c.tick; }
-                if (chart.options.scales?.y) { chart.options.scales.y.grid.color  = c.grid; chart.options.scales.y.ticks.color = c.tick; }
+                if (chart.options.scales?.x) { chart.options.scales.x.grid.color=c.grid; chart.options.scales.x.ticks.color=c.tick; }
+                if (chart.options.scales?.y) { chart.options.scales.y.grid.color=c.grid; chart.options.scales.y.ticks.color=c.tick; }
                 chart.update('none');
             });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const _orig = typeof window.adminToggleDark === 'function'
+            const _orig = typeof window.adminToggleDark==='function'
                 ? window.adminToggleDark
-                : (typeof window.toggleDark === 'function' ? window.toggleDark : null);
-            window.adminToggleDark = window.toggleDark = function() {
-                if (_orig) _orig.call(this);
+                : (typeof window.toggleDark==='function' ? window.toggleDark : null);
+            window.adminToggleDark=window.toggleDark=function(){
+                if(_orig) _orig.call(this);
                 updateChartsForTheme(document.body.classList.contains('dark'));
             };
-        }, { once: true });
+        }, {once:true});
 
-        let _tlInterval = null;
-        function _tlCleanup() { if (_tlInterval) { clearInterval(_tlInterval); _tlInterval = null; } }
-        window.addEventListener('beforeunload', _tlCleanup);
-        window.addEventListener('pagehide',     _tlCleanup);
+        let _tlInterval=null;
+        function _tlCleanup() { if(_tlInterval){clearInterval(_tlInterval);_tlInterval=null;} }
+        window.addEventListener('beforeunload',_tlCleanup);
+        window.addEventListener('pagehide',_tlCleanup);
 
         /* ── Bootstrap ── */
         document.addEventListener('DOMContentLoaded', () => {
             tlRender();
-            _tlInterval = setInterval(tlRender, 1000);
+            _tlInterval = setInterval(tlRender,1000);
             loadNotifications();
 
-            const mob       = isMob();
-            const isDark    = document.body.classList.contains('dark');
-            const chartFont = { family: 'Plus Jakarta Sans', size: mob ? 9 : 11 };
-            const cc        = getChartColors(isDark);
+            const mob    = isMob();
+            const isDark = document.body.classList.contains('dark');
+            const chartFont = {family:'Plus Jakarta Sans', size:mob?9:11};
+            const cc     = getChartColors(isDark);
 
             /* Trend Chart */
             const tCtx = document.getElementById('trendChart')?.getContext('2d');
             if (tCtx) {
                 trendChartInst = new Chart(tCtx, {
-                    type: 'line',
-                    data: {
+                    type:'line',
+                    data:{
                         labels:   <?= json_encode($chartLabels ?? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], $JSON_FLAGS) ?>,
-                        datasets: [{
+                        datasets:[{
                             data: <?= json_encode($chartData ?? [0,0,0,0,0,0,0], $JSON_FLAGS) ?>,
                             borderColor:'#3730a3', backgroundColor:'rgba(55,48,163,0.07)',
                             borderWidth:2.5, tension:0.4, fill:true,
                             pointBackgroundColor:'#3730a3',
-                            pointRadius: mob ? 3 : 4, pointHoverRadius: mob ? 5 : 6
+                            pointRadius:mob?3:4, pointHoverRadius:mob?5:6
                         }]
                     },
-                    options: {
+                    options:{
                         responsive:true, maintainAspectRatio:false,
-                        plugins: {
-                            legend: { display:false },
-                            tooltip: { backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10 }
+                        plugins:{
+                            legend:{display:false},
+                            tooltip:{backgroundColor:'#0f172a',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}
                         },
-                        scales: {
-                            x: { grid:{display:false}, ticks:{font:chartFont, color:cc.tick} },
-                            y: { grid:{color:cc.grid}, ticks:{font:chartFont, color:cc.tick, stepSize:1}, beginAtZero:true }
+                        scales:{
+                            x:{grid:{display:false}, ticks:{font:chartFont,color:cc.tick}},
+                            y:{grid:{color:cc.grid},  ticks:{font:chartFont,color:cc.tick,stepSize:1},beginAtZero:true}
                         }
                     }
                 });
@@ -1625,24 +1531,21 @@
             const rD   = <?= json_encode($resourceData   ?? [1],         $JSON_FLAGS) ?>;
             const pal  = ['#3730a3','#7c3aed','#16a34a','#d97706','#ec4899'];
             if (rCtx) {
-                const rCanvas = document.getElementById('resourceChart');
-                if (!rCanvas.width  || rCanvas.width  < 10) rCanvas.width  = 140;
-                if (!rCanvas.height || rCanvas.height < 10) rCanvas.height = 140;
                 new Chart(rCtx, {
-                    type: 'doughnut',
-                    data: { labels: rL, datasets: [{ data:rD, backgroundColor:pal, borderWidth:0, hoverOffset:4 }] },
-                    options: {
+                    type:'doughnut',
+                    data:{labels:rL, datasets:[{data:rD, backgroundColor:pal, borderWidth:0, hoverOffset:4}]},
+                    options:{
                         responsive:false, animation:{duration:400}, cutout:'65%',
-                        plugins: {
-                            legend: { display:false },
-                            tooltip: { backgroundColor:'#0f172a', titleFont:{family:'Plus Jakarta Sans',weight:'700'}, bodyFont:{family:'Plus Jakarta Sans'}, padding:10, cornerRadius:10 }
+                        plugins:{
+                            legend:{display:false},
+                            tooltip:{backgroundColor:'#0f172a',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10}
                         }
                     }
                 });
                 const leg = document.getElementById('resourceLegend');
-                if (leg) leg.innerHTML = rL.map((l, i) =>
-                    `<div style="display:flex;align-items:center;gap:8px;min-width:0;">
-                        <span style="width:9px;height:9px;border-radius:50%;background:${pal[i]||'#94a3b8'};flex-shrink:0;"></span>
+                if (leg) leg.innerHTML = rL.map((l,i) =>
+                    `<div>
+                        <span style="width:9px;height:9px;border-radius:50%;background:${pal[i]||'#94a3b8'};flex-shrink:0;display:inline-block;"></span>
                         <span style="font-size:.78rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;">${escHtml(l)}</span>
                         <span style="font-size:.78rem;font-weight:800;flex-shrink:0;">${escHtml(String(rD[i]??0))}</span>
                     </div>`
@@ -1653,58 +1556,55 @@
             const byDate = {};
             allRes.forEach(r => {
                 if (!r.reservation_date) return;
-                const dk = (r.reservation_date || '').split('T')[0];
-                (byDate[dk] = byDate[dk] || []).push(r);
+                const dk=(r.reservation_date||'').split('T')[0];
+                (byDate[dk]=byDate[dk]||[]).push(r);
             });
 
-            const events = allRes.filter(r => r.reservation_date).map(r => {
-                const dk  = (r.reservation_date || '').split('T')[0];
-                const st  = isClaimed(r) ? 'claimed' : (r.status || 'pending');
-                const clr = { approved:'#10b981', pending:'#fbbf24', declined:'#f87171', claimed:'#a855f7' };
-                const name = resolveVisitorName(r);
-                /* Short display title for pill: time + first name only */
-                const timeStr = r.start_time ? to12hPHT(r.start_time) : '';
-                const firstName = name.split(' ')[0];
+            const events = allRes.filter(r=>r.reservation_date).map(r => {
+                const dk  = (r.reservation_date||'').split('T')[0];
+                const st  = isClaimed(r)?'claimed':(r.status||'pending');
+                const clr = {approved:'#10b981',pending:'#fbbf24',declined:'#f87171',claimed:'#a855f7'};
+                const name= resolveVisitorName(r);
+                const timeStr=r.start_time?to12hPHT(r.start_time):'';
+                const firstName=name.split(' ')[0];
                 return {
-                    title:           timeStr ? `${timeStr} · ${firstName}` : firstName,
-                    start:           dk + (r.start_time ? 'T' + r.start_time : ''),
-                    end:             dk + (r.end_time   ? 'T' + r.end_time   : ''),
-                    backgroundColor: clr[st] || '#94a3b8',
+                    title:           timeStr?`${timeStr} · ${firstName}`:firstName,
+                    start:           dk+(r.start_time?'T'+r.start_time:''),
+                    end:             dk+(r.end_time  ?'T'+r.end_time  :''),
+                    backgroundColor: clr[st]||'#94a3b8',
                     borderColor:     'transparent',
                     textColor:       '#fff',
-                    extendedProps:   { fullName: name, resource: r.resource_name || 'Resource', status: st }
+                    extendedProps:   {fullName:name, resource:r.resource_name||'Resource', status:st}
                 };
             });
 
             const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView:    'dayGridMonth',
-                headerToolbar:  { left:'prev,next', center:'title', right:'today' },
+                initialView:      'dayGridMonth',
+                headerToolbar:    {left:'prev,next', center:'title', right:'today'},
                 events,
-                /* ── KEY FIX: taller cells, more pills before "+N more" ── */
-                height:        mob ? 340 : 480,
-                contentHeight: mob ? 340 : 480,
-                eventDisplay:  'block',
-                dayMaxEvents:  mob ? 2 : 3,
-                eventMaxStack: mob ? 2 : 3,
-                /* Remove default event time prefix (we embed it in title) */
+                height:           mob?340:480,
+                contentHeight:    mob?340:480,
+                eventDisplay:     'block',
+                dayMaxEvents:     mob?2:3,
+                eventMaxStack:    mob?2:3,
                 displayEventTime: false,
                 eventClick: info => {
-                    const d   = info.event.start;
-                    const key = d
-                        ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-                        : (info.event.startStr || '').slice(0, 10);
-                    openDateModal(key, byDate[key] || []);
+                    const d=info.event.start;
+                    const key=d
+                        ?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+                        :(info.event.startStr||'').slice(0,10);
+                    openDateModal(key,byDate[key]||[]);
                 },
-                dateClick: info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
+                dateClick: info => openDateModal(info.dateStr,byDate[info.dateStr]||[]),
                 dayCellDidMount: info => {
-                    const d   = info.date;
-                    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                    const cnt = (byDate[key] || []).length;
+                    const d=info.date;
+                    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    const cnt=(byDate[key]||[]).length;
                     if (cnt) {
-                        const b = document.createElement('div');
-                        b.style.cssText = 'font-size:9px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:2px;font-family:var(--mono);flex-shrink:0;';
-                        b.textContent   = cnt > 9 ? '9+' : cnt;
-                        b.setAttribute('aria-label', `${cnt} reservations`);
+                        const b=document.createElement('div');
+                        b.style.cssText='font-size:9px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:2px;font-family:var(--mono);flex-shrink:0;';
+                        b.textContent=cnt>9?'9+':cnt;
+                        b.setAttribute('aria-label',`${cnt} reservations`);
                         info.el.querySelector('.fc-daygrid-day-top')?.appendChild(b);
                     }
                 }
@@ -1712,114 +1612,101 @@
             cal.render();
 
             /* Insights */
-            (function() {
+            (function(){
                 const DOW   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
                 const MONTH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-                const { hourArr, dowArr, monthArr, peakHourIdx, peakDowIdx, peakMonthIdx,
-                        noShowRate, declineRate, trendPct, trendDir,
-                        topResource, peakDayLabel, resourceMap, totalCount } = INS;
-                const maxH = Math.max(...hourArr, 1);
-                const maxD = Math.max(...dowArr,  1);
+                const {hourArr,dowArr,monthArr,peakHourIdx,peakDowIdx,peakMonthIdx,
+                       noShowRate,declineRate,trendPct,trendDir,
+                       topResource,peakDayLabel,resourceMap,totalCount} = INS;
+                const maxH=Math.max(...hourArr,1), maxD=Math.max(...dowArr,1);
 
-                const sg = document.getElementById('ins-suggestion');
+                const sg=document.getElementById('ins-suggestion');
                 if (sg) {
-                    let t = '';
-                    if      (noShowRate > 30)                                t = `High no-show rate (${noShowRate}%). Consider sending session reminders.`;
-                    else if (declineRate > 25)                               t = `Decline rate elevated (${declineRate}%). Review approval rules or add more resources.`;
-                    else if (trendDir === 'up'   && trendPct > 20)           t = `Reservations up ${trendPct}% this week — keep "${topResource}" available.`;
-                    else if (trendDir === 'down' && Math.abs(trendPct) > 20) t = `Bookings dropped ${Math.abs(trendPct)}% vs last week. Consider community outreach.`;
-                    else                                                      t = `${peakDayLabel}s are your busiest day. Keep "${topResource}" free and well-resourced.`;
-                    sg.textContent = t;
+                    let t='';
+                    if      (noShowRate>30)                              t=`High no-show rate (${noShowRate}%). Consider sending session reminders.`;
+                    else if (declineRate>25)                             t=`Decline rate elevated (${declineRate}%). Review approval rules or add more resources.`;
+                    else if (trendDir==='up'&&trendPct>20)               t=`Reservations up ${trendPct}% this week — keep "${topResource}" available.`;
+                    else if (trendDir==='down'&&Math.abs(trendPct)>20)   t=`Bookings dropped ${Math.abs(trendPct)}% vs last week. Consider community outreach.`;
+                    else                                                  t=`${peakDayLabel}s are your busiest day. Keep "${topResource}" free and well-resourced.`;
+                    sg.textContent=t;
                 }
 
-                const hm = document.getElementById('ins-heatmap');
+                const hm=document.getElementById('ins-heatmap');
                 if (hm) {
-                    hm.innerHTML = '';
-                    const f12 = h => `${h % 12 || 12}${h < 12 ? 'AM' : 'PM'}`;
-                    for (let h = 0; h < 24; h++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'ins-heatmap-cell';
-                        const opacity = (0.06 + (pct(hourArr[h], maxH) / 100) * 0.9).toFixed(2);
-                        cell.style.cssText = `background:rgba(55,48,163,${opacity});${h === peakHourIdx ? 'box-shadow:0 0 0 2px #3730a3;' : ''}`;
-                        cell.title = `${f12(h)}: ${hourArr[h]} reservations`;
+                    hm.innerHTML='';
+                    const f12=h=>`${h%12||12}${h<12?'AM':'PM'}`;
+                    for (let h=0;h<24;h++) {
+                        const cell=document.createElement('div'); cell.className='ins-heatmap-cell';
+                        const opacity=(0.06+(pct(hourArr[h],maxH)/100)*0.9).toFixed(2);
+                        cell.style.cssText=`background:rgba(55,48,163,${opacity});${h===peakHourIdx?'box-shadow:0 0 0 2px #3730a3;':''}`;
+                        cell.title=`${f12(h)}: ${hourArr[h]} reservations`;
                         hm.appendChild(cell);
                     }
                 }
 
-                const be = document.getElementById('ins-dow-bars');
-                const le = document.getElementById('ins-dow-labels');
-                if (be && le) {
-                    be.innerHTML = le.innerHTML = '';
-                    dowArr.forEach((cnt, i) => {
-                        const bar = document.createElement('div');
-                        bar.style.cssText = `flex:1;border-radius:5px 5px 0 0;background:${i === peakDowIdx ? '#3730a3' : '#c7d2fe'};height:${Math.max(pct(cnt, maxD), 4)}%;min-height:4px;`;
-                        bar.title = `${DOW[i]}: ${cnt}`;
-                        be.appendChild(bar);
-                        const lbl = document.createElement('div');
-                        lbl.style.cssText = `flex:1;text-align:center;font-size:${mob ? '8px' : '9px'};font-weight:${i === peakDowIdx ? '800' : '600'};color:${i === peakDowIdx ? '#3730a3' : '#94a3b8'};`;
-                        lbl.textContent = mob ? DOW[i][0] : DOW[i].slice(0, 3);
-                        le.appendChild(lbl);
+                const be=document.getElementById('ins-dow-bars'), le=document.getElementById('ins-dow-labels');
+                if (be&&le) {
+                    be.innerHTML=le.innerHTML='';
+                    dowArr.forEach((cnt,i)=>{
+                        const bar=document.createElement('div');
+                        bar.style.cssText=`flex:1;border-radius:5px 5px 0 0;background:${i===peakDowIdx?'#3730a3':'#c7d2fe'};height:${Math.max(pct(cnt,maxD),4)}%;min-height:4px;`;
+                        bar.title=`${DOW[i]}: ${cnt}`; be.appendChild(bar);
+                        const lbl=document.createElement('div');
+                        lbl.style.cssText=`flex:1;text-align:center;font-size:${mob?'8px':'9px'};font-weight:${i===peakDowIdx?'800':'600'};color:${i===peakDowIdx?'#3730a3':'#94a3b8'};`;
+                        lbl.textContent=mob?DOW[i][0]:DOW[i].slice(0,3); le.appendChild(lbl);
                     });
                 }
 
-                const mini = document.getElementById('ins-dow-mini');
+                const mini=document.getElementById('ins-dow-mini');
                 if (mini) {
-                    mini.innerHTML = '';
-                    dowArr.forEach((cnt, i) => {
-                        const b = document.createElement('div');
-                        b.style.cssText = `flex:1;border-radius:3px;background:${i === peakDowIdx ? '#3730a3' : '#c7d2fe'};height:${Math.max(pct(cnt, maxD), 10)}%;min-height:3px;`;
+                    mini.innerHTML='';
+                    dowArr.forEach((cnt,i)=>{
+                        const b=document.createElement('div');
+                        b.style.cssText=`flex:1;border-radius:3px;background:${i===peakDowIdx?'#3730a3':'#c7d2fe'};height:${Math.max(pct(cnt,maxD),10)}%;min-height:3px;`;
                         mini.appendChild(b);
                     });
                 }
 
-                const mCtx = document.getElementById('ins-month-chart')?.getContext('2d');
+                const mCtx=document.getElementById('ins-month-chart')?.getContext('2d');
                 if (mCtx) {
-                    monthChartInst = new Chart(mCtx, {
-                        type: 'bar',
-                        data: {
-                            labels:   MONTH,
-                            datasets: [{
-                                data: monthArr,
-                                backgroundColor: monthArr.map((_, i) => i === peakMonthIdx ? '#3730a3' : 'rgba(55,48,163,.15)'),
-                                borderRadius:    5,
-                                borderSkipped:   false
+                    monthChartInst=new Chart(mCtx,{
+                        type:'bar',
+                        data:{
+                            labels:MONTH,
+                            datasets:[{
+                                data:monthArr,
+                                backgroundColor:monthArr.map((_,i)=>i===peakMonthIdx?'#3730a3':'rgba(55,48,163,.15)'),
+                                borderRadius:5, borderSkipped:false
                             }]
                         },
-                        options: {
+                        options:{
                             responsive:true, maintainAspectRatio:false,
-                            plugins: {
-                                legend: { display:false },
-                                tooltip: {
-                                    backgroundColor:'#0f172a',
-                                    titleFont:{family:'Plus Jakarta Sans',weight:'700'},
-                                    bodyFont:{family:'Plus Jakarta Sans'},
-                                    padding:10, cornerRadius:10,
-                                    callbacks:{ label: ctx => ` ${ctx.raw} reservations` }
-                                }
+                            plugins:{
+                                legend:{display:false},
+                                tooltip:{backgroundColor:'#0f172a',titleFont:{family:'Plus Jakarta Sans',weight:'700'},bodyFont:{family:'Plus Jakarta Sans'},padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.raw} reservations`}}
                             },
-                            scales: {
-                                x: { grid:{display:false}, ticks:{font:{family:'Plus Jakarta Sans',size:mob?8:10},color:cc.tick} },
-                                y: { grid:{color:cc.grid}, beginAtZero:true, ticks:{font:{family:'Plus Jakarta Sans',size:mob?8:10},color:cc.tick,stepSize:1} }
+                            scales:{
+                                x:{grid:{display:false}, ticks:{font:{family:'Plus Jakarta Sans',size:mob?8:10},color:cc.tick}},
+                                y:{grid:{color:cc.grid}, beginAtZero:true, ticks:{font:{family:'Plus Jakarta Sans',size:mob?8:10},color:cc.tick,stepSize:1}}
                             }
                         }
                     });
                 }
 
-                const rk = document.getElementById('ins-resource-ranking');
+                const rk=document.getElementById('ins-resource-ranking');
                 if (rk) {
-                    const entries = Object.entries(resourceMap).sort((a, b) => b[1] - a[1]);
-                    const topMax  = entries[0]?.[1] || 1;
-                    const colors  = ['#3730a3','#d97706','#7c3aed','#16a34a','#ec4899','#06b6d4','#f87171'];
-                    rk.innerHTML = !entries.length
-                        ? '<p style="font-size:.75rem;color:var(--text-sub);text-align:center;padding:16px;">No data yet</p>'
-                        : entries.slice(0, 7).map(([name, cnt], i) => {
-                            const w     = pct(cnt, topMax);
-                            const c     = colors[i] || '#94a3b8';
-                            const share = totalCount > 0 ? Math.round(cnt / totalCount * 100) : 0;
+                    const entries=Object.entries(resourceMap).sort((a,b)=>b[1]-a[1]);
+                    const topMax=entries[0]?.[1]||1;
+                    const colors=['#3730a3','#d97706','#7c3aed','#16a34a','#ec4899','#06b6d4','#f87171'];
+                    rk.innerHTML=!entries.length
+                        ?'<p style="font-size:.75rem;color:var(--text-sub);text-align:center;padding:16px;">No data yet</p>'
+                        :entries.slice(0,7).map(([name,cnt],i)=>{
+                            const w=pct(cnt,topMax), c=colors[i]||'#94a3b8';
+                            const share=totalCount>0?Math.round(cnt/totalCount*100):0;
                             return `<div>
                                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px;">
                                     <div style="display:flex;align-items:center;gap:8px;min-width:0;">
-                                        <span style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:white;background:${c};flex-shrink:0;">${i + 1}</span>
+                                        <span style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:white;background:${c};flex-shrink:0;">${i+1}</span>
                                         <span style="font-size:.78rem;font-weight:600;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(name)}</span>
                                     </div>
                                     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
