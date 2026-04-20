@@ -199,13 +199,6 @@
         body.dark .page-header-left p  { color:#4a6fa5 !important; }
         body.dark .tbl-wrap  { background: #0b1628 !important; border-color: rgba(99,102,241,.1) !important; }
         body.dark .filter-bar { background: rgba(99,102,241,.04); border-color: rgba(99,102,241,.08); }
-
-        @media print {
-            .l-sidebar,.l-mobile-nav,header button { display:none!important; }
-            .main-area { margin:0!important; padding:1rem!important; }
-            .mobile-cards { display:none!important; }
-            .desktop-table { display:block!important; }
-        }
     </style>
 </head>
 
@@ -270,9 +263,9 @@
                 <div onclick="adminToggleDark()" title="Toggle dark mode" class="icon-btn">
                     <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem"></i></span>
                 </div>
-                <button onclick="window.print()" class="action-btn-outline" style="gap:7px">
-                    <i class="fa-solid fa-print" style="font-size:.8rem"></i>
-                    <span class="hide-xs">Print Report</span>
+                <button onclick="generateReport()" class="action-btn-outline" style="gap:7px">
+                    <i class="fa-solid fa-file-lines" style="font-size:.8rem"></i>
+                    <span class="hide-xs">Generate Report</span>
                 </button>
             </div>
         </header>
@@ -460,6 +453,7 @@
     </main>
 
     <script>
+        /* ─── Filter / Search ─── */
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput  = document.getElementById('searchInput');
             const actionFilter = document.getElementById('actionFilter');
@@ -503,6 +497,214 @@
             actionFilter.addEventListener('change', filterAll);
             filterAll();
         });
+
+        /* ─── Generate Report ─── */
+        function generateReport() {
+            const logs = <?= json_encode($logs) ?>;
+            const now  = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'long', timeStyle: 'short' });
+
+            const actionLabel = a => ({
+                create: 'Created', approve: 'Approved', approve_user_request: 'Approved',
+                decline: 'Declined', decline_user_request: 'Declined',
+                claim: 'Claimed', print: 'Print'
+            }[a] ?? a.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
+
+            const actionSentence = a => ({
+                create: 'Created reservation', approve: 'Approved reservation',
+                approve_user_request: 'Approved reservation', decline: 'Declined reservation',
+                decline_user_request: 'Declined reservation', claim: 'Claimed e-ticket', print: 'Logged print'
+            }[a] ?? a.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
+
+            const actionColor = a => ({
+                create:'#059669', approve:'#2563eb', approve_user_request:'#2563eb',
+                decline:'#dc2626', decline_user_request:'#dc2626', claim:'#7c3aed', print:'#0369a1'
+            }[a] ?? '#64748b');
+
+            const actionBg = a => ({
+                create:'#ecfdf5', approve:'#eff6ff', approve_user_request:'#eff6ff',
+                decline:'#fef2f2', decline_user_request:'#fef2f2', claim:'#f3e8ff', print:'#f0f9ff'
+            }[a] ?? '#f1f5f9');
+
+            /* Counts */
+            const counts = { total: logs.length, create: 0, approve: 0, decline: 0, claim: 0, print: 0 };
+            logs.forEach(l => {
+                const a = (l.action || '').toLowerCase().trim();
+                if (a === 'create')              counts.create++;
+                else if (a.startsWith('approve')) counts.approve++;
+                else if (a.startsWith('decline')) counts.decline++;
+                else if (a === 'claim')           counts.claim++;
+                else if (a === 'print')           counts.print++;
+            });
+
+            /* Table rows */
+            const rows = logs.map((l, i) => {
+                const action   = (l.action || '').toLowerCase().trim();
+                const name     = (l.name || 'System').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+                const initials = name.substring(0,2).toUpperCase();
+                const details  = (l.details || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+                const resId    = l.reservation_id;
+                const color    = actionColor(action);
+                const bg       = actionBg(action);
+                const label    = actionLabel(action);
+                const sentence = actionSentence(action);
+
+                let dateStr = '—', timeStr = '';
+                if (l.created_at) {
+                    const d = new Date(l.created_at);
+                    dateStr = d.toLocaleDateString('en-PH',{month:'short',day:'2-digit',year:'numeric'});
+                    timeStr = d.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+                }
+
+                return `
+                <tr>
+                    <td style="color:#64748b;font-size:.75rem;white-space:nowrap">
+                        <span style="font-weight:700;color:#1e293b;display:block">${dateStr}</span>
+                        <span style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em">${timeStr}</span>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <div style="width:28px;height:28px;border-radius:8px;background:${bg};color:${color};display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0">${initials}</div>
+                            <span style="font-weight:700;font-size:.82rem">${name}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="background:${bg};color:${color};padding:3px 10px;border-radius:99px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${label}</span>
+                    </td>
+                    <td style="font-size:.82rem;color:#374151;line-height:1.5">
+                        ${sentence}${resId ? ` <strong style="color:#1e293b">#${resId}</strong>` : ''}
+                        ${details ? `<br><span style="font-size:.72rem;color:#94a3b8">${details}</span>` : ''}
+                    </td>
+                </tr>`;
+            }).join('');
+
+            /* Stat card HTML helper */
+            const statCard = (num, label, color) => `
+                <div style="flex:1;min-width:90px;background:#fff;border:1px solid #e2e8f0;border-bottom:3px solid ${color};border-radius:14px;padding:14px 16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+                    <div style="font-size:1.9rem;font-weight:800;color:${color};font-family:ui-monospace,monospace;line-height:1">${num}</div>
+                    <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#94a3b8;margin-top:5px">${label}</div>
+                </div>`;
+
+            const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Activity Logs Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8fafc;color:#1e293b;padding:40px;font-size:.875rem}
+
+    /* Header */
+    .rpt-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e2e8f0;flex-wrap:wrap;gap:12px}
+    .rpt-title{font-size:1.7rem;font-weight:800;letter-spacing:-.04em;color:#0f172a}
+    .rpt-meta{font-size:.75rem;color:#94a3b8;margin-top:5px;font-weight:500}
+    .rpt-badge{background:#6366f1;color:#fff;padding:4px 12px;border-radius:99px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-top:8px;display:inline-block}
+
+    /* Stat row */
+    .stat-row{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap}
+
+    /* Toolbar */
+    .toolbar{display:flex;justify-content:flex-end;gap:10px;margin-bottom:16px}
+    .btn-print{background:#6366f1;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.85rem;font-family:inherit;display:flex;align-items:center;gap:7px;transition:background .2s}
+    .btn-print:hover{background:#4f46e5}
+    .btn-pdf{background:#0f172a;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.85rem;font-family:inherit;display:flex;align-items:center;gap:7px;transition:background .2s}
+    .btn-pdf:hover{background:#1e293b}
+
+    /* Table */
+    .tbl-wrap{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);border:1px solid #e2e8f0}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:#f1f5f9}
+    th{padding:12px 16px;text-align:left;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:#64748b;white-space:nowrap}
+    td{padding:11px 16px;border-top:1px solid #f1f5f9;vertical-align:middle}
+    tr:hover td{background:#fafbff}
+
+    /* Footer */
+    .rpt-footer{margin-top:24px;text-align:center;font-size:.68rem;color:#cbd5e1;padding-top:16px;border-top:1px solid #e2e8f0}
+
+    @media print{
+        body{background:#fff;padding:16px}
+        .toolbar,.no-print{display:none!important}
+        .tbl-wrap{box-shadow:none;border:1px solid #e2e8f0}
+        tr:hover td{background:transparent!important}
+    }
+    @media(max-width:600px){
+        body{padding:16px}
+        .rpt-header{flex-direction:column}
+        .stat-row{gap:8px}
+    }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="rpt-header">
+    <div>
+        <p style="font-size:.62rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#6366f1;margin-bottom:6px">Administration · Audit Trail</p>
+        <h1 class="rpt-title">Activity Logs Report</h1>
+        <p class="rpt-meta">Generated on ${now}</p>
+        <span class="rpt-badge">${counts.total} Total Records</span>
+    </div>
+    <div style="text-align:right">
+        <div style="font-size:.62rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">System</div>
+        <div style="font-weight:800;color:#0f172a;font-size:.95rem">Reservation Platform</div>
+        <div style="font-size:.72rem;color:#94a3b8;margin-top:3px">Admin Panel</div>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="stat-row">
+    ${statCard(counts.total,   'Total',    '#6366f1')}
+    ${statCard(counts.create,  'Created',  '#10b981')}
+    ${statCard(counts.approve, 'Approved', '#3b82f6')}
+    ${statCard(counts.decline, 'Declined', '#ef4444')}
+    ${statCard(counts.claim,   'Claimed',  '#a855f7')}
+    ${statCard(counts.print,   'Print',    '#38bdf8')}
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar no-print">
+    <button class="btn-print" onclick="window.print()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+        Print Report
+    </button>
+    <button class="btn-pdf" onclick="window.print()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Save as PDF
+    </button>
+</div>
+
+<!-- Table -->
+<div class="tbl-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th style="width:120px">Timestamp</th>
+                <th style="width:180px">User</th>
+                <th style="width:110px">Action</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rows || `<tr><td colspan="4" style="padding:40px;text-align:center;color:#94a3b8;font-weight:600">No activity logs found.</td></tr>`}
+        </tbody>
+    </table>
+</div>
+
+<!-- Footer -->
+<p class="rpt-footer">
+    This report is auto-generated and reflects all recorded system actions up to the time of generation.
+    &nbsp;·&nbsp; Reservation Platform Admin Panel
+</p>
+
+</body>
+</html>`;
+
+            const win = window.open('', '_blank');
+            if (!win) { alert('Pop-up blocked. Please allow pop-ups for this site.'); return; }
+            win.document.write(html);
+            win.document.close();
+        }
     </script>
 </body>
 </html>

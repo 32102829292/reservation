@@ -1,11 +1,12 @@
 /**
  * Service Worker — reservation_ci PWA
- * Merged: smart caching strategies + localStorage sync + message passing
+ * Offline mode: dashboard accessible, create/reserve/live-data blocked.
  */
 
-const CACHE_NAME  = 'reservation-ci-v2';
+const CACHE_NAME  = 'reservation-ci-v3';
 const OFFLINE_URL = '/offline.html';
 
+// Pages that should be cached for offline shell access
 const PRECACHE_ASSETS = [
   '/offline.html',
   '/manifest.json',
@@ -14,6 +15,36 @@ const PRECACHE_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js',
+];
+
+// Routes that are READ-ONLY views — safe to serve from cache offline
+const CACHEABLE_PAGES = [
+  '/admin/dashboard',
+  '/dashboard',
+  '/admin/activity-logs',
+  '/reservation-list',
+  '/admin/reservations',
+  '/admin/manage-users',
+];
+
+// Routes that REQUIRE internet — block offline with structured error
+const REQUIRES_ONLINE = [
+  '/reservation/create',
+  '/create-reservation',
+  '/admin/reservation/approve',
+  '/admin/reservation/decline',
+  '/check-availability',
+  '/check-new-approvals',
+  '/api/',
+];
+
+// Routes that load LIVE data — return empty offline payload
+const LIVE_DATA_ROUTES = [
+  '/reservation/list',
+  '/admin/reservations/list',
+  '/admin/logs/list',
+  '/get-reservations',
+  '/load-reservations',
 ];
 
 // ── Install ───────────────────────────────────────────────────────────────────
@@ -41,24 +72,12 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET
+  // Skip non-GET and chrome-extension
   if (request.method !== 'GET') return;
+  if (url.protocol === 'chrome-extension:') return;
 
-  // Form submissions / API → handle offline save
+  // ── CDN / static assets → cache-first (works offline fine) ──
   if (
-    url.pathname.includes('/api/') ||
-    url.pathname.includes('/reservation/create') ||
-    url.pathname.includes('/create-reservation') ||
-    url.pathname.includes('/check-availability') ||
-    url.pathname.includes('/check-new-approvals')
-  ) {
-    event.respondWith(handleFormSubmission(request));
-    return;
-  }
-
-  // CDN assets → cache-first
-  if (
-    url.hostname.includes('cdn.tailwindcss.com') ||
     url.hostname.includes('cdnjs.cloudflare.com') ||
     url.hostname.includes('cdn.jsdelivr.net') ||
     url.hostname.includes('fonts.googleapis.com') ||
@@ -68,58 +87,91 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // HTML pages → network-first, fallback to cache then offline page
-  if (request.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(networkFirstWithOfflineFallback(request));
+  // ── Live data routes → offline empty payload ──
+  if (LIVE_DATA_ROUTES.some(r => url.pathname.includes(r))) {
+    event.respondWith(handleLiveData(request));
     return;
   }
 
-  // Everything else → stale-while-revalidate
+  // ── Action routes that need internet → block offline ──
+  if (REQUIRES_ONLINE.some(r => url.pathname.includes(r))) {
+    event.respondWith(handleRequiresOnline(request));
+    return;
+  }
+
+  // ── HTML pages → network-first, fallback to cached shell ──
+  if (request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(networkFirstWithShellFallback(request));
+    return;
+  }
+
+  // ── Everything else → stale-while-revalidate ──
   event.respondWith(staleWhileRevalidate(request));
 });
 
-// ── Form submission handler ───────────────────────────────────────────────────
-async function handleFormSubmission(request) {
+// ── Handler: routes that need live internet (create, approve, etc.) ───────────
+async function handleRequiresOnline(request) {
   if (!navigator.onLine) {
-    if (
-      request.url.includes('/reservation/create') ||
-      request.url.includes('/create-reservation')
-    ) {
-      try {
-        const formData = await request.clone().formData();
-        const data = {};
-        formData.forEach((value, key) => { data[key] = value; });
+    return offlineJsonResponse({
+      offline:  true,
+      code:     'REQUIRES_ONLINE',
+      message:  'This action requires an internet connection.',
+    }, 503);
+  }
+  return fetch(request);
+}
 
-        const allClients = await self.clients.matchAll({ type: 'window' });
-        allClients.forEach(client => {
-          client.postMessage({
-            type:    'SAVE_PENDING_RESERVATION',
-            payload: { data, url: request.url, timestamp: Date.now() }
-          });
-        });
-      } catch (e) {
-        console.warn('[SW] Could not read formData offline:', e);
-      }
-
-      return new Response(JSON.stringify({
-        status:  'offline',
-        message: 'Reservation saved offline. Will sync when online.'
-      }), {
-        status:  202,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    return new Response(JSON.stringify({
-      error:   true,
-      message: 'You are offline. Please check your connection.'
-    }), {
-      status:  503,
-      headers: { 'Content-Type': 'application/json' }
-    });
+// ── Handler: live data routes (reservation lists, logs, etc.) ─────────────────
+async function handleLiveData(request) {
+  if (!navigator.onLine) {
+    return offlineJsonResponse({
+      offline:  true,
+      code:     'NO_LIVE_DATA',
+      message:  'Live data is not available offline.',
+      data:     [],
+    }, 503);
   }
 
-  return fetch(request);
+  try {
+    const response = await fetch(request);
+    // Don't cache live data — always fresh
+    return response;
+  } catch {
+    return offlineJsonResponse({
+      offline:  true,
+      code:     'NO_LIVE_DATA',
+      message:  'Could not load data. Check your connection.',
+      data:     [],
+    }, 503);
+  }
+}
+
+// ── Handler: HTML pages with shell fallback ───────────────────────────────────
+async function networkFirstWithShellFallback(request) {
+  const url = new URL(request.url);
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      // Only cache pages that are safe to view offline
+      const isCacheable = CACHEABLE_PAGES.some(p => url.pathname.startsWith(p));
+      if (isCacheable) cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    // Try cached version of this exact page first
+    const cached = await caches.match(request);
+    if (cached) return cached;
+
+    // Try the root dashboard as shell fallback
+    const dashFallback = await caches.match('/dashboard') ||
+                         await caches.match('/admin/dashboard');
+    if (dashFallback) return dashFallback;
+
+    // Last resort: offline page
+    return caches.match(OFFLINE_URL);
+  }
 }
 
 // ── Background Sync ───────────────────────────────────────────────────────────
@@ -171,7 +223,7 @@ self.addEventListener('notificationclick', event => {
   }
 });
 
-// ── Message passing (page → SW) ───────────────────────────────────────────────
+// ── Message passing ───────────────────────────────────────────────────────────
 self.addEventListener('message', event => {
   if (!event.data) return;
   switch (event.data.type) {
@@ -199,21 +251,6 @@ async function cacheFirst(request) {
   }
 }
 
-async function networkFirstWithOfflineFallback(request) {
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    return caches.match(OFFLINE_URL);
-  }
-}
-
 async function staleWhileRevalidate(request) {
   const cache        = await caches.open(CACHE_NAME);
   const cached       = await cache.match(request);
@@ -222,4 +259,11 @@ async function staleWhileRevalidate(request) {
     return response;
   }).catch(() => cached);
   return cached || fetchPromise;
+}
+
+function offlineJsonResponse(payload, status = 503) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
