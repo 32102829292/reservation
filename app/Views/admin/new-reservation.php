@@ -155,7 +155,6 @@
             .grid-3 { grid-template-columns: 1fr; gap: 12px; }
         }
 
-
         /* ══════════════════════════════
            AUTOCOMPLETE
         ══════════════════════════════ */
@@ -362,9 +361,9 @@
         .dt-trigger.open svg { opacity: .8; }
 
         .dt-drop {
-            position: absolute; 
-            bottom: calc(100% + 6px); 
-            left: 0; 
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 0;
             z-index: 9999;
             border-radius: 14px;
             animation: dtDrop .15s cubic-bezier(.4, 0, .2, 1);
@@ -379,9 +378,6 @@
         body.dark .dt-drop { background: #0e1828; border: 1px solid rgba(99,102,241,.22); box-shadow: 0 20px 60px rgba(0,0,0,.65); }
 
         .dt-drop.cal { width: 288px; padding: 18px 16px 14px; }
-
-        /* Ensure calendar doesn't overflow on mobile */
-
 
         .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
         .cal-month-label { font-size: .88rem; font-weight: 700; cursor: pointer; padding: 4px 8px; border-radius: 7px; transition: background .15s; }
@@ -456,6 +452,81 @@
         .picker-wrap { position: relative; }
 
         /* ══════════════════════════════
+           CUSTOM SELECT (CS) — opens ABOVE
+        ══════════════════════════════ */
+        .cs-wrap { position: relative; }
+        .cs-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            padding: .75rem 1rem;
+            background: var(--card);
+            border: 1px solid rgba(99,102,241,.15);
+            border-radius: var(--r-sm);
+            font-family: var(--font);
+            font-size: .88rem;
+            font-weight: 500;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: border .18s, box-shadow .18s;
+            user-select: none;
+            -webkit-user-select: none;
+            outline: none;
+        }
+        .cs-trigger.has-value { color: #0f172a; }
+        .cs-trigger:hover { border-color: rgba(99,102,241,.35); }
+        .cs-trigger.open { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+        .cs-arrow { width: 16px; height: 16px; flex-shrink: 0; opacity: .4; transition: transform .18s, opacity .18s; }
+        .cs-trigger.open .cs-arrow { transform: rotate(180deg); opacity: .75; }
+        .cs-drop {
+            position: absolute;
+            bottom: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            background: white;
+            border: 1px solid rgba(99,102,241,.18);
+            border-radius: var(--r-md);
+            box-shadow: 0 16px 40px rgba(15,23,42,.14);
+            overflow: hidden;
+            display: none;
+            animation: csDropIn .14s cubic-bezier(.4,0,.2,1);
+        }
+        @keyframes csDropIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+        .cs-opt {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 13px;
+            font-size: .87rem;
+            font-weight: 500;
+            color: #0f172a;
+            cursor: pointer;
+            transition: background .1s;
+            border-bottom: 1px solid rgba(99,102,241,.06);
+        }
+        .cs-opt:last-child { border-bottom: none; }
+        .cs-opt:hover { background: var(--indigo-light); color: var(--indigo); }
+        .cs-opt.cs-placeholder { color: #94a3b8; font-weight: 400; font-size: .82rem; }
+        .cs-opt.cs-selected { background: rgba(99,102,241,.07); color: var(--indigo); }
+        .cs-opt-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+        .cs-opt-label { flex: 1; }
+        .cs-check { width: 14px; height: 14px; flex-shrink: 0; color: var(--indigo); opacity: 0; transition: opacity .12s; }
+        .cs-opt.cs-selected .cs-check { opacity: 1; }
+        .cs-divider { height: 1px; background: rgba(99,102,241,.08); margin: 3px 0; }
+
+        /* ══════════════════════════════
            DARK MODE — UNIFIED
         ══════════════════════════════ */
         body.dark .page-header-left h2 { color: #e2eaf8; }
@@ -508,6 +579,17 @@
         body.dark .modal-box p { color: #4a6fa5; }
         body.dark .modal-cancel-btn { background: #101e35; border-color: rgba(99,102,241,.18); color: #7fb3e8; }
         body.dark .modal-cancel-btn:hover { background: rgba(99,102,241,.12); color: #a5b4fc; }
+
+        /* custom select dark */
+        body.dark .cs-trigger { background: #101e35; border-color: rgba(99,102,241,.18); color: #4a6fa5; }
+        body.dark .cs-trigger.has-value { color: #e2eaf8; }
+        body.dark .cs-trigger.open { background: #0b1628; border-color: var(--indigo); }
+        body.dark .cs-drop { background: #0b1628; border-color: rgba(99,102,241,.22); box-shadow: 0 16px 40px rgba(0,0,0,.5); }
+        body.dark .cs-opt { color: #e2eaf8; border-color: rgba(99,102,241,.06); }
+        body.dark .cs-opt:hover { background: rgba(99,102,241,.12); color: #a5b4fc; }
+        body.dark .cs-opt.cs-selected { background: rgba(99,102,241,.15); color: #a5b4fc; }
+        body.dark .cs-opt.cs-placeholder { color: #4a6fa5; }
+        body.dark .cs-divider { background: rgba(99,102,241,.1); }
     </style>
 </head>
 
@@ -544,6 +626,9 @@
                 <input type="hidden" name="user_id"       id="finalUserId">
                 <input type="hidden" name="visitor_type"  id="finalVisitorType" value="User">
                 <input type="hidden" name="purpose"       id="finalPurpose">
+                <!-- hidden native selects for form POST -->
+                <select name="resource_id" id="nativeResource" style="display:none" required></select>
+                <select name="purpose_select" id="nativePurpose" style="display:none"></select>
 
                 <!-- Visitor Type -->
                 <div style="margin-bottom:22px">
@@ -603,18 +688,35 @@
                         </div>
                     </div>
 
+                    <!-- ── STYLED RESOURCE SELECT ── -->
                     <div style="margin-bottom:14px">
                         <label class="field-label">Select Asset / Resource</label>
-                        <select id="resourceSelect" name="resource_id" class="field-input" required>
-                            <option value="">— Choose a resource —</option>
-                            <?php foreach ($resources as $res): ?>
-                                <option value="<?= $res['id'] ?>" data-name="<?= htmlspecialchars($res['name']) ?>">
-                                    <?= htmlspecialchars($res['name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="cs-wrap" id="resourceWrap">
+                            <div class="cs-trigger" id="resourceTrigger">
+                                <span id="resourceLabel">— Choose a resource —</span>
+                                <svg class="cs-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <div class="cs-drop" id="resourceDrop">
+                                <div class="cs-opt cs-placeholder" data-value=""><span class="cs-opt-label">— Choose a resource —</span></div>
+                                <div class="cs-divider"></div>
+                                <?php foreach ($resources as $res):
+                                    $rname  = htmlspecialchars($res['name']);
+                                    $lower  = strtolower($res['name']);
+                                    $hasPcs = (strpos($lower,'computer')!==false||strpos($lower,'pc')!==false||strpos($lower,'lab')!==false)?'1':'0';
+                                ?>
+                                <div class="cs-opt" data-value="<?= $res['id'] ?>" data-name="<?= $rname ?>" data-has-pcs="<?= $hasPcs ?>">
+                                    <div class="cs-opt-icon" style="background:rgba(99,102,241,.1)">
+                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="10" rx="2" stroke="#6366f1" stroke-width="1.3"/><path d="M5 15h6M8 12v3" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg>
+                                    </div>
+                                    <span class="cs-opt-label"><?= $rname ?></span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- PC Section -->
                     <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo)">Assign Workstation</label>
                         <select id="pcSelect" name="pc_number" class="field-input" style="margin-top:6px">
@@ -668,16 +770,49 @@
                         </div>
                     </div>
 
+                    <!-- ── STYLED PURPOSE SELECT ── -->
                     <div style="margin-bottom:14px">
                         <label class="field-label">Purpose of Visit</label>
-                        <select id="purposeSelect" class="field-input" required>
-                            <option value="">— Select purpose —</option>
-                            <option value="Work">Work</option>
-                            <option value="Personal">Personal</option>
-                            <option value="Study">Study</option>
-                            <option value="Others">Others</option>
-                        </select>
+                        <div class="cs-wrap" id="purposeWrap">
+                            <div class="cs-trigger" id="purposeTrigger">
+                                <span id="purposeLabel">— Select purpose —</span>
+                                <svg class="cs-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <div class="cs-drop" id="purposeDrop">
+                                <div class="cs-opt cs-placeholder" data-value=""><span class="cs-opt-label">— Select purpose —</span></div>
+                                <div class="cs-divider"></div>
+                                <div class="cs-opt" data-value="Work">
+                                    <div class="cs-opt-icon" style="background:rgba(99,102,241,.1)">
+                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="1.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 5V4a3 3 0 016 0v1" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg>
+                                    </div>
+                                    <span class="cs-opt-label">Work</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <div class="cs-opt" data-value="Personal">
+                                    <div class="cs-opt-icon" style="background:rgba(236,72,153,.09)">
+                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#db2777" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#db2777" stroke-width="1.3" stroke-linecap="round"/></svg>
+                                    </div>
+                                    <span class="cs-opt-label">Personal</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <div class="cs-opt" data-value="Study">
+                                    <div class="cs-opt-icon" style="background:rgba(20,184,166,.1)">
+                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 4l7-2 7 2-7 2z" stroke="#0d9488" stroke-width="1.3" stroke-linejoin="round"/><path d="M4 6v4c0 1.1 1.8 2 4 2s4-.9 4-2V6" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/><path d="M15 4v4" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/></svg>
+                                    </div>
+                                    <span class="cs-opt-label">Study</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <div class="cs-opt" data-value="Others">
+                                    <div class="cs-opt-icon" style="background:rgba(100,116,139,.1)">
+                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.2" fill="#64748b"/><circle cx="8" cy="8" r="1.2" fill="#64748b"/><circle cx="12" cy="8" r="1.2" fill="#64748b"/></svg>
+                                    </div>
+                                    <span class="cs-opt-label">Others</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                     <div id="purposeOtherWrap" style="display:none">
                         <label class="field-label">Please Specify</label>
                         <input type="text" id="purposeOther" class="field-input" placeholder="Describe the purpose…">
@@ -753,7 +888,7 @@
             document.getElementById('finalUserId').value = '';
         }
 
-        const userNameInput = document.getElementById('userNameInput');
+        const userNameInput    = document.getElementById('userNameInput');
         const autocompleteList = document.getElementById('autocompleteList');
 
         userNameInput.addEventListener('input', () => {
@@ -785,32 +920,88 @@
         });
         userNameInput.addEventListener('blur', () => setTimeout(() => autocompleteList.classList.add('hidden'), 150));
 
-        document.getElementById('resourceSelect').addEventListener('change', function() {
-            const name = (this.options[this.selectedIndex].dataset.name || '').toLowerCase();
-            const isPC = name.includes('computer') || name.includes('pc');
-            document.getElementById('pcSection').style.display = isPC ? 'block' : 'none';
+        /* ════════════════════════════
+           CUSTOM SELECT LOGIC
+        ════════════════════════════ */
+        let _csActive = null;
+
+        function closeAllCS() {
+            document.querySelectorAll('.cs-drop').forEach(d => d.style.display = 'none');
+            document.querySelectorAll('.cs-trigger').forEach(t => t.classList.remove('open'));
+            _csActive = null;
+        }
+        document.addEventListener('click', closeAllCS);
+
+        function initCS(wrapId, dropId, labelId, onChange) {
+            const wrap    = document.getElementById(wrapId);
+            const trigger = wrap.querySelector('.cs-trigger');
+            const label   = document.getElementById(labelId);
+            const drop    = document.getElementById(dropId);
+            const opts    = drop.querySelectorAll('.cs-opt');
+
+            trigger.addEventListener('click', e => {
+                e.stopPropagation();
+                if (_csActive === dropId) { closeAllCS(); return; }
+                closeAllCS(); _csActive = dropId;
+                drop.style.display = 'block';
+                trigger.classList.add('open');
+            });
+
+            opts.forEach(opt => {
+                opt.addEventListener('click', e => {
+                    e.stopPropagation();
+                    const val  = opt.dataset.value;
+                    const text = opt.querySelector('.cs-opt-label')?.textContent.trim() || '';
+                    opts.forEach(o => o.classList.remove('cs-selected'));
+                    if (val !== '') {
+                        opt.classList.add('cs-selected');
+                        label.textContent = text;
+                        trigger.classList.add('has-value');
+                    } else {
+                        label.textContent = text;
+                        trigger.classList.remove('has-value');
+                    }
+                    closeAllCS();
+                    if (onChange) onChange(val, opt);
+                });
+            });
+        }
+
+        /* helper getters */
+        function getSelectedResourceVal()  { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
+        function getSelectedResourceName() { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.querySelector('.cs-opt-label')?.textContent.trim() : '—'; }
+        function getSelectedPurpose()      { const o = document.querySelector('#purposeDrop .cs-opt.cs-selected');  return o ? o.dataset.value : ''; }
+
+        /* init resource */
+        initCS('resourceWrap', 'resourceDrop', 'resourceLabel', function(val, opt) {
+            document.getElementById('nativeResource').innerHTML = `<option value="${val}" selected></option>`;
+            const hasPcs = opt.dataset.hasPcs === '1';
+            document.getElementById('pcSection').style.display = hasPcs ? 'block' : 'none';
         });
 
-        document.getElementById('purposeSelect').addEventListener('change', function() {
-            document.getElementById('purposeOtherWrap').style.display = this.value === 'Others' ? 'block' : 'none';
+        /* init purpose */
+        initCS('purposeWrap', 'purposeDrop', 'purposeLabel', function(val) {
+            document.getElementById('nativePurpose').innerHTML = `<option value="${val}" selected></option>`;
+            document.getElementById('purposeOtherWrap').style.display = val === 'Others' ? 'block' : 'none';
+            if (val !== 'Others') document.getElementById('purposeOther').value = '';
         });
 
         function previewReservation() {
-            const isUser = currentType === 'User';
-            const name  = isUser ? userNameInput.value.trim() : document.getElementById('visitorNameInput').value.trim();
-            const email = isUser ? document.getElementById('userEmailDisplay').value.trim() : document.getElementById('visitorEmailInput').value.trim();
-            const re = document.getElementById('resourceSelect');
-            const rid = re.value, rn = re.options[re.selectedIndex]?.text || '—';
-            const pcVal = document.getElementById('pcSelect').value;
-            const date  = document.getElementById('resDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime   = document.getElementById('endTime').value;
-            const purposeVal   = document.getElementById('purposeSelect').value;
+            const isUser       = currentType === 'User';
+            const name         = isUser ? userNameInput.value.trim() : document.getElementById('visitorNameInput').value.trim();
+            const email        = isUser ? document.getElementById('userEmailDisplay').value.trim() : document.getElementById('visitorEmailInput').value.trim();
+            const resourceId   = getSelectedResourceVal();
+            const resourceName = getSelectedResourceName();
+            const pcVal        = document.getElementById('pcSelect').value;
+            const date         = document.getElementById('resDate').value;
+            const startTime    = document.getElementById('startTime').value;
+            const endTime      = document.getElementById('endTime').value;
+            const purposeVal   = getSelectedPurpose();
             const purposeOther = document.getElementById('purposeOther').value.trim();
             const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
 
             if (!name)       return alert('Please enter a name.');
-            if (!rid)        return alert('Please select a resource.');
+            if (!resourceId) return alert('Please select a resource.');
             if (!date)       return alert('Please select a date.');
             if (!startTime)  return alert('Please enter a start time.');
             if (!endTime)    return alert('Please enter an end time.');
@@ -822,10 +1013,14 @@
             document.getElementById('finalUserEmail').value   = email;
             document.getElementById('finalPurpose').value     = purposeFinal;
 
+            /* sync hidden selects */
+            document.getElementById('nativeResource').innerHTML = `<option value="${resourceId}" selected></option>`;
+            document.getElementById('nativePurpose').innerHTML  = `<option value="${purposeVal}" selected></option>`;
+
             document.getElementById('mType').textContent    = isUser ? 'Registered User' : 'Walk-in Visitor';
             document.getElementById('mName').textContent    = name || '—';
             document.getElementById('mEmail').textContent   = email || '—';
-            document.getElementById('mAsset').textContent   = rn;
+            document.getElementById('mAsset').textContent   = resourceName;
             document.getElementById('mStation').textContent = pcVal ? `Station ${pcVal}` : '—';
             document.getElementById('mDate').textContent    = document.getElementById('dateLabel').textContent;
             document.getElementById('mTime').textContent    = `${document.getElementById('startLabel').textContent} – ${document.getElementById('endLabel').textContent}`;
@@ -901,7 +1096,6 @@
             drop.style.right = '';
             drop.style.display = 'block';
             $(triggerId).classList.add('open');
-            // Smart edge detection — shift left if overflowing right edge
             const rect = drop.getBoundingClientRect();
             const vw = window.innerWidth;
             if (rect.right > vw - 8) {
