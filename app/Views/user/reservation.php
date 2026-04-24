@@ -292,8 +292,8 @@
         .dt-trigger svg { flex-shrink: 0; opacity: .4; }
         .dt-trigger.open svg { opacity: .75; }
 
-        .dt-drop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 9999; border-radius: 14px; animation: dtDrop .15s cubic-bezier(.4,0,.2,1); }
-        @keyframes dtDrop { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+        .dt-drop { position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 9999; border-radius: 14px; animation: dtDrop .15s cubic-bezier(.4,0,.2,1); }
+        @keyframes dtDrop { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
         @media(max-width:639px) {
             .dt-drop.cal { width: calc(100vw - 32px) !important; max-width: 320px; }
             .dt-drop.tim { width: 220px; }

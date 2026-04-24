@@ -318,8 +318,8 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .dt-trigger svg { flex-shrink: 0; opacity: .45; }
         .dt-trigger.open svg { opacity: .8; }
 
-        .dt-drop { position: absolute; top: calc(100%+6px); left: 0; z-index: 9999; border-radius: 14px; animation: dtDrop .15s cubic-bezier(.4,0,.2,1); }
-        @keyframes dtDrop { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+        .dt-drop { position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 9999; border-radius: 14px; animation: dtDrop .15s cubic-bezier(.4,0,.2,1); }
+        @keyframes dtDrop { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 
         body:not(.dark) .dt-drop { background:#fff; border:1px solid rgba(99,102,241,.18); box-shadow:0 20px 50px rgba(15,23,42,.18); }
         body.dark .dt-drop { background:#0e1828; border:1px solid rgba(99,102,241,.22); box-shadow:0 20px 60px rgba(0,0,0,.65); }

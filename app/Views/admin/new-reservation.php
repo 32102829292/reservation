@@ -362,9 +362,9 @@
         .dt-trigger.open svg { opacity: .8; }
 
         .dt-drop {
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0;
+            position: absolute; 
+            bottom: calc(100% + 6px); 
+            left: 0; 
             z-index: 9999;
             border-radius: 14px;
             animation: dtDrop .15s cubic-bezier(.4, 0, .2, 1);
@@ -373,7 +373,7 @@
             .dt-drop.cal { width: calc(100vw - 32px) !important; max-width: 320px; }
             .dt-drop.tim { width: 220px; }
         }
-        @keyframes dtDrop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        @keyframes dtDrop { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 
         body:not(.dark) .dt-drop { background: #fff; border: 1px solid rgba(99,102,241,.18); box-shadow: 0 20px 50px rgba(15,23,42,.18); }
         body.dark .dt-drop { background: #0e1828; border: 1px solid rgba(99,102,241,.22); box-shadow: 0 20px 60px rgba(0,0,0,.65); }
