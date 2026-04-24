@@ -782,30 +782,27 @@
                                 <div class="cs-opt cs-placeholder" data-value=""><span class="cs-opt-label">— Select purpose —</span></div>
                                 <div class="cs-divider"></div>
                                 <div class="cs-opt" data-value="Work">
-                                    <div class="cs-opt-icon" style="background:rgba(99,102,241,.1)">
-                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="1.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 5V4a3 3 0 016 0v1" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg>
-                                    </div>
+                                    <div class="cs-opt-icon" style="background:rgba(99,102,241,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="1.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 5V4a3 3 0 016 0v1" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg></div>
                                     <span class="cs-opt-label">Work</span>
                                     <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </div>
                                 <div class="cs-opt" data-value="Personal">
-                                    <div class="cs-opt-icon" style="background:rgba(236,72,153,.09)">
-                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#db2777" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#db2777" stroke-width="1.3" stroke-linecap="round"/></svg>
-                                    </div>
+                                    <div class="cs-opt-icon" style="background:rgba(236,72,153,.09)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#db2777" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#db2777" stroke-width="1.3" stroke-linecap="round"/></svg></div>
                                     <span class="cs-opt-label">Personal</span>
                                     <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </div>
                                 <div class="cs-opt" data-value="Study">
-                                    <div class="cs-opt-icon" style="background:rgba(20,184,166,.1)">
-                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 4l7-2 7 2-7 2z" stroke="#0d9488" stroke-width="1.3" stroke-linejoin="round"/><path d="M4 6v4c0 1.1 1.8 2 4 2s4-.9 4-2V6" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/><path d="M15 4v4" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/></svg>
-                                    </div>
+                                    <div class="cs-opt-icon" style="background:rgba(20,184,166,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 4l7-2 7 2-7 2z" stroke="#0d9488" stroke-width="1.3" stroke-linejoin="round"/><path d="M4 6v4c0 1.1 1.8 2 4 2s4-.9 4-2V6" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/><path d="M15 4v4" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/></svg></div>
                                     <span class="cs-opt-label">Study</span>
                                     <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </div>
+                                <div class="cs-opt" data-value="SK Activity">
+                                    <div class="cs-opt-icon" style="background:rgba(245,158,11,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6" stroke="#d97706" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
+                                    <span class="cs-opt-label">SK Activity</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
                                 <div class="cs-opt" data-value="Others">
-                                    <div class="cs-opt-icon" style="background:rgba(100,116,139,.1)">
-                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.2" fill="#64748b"/><circle cx="8" cy="8" r="1.2" fill="#64748b"/><circle cx="12" cy="8" r="1.2" fill="#64748b"/></svg>
-                                    </div>
+                                    <div class="cs-opt-icon" style="background:rgba(100,116,139,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.2" fill="#64748b"/><circle cx="8" cy="8" r="1.2" fill="#64748b"/><circle cx="12" cy="8" r="1.2" fill="#64748b"/></svg></div>
                                     <span class="cs-opt-label">Others</span>
                                     <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </div>
