@@ -258,7 +258,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             align-items: center; justify-content: center;
         }
         .modal-back.show { display: flex; animation: fadeIn .15s ease; }
-
         .modal-card {
             background: white; border-radius: var(--r-xl);
             width: 100%; max-width: 480px; padding: 24px;
@@ -266,7 +265,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             margin: auto; animation: slideUp .2s ease; box-shadow: var(--shadow-lg);
         }
         .sheet-handle { display: none; width: 36px; height: 4px; background: #e2e8f0; border-radius: 999px; margin: 0 auto 16px; }
-
         @media(max-width:639px) {
             .modal-back { padding: 0; align-items: flex-end !important; }
             .modal-card {
@@ -277,12 +275,10 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             }
             .sheet-handle { display: block; }
         }
-
         .mrow { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid rgba(99,102,241,.06); gap: 12px; }
         .mrow:last-child { border-bottom: none; }
         .mrow-label { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #94a3b8; flex-shrink: 0; padding-top: 1px; }
         .mrow-value { font-weight: 600; color: #0f172a; font-size: .83rem; text-align: right; word-break: break-word; }
-
         .qr-section {
             background: var(--indigo-light); border: 1.5px dashed var(--indigo-border);
             border-radius: var(--r-md); padding: 20px;
@@ -318,11 +314,11 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .dt-trigger svg { flex-shrink: 0; opacity: .45; }
         .dt-trigger.open svg { opacity: .8; }
 
+        /* opens ABOVE the trigger */
         .dt-drop { position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 9999; border-radius: 14px; animation: dtDrop .15s cubic-bezier(.4,0,.2,1); }
         @keyframes dtDrop { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-
         body:not(.dark) .dt-drop { background:#fff; border:1px solid rgba(99,102,241,.18); box-shadow:0 20px 50px rgba(15,23,42,.18); }
-        body.dark .dt-drop { background:#0e1828; border:1px solid rgba(99,102,241,.22); box-shadow:0 20px 60px rgba(0,0,0,.65); }
+        body.dark      .dt-drop { background:#0e1828; border:1px solid rgba(99,102,241,.22); box-shadow:0 20px 60px rgba(0,0,0,.65); }
 
         .dt-drop.cal { width: 288px; padding: 18px 16px 14px; }
         @media(max-width:380px) { .dt-drop.cal { width: 260px; } }
@@ -400,51 +396,86 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .picker-wrap { position: relative; }
 
         /* ══════════════════════════════
-           DARK MODE — UNIFIED WITH ADMIN
-           Uses same palette as admin_new_reservation
+           CUSTOM SELECT (CS) — opens ABOVE
+        ══════════════════════════════ */
+        .cs-wrap { position: relative; }
+        .cs-trigger {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; width: 100%; padding: .75rem 1rem;
+            background: var(--card); border: 1px solid rgba(99,102,241,.15);
+            border-radius: var(--r-sm); font-family: var(--font);
+            font-size: .88rem; font-weight: 500; color: #94a3b8;
+            cursor: pointer; transition: border .18s, box-shadow .18s;
+            user-select: none; -webkit-user-select: none; outline: none;
+        }
+        .cs-trigger.has-value { color: #0f172a; }
+        .cs-trigger:hover { border-color: rgba(99,102,241,.35); }
+        .cs-trigger.open { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+        .cs-arrow { width: 16px; height: 16px; flex-shrink: 0; opacity: .4; transition: transform .18s, opacity .18s; }
+        .cs-trigger.open .cs-arrow { transform: rotate(180deg); opacity: .75; }
+        .cs-drop {
+            position: absolute; bottom: calc(100% + 5px); left: 0; right: 0;
+            z-index: 9999; background: white;
+            border: 1px solid rgba(99,102,241,.18); border-radius: var(--r-md);
+            box-shadow: 0 16px 40px rgba(15,23,42,.14);
+            overflow: hidden; display: none;
+            animation: csDropIn .14s cubic-bezier(.4,0,.2,1);
+        }
+        @keyframes csDropIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+        .cs-opt {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 13px; font-size: .87rem; font-weight: 500;
+            color: #0f172a; cursor: pointer; transition: background .1s;
+            border-bottom: 1px solid rgba(99,102,241,.06);
+        }
+        .cs-opt:last-child { border-bottom: none; }
+        .cs-opt:hover { background: var(--indigo-light); color: var(--indigo); }
+        .cs-opt.cs-placeholder { color: #94a3b8; font-weight: 400; font-size: .82rem; }
+        .cs-opt.cs-selected { background: rgba(99,102,241,.07); color: var(--indigo); }
+        .cs-opt-icon {
+            width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 11px;
+        }
+        .cs-opt-label { flex: 1; }
+        .cs-check { width: 14px; height: 14px; flex-shrink: 0; color: var(--indigo); opacity: 0; transition: opacity .12s; }
+        .cs-opt.cs-selected .cs-check { opacity: 1; }
+        .cs-divider { height: 1px; background: rgba(99,102,241,.08); margin: 3px 0; }
+
+        /* ══════════════════════════════
+           DARK MODE
         ══════════════════════════════ */
         body.dark .greeting-name { color: #e2eaf8; }
         body.dark .eyebrow { color: #4a6fa5; }
-
         body.dark .icon-btn { background: #101e35; border-color: rgba(99,102,241,.18); color: #7fb3e8; }
         body.dark .icon-btn:hover { background: rgba(99,102,241,.12); border-color: var(--indigo); color: #a5b4fc; }
         body.dark .back-btn { background: #101e35; border-color: rgba(99,102,241,.18); color: #7fb3e8; }
         body.dark .back-btn:hover { background: rgba(99,102,241,.12); border-color: var(--indigo); color: #a5b4fc; }
-
         body.dark .form-card { background: #0b1628; border-color: rgba(99,102,241,.1); }
         body.dark .divider { border-color: rgba(99,102,241,.1); }
         body.dark .section-head { border-color: rgba(99,102,241,.1); }
         body.dark .section-icon { background: rgba(55,48,163,.2); }
         body.dark .section-title { color: #e2eaf8; }
-
         body.dark .field-input,
         body.dark input.field-input,
         body.dark select.field-input {
-            background: #101e35;
-            border-color: rgba(99,102,241,.18);
-            color: #e2eaf8;
+            background: #101e35; border-color: rgba(99,102,241,.18); color: #e2eaf8;
         }
         body.dark .field-input:focus { background: #0b1628; border-color: var(--indigo); }
         body.dark .field-input[readonly] { background: #060e1e; color: #4a6fa5; }
         body.dark .field-input::placeholder { color: #4a6fa5; }
         body.dark select.field-input option { background: #0b1628; color: #e2eaf8; }
         body.dark .field-label { color: #4a6fa5; }
-
         body.dark .type-toggle { background: #101e35; }
         body.dark .type-btn { color: #7fb3e8; }
-
         body.dark .pc-section { background: rgba(55,48,163,.1); border-color: rgba(99,102,241,.2); }
         body.dark .pc-btn { background: #101e35; border-color: rgba(99,102,241,.22); color: #7fb3e8; }
         body.dark .pc-btn:hover { border-color: var(--indigo); color: #a5b4fc; }
         body.dark .pc-btn.selected { background: var(--indigo); color: #fff; border-color: var(--indigo); }
-
         body.dark .autocomplete-list { background: #0b1628; border-color: rgba(99,102,241,.18); }
         body.dark .autocomplete-item:hover { background: rgba(99,102,241,.12); color: #a5b4fc; }
         body.dark .autocomplete-item .sub { color: #4a6fa5; }
-
         body.dark .flash-err { background: rgba(220,38,38,.1); border-color: rgba(248,113,113,.3); color: #f87171; }
         body.dark .flash-ok { background: rgba(55,48,163,.2); border-color: rgba(99,102,241,.3); color: #a5b4fc; }
-
         body.dark .modal-card { background: #0b1628; color: #e2eaf8; }
         body.dark .mrow-label { color: #4a6fa5; }
         body.dark .mrow-value { color: #e2eaf8; }
@@ -452,16 +483,23 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         body.dark .sheet-handle { background: #1e3a5f; }
         body.dark .modal-card h3 { color: #e2eaf8; }
         body.dark .modal-card p { color: #4a6fa5; }
-
         body.dark #modalSummaryBox { background: #060e1e !important; border-color: rgba(99,102,241,.1) !important; }
-
         body.dark .qr-section { background: rgba(55,48,163,.1); border-color: rgba(99,102,241,.25); }
         body.dark .qr-section p { color: #7fb3e8 !important; }
-
         body.dark .modal-cancel-btn { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #7fb3e8 !important; }
         body.dark .modal-cancel-btn:hover { background: rgba(99,102,241,.12) !important; color: #a5b4fc !important; }
-
         body.dark .submit-btn { box-shadow: 0 4px 12px rgba(55,48,163,.4); }
+
+        /* custom select dark */
+        body.dark .cs-trigger { background: #101e35; border-color: rgba(99,102,241,.18); color: #4a6fa5; }
+        body.dark .cs-trigger.has-value { color: #e2eaf8; }
+        body.dark .cs-trigger.open { background: #0b1628; border-color: var(--indigo); }
+        body.dark .cs-drop { background: #0b1628; border-color: rgba(99,102,241,.22); box-shadow: 0 16px 40px rgba(0,0,0,.5); }
+        body.dark .cs-opt { color: #e2eaf8; border-color: rgba(99,102,241,.06); }
+        body.dark .cs-opt:hover { background: rgba(99,102,241,.12); color: #a5b4fc; }
+        body.dark .cs-opt.cs-selected { background: rgba(99,102,241,.15); color: #a5b4fc; }
+        body.dark .cs-opt.cs-placeholder { color: #4a6fa5; }
+        body.dark .cs-divider { background: rgba(99,102,241,.1); }
     </style>
 </head>
 
@@ -479,7 +517,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 <h3 style="font-size:1rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">Confirm Reservation</h3>
                 <p style="font-size:.78rem;color:#94a3b8;margin-top:4px">Review details before saving.</p>
             </div>
-            <div id="modalSummaryBox" style="background:#f8fafc;border-radius:var(--r-md);padding:14px 16px;border:1px solid rgba(99,102,241,.08);margin-bottom:14px" id="modalSummary"></div>
+            <div id="modalSummaryBox" style="background:#f8fafc;border-radius:var(--r-md);padding:14px 16px;border:1px solid rgba(99,102,241,.08);margin-bottom:14px"></div>
             <div id="qrWrap" style="display:none;margin-bottom:14px" class="qr-section">
                 <p style="font-size:.6rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--indigo)">E-Ticket Preview</p>
                 <canvas id="qrCanvas" style="border-radius:10px"></canvas>
@@ -499,7 +537,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 
     <!-- MAIN -->
     <main class="main-area">
-        <!-- Topbar -->
         <div class="page-header fade-up">
             <div>
                 <p class="eyebrow">SK Portal</p>
@@ -532,6 +569,9 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
                 <input type="hidden" name="purpose"      id="finalPurpose">
                 <input type="hidden" name="pcs"          id="finalPcs" value="[]">
+                <!-- hidden native selects for form submission -->
+                <select name="resource_id" id="nativeResource" style="display:none" required></select>
+                <select name="purpose_select" id="nativePurpose" style="display:none"></select>
 
                 <!-- Visitor type -->
                 <div style="margin-bottom:20px">
@@ -581,16 +621,35 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         <div><div class="section-title">Resource & Schedule</div></div>
                     </div>
 
+                    <!-- ── STYLED RESOURCE SELECT ── -->
                     <div style="margin-bottom:14px">
                         <label class="field-label">Select Asset / Resource</label>
-                        <select id="resourceSelect" name="resource_id" class="field-input" required>
-                            <option value="">— Choose a resource —</option>
-                            <?php foreach ($resources as $res): ?>
-                                <option value="<?= $res['id'] ?>" data-name="<?= htmlspecialchars($res['name']) ?>"><?= htmlspecialchars($res['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="cs-wrap" id="resourceWrap">
+                            <div class="cs-trigger" id="resourceTrigger">
+                                <span id="resourceLabel">— Choose a resource —</span>
+                                <svg class="cs-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <div class="cs-drop" id="resourceDrop">
+                                <div class="cs-opt cs-placeholder" data-value=""><span class="cs-opt-label">— Choose a resource —</span></div>
+                                <div class="cs-divider"></div>
+                                <?php foreach ($resources as $res):
+                                    $rname = htmlspecialchars($res['name']);
+                                    $lower = strtolower($res['name']);
+                                    $hasPcs = (strpos($lower,'computer')!==false||strpos($lower,'pc')!==false||strpos($lower,'lab')!==false)?'1':'0';
+                                ?>
+                                <div class="cs-opt" data-value="<?= $res['id'] ?>" data-name="<?= $rname ?>" data-has-pcs="<?= $hasPcs ?>">
+                                    <div class="cs-opt-icon" style="background:rgba(99,102,241,.1)">
+                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="10" rx="2" stroke="#6366f1" stroke-width="1.3"/><path d="M5 15h6M8 12v3" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg>
+                                    </div>
+                                    <span class="cs-opt-label"><?= $rname ?></span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- PC Section -->
                     <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block">Assign Workstation(s)</label>
                         <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
@@ -603,7 +662,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 
                     <!-- Date / time — custom pickers -->
                     <div class="grid-3" style="margin-bottom:14px">
-                        <!-- DATE -->
                         <div>
                             <label class="field-label">Date</label>
                             <div class="picker-wrap" id="dateWrap">
@@ -615,7 +673,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                             </div>
                             <input type="hidden" name="reservation_date" id="resDate" value="<?= date('Y-m-d') ?>">
                         </div>
-                        <!-- START TIME -->
                         <div>
                             <label class="field-label">Start Time</label>
                             <div class="picker-wrap" id="startWrap">
@@ -627,7 +684,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                             </div>
                             <input type="hidden" name="start_time" id="startTime">
                         </div>
-                        <!-- END TIME -->
                         <div>
                             <label class="field-label">End Time</label>
                             <div class="picker-wrap" id="endWrap">
@@ -641,17 +697,46 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         </div>
                     </div>
 
+                    <!-- ── STYLED PURPOSE SELECT ── -->
                     <div style="margin-bottom:14px">
                         <label class="field-label">Purpose of Visit</label>
-                        <select id="purposeSelect" class="field-input" required>
-                            <option value="">— Select purpose —</option>
-                            <option>Work</option>
-                            <option>Personal</option>
-                            <option>Study</option>
-                            <option>SK Activity</option>
-                            <option>Others</option>
-                        </select>
+                        <div class="cs-wrap" id="purposeWrap">
+                            <div class="cs-trigger" id="purposeTrigger">
+                                <span id="purposeLabel">— Select purpose —</span>
+                                <svg class="cs-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <div class="cs-drop" id="purposeDrop">
+                                <div class="cs-opt cs-placeholder" data-value=""><span class="cs-opt-label">— Select purpose —</span></div>
+                                <div class="cs-divider"></div>
+                                <div class="cs-opt" data-value="Work">
+                                    <div class="cs-opt-icon" style="background:rgba(99,102,241,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="1.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 5V4a3 3 0 016 0v1" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+                                    <span class="cs-opt-label">Work</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <div class="cs-opt" data-value="Personal">
+                                    <div class="cs-opt-icon" style="background:rgba(236,72,153,.09)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#db2777" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#db2777" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+                                    <span class="cs-opt-label">Personal</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <div class="cs-opt" data-value="Study">
+                                    <div class="cs-opt-icon" style="background:rgba(20,184,166,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 4l7-2 7 2-7 2z" stroke="#0d9488" stroke-width="1.3" stroke-linejoin="round"/><path d="M4 6v4c0 1.1 1.8 2 4 2s4-.9 4-2V6" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/><path d="M15 4v4" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+                                    <span class="cs-opt-label">Study</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <div class="cs-opt" data-value="SK Activity">
+                                    <div class="cs-opt-icon" style="background:rgba(245,158,11,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6" stroke="#d97706" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
+                                    <span class="cs-opt-label">SK Activity</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <div class="cs-opt" data-value="Others">
+                                    <div class="cs-opt-icon" style="background:rgba(100,116,139,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.2" fill="#64748b"/><circle cx="8" cy="8" r="1.2" fill="#64748b"/><circle cx="12" cy="8" r="1.2" fill="#64748b"/></svg></div>
+                                    <span class="cs-opt-label">Others</span>
+                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                     <div id="purposeOtherWrap" style="display:none">
                         <label class="field-label">Please Specify</label>
                         <input type="text" id="purposeOther" class="field-input" placeholder="Describe the purpose…">
@@ -716,15 +801,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         });
         userNameInput.addEventListener('blur', () => setTimeout(() => autocompleteList.style.display = 'none', 150));
 
-        document.getElementById('resourceSelect').addEventListener('change', function() {
-            const name = (this.options[this.selectedIndex]?.dataset.name || '').toLowerCase();
-            const showPcs = name.includes('computer') || name.includes('pc') || name.includes('lab');
-            document.getElementById('pcSection').style.display = showPcs ? 'block' : 'none';
-            selectedPcs = [];
-            updatePcHidden();
-            document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
-        });
-
         function togglePc(num, btn) {
             const idx = selectedPcs.indexOf(num);
             if (idx === -1) { selectedPcs.push(num); btn.classList.add('selected'); }
@@ -736,37 +812,106 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
         }
 
-        document.getElementById('purposeSelect').addEventListener('change', function() {
-            document.getElementById('purposeOtherWrap').style.display = this.value === 'Others' ? 'block' : 'none';
+        /* ════════════════════════════
+           CUSTOM SELECT LOGIC
+        ════════════════════════════ */
+        let _csActive = null;
+
+        function closeAllCS() {
+            document.querySelectorAll('.cs-drop').forEach(d => d.style.display = 'none');
+            document.querySelectorAll('.cs-trigger').forEach(t => t.classList.remove('open'));
+            _csActive = null;
+        }
+        document.addEventListener('click', closeAllCS);
+
+        function initCS(wrapId, dropId, labelId, onChange) {
+            const wrap    = document.getElementById(wrapId);
+            const trigger = wrap.querySelector('.cs-trigger');
+            const label   = document.getElementById(labelId);
+            const drop    = document.getElementById(dropId);
+            const opts    = drop.querySelectorAll('.cs-opt');
+
+            trigger.addEventListener('click', e => {
+                e.stopPropagation();
+                if (_csActive === dropId) { closeAllCS(); return; }
+                closeAllCS(); _csActive = dropId;
+                drop.style.display = 'block';
+                trigger.classList.add('open');
+            });
+
+            opts.forEach(opt => {
+                opt.addEventListener('click', e => {
+                    e.stopPropagation();
+                    const val  = opt.dataset.value;
+                    const text = opt.querySelector('.cs-opt-label')?.textContent.trim() || '';
+                    opts.forEach(o => o.classList.remove('cs-selected'));
+                    if (val !== '') {
+                        opt.classList.add('cs-selected');
+                        label.textContent = text;
+                        trigger.classList.add('has-value');
+                    } else {
+                        label.textContent = text;
+                        trigger.classList.remove('has-value');
+                    }
+                    closeAllCS();
+                    if (onChange) onChange(val, opt);
+                });
+            });
+        }
+
+        /* helper getters */
+        function getSelectedResourceVal()  { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
+        function getSelectedResourceName() { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.querySelector('.cs-opt-label')?.textContent.trim() : '—'; }
+        function getSelectedPurpose()      { const o = document.querySelector('#purposeDrop  .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
+
+        /* init resource */
+        initCS('resourceWrap', 'resourceDrop', 'resourceLabel', function(val, opt) {
+            document.getElementById('nativeResource').innerHTML = `<option value="${val}" selected></option>`;
+            const hasPcs = opt.dataset.hasPcs === '1';
+            document.getElementById('pcSection').style.display = hasPcs ? 'block' : 'none';
+            selectedPcs = [];
+            updatePcHidden();
+            document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
+        });
+
+        /* init purpose */
+        initCS('purposeWrap', 'purposeDrop', 'purposeLabel', function(val) {
+            document.getElementById('nativePurpose').innerHTML = `<option value="${val}" selected></option>`;
+            document.getElementById('purposeOtherWrap').style.display = val === 'Others' ? 'block' : 'none';
+            if (val !== 'Others') document.getElementById('purposeOther').value = '';
         });
 
         function previewReservation() {
-            const isUser = currentType === 'User';
-            const name   = isUser ? userNameInput.value.trim() : document.getElementById('visitorNameInput').value.trim();
-            const email  = isUser ? document.getElementById('userEmailDisplay').value.trim() : document.getElementById('visitorEmailInput').value.trim();
-            const resourceEl   = document.getElementById('resourceSelect');
-            const resourceName = resourceEl.options[resourceEl.selectedIndex]?.text || '—';
+            const isUser       = currentType === 'User';
+            const name         = isUser ? userNameInput.value.trim() : document.getElementById('visitorNameInput').value.trim();
+            const email        = isUser ? document.getElementById('userEmailDisplay').value.trim() : document.getElementById('visitorEmailInput').value.trim();
+            const resourceId   = getSelectedResourceVal();
+            const resourceName = getSelectedResourceName();
             const showPcs      = document.getElementById('pcSection').style.display !== 'none';
-            const date      = document.getElementById('resDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime   = document.getElementById('endTime').value;
-            const purposeVal   = document.getElementById('purposeSelect').value;
+            const date         = document.getElementById('resDate').value;
+            const startTime    = document.getElementById('startTime').value;
+            const endTime      = document.getElementById('endTime').value;
+            const purposeVal   = getSelectedPurpose();
             const purposeOther = document.getElementById('purposeOther').value.trim();
             const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
 
-            if (!name)              return alert('Please enter a name.');
-            if (!resourceEl.value)  return alert('Please select a resource.');
+            if (!name)        return alert('Please enter a name.');
+            if (!resourceId)  return alert('Please select a resource.');
             if (showPcs && !selectedPcs.length) return alert('Please select at least one workstation.');
-            if (!date)              return alert('Please select a date.');
-            if (!startTime)         return alert('Please enter a start time.');
-            if (!endTime)           return alert('Please enter an end time.');
-            if (!purposeVal)        return alert('Please select a purpose.');
+            if (!date)        return alert('Please select a date.');
+            if (!startTime)   return alert('Please enter a start time.');
+            if (!endTime)     return alert('Please enter an end time.');
+            if (!purposeVal)  return alert('Please select a purpose.');
             if (isUser && !selectedUser && !document.getElementById('finalUserId').value)
                 return alert('Please select a registered user from the dropdown.');
 
             document.getElementById('finalVisitorName').value = name;
             document.getElementById('finalUserEmail').value   = email;
             document.getElementById('finalPurpose').value     = purposeFinal;
+
+            /* also sync hidden selects for form POST */
+            document.getElementById('nativeResource').innerHTML = `<option value="${resourceId}" selected></option>`;
+            document.getElementById('nativePurpose').innerHTML  = `<option value="${purposeVal}" selected></option>`;
 
             const rows = [
                 ['Type',         isUser ? 'Registered User' : 'Walk-in Visitor'],
@@ -780,8 +925,8 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             ];
             document.getElementById('modalSummaryBox').innerHTML =
                 rows.map(([l,v]) => `<div class="mrow"><span class="mrow-label">${l}</span><span class="mrow-value">${v}</span></div>`).join('');
-            document.getElementById('qrWrap').style.display  = 'none';
-            document.getElementById('confirmBtn').style.display = 'flex';
+            document.getElementById('qrWrap').style.display     = 'none';
+            document.getElementById('confirmBtn').style.display  = 'flex';
             openModal();
         }
 
@@ -907,7 +1052,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             const labelId=which==='start'?'startLabel':'endLabel';
             const inputId=which==='start'?'startTime':'endTime';
             const triggerId=which==='start'?'startTrigger':'endTrigger';
-            $(labelId).textContent=label;$(inputId).value=iso24;$(triggerId).classList.add('has-value');
+            $(labelId).textContent=label; $(inputId).value=iso24; $(triggerId).classList.add('has-value');
             closeAll();
         }
 
