@@ -141,8 +141,9 @@
         .dt-trigger.open { border-color:#818cf8; background:var(--card); box-shadow:0 0 0 3px rgba(99,102,241,.08); }
         .dt-trigger svg { flex-shrink:0; opacity:.4; }
         .dt-trigger.open svg { opacity:.75; }
-        .dt-drop { position:absolute; bottom:calc(100% + 6px); left:0; z-index:9999; border-radius:14px; animation:dtDrop .15s cubic-bezier(.4,0,.2,1); }
-        @keyframes dtDrop { from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none} }
+        /* ── FIX: drop DOWN (top) instead of up (bottom) ── */
+        .dt-drop { position:absolute; top:calc(100% + 6px); left:0; z-index:9999; border-radius:14px; animation:dtDrop .15s cubic-bezier(.4,0,.2,1); }
+        @keyframes dtDrop { from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none} }
         body:not(.dark) .dt-drop { background:#fff; border:1px solid rgba(99,102,241,.18); box-shadow:0 20px 50px rgba(15,23,42,.18); }
         body.dark .dt-drop { background:#0b1628; border:1px solid rgba(99,102,241,.22); box-shadow:0 20px 60px rgba(0,0,0,.65); }
         .dt-drop.cal { width:288px; padding:18px 16px 14px; }
@@ -203,7 +204,7 @@
         .cs-arrow { width:16px; height:16px; flex-shrink:0; opacity:.4; transition:transform .18s,opacity .18s; }
         .cs-trigger.open .cs-arrow { transform:rotate(180deg); opacity:.75; }
         .cs-drop { position:absolute; top:calc(100% + 5px); left:0; right:0; z-index:9999; background:var(--card,#fff); border:1px solid var(--border,rgba(99,102,241,.18)); border-radius:var(--r-md,10px); box-shadow:0 16px 40px rgba(15,23,42,.14); overflow:hidden; display:none; animation:csDropIn .14s cubic-bezier(.4,0,.2,1); }
-        @keyframes csDropIn { from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none} }
+        @keyframes csDropIn { from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none} }
         .cs-opt { display:flex; align-items:center; gap:10px; padding:10px 13px; font-size:.87rem; font-weight:500; color:var(--text,#0f172a); cursor:pointer; transition:background .1s; border-bottom:1px solid var(--border-subtle,rgba(99,102,241,.06)); }
         .cs-opt:last-child { border-bottom:none; }
         .cs-opt:hover { background:var(--indigo-light,#eef2ff); color:var(--indigo,#3730a3); }
@@ -600,7 +601,6 @@
         }
 
         function submitReservation() {
-            /* sync native resource select before submit */
             const res = getSelectedResource();
             if (res) {
                 let sel = document.getElementById('nativeResource');
