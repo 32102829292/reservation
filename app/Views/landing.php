@@ -44,7 +44,52 @@
         .btn-primary:hover { background: #312e81; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(55,48,163,.5); }
         .btn-manual { padding: 9px 18px; border-radius: 10px; font-size: .82rem; font-weight: 700; border: 1px solid rgba(212,160,23,.3); background: rgba(212,160,23,.08); color: #fbbf24; cursor: pointer; font-family: var(--font); transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
         .btn-manual:hover { background: rgba(212,160,23,.15); border-color: rgba(212,160,23,.5); }
-        @media(max-width:479px) { nav { padding: 14px 18px; } .nav-brand-sub { display: none; } .btn-ghost span.label { display: none; } }
+        
+        /* ===== MOBILE FIXES ===== */
+        @media(max-width:540px) {
+            nav { padding: 12px 16px; gap: 8px; }
+            .nav-brand-sub { display: none; }
+            .nav-brand-name { font-size: .95rem; }
+            /* Hide Sign In text on mobile, show icon only */
+            .btn-ghost .label { display: none; }
+            .btn-ghost { padding: 8px 12px; }
+            /* Compact manual button */
+            .btn-manual .label { display: none; }
+            .btn-manual { padding: 8px 12px; }
+            /* Smaller register button */
+            .btn-primary { padding: 8px 14px; font-size: .78rem; }
+            /* Hero section mobile */
+            .hero { padding: 36px 20px 56px; }
+            .logo-ring { width: 110px; height: 110px; margin-bottom: 24px; }
+            .eyebrow-pill { font-size: .6rem; padding: 4px 12px; margin-bottom: 16px; }
+            .hero-subtitle { font-size: .88rem; margin-bottom: 10px; }
+            .hero-org { font-size: .72rem; margin-bottom: 32px; }
+            /* CTA buttons stack vertically on small screens */
+            .cta-group { flex-direction: column; align-items: stretch; gap: 10px; padding: 0 8px; }
+            .cta-login, .cta-register, .cta-manual-hero { 
+                justify-content: center; 
+                padding: 13px 24px; 
+                font-size: .85rem; 
+                width: 100%;
+            }
+            /* Features section */
+            .features { padding: 0 16px 60px; }
+            .features-grid { grid-template-columns: 1fr; gap: 12px; }
+            .feat-card { padding: 18px; }
+            /* Divider */
+            .divider { margin: 0 16px 32px; }
+            /* Footer */
+            footer { padding: 16px 18px; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+            .footer-right { justify-content: center; flex-wrap: wrap; }
+        }
+        @media(min-width:541px) and (max-width:720px) {
+            nav { padding: 14px 24px; }
+            .nav-brand-sub { display: none; }
+            .hero { padding: 48px 24px 72px; }
+            .logo-ring { width: 120px; height: 120px; }
+            .features-grid { grid-template-columns: repeat(2,1fr); gap: 14px; }
+            .cta-group { gap: 10px; }
+        }
         .hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px 80px; text-align: center; }
         .logo-ring { position: relative; width: 140px; height: 140px; margin: 0 auto 36px; animation: fadeUp .8s .1s ease both; }
         .logo-ring::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; background: conic-gradient(from 0deg, #c0392b, #d4a017, #3730a3, #c0392b); animation: rotateBorder 6s linear infinite; z-index: 0; }
