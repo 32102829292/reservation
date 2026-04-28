@@ -149,8 +149,6 @@
         .page-sub { font-size: .78rem; color: #94a3b8; margin-top: 4px; font-weight: 500; }
         .topbar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-top: 4px; flex-wrap: wrap; }
         @media(max-width:639px) { .page-title { font-size: 1.35rem; } }
-
-        /* main-area handled by app.css via .l-shell / .main-area */
     </style>
 </head>
 
@@ -159,14 +157,10 @@
     <?php
     $page = 'my-reservations';
 
-    $reservations   = $reservations   ?? [];
+    $reservations     = $reservations     ?? [];
     $pendingUserCount = $pendingUserCount ?? 0;
-    $usedSlots      = (int)($usedThisMonth ?? 0);
-    $maxSlots       = max(1, (int)($maxMonthlySlots ?? 3));
-    $quotaPct       = min(100, round($usedSlots / $maxSlots * 100));
-    $remainingReservations = $remainingReservations ?? 0;
-    $user_name      = $user_name ?? 'Officer';
-    $avatarLetter   = strtoupper(mb_substr(trim($user_name), 0, 1));
+    $user_name        = $user_name        ?? 'Officer';
+    $avatarLetter     = strtoupper(mb_substr(trim($user_name), 0, 1));
 
     $myTotal    = count($reservations);
     $myPending  = count(array_filter($reservations, fn($r) => ($r['status'] ?? '') === 'pending'));
@@ -245,7 +239,6 @@
                 <div class="page-sub">Track and manage your personal reservation requests.</div>
             </div>
             <div class="topbar-right">
-                <!-- ★ Use layoutToggleDark() provided by layout.php -->
                 <div class="icon-btn" onclick="layoutToggleDark()" title="Toggle dark mode">
                     <span id="darkIcon"><i class="fa-regular fa-sun" style="font-size:.85rem;"></i></span>
                 </div>
@@ -524,11 +517,11 @@
 
         /* ── Detail Modal ── */
         const STATUS_META = {
-            pending:  { bg: '#fef3c7', color: '#92400e', icon: 'fa-clock',       label: 'Pending — Awaiting approval' },
-            approved: { bg: '#dcfce7', color: '#166534', icon: 'fa-circle-check', label: 'Approved — Download your e-ticket' },
-            claimed:  { bg: '#ede9fe', color: '#5b21b6', icon: 'fa-check-double', label: 'Claimed — Ticket successfully scanned' },
-            declined: { bg: '#fee2e2', color: '#991b1b', icon: 'fa-ban',          label: 'Declined — Try booking a different time' },
-            canceled: { bg: '#fee2e2', color: '#991b1b', icon: 'fa-ban',          label: 'Cancelled' },
+            pending:  { bg: '#fef3c7', color: '#92400e', icon: 'fa-clock',        label: 'Pending — Awaiting approval' },
+            approved: { bg: '#dcfce7', color: '#166534', icon: 'fa-circle-check',  label: 'Approved — Download your e-ticket' },
+            claimed:  { bg: '#ede9fe', color: '#5b21b6', icon: 'fa-check-double',  label: 'Claimed — Ticket successfully scanned' },
+            declined: { bg: '#fee2e2', color: '#991b1b', icon: 'fa-ban',           label: 'Declined — Try booking a different time' },
+            canceled: { bg: '#fee2e2', color: '#991b1b', icon: 'fa-ban',           label: 'Cancelled' },
             expired:  { bg: '#f1f5f9', color: '#475569', icon: 'fa-hourglass-end', label: 'Expired' },
         };
 

@@ -1042,6 +1042,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             $(dropId).querySelectorAll('.ampm-btn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();tState[which].ampm=el.dataset.ampm;renderTime(which);}));
             $(`_timSet_${which}`).addEventListener('click',e=>{e.stopPropagation();applyTime(which);});
         }
+
         function applyTime(which){
             const st=tState[which];
             const label=`${String(st.h).padStart(2,'0')}:${String(st.min).padStart(2,'0')} ${st.ampm.toUpperCase()}`;
@@ -1052,7 +1053,9 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             const labelId=which==='start'?'startLabel':'endLabel';
             const inputId=which==='start'?'startTime':'endTime';
             const triggerId=which==='start'?'startTrigger':'endTrigger';
-            $(labelId).textContent=label; $(inputId).value=iso24; $(triggerId).classList.add('has-value');
+            $(labelId).textContent=label;
+            $(inputId).value=iso24;
+            $(triggerId).classList.add('has-value');
             closeAll();
         }
 
@@ -1060,12 +1063,36 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         $('startTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('startDrop','startTrigger');if(activeDrop==='startDrop')renderTime('start');});
         $('endTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('endDrop','endTrigger');if(activeDrop==='endDrop')renderTime('end');});
 
+        /* ─────────────────────────────────────────────────────────
+           FIX: Write default tState values into the hidden inputs
+           and trigger labels on page load, so the fields are never
+           empty even if the user never opens the time pickers.
+        ───────────────────────────────────────────────────────── */
+        (function initDefaultTimes() {
+            ['start', 'end'].forEach(function(which) {
+                var st = tState[which];
+                var h24 = st.h;
+                if (st.ampm === 'am' && st.h === 12) h24 = 0;
+                if (st.ampm === 'pm' && st.h !== 12) h24 = st.h + 12;
+                var iso24 = String(h24).padStart(2, '0') + ':' + String(st.min).padStart(2, '0');
+                var label = String(st.h).padStart(2, '0') + ':' + String(st.min).padStart(2, '0') + ' ' + st.ampm.toUpperCase();
+                var labelId   = which === 'start' ? 'startLabel'   : 'endLabel';
+                var inputId   = which === 'start' ? 'startTime'    : 'endTime';
+                var triggerId = which === 'start' ? 'startTrigger' : 'endTrigger';
+                $(labelId).textContent = label;
+                $(inputId).value       = iso24;
+                $(triggerId).classList.add('has-value');
+            });
+        })();
+
+        /* Auto-select today's date on load */
         (function(){
             const t=new Date();
             $('dateLabel').textContent=t.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
             $('dateTrigger').classList.add('has-value');
             selDate={d:t.getDate(),m:t.getMonth(),y:t.getFullYear()};
         })();
+
     })();
     </script>
 </body>
