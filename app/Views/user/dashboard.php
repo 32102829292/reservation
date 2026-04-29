@@ -2336,7 +2336,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             </div>
             <div style="flex:1;min-width:0;">
                 <p style="font-family:var(--font);font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name || 'Reserved'}</p>
-                <p style="font-family:var(--font);font-size:11px;color:var(--text-sub);margin-top:2px;font-weight:500;">${r.visitor_name || r.full_name || ''}</p>
                 <p style="font-family:var(--font);font-size:11px;color:#3730a3;margin-top:1px;font-weight:600;">${timeDisplay}</p>
             </div>
             <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};flex-shrink:0;">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
