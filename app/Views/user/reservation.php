@@ -237,6 +237,24 @@
         body.dark .cs-opt.cs-selected { background:rgba(99,102,241,.15); color:#a5b4fc; }
         body.dark .cs-opt.cs-placeholder { color:#4a6fa5; }
         body.dark .cs-divider { background:rgba(99,102,241,.1); }
+
+        /* ══════════════════════════════ RETRY BUTTON ══════════════════════════════ */
+        .avail-retry-btn {
+            margin-left: auto;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: .72rem;
+            font-weight: 700;
+            border: 1px solid currentColor;
+            background: transparent;
+            cursor: pointer;
+            font-family: var(--font);
+            opacity: .85;
+            transition: opacity .15s;
+            color: inherit;
+            flex-shrink: 0;
+        }
+        .avail-retry-btn:hover { opacity: 1; }
     </style>
 </head>
 
@@ -501,7 +519,8 @@
         /* ─────────────── Availability state ─────────────── */
         let _isAvailable      = false;  // true only when server confirms available
         let _availCheckCtrl   = null;   // AbortController for in-flight request
-        let _availCheckTimer  = null;   // timeout id
+        let _availCheckTimer  = null;   // hard-timeout id
+        let _availDebounce    = null;   // debounce timer id  ← FIX #1
 
         /* ─────────────── Notifications ─────────────── */
         let notifications = [<?php if (!empty($recentApprovals)): ?><?php foreach ($recentApprovals as $approval): ?>{id:<?= $approval['id'] ?>,title:'Reservation Approved!',message:'Your reservation for <?= esc($approval['resource_name']) ?> on <?= date('M j, Y', strtotime($approval['reservation_date'])) ?> has been approved.',time:'<?= $approval['approved_at'] ?? date('Y-m-d H:i:s') ?>',read:false},<?php endforeach; ?><?php endif; ?>];
@@ -518,7 +537,21 @@
         });
 
         /* ══════════════════════════════════════════════════
-           AVAILABILITY CHECK  — with timeout + state tracking
+           DEBOUNCED TRIGGER  ← FIX #1
+           Waits 600 ms after the last field change before
+           actually firing checkAvailability(). This prevents
+           dozens of overlapping requests when users click
+           through date/time pickers quickly.
+        ══════════════════════════════════════════════════ */
+        function triggerAvailCheck() {
+            clearTimeout(_availDebounce);
+            _availDebounce = setTimeout(checkAvailability, 600);
+        }
+
+        /* ══════════════════════════════════════════════════
+           AVAILABILITY CHECK
+           Timeout increased 8 s → 15 s  ← FIX #2
+           On timeout: show retry button instead of hard fail ← FIX #3
         ══════════════════════════════════════════════════ */
         function checkAvailability() {
             const rid  = document.getElementById('nativeResource').value;
@@ -540,7 +573,7 @@
             if (st && et && st >= et) {
                 m.className = '';
                 m.classList.add('unavailable');
-                m.textContent = 'End time must be after start time.';
+                m.innerHTML = 'End time must be after start time.';
                 return;
             }
 
@@ -550,14 +583,23 @@
 
             m.className = '';
             m.classList.add('checking');
-            m.textContent = 'Checking availability…';
+            m.innerHTML = 'Checking availability…';
 
             _availCheckCtrl = new AbortController();
 
-            // 8-second hard timeout
+            // ── FIX #2: 15-second hard timeout (was 8 s) ──
             _availCheckTimer = setTimeout(() => {
-                if (_availCheckCtrl) _availCheckCtrl.abort();
-            }, 8000);
+                if (_availCheckCtrl) {
+                    _availCheckCtrl.abort();
+                    // ── FIX #3: friendly retry instead of silent error ──
+                    _availCheckCtrl = null;
+                    _isAvailable = false;
+                    m.className = '';
+                    m.classList.add('checking');
+                    m.innerHTML = 'Check is taking longer than expected. <button class="avail-retry-btn" onclick="checkAvailability()">Retry</button>';
+                    setPreviewBtnState();
+                }
+            }, 15000);
 
             fetch(BASE_URL + 'reservation/check-availability', {
                 method  : 'POST',
@@ -576,7 +618,7 @@
                 m.className = '';
                 _isAvailable = !!data.available;
                 m.classList.add(_isAvailable ? 'available' : 'unavailable');
-                m.textContent = data.message || (_isAvailable ? 'This slot is available.' : 'This slot is already booked.');
+                m.innerHTML = data.message || (_isAvailable ? 'This slot is available.' : 'This slot is already booked.');
 
                 // Mark unavailable PCs if server returns them
                 if (data.booked_pcs && Array.isArray(data.booked_pcs)) {
@@ -590,14 +632,13 @@
                 _availCheckCtrl = null;
                 _isAvailable = false;
 
-                m.className = '';
-                m.classList.add('unavailable');
-                if (err.name === 'AbortError') {
-                    m.textContent = 'Availability check timed out — please try again.';
-                } else {
-                    m.textContent = 'Could not check availability. Please try again.';
+                // Only handle non-abort errors here; abort is handled in the timer callback
+                if (err.name !== 'AbortError') {
+                    m.className = '';
+                    m.classList.add('unavailable');
+                    m.innerHTML = 'Could not check availability. <button class="avail-retry-btn" onclick="checkAvailability()">Retry</button>';
+                    setPreviewBtnState();
                 }
-                setPreviewBtnState();
             });
         }
 
@@ -662,7 +703,7 @@
                 _isAvailable = false;
                 document.getElementById('availabilityMsg').className = 'hidden';
                 setPreviewBtnState();
-                checkAvailability();
+                triggerAvailCheck(); // ← use debounced trigger
             });
             initCS('purposeWrap', 'purposeDrop', 'purposeLabel', function(val) {
                 document.getElementById('purposeOtherWrap').classList.toggle('hidden', val !== 'Others');
@@ -756,10 +797,9 @@
             if (!_isAvailable) {
                 const m = document.getElementById('availabilityMsg');
                 m.classList.remove('hidden');
-                // If no check has been run yet, run it now and tell the user to wait
-                if (m.classList.contains('checking') || m.className === 'hidden') {
-                    checkAvailability();
-                    return showFormError('Please wait while we check availability.');
+                // If still checking, tell the user
+                if (m.classList.contains('checking')) {
+                    return showFormError('Please wait — availability check is in progress.');
                 }
                 return showFormError('This slot is already booked. Please choose a different date or time.');
             }
@@ -775,7 +815,6 @@
         }
 
         function showFormError(msg) {
-            // Reuse availability message area for validation errors too
             const m = document.getElementById('availabilityMsg');
             m.className = '';
             m.classList.add('unavailable');
@@ -787,7 +826,6 @@
            SUBMIT
         ══════════════════════════════════════════════════ */
         function submitReservation() {
-            // Final server-side guard in case state got stale
             if (!_isAvailable) { closeModal(); return showFormError('Slot no longer available. Please recheck.'); }
 
             const res = getSelectedResource();
@@ -927,9 +965,9 @@
             $('dateTrigger').classList.add('has-value');
             renderCal();
             setTimeout(closeAll, 180);
-            // Reset PC unavailable state when date changes, then recheck
+            // Reset PC unavailable state when date changes, then recheck via debounce
             resetPcButtons();
-            if ($('startTime').value && $('endTime').value) checkAvailability();
+            if ($('startTime').value && $('endTime').value) triggerAvailCheck(); // ← debounced
         }
         function clearDate() {
             selDate = null; $('resDate').value = ''; $('dateLabel').textContent = 'Pick a date';
@@ -972,10 +1010,10 @@
             $(inputId).value       = iso24;
             $(triggerId).classList.add('has-value');
             closeAll();
-            // Reset PC states when time changes, then recheck
+            // Reset PC states when time changes, then recheck via debounce
             resetPcButtons();
             const date = $('resDate').value, rid = document.getElementById('nativeResource').value;
-            if (rid && date && $('startTime').value && $('endTime').value) checkAvailability();
+            if (rid && date && $('startTime').value && $('endTime').value) triggerAvailCheck(); // ← debounced
         }
 
         $('dateTrigger').addEventListener('click', e => { e.stopPropagation(); toggle('calDrop','dateTrigger'); if (activeDrop === 'calDrop') renderCal(); });
