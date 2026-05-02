@@ -400,11 +400,13 @@
         .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: .8rem; font-weight: 500; cursor: pointer; transition: all .12s; border: 1px solid transparent; }
         body:not(.dark) .cal-day { color: #475569; }
         body.dark .cal-day { color: #8b95b0; }
-        body:not(.dark) .cal-day:hover:not(.cal-other):not(.cal-selected) { background: #f1f5f9; color: #0f172a; border-color: #e2e8f0; }
-        body.dark .cal-day:hover:not(.cal-other):not(.cal-selected) { background: rgba(255,255,255,.06); color: #e2e8f0; border-color: rgba(255,255,255,.08); }
+        body:not(.dark) .cal-day:hover:not(.cal-other):not(.cal-selected):not(.cal-past) { background: #f1f5f9; color: #0f172a; border-color: #e2e8f0; }
+        body.dark .cal-day:hover:not(.cal-other):not(.cal-selected):not(.cal-past) { background: rgba(255,255,255,.06); color: #e2e8f0; border-color: rgba(255,255,255,.08); }
         .cal-day.cal-other { pointer-events: none; }
         body:not(.dark) .cal-day.cal-other { color: #cbd5e1; }
         body.dark .cal-day.cal-other { color: #2e3850; }
+        /* ── PAST DAY ── */
+        .cal-day.cal-past { pointer-events: none; opacity: .35; cursor: default; }
         body:not(.dark) .cal-day.cal-today { color: var(--indigo); font-weight: 700; }
         body.dark .cal-day.cal-today { color: #818cf8; font-weight: 700; }
         .cal-day.cal-selected { background: var(--indigo) !important; color: #fff !important; font-weight: 700; border-color: var(--indigo) !important; box-shadow: 0 2px 10px rgba(99,102,241,.4); }
@@ -1104,13 +1106,17 @@
 
         function renderCal() {
             const {y, m} = calView;
+            const todayFlat = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
             const firstDow = new Date(y,m,1).getDay(), daysInM = new Date(y,m+1,0).getDate(), prevTotal = new Date(y,m,0).getDate();
             let html = `<div class="cal-head"><div class="cal-nav-btn" id="_calPrev">&#8249;</div><div class="cal-month-label">${MONTHS[m]} ${y}</div><div class="cal-nav-btn" id="_calNext">&#8250;</div></div><div class="cal-grid">${DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
             for (let i=0;i<firstDow;i++) html+=`<div class="cal-day cal-other">${prevTotal-firstDow+1+i}</div>`;
             for (let d=1;d<=daysInM;d++) {
+                const thisDate = new Date(y, m, d);
+                const isPast  = thisDate < todayFlat;
                 const isToday = d===TODAY.getDate()&&m===TODAY.getMonth()&&y===TODAY.getFullYear();
                 const isSel   = selDate&&selDate.d===d&&selDate.m===m&&selDate.y===y;
-                html+=`<div class="${['cal-day',isToday&&!isSel?'cal-today':'',isSel?'cal-selected':''].filter(Boolean).join(' ')}" data-d="${d}">${d}</div>`;
+                const classes = ['cal-day', isPast?'cal-past':'', isToday&&!isSel?'cal-today':'', isSel?'cal-selected':''].filter(Boolean).join(' ');
+                html += `<div class="${classes}"${isPast ? '' : ` data-d="${d}"`}>${d}</div>`;
             }
             const trail=(7-(firstDow+daysInM)%7)%7;
             for(let i=1;i<=trail;i++) html+=`<div class="cal-day cal-other">${i}</div>`;
