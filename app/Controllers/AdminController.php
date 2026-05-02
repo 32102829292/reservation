@@ -568,16 +568,117 @@ class AdminController extends Controller
             return redirect()->to('/login')->with('error', 'Please login first');
         }
 
-        $userType    = $this->request->getPost('visitor_type');
+        $userType        = $this->request->getPost('visitor_type');
+        $reservationDate = $this->request->getPost('reservation_date');
+        $startTime       = $this->request->getPost('start_time');
+        $endTime         = $this->request->getPost('end_time');
+        $resourceId      = $this->request->getPost('resource_id');
+
+        // ── Resolve user_id for registered-user bookings ──────────────────────
+        $userId        = null;
+        $resolvedEmail = null;
+        $visitorName   = $this->request->getPost('visitor_name');
+
+        if ($userType === 'User') {
+            $userId = (int) $this->request->getPost('user_id');
+            if (!$userId) {
+                return redirect()->back()->with('error', 'Please select a registered user from the list.');
+            }
+
+            $userRow       = $this->db->table('users')->select('email, name')->where('id', $userId)->get()->getRowArray();
+            $resolvedEmail = $userRow['email'] ?? null;
+            if (empty($visitorName) && !empty($userRow['name'])) {
+                $visitorName = $userRow['name'];
+            }
+        } else {
+            $resolvedEmail = $this->request->getPost('user_email') ?: null;
+        }
+
+        // ── Block check — mirrors UserController ──────────────────────────────
+        if ($userType === 'User' && $userId > 0) {
+            $isBlocked = $this->reservationModel->isBlocked($userId);
+            if ($isBlocked) {
+                return redirect()->back()->with('error',
+                    'This user is currently blocked from making reservations until ' .
+                    date('F j, Y', strtotime($isBlocked['blocked_until']))
+                );
+            }
+        }
+
+        // ── Fairness / quota check — pass $userId (int), not email ────────────
+        if ($userType === 'User' && $userId > 0) {
+            $fairness = $this->reservationModel->checkFairness($userId);
+            if (!$fairness['fair']) {
+                $message = isset($fairness['blocked'])
+                    ? 'Fairness Check: User has exceeded their reservation limit. Blocked until ' . $fairness['until']
+                    : 'Fairness Check: User has reached the maximum of 3 reservations in a 2-week period.';
+                return redirect()->back()->with('error', $message);
+            }
+        }
+
+        // ── Field validation — mirrors UserController ─────────────────────────
+        if (!$this->validate([
+            'resource_id'      => 'required|numeric',
+            'reservation_date' => 'required|valid_date[Y-m-d]',
+            'start_time'       => 'required',
+            'end_time'         => 'required',
+            'purpose'          => 'required',
+        ])) {
+            return redirect()->back()->withInput()->with('error', 'Please fill all required fields.');
+        }
+
+        // ── Reject past dates — mirrors UserController ────────────────────────
+        if ($reservationDate < date('Y-m-d')) {
+            return redirect()->back()->withInput()
+                ->with('error', 'You cannot make a reservation for a past date.');
+        }
+
+        // ── End time must be after start time — mirrors UserController ─────────
+        if ($startTime >= $endTime) {
+            return redirect()->back()->withInput()
+                ->with('error', 'End time must be after start time.');
+        }
+
+        // ── One reservation per day for registered users — mirrors UserController
+        if ($userType === 'User' && $userId > 0) {
+            $sameDayReservations = $this->reservationModel->getUserSameDayReservations($userId, $reservationDate);
+            if (!empty($sameDayReservations)) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'This user already has a reservation on this date. Only one reservation per day is allowed.');
+            }
+        }
+
+        // ── Double-booking guard with DB lock via transaction ─────────────────
+        $this->db->transStart();
+
+        $conflict = $this->reservationModel
+            ->where('resource_id', $resourceId)
+            ->where('reservation_date', $reservationDate)
+            ->whereIn('status', ['pending', 'approved'])
+            ->groupStart()
+                ->where('start_time <', $endTime)
+                ->where('end_time >',  $startTime)
+            ->groupEnd()
+            ->first();
+
+        if ($conflict) {
+            $this->db->transRollback();
+            return redirect()->back()->withInput()
+                ->with('error', 'This time slot is already booked. Please choose another time.');
+        }
+
+        // ── Insert ────────────────────────────────────────────────────────────
         $eTicketCode = 'ADMIN' . strtoupper(uniqid());
 
         $data = [
-            'resource_id'      => $this->request->getPost('resource_id'),
-            'visitor_name'     => $this->request->getPost('visitor_name'),
+            'resource_id'      => $resourceId,
+            'visitor_name'     => $visitorName,
             'visitor_type'     => $userType,
-            'reservation_date' => $this->request->getPost('reservation_date'),
-            'start_time'       => $this->request->getPost('start_time'),
-            'end_time'         => $this->request->getPost('end_time'),
+            'user_id'          => $userId,
+            'user_email'       => $resolvedEmail,
+            'reservation_date' => $reservationDate,
+            'start_time'       => $startTime,
+            'end_time'         => $endTime,
             'purpose'          => $this->request->getPost('purpose'),
             'pc_number'        => $this->request->getPost('pc_number') ?: null,
             'status'           => 'approved',
@@ -588,29 +689,19 @@ class AdminController extends Controller
             'updated_at'       => date('Y-m-d H:i:s'),
         ];
 
-        if ($userType === 'User') {
-            $userId = (int) $this->request->getPost('user_id');
-            if (!$userId) {
-                return redirect()->back()->with('error', 'Please select a registered user from the list.');
-            }
-            $data['user_id'] = $userId;
+        $newId = $this->reservationModel->insert($data, true);
+        $this->db->transComplete();
 
-            $userRow = $this->db->table('users')
-                ->select('email')
-                ->where('id', $userId)
-                ->get()->getRowArray();
-            $data['user_email'] = $userRow['email'] ?? null;
-        } else {
-            $data['user_id']    = null;
-            $data['user_email'] = $this->request->getPost('user_email') ?: null;
+        if ($this->db->transStatus() === false || !$newId) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Failed to create reservation. Please try again.');
         }
 
-        $newId        = $this->reservationModel->insert($data, true);
-        $resource     = (new ResourceModel())->find($data['resource_id']);
+        $resource     = (new ResourceModel())->find($resourceId);
         $resourceName = $resource ? $resource['name'] : 'Unknown Resource';
 
         $this->logActivity('create', (int) $newId,
-            "Created reservation for {$data['visitor_name']} - {$resourceName} on {$data['reservation_date']}");
+            "Created reservation for {$visitorName} - {$resourceName} on {$reservationDate}");
 
         return redirect()->to('/admin/manage-reservations')
             ->with('success', 'Reservation created successfully. E-Ticket: ' . $eTicketCode);
@@ -623,20 +714,33 @@ class AdminController extends Controller
         }
 
         $id = (int) $this->request->getPost('id');
-        if ($id) {
-            $reservation  = $this->reservationModel->find($id);
-            $resource     = (new ResourceModel())->find($reservation['resource_id']);
-            $resourceName = $resource ? $resource['name'] : 'Unknown Resource';
-
-            $this->reservationModel->update($id, [
-                'status'      => 'approved',
-                'approved_by' => session()->get('user_id'),
-                'updated_at'  => date('Y-m-d H:i:s'),
-            ]);
-
-            $this->logActivity('approve', $id,
-                "Approved reservation #$id for {$reservation['visitor_name']} - {$resourceName}");
+        if (!$id) {
+            return redirect()->back()->with('error', 'Invalid request');
         }
+
+        $reservation = $this->reservationModel->find($id);
+        if (!$reservation) {
+            return redirect()->back()->with('error', 'Reservation not found');
+        }
+
+        // ── Use transStart/transComplete to match UserController pattern ──────
+        $this->db->transStart();
+        $this->reservationModel->update($id, [
+            'status'      => 'approved',
+            'approved_by' => session()->get('user_id'),
+            'updated_at'  => date('Y-m-d H:i:s'),
+        ]);
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            return redirect()->back()->with('error', 'Failed to approve reservation. Please try again.');
+        }
+
+        $resource     = (new ResourceModel())->find($reservation['resource_id']);
+        $resourceName = $resource ? $resource['name'] : 'Unknown Resource';
+
+        $this->logActivity('approve', $id,
+            "Approved reservation #$id for {$reservation['visitor_name']} - {$resourceName}");
 
         return redirect()->to('/admin/manage-reservations')->with('success', 'Reservation approved.');
     }
@@ -648,20 +752,33 @@ class AdminController extends Controller
         }
 
         $id = (int) $this->request->getPost('id');
-        if ($id) {
-            $reservation  = $this->reservationModel->find($id);
-            $resource     = (new ResourceModel())->find($reservation['resource_id']);
-            $resourceName = $resource ? $resource['name'] : 'Unknown Resource';
-
-            $this->reservationModel->update($id, [
-                'status'      => 'declined',
-                'approved_by' => session()->get('user_id'),
-                'updated_at'  => date('Y-m-d H:i:s'),
-            ]);
-
-            $this->logActivity('decline', $id,
-                "Declined reservation #$id for {$reservation['visitor_name']} - {$resourceName}");
+        if (!$id) {
+            return redirect()->back()->with('error', 'Invalid request');
         }
+
+        $reservation = $this->reservationModel->find($id);
+        if (!$reservation) {
+            return redirect()->back()->with('error', 'Reservation not found');
+        }
+
+        // ── Use transStart/transComplete to match UserController pattern ──────
+        $this->db->transStart();
+        $this->reservationModel->update($id, [
+            'status'      => 'declined',
+            'approved_by' => session()->get('user_id'),
+            'updated_at'  => date('Y-m-d H:i:s'),
+        ]);
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            return redirect()->back()->with('error', 'Failed to decline reservation. Please try again.');
+        }
+
+        $resource     = (new ResourceModel())->find($reservation['resource_id']);
+        $resourceName = $resource ? $resource['name'] : 'Unknown Resource';
+
+        $this->logActivity('decline', $id,
+            "Declined reservation #$id for {$reservation['visitor_name']} - {$resourceName}");
 
         return redirect()->to('/admin/manage-reservations')->with('success', 'Reservation declined.');
     }
@@ -851,16 +968,16 @@ class AdminController extends Controller
     }
 
     public function deleteProfile()
-{
-    $userId = session()->get('user_id');
-    
-    $userModel = new \App\Models\UserModel();
-    $userModel->delete($userId);
-    
-    session()->destroy();
-    
-    return redirect()->to('/login')->with('success', 'Account deleted successfully.');
-}
+    {
+        $userId = session()->get('user_id');
+
+        $userModel = new \App\Models\UserModel();
+        $userModel->delete($userId);
+
+        session()->destroy();
+
+        return redirect()->to('/login')->with('success', 'Account deleted successfully.');
+    }
 
     public function profile()
     {

@@ -16,12 +16,6 @@ class SkController extends BaseController
 
         $skUserId = session()->get('user_id');
 
-        // ─────────────────────────────────────────────────────────────────
-        // BUG FIX #1: Added JOIN on resources and users so resource_name,
-        //             visitor_name, user_email are available in the view.
-        //             Without this, resource_name was always null → "Unknown"
-        //             appeared in Insights, Recent Bookings, and Timer Banner.
-        // ─────────────────────────────────────────────────────────────────
         $myReservations = $model->db->table('reservations r')
             ->select([
                 'r.*',
@@ -66,11 +60,6 @@ class SkController extends BaseController
         $approved = count(array_filter($myReservations, fn($r) => ($r['status'] ?? '') === 'approved'));
         $declined = count(array_filter($myReservations, fn($r) => in_array($r['status'] ?? '', ['declined', 'canceled'])));
 
-        // ─────────────────────────────────────────────────────────────────
-        // BUG FIX #2: $claimed was counting ALL users' claimed reservations,
-        //             causing a 300% utilization / claim rate.
-        //             Now filtered to the current SK user only.
-        // ─────────────────────────────────────────────────────────────────
         $claimed = $model
             ->where('user_id', $skUserId)
             ->where('claimed', true)
@@ -196,8 +185,6 @@ class SkController extends BaseController
             'pendingUserCount'      => $pendingUserCount,
             'approvalRate'          => $approvalRate,
             'utilizationRate'       => $utilizationRate,
-            // ── BUG FIX #3: dashBooks was missing — view uses $dashBooks
-            //    but controller only passed 'featuredBooks'. Added both.
             'dashBooks'             => $allBooks,
             'featuredBooks'         => $allBooks,
             'availableCount'        => $availableCount,
@@ -206,9 +193,6 @@ class SkController extends BaseController
             'dashBorrowReqs'        => $dashBorrowReqs,
             'pendingBorrowings'     => $pendingBorrowings,
             'remainingReservations' => $remainingReservations,
-            // ── BUG FIX #4: Pass monthly quota data so view calculates
-            //    the sidebar quota bar correctly instead of using
-            //    all-time $approved which caused "-1/1 slots used".
             'usedThisMonth'         => $usedThisMonth,
             'maxMonthlySlots'       => $maxMonthlySlots,
         ]);
@@ -295,13 +279,18 @@ class SkController extends BaseController
                 return redirect()->back()->with('error', 'Reservation not found');
             }
 
-            $db->transBegin();
+            // ── Use transStart/transComplete to match UserController pattern ──
+            $db->transStart();
             $reservationModel->update($id, [
                 'status'      => 'approved',
                 'approved_by' => session()->get('user_id'),
                 'updated_at'  => date('Y-m-d H:i:s'),
             ]);
-            $db->transCommit();
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return redirect()->back()->with('error', 'Failed to approve reservation. Please try again.');
+            }
 
             try {
                 $db->table('activity_logs')->insert([
@@ -317,7 +306,6 @@ class SkController extends BaseController
             return redirect()->back()->with('success', 'Reservation approved successfully!');
 
         } catch (\Exception $e) {
-            $db->transRollback();
             log_message('error', 'Approve failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to approve reservation: ' . $e->getMessage());
         }
@@ -339,13 +327,18 @@ class SkController extends BaseController
                 return redirect()->back()->with('error', 'Reservation not found');
             }
 
-            $db->transBegin();
+            // ── Use transStart/transComplete to match UserController pattern ──
+            $db->transStart();
             $reservationModel->update($id, [
                 'status'      => 'declined',
                 'approved_by' => session()->get('user_id'),
                 'updated_at'  => date('Y-m-d H:i:s'),
             ]);
-            $db->transCommit();
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return redirect()->back()->with('error', 'Failed to decline reservation. Please try again.');
+            }
 
             try {
                 $db->table('activity_logs')->insert([
@@ -361,7 +354,6 @@ class SkController extends BaseController
             return redirect()->back()->with('success', 'Reservation declined successfully!');
 
         } catch (\Exception $e) {
-            $db->transRollback();
             log_message('error', 'Decline failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to decline reservation: ' . $e->getMessage());
         }
@@ -455,7 +447,7 @@ class SkController extends BaseController
         $db               = db_connect();
 
         $visitorType     = $request->getPost('visitor_type');
-        $userId          = (int) $request->getPost('user_id');   // FIX: cast to int immediately
+        $userId          = (int) $request->getPost('user_id');
         $visitorName     = $request->getPost('visitor_name');
         $reservationDate = $request->getPost('reservation_date');
         $startTime       = $request->getPost('start_time');
@@ -463,8 +455,6 @@ class SkController extends BaseController
         $purpose         = $request->getPost('purpose');
         $resourceId      = $request->getPost('resource_id');
 
-        // FIX: PC selections come in as JSON array — store as comma-separated
-        //      in the pc_number (varchar) column. Not pc_numbers — that doesn't exist.
         $pcsJson = $request->getPost('pcs');
         $pcsArr  = json_decode($pcsJson, true) ?? [];
         $pcValue = !empty($pcsArr) ? implode(', ', $pcsArr) : null;
@@ -476,9 +466,7 @@ class SkController extends BaseController
             return redirect()->back()->with('error', 'Please select a registered user.');
         }
 
-        // FIX: Resolve email from DB using integer user_id.
-        //      Never pass raw POST 'user_email' into checkFairness() or into
-        //      any WHERE user_id query — that caused the PostgreSQL integer error.
+        // ── Resolve user details from DB using integer user_id ───────────────
         $resolvedEmail = null;
         if ($visitorType === 'User' && $userId > 0) {
             $userRow       = $db->table('users')->select('email, name')->where('id', $userId)->get()->getRowArray();
@@ -488,8 +476,21 @@ class SkController extends BaseController
             }
         }
 
-        if ($visitorType === 'User' && $resolvedEmail) {
-            $fairness = $reservationModel->checkFairness($resolvedEmail);
+        // ── Block check (mirrors UserController) ─────────────────────────────
+        if ($visitorType === 'User' && $userId > 0) {
+            $isBlocked = $reservationModel->isBlocked($userId);
+            if ($isBlocked) {
+                $msg = 'This user is currently blocked from making reservations until ' . date('F j, Y', strtotime($isBlocked['blocked_until']));
+                if ($request->isAJAX()) {
+                    return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
+                }
+                return redirect()->back()->with('error', $msg);
+            }
+        }
+
+        // ── Fairness / quota check — pass $userId (int), not email ───────────
+        if ($visitorType === 'User' && $userId > 0) {
+            $fairness = $reservationModel->checkFairness($userId);
             if (!$fairness['fair']) {
                 $message = isset($fairness['blocked'])
                     ? 'AI Fairness Check: Exceeded limit. Blocked until ' . $fairness['until']
@@ -501,12 +502,76 @@ class SkController extends BaseController
             }
         }
 
+        // ── Field validation (mirrors UserController) ─────────────────────────
+        $rules = [
+            'resource_id'      => 'required|numeric',
+            'reservation_date' => 'required|valid_date[Y-m-d]',
+            'start_time'       => 'required',
+            'end_time'         => 'required',
+            'purpose'          => 'required',
+        ];
+
+        if (!$this->validate($rules)) {
+            if ($request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Please fill all required fields.']);
+            }
+            return redirect()->back()->withInput()->with('error', 'Please fill all required fields.');
+        }
+
+        // ── Reject past dates (mirrors UserController) ────────────────────────
+        if ($reservationDate < date('Y-m-d')) {
+            if ($request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'You cannot make a reservation for a past date.']);
+            }
+            return redirect()->back()->withInput()->with('error', 'You cannot make a reservation for a past date.');
+        }
+
+        // ── Validate end time is after start time (mirrors UserController) ────
+        if ($startTime >= $endTime) {
+            if ($request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'End time must be after start time.']);
+            }
+            return redirect()->back()->withInput()->with('error', 'End time must be after start time.');
+        }
+
+        // ── One reservation per day (mirrors UserController) ──────────────────
+        // Only enforce for registered users; walk-in visitors may have multiple
+        if ($visitorType === 'User' && $userId > 0) {
+            $sameDayReservations = $reservationModel->getUserSameDayReservations($userId, $reservationDate);
+            if (!empty($sameDayReservations)) {
+                $msg = 'This user already has a reservation on this date. Only one reservation per day is allowed.';
+                if ($request->isAJAX()) {
+                    return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
+                }
+                return redirect()->back()->withInput()->with('error', $msg);
+            }
+        }
+
+        // ── Double-booking guard with DB lock via transaction (mirrors UserController) ──
+        $db->transStart();
+
+        $conflict = $reservationModel
+            ->where('resource_id', $resourceId)
+            ->where('reservation_date', $reservationDate)
+            ->whereIn('status', ['pending', 'approved'])
+            ->groupStart()
+                ->where('start_time <', $endTime)
+                ->where('end_time >',  $startTime)
+            ->groupEnd()
+            ->first();
+
+        if ($conflict) {
+            $db->transRollback();
+            $msg = 'This time slot is already booked. Please choose another time.';
+            if ($request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
+            }
+            return redirect()->back()->withInput()->with('error', $msg);
+        }
+
+        // ── Insert ────────────────────────────────────────────────────────────
         $eTicket = $this->generateETicket();
 
-        // FIX: $data uses only columns that actually exist in the DB.
-        //      Removed: visitor_email (no such column), reservation_type (no such column).
-        //      Changed: pc_numbers → pc_number (singular varchar).
-        //      Added:   updated_at, user_email (DB column name).
         $data = [
             'user_id'          => ($visitorType === 'User' && $userId > 0) ? $userId : null,
             'visitor_type'     => $visitorType,
@@ -525,14 +590,14 @@ class SkController extends BaseController
             'updated_at'       => date('Y-m-d H:i:s'),
         ];
 
-        try {
-            $reservationModel->insert($data);
-        } catch (\Exception $e) {
-            log_message('error', 'createReservation failed: ' . $e->getMessage());
+        $inserted = $reservationModel->insert($data);
+        $db->transComplete();
+
+        if ($db->transStatus() === false || !$inserted) {
             if ($request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to save reservation. Please try again.']);
             }
-            return redirect()->back()->with('error', 'Failed to save reservation: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Failed to save reservation. Please try again.');
         }
 
         if ($request->isAJAX()) {
@@ -563,16 +628,16 @@ class SkController extends BaseController
     }
 
     public function deleteProfile()
-{
-    $userId = session()->get('user_id');
-    
-    $userModel = new \App\Models\UserModel();
-    $userModel->delete($userId);
-    
-    session()->destroy();
-    
-    return redirect()->to('/login')->with('success', 'Account deleted successfully.');
-}
+    {
+        $userId = session()->get('user_id');
+
+        $userModel = new \App\Models\UserModel();
+        $userModel->delete($userId);
+
+        session()->destroy();
+
+        return redirect()->to('/login')->with('success', 'Account deleted successfully.');
+    }
 
     public function scanner()
     {
@@ -680,34 +745,34 @@ class SkController extends BaseController
     }
 
     public function myReservations()
-{
-    $model  = new ReservationModel();
-    $userId = session()->get('user_id');
-    $status = $this->request->getGet('status');
-    $date   = $this->request->getGet('date');
+    {
+        $model  = new ReservationModel();
+        $userId = session()->get('user_id');
+        $status = $this->request->getGet('status');
+        $date   = $this->request->getGet('date');
 
-    $allowedStatuses = ['pending', 'approved', 'rejected'];
+        $allowedStatuses = ['pending', 'approved', 'rejected'];
 
-    if ($status && in_array($status, $allowedStatuses)) {
-        $model->where('status', $status);
+        if ($status && in_array($status, $allowedStatuses)) {
+            $model->where('status', $status);
+        }
+
+        if ($date) {
+            $model->where('reservation_date', $date);
+        }
+
+        $reservations = $model
+            ->select('reservations.*, resources.name as resource_name')
+            ->join('resources', 'resources.id = reservations.resource_id', 'left')
+            ->where('user_id', $userId)
+            ->orderBy('reservation_date', 'DESC')
+            ->findAll();
+
+        return view('sk/my-reservations', [
+            'page'         => 'my-reservations',
+            'reservations' => $reservations,
+        ]);
     }
-
-    if ($date) {
-        $model->where('reservation_date', $date);
-    }
-
-    $reservations = $model
-        ->select('reservations.*, resources.name as resource_name')
-        ->join('resources', 'resources.id = reservations.resource_id', 'left')
-        ->where('user_id', $userId)
-        ->orderBy('reservation_date', 'DESC')
-        ->findAll();
-
-    return view('sk/my-reservations', [
-        'page'         => 'my-reservations',
-        'reservations' => $reservations,
-    ]);
-}
 
     public function activityLogs()
     {
