@@ -1,2653 +1,552 @@
-<?php
-$unclaimedCount = 0;
-$claimedCount   = 0;
-$processedRecent = [];
-foreach (($reservations ?? []) as $r) {
-    // ── FIX: mirror sk_reservations.php robust claimed detection ──
-    // 1. in_array strict — catches bool true, int 1, strings '1','t','true'
-    // 2. status column set to "claimed" by the scanner
-    // 3. claimed_at timestamp — most reliable; only set when scanner processes the ticket
-    $isCl = in_array($r['claimed'] ?? false, [true, 1, 't', 'true', '1'], true)
-        || strtolower($r['status'] ?? '') === 'claimed'
-        || !empty($r['claimed_at']);
-
-    $s = $isCl ? 'claimed' : strtolower($r['status'] ?? 'pending');
-    if ($s === 'approved') {
-        $edt = strtotime(($r['reservation_date'] ?? '') . ' ' . ($r['end_time'] ?? '23:59:59'));
-        if ($edt && $edt < time()) $s = 'unclaimed';
-    } elseif ($s === 'pending') {
-        $rdt = strtotime($r['reservation_date'] ?? '');
-        if ($rdt && $rdt < strtotime('today')) $s = 'expired';
-    }
-    if ($s === 'unclaimed') $unclaimedCount++;
-    if ($s === 'claimed')   $claimedCount++;
-    $r['_status'] = $s;
-    $processedRecent[] = $r;
-}
-
-$remaining = $remainingReservations ?? 3;
-$maxSlots  = 3;
-$usedSlots = $maxSlots - $remaining;
-$featuredBooks  = $featuredBooks  ?? [];
-$myBorrowings   = $myBorrowings   ?? [];
-$availableCount = $availableCount ?? 0;
-$totalBooks     = $totalBooks     ?? 0;
-
-$upcoming = null;
-if (!empty($reservations)) {
-    $now = time();
-    foreach ($reservations as $r) {
-        if (($r['status'] ?? '') === 'approved' && empty($r['claimed'])) {
-            $dt = strtotime($r['reservation_date'] . ' ' . ($r['end_time'] ?? '23:59'));
-            if ($dt > $now) {
-                $upcoming = $r;
-                break;
-            }
-        }
-    }
-}
-
-$nextAction = null;
-if ($pending > 0) {
-    $nextAction = ['type' => 'pending', 'msg' => "You have {$pending} reservation" . ($pending > 1 ? 's' : '') . " awaiting approval. SK officers usually respond within 24 hours.", 'cta' => 'View Reservations', 'url' => '/reservation-list', 'color' => 'amber'];
-} elseif ($upcoming) {
-    $nextAction = ['type' => 'upcoming', 'msg' => "Your approved slot is coming up. Download your e-ticket from My Reservations and scan it at the entrance when you arrive.", 'cta' => 'Get E-Ticket', 'url' => '/reservation-list', 'color' => 'blue'];
-} elseif ($unclaimedCount > 0) {
-    $nextAction = ['type' => 'unclaimed', 'msg' => "You missed {$unclaimedCount} approved slot" . ($unclaimedCount > 1 ? 's' : '') . " without showing up. Please cancel in advance if you can't attend — repeated no-shows may limit future bookings.", 'cta' => 'See Details', 'url' => '/reservation-list', 'color' => 'orange'];
-} elseif ($remaining === 0) {
-    $nextAction = ['type' => 'quota', 'msg' => "You've used all 3 reservation slots for this month. Your quota resets on the 1st of next month.", 'cta' => 'Browse Library', 'url' => '/books', 'color' => 'slate'];
-} elseif (empty($reservations)) {
-    $nextAction = ['type' => 'empty', 'msg' => "Welcome! You haven't made any reservations yet. Book a computer, study space, or other facility anytime.", 'cta' => 'Make First Reservation', 'url' => '/reservation', 'color' => 'blue'];
-}
-
-$nextColors = [
-    'amber'  => ['bg' => 'rgba(251,191,36,.08)',  'border' => 'rgba(251,191,36,.25)',  'icon_bg' => 'rgba(251,191,36,.15)',  'icon_fg' => '#d97706', 'btn_bg' => '#d97706', 'icon' => 'clock'],
-    'blue'   => ['bg' => 'rgba(99,102,241,.06)',  'border' => 'rgba(99,102,241,.2)',   'icon_bg' => 'rgba(99,102,241,.12)', 'icon_fg' => '#4338ca', 'btn_bg' => '#4338ca', 'icon' => 'ticket'],
-    'orange' => ['bg' => 'rgba(234,88,12,.06)',   'border' => 'rgba(234,88,12,.2)',    'icon_bg' => 'rgba(234,88,12,.1)',   'icon_fg' => '#ea580c', 'btn_bg' => '#ea580c', 'icon' => 'triangle'],
-    'slate'  => ['bg' => 'rgba(100,116,139,.05)', 'border' => 'rgba(100,116,139,.15)', 'icon_bg' => 'rgba(100,116,139,.1)', 'icon_fg' => '#64748b', 'btn_bg' => '#64748b', 'icon' => 'calendar-x'],
-];
-
-/**
- * Render an inline SVG icon with explicit, fixed dimensions.
- */
-function icon(string $name, int $size = 16, string $stroke = 'currentColor', string $extra = ''): string
-{
-    static $icons = [
-        'house'         => ['<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
-        'plus'          => ['<path d="M12 5v14M5 12h14" stroke-linecap="round"/>', '1.8'],
-        'calendar'      => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', '1.5'],
-        'book-open'     => ['<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>', '1.5'],
-        'user'          => ['<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
-        'logout'        => ['<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
-        'clock'         => ['<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', '1.8'],
-        'check-circle'  => ['<path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22 4 12 14.01 9 11.01"/>', '1.8'],
-        'ticket'        => ['<path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
-        'triangle'      => ['<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', '1.8'],
-        'calendar-x'    => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="14" x2="14" y2="18"/><line x1="14" y1="14" x2="10" y2="18"/>', '1.5'],
-        'bell'          => ['<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>', '1.8'],
-        'check'         => ['<polyline points="20 6 9 17 4 12"/>', '1.8'],
-        'x'             => ['<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', '1.8'],
-        'chevron-right' => ['<polyline points="9 18 15 12 9 6"/>', '1.8'],
-        'arrow-right'   => ['<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>', '1.8'],
-        'ban'           => ['<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>', '1.8'],
-        'hourglass'     => ['<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
-        'layers'        => ['<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>', '1.8'],
-        'list-check'    => ['<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
-        'sparkles'      => ['<path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
-        'search'        => ['<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>', '1.8'],
-        'bookmark'      => ['<path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>', '1.5'],
-        'robot'         => ['<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="5" r="1"/>', '1.5'],
-        'info'          => ['<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', '1.8'],
-        'check-double'  => ['<path d="M17 1l-8.5 8.5L6 7M22 6l-8.5 8.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13l-4 4 1.5 1.5" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
-        'calendar-days' => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1" fill="currentColor" stroke="none"/>', '1.5'],
-        'bar-chart'     => ['<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>', '1.5'],
-        'eye'           => ['<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>', '1.8'],
-        'trending-up'   => ['<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>', '1.8'],
-    ];
-    [$d, $sw] = $icons[$name] ?? ['<circle cx="12" cy="12" r="10"/>', '1.8'];
-    return sprintf(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="%s" style="width:%dpx;height:%dpx;flex-shrink:0;" %s>%s</svg>',
-        $size,
-        $size,
-        htmlspecialchars($stroke, ENT_QUOTES),
-        $sw,
-        $size,
-        $size,
-        $extra,
-        $d
-    );
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title>Dashboard | <?= esc($user_name) ?></title>
-    <link rel="manifest" href="/manifest.json">
-    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
-    <meta name="theme-color" content="#1e1b4b">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-    <script>
-        (function() {
-            try {
-                if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark-pre');
-            } catch (e) {}
-        })();
-    </script>
-    <style>
-        /* ── Layout shell ── */
-        body {
-            display: flex;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-        }
-
-        html.dark-pre body,
-        html.dark-pre .l-sidebar__inner,
-        html.dark-pre .l-mobile-nav {
-            background: #060e1e;
-        }
-
-        /* ── Reserve button ── */
-        .reserve-btn {
-            display: none;
-            align-items: center;
-            gap: 7px;
-            padding: 10px 18px;
-            background: var(--indigo);
-            color: #fff;
-            border-radius: var(--r-sm);
-            font-family: var(--font);
-            font-size: .85rem;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            letter-spacing: -.01em;
-            transition: all var(--ease);
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(55, 48, 163, .28);
-            touch-action: manipulation;
-        }
-
-        @media(min-width:480px) {
-            .reserve-btn {
-                display: flex;
-            }
-        }
-
-        .reserve-btn:hover {
-            background: #312e81;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(55, 48, 163, .35);
-        }
-
-        .reserve-btn svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        /* ── Notification dropdown ── */
-        .notif-bell {
-            position: relative;
-        }
-
-        .notif-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ef4444;
-            color: white;
-            font-family: var(--font);
-            font-size: .55rem;
-            font-weight: 700;
-            padding: 2px 5px;
-            border-radius: 999px;
-            min-width: 17px;
-            text-align: center;
-            border: 2px solid var(--bg);
-            line-height: 1.3;
-            pointer-events: none;
-        }
-
-        .notif-dd {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 320px;
-            background: var(--card);
-            border-radius: var(--r-xl);
-            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99, 102, 241, .09);
-            z-index: 200;
-            display: none;
-            overflow: hidden;
-        }
-
-        .notif-dd.show {
-            display: block;
-            animation: l-fade-in .15s ease;
-        }
-
-        .notif-item {
-            padding: .85rem 1.1rem;
-            border-bottom: 1px solid var(--border-subtle);
-            transition: background .15s;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-
-        .notif-item:hover {
-            background: var(--input-bg);
-        }
-
-        .notif-item.unread {
-            background: var(--indigo-light);
-        }
-
-        .notif-item:last-child {
-            border-bottom: none;
-        }
-
-        @media(max-width:479px) {
-            .notif-dd {
-                left: 12px;
-                right: 12px;
-                width: auto;
-                top: 72px;
-            }
-        }
-
-        /* ── Next-action card ── */
-        .next-card {
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            border-radius: var(--r-md);
-            padding: 16px 18px;
-            border: 1px solid;
-            margin-bottom: 20px;
-            animation: l-slide-up .4s ease both;
-        }
-
-        .next-icon-wrap {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .next-icon-wrap svg {
-            width: 14px;
-            height: 14px;
-            flex-shrink: 0;
-        }
-
-        .next-eyebrow {
-            font-family: var(--font);
-            font-size: .6rem;
-            font-weight: 700;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-
-        .next-msg {
-            font-family: var(--font);
-            font-size: .83rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        .next-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 10px;
-            padding: 9px 16px;
-            border-radius: 9px;
-            font-family: var(--font);
-            font-size: .75rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            transition: opacity var(--ease);
-            touch-action: manipulation;
-        }
-
-        .next-cta:hover {
-            opacity: .85;
-        }
-
-        .next-cta svg {
-            width: 12px;
-            height: 12px;
-            flex-shrink: 0;
-        }
-
-        /* ── Countdown timer banner ── */
-        .timer-banner {
-            display: none;
-            border-radius: var(--r-md);
-            padding: 14px 18px;
-            margin-bottom: 18px;
-            border: 1px solid;
-            animation: l-slide-up .35s cubic-bezier(.34, 1.56, .64, 1) both;
-        }
-
-        .timer-banner.urgent {
-            background: #fff7ed;
-            border-color: #fed7aa;
-            color: #9a3412;
-        }
-
-        .timer-banner.warning {
-            background: #fefce8;
-            border-color: #fde68a;
-            color: #854d0e;
-        }
-
-        .timer-banner.safe {
-            background: var(--indigo-light);
-            border-color: var(--indigo-border);
-            color: #312e81;
-        }
-
-        body.dark .timer-banner.safe {
-            background: rgba(55, 48, 163, .15);
-            border-color: rgba(55, 48, 163, .3);
-            color: #a5b4fc;
-        }
-
-        body.dark .timer-banner.warning {
-            background: rgba(180, 83, 9, .2);
-            border-color: rgba(180, 83, 9, .35);
-            color: #fcd34d;
-        }
-
-        body.dark .timer-banner.urgent {
-            background: rgba(154, 52, 18, .2);
-            border-color: rgba(154, 52, 18, .35);
-            color: #fb923c;
-        }
-
-        .timer-inner {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            flex-wrap: wrap;
-        }
-
-        .timer-text-col {
-            flex: 1;
-            min-width: 140px;
-        }
-
-        .timer-text-col p {
-            font-family: var(--font);
-        }
-
-        .timer-digit {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            background: rgba(0, 0, 0, .07);
-            border-radius: 8px;
-            padding: .2rem .5rem;
-            min-width: 2.6rem;
-            font-variant-numeric: tabular-nums;
-            font-weight: 700;
-            font-size: 1.1rem;
-            line-height: 1;
-            font-family: var(--mono);
-        }
-
-        .timer-digit span {
-            font-family: var(--font);
-            font-size: .5rem;
-            font-weight: 500;
-            opacity: .6;
-            text-transform: uppercase;
-            letter-spacing: .07em;
-            margin-top: 3px;
-        }
-
-        .timer-pulse {
-            animation: pulse .9s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1
-            }
-
-            50% {
-                opacity: .3
-            }
-        }
-
-        .timer-progress-wrap {
-            height: 3px;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, .08);
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .timer-progress-fill {
-            height: 100%;
-            border-radius: 999px;
-            background: currentColor;
-            opacity: .4;
-            transition: width 1s linear;
-        }
-
-        @media(max-width:400px) {
-            .timer-digit {
-                min-width: 2.1rem;
-                padding: .15rem .35rem;
-                font-size: .95rem;
-            }
-
-            .timer-inner {
-                gap: 8px;
-            }
-        }
-
-        /* ── Upcoming pill ── */
-        .upcoming-pill {
-            background: var(--indigo-light);
-            border: 1px solid var(--indigo-border);
-            border-radius: var(--r-md);
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 20px;
-            animation: l-slide-up .4s ease both;
-            flex-wrap: wrap;
-        }
-
-        .up-icon {
-            width: 38px;
-            height: 38px;
-            background: var(--indigo);
-            border-radius: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(55, 48, 163, .28);
-        }
-
-        .up-icon svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        .up-eyebrow {
-            font-family: var(--font);
-            font-size: .6rem;
-            font-weight: 700;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-            color: var(--indigo);
-            margin-bottom: 2px;
-        }
-
-        .up-name {
-            font-family: var(--font);
-            font-size: .88rem;
-            font-weight: 700;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 180px;
-        }
-
-        .up-time {
-            font-family: var(--mono);
-            font-size: .72rem;
-            color: #4338ca;
-            margin-top: 1px;
-        }
-
-        .up-btn {
-            margin-left: auto;
-            font-family: var(--font);
-            font-size: .72rem;
-            font-weight: 700;
-            color: var(--indigo);
-            background: var(--card);
-            border: 1px solid var(--indigo-border);
-            border-radius: 8px;
-            padding: 8px 14px;
-            text-decoration: none;
-            white-space: nowrap;
-            transition: all var(--ease);
-            touch-action: manipulation;
-        }
-
-        .up-btn:hover {
-            background: var(--indigo);
-            color: white;
-            box-shadow: 0 2px 8px rgba(55, 48, 163, .22);
-        }
-
-        @media(max-width:479px) {
-            .up-name {
-                max-width: 100%;
-            }
-
-            .up-btn {
-                margin-left: 0;
-                width: 100%;
-                text-align: center;
-                display: block;
-            }
-        }
-
-        /* ── Stats grid ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg);
-            padding: 18px 20px;
-            box-shadow: var(--shadow-sm);
-            transition: transform var(--ease), box-shadow var(--ease);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .stat-card-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .stat-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .stat-icon svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        .stat-lbl {
-            font-family: var(--font);
-            font-size: .62rem;
-            font-weight: 700;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-            color: var(--text-sub);
-        }
-
-        .stat-num {
-            font-family: var(--mono);
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1;
-            letter-spacing: -.04em;
-        }
-
-        .stat-hint {
-            font-family: var(--font);
-            font-size: .72rem;
-            color: var(--text-sub);
-            margin-top: 4px;
-        }
-
-        @media(max-width:639px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 10px;
-            }
-
-            .stat-card {
-                padding: 14px 16px;
-            }
-
-            .stat-num {
-                font-size: 1.6rem;
-            }
-
-            .stat-card-top {
-                margin-bottom: 10px;
-            }
-        }
-
-        @media(max-width:360px) {
-            .stats-grid {
-                gap: 8px;
-            }
-
-            .stat-card {
-                padding: 12px 14px;
-            }
-
-            .stat-num {
-                font-size: 1.4rem;
-            }
-
-            .stat-icon {
-                width: 30px;
-                height: 30px;
-            }
-        }
-
-        /* ── Main two-col grid ── */
-        .grid-main {
-            display: grid;
-            grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
-            gap: 16px;
-            margin-bottom: 18px;
-        }
-
-        .side-col {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        @media(max-width:900px) {
-            .grid-main {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* ── Card sub-elements ── */
-        .card-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .card-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .card-icon svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        .card-title {
-            font-family: var(--font);
-            font-size: .9rem;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: -.01em;
-        }
-
-        .card-sub {
-            font-family: var(--font);
-            font-size: .7rem;
-            color: var(--text-sub);
-            margin-top: 2px;
-        }
-
-        .section-lbl {
-            font-family: var(--font);
-            font-size: .62rem;
-            font-weight: 700;
-            letter-spacing: .18em;
-            text-transform: uppercase;
-            color: var(--text-sub);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .section-lbl::before {
-            content: '';
-            width: 3px;
-            height: 13px;
-            border-radius: 2px;
-            background: var(--indigo);
-            flex-shrink: 0;
-        }
-
-        .link-sm {
-            font-family: var(--font);
-            font-size: .65rem;
-            font-weight: 700;
-            color: var(--indigo);
-            text-decoration: none;
-            letter-spacing: .05em;
-            text-transform: uppercase;
-            transition: opacity .15s;
-            touch-action: manipulation;
-        }
-
-        .link-sm:hover {
-            opacity: .7;
-        }
-
-        /* ── FullCalendar overrides ── */
-        #calendar {
-            font-family: var(--font) !important;
-            font-size: .8rem;
-        }
-
-        .fc .fc-toolbar {
-            flex-wrap: wrap;
-            gap: .5rem;
-        }
-
-        .fc-toolbar-title {
-            font-family: var(--font) !important;
-            font-size: .95rem !important;
-            font-weight: 800 !important;
-            color: var(--text) !important;
-            letter-spacing: -.02em !important;
-        }
-
-        .fc-button-primary {
-            background: var(--indigo) !important;
-            border-color: var(--indigo) !important;
-            border-radius: 9px !important;
-            font-family: var(--font) !important;
-            font-weight: 700 !important;
-            font-size: .72rem !important;
-            padding: .3rem .65rem !important;
-            box-shadow: none !important;
-            touch-action: manipulation !important;
-        }
-
-        .fc-button-primary:hover {
-            background: #312e81 !important;
-        }
-
-        .fc-button-primary:not(:disabled):active,
-        .fc-button-primary:not(:disabled).fc-button-active {
-            background: #1e1b4b !important;
-        }
-
-        .fc-daygrid-event {
-            border-radius: 5px !important;
-            font-family: var(--font) !important;
-            font-size: .65rem !important;
-            font-weight: 600 !important;
-            padding: 2px 5px !important;
-            border: none !important;
-            cursor: pointer !important;
-        }
-
-        .fc-daygrid-day:hover {
-            background-color: var(--indigo-light) !important;
-            cursor: pointer;
-        }
-
-        .fc-day-today {
-            background: rgba(55, 48, 163, .06) !important;
-        }
-
-        .fc-day-today .fc-daygrid-day-number {
-            color: var(--indigo) !important;
-            font-weight: 800 !important;
-        }
-
-        .fc-daygrid-day-number {
-            font-family: var(--font);
-            font-size: .72rem;
-            font-weight: 600;
-        }
-
-        .fc-col-header-cell-cushion {
-            font-family: var(--font);
-            font-size: .72rem;
-            font-weight: 700;
-            letter-spacing: .04em;
-        }
-
-        body.dark .fc-toolbar-title {
-            color: var(--text) !important;
-        }
-
-        body.dark .fc-daygrid-day-number {
-            color: #7fb3e8;
-        }
-
-        body.dark .fc-col-header-cell-cushion {
-            color: #7fb3e8;
-        }
-
-        body.dark .fc-day-today {
-            background: rgba(55, 48, 163, .15) !important;
-        }
-
-        body.dark .fc-daygrid-day {
-            background: var(--card) !important;
-        }
-
-        body.dark .fc-theme-standard td,
-        body.dark .fc-theme-standard th,
-        body.dark .fc-theme-standard .fc-scrollgrid {
-            border-color: #101e35 !important;
-        }
-
-        body.dark .fc-list-empty {
-            background: var(--card) !important;
-        }
-
-        body.dark .fc-list-empty-cushion {
-            color: var(--text-sub) !important;
-        }
-
-        body.dark .fc-list-table td {
-            background: var(--card) !important;
-            border-color: var(--input-bg) !important;
-            color: #7fb3e8 !important;
-        }
-
-        body.dark .fc-list-table th {
-            background: var(--input-bg) !important;
-            border-color: var(--input-bg) !important;
-            color: var(--text-sub) !important;
-        }
-
-        body.dark .fc-list-event-title a {
-            color: var(--text) !important;
-        }
-
-        @media(max-width:479px) {
-            .fc .fc-toolbar {
-                display: grid;
-                grid-template-columns: auto 1fr auto;
-                align-items: center;
-                gap: 6px;
-            }
-
-            .fc-toolbar-chunk:nth-child(2) {
-                text-align: center;
-            }
-
-            .fc-toolbar-title {
-                font-size: .8rem !important;
-            }
-
-            .fc-button-primary {
-                font-size: .65rem !important;
-                padding: .25rem .5rem !important;
-            }
-
-            #calendar {
-                font-size: .7rem;
-            }
-
-            .fc .fc-daygrid-body {
-                min-height: auto !important;
-            }
-
-            #calendar .fc-daygrid-body,
-            #calendar .fc-scrollgrid-sync-table {
-                width: 100% !important;
-            }
-
-            .fc .fc-daygrid-day-frame {
-                min-height: 32px !important;
-            }
-        }
-
-        /* ── Calendar legend ── */
-        .cal-legend {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .leg-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .leg-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .leg-lbl {
-            font-family: var(--font);
-            font-size: .68rem;
-            font-weight: 600;
-            color: var(--text-sub);
-        }
-
-        @media(max-width:479px) {
-            .cal-legend {
-                gap: 8px;
-            }
-
-            .leg-lbl {
-                display: none;
-            }
-
-            .leg-dot {
-                width: 9px;
-                height: 9px;
-            }
-        }
-
-        /* ── Quick-action links ── */
-        .qa-link {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 12px;
-            border-radius: var(--r-sm);
-            border: 1px solid var(--border);
-            background: var(--card);
-            text-decoration: none;
-            color: var(--text-muted);
-            font-family: var(--font);
-            font-size: .83rem;
-            font-weight: 600;
-            transition: all var(--ease);
-            touch-action: manipulation;
-        }
-
-        .qa-link:hover {
-            border-color: var(--indigo);
-            background: var(--indigo-light);
-            color: var(--indigo);
-        }
-
-        @media(pointer:fine) {
-            .qa-link:hover {
-                transform: translateX(3px);
-            }
-        }
-
-        .qa-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .qa-icon svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        .qa-chev {
-            margin-left: auto;
-            color: var(--text-faint);
-            transition: color var(--ease);
-        }
-
-        .qa-chev svg {
-            width: 14px;
-            height: 14px;
-            flex-shrink: 0;
-        }
-
-        .qa-link:hover .qa-chev {
-            color: var(--indigo);
-        }
-
-        /* ── Recent booking rows ── */
-        .bk-row {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 9px 8px;
-            border-radius: 11px;
-            text-decoration: none;
-            color: inherit;
-            transition: background var(--ease);
-            touch-action: manipulation;
-        }
-
-        .bk-row:hover {
-            background: var(--indigo-light);
-        }
-
-        .bk-date {
-            width: 38px;
-            height: 38px;
-            background: var(--input-bg);
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            border: 1px solid var(--border-subtle);
-        }
-
-        .bk-month {
-            font-family: var(--font);
-            font-size: .55rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-sub);
-        }
-
-        .bk-day {
-            font-family: var(--mono);
-            font-size: .95rem;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1;
-        }
-
-        .bk-name {
-            font-family: var(--font);
-            font-size: .82rem;
-            font-weight: 600;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .bk-time {
-            font-family: var(--mono);
-            font-size: .68rem;
-            color: var(--text-sub);
-            margin-top: 1px;
-        }
-
-        /* ── Date modal rows ── */
-        .date-row {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: .75rem;
-            border-bottom: 1px solid var(--border-subtle);
-            border-radius: 10px;
-            transition: background .15s;
-        }
-
-        .date-row:hover {
-            background: var(--input-bg);
-        }
-
-        .date-row:last-child {
-            border-bottom: none;
-        }
-
-        /* ── How-to / status guide ── */
-        .how-step {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .how-step:last-child {
-            border-bottom: none;
-        }
-
-        .step-num {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: var(--indigo);
-            color: white;
-            font-family: var(--font);
-            font-size: .7rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .how-step p {
-            font-family: var(--font);
-        }
-
-        .status-guide-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 7px 0;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .status-guide-row:last-child {
-            border-bottom: none;
-        }
-
-        .status-guide-row p {
-            font-family: var(--font);
-            font-size: .72rem;
-            color: var(--text-muted);
-        }
-
-        /* ── Library section ── */
-        .grid-lib {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 16px;
-            margin-bottom: 16px;
-            align-items: start;
-        }
-
-        .lib-banner {
-            background: linear-gradient(135deg, #3730a3 0%, #4338ca 60%, #6366f1 100%);
-            border-radius: var(--r-lg);
-            padding: 20px 20px 16px;
-            overflow: hidden;
-            position: relative;
-            box-sizing: border-box;
-            width: 100%;
-        }
-
-        .lib-banner::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E") repeat;
-            opacity: .4;
-            pointer-events: none;
-        }
-
-        .lib-banner-inner {
-            position: relative;
-            z-index: 1;
-        }
-
-        .lib-banner-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 14px;
-        }
-
-        .lib-eyebrow {
-            font-family: var(--font);
-            font-size: .6rem;
-            font-weight: 700;
-            letter-spacing: .22em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, .55);
-            margin-bottom: 4px;
-        }
-
-        .lib-title {
-            font-family: var(--mono);
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: white;
-            letter-spacing: -.04em;
-            line-height: 1.1;
-        }
-
-        .lib-sub {
-            font-family: var(--font);
-            font-size: .72rem;
-            color: rgba(255, 255, 255, .5);
-            margin-top: 3px;
-            font-weight: 500;
-        }
-
-        .lib-browse {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 13px;
-            background: rgba(255, 255, 255, .18);
-            color: white;
-            border-radius: 9px;
-            font-family: var(--font);
-            font-size: .75rem;
-            font-weight: 700;
-            text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, .2);
-            transition: background var(--ease);
-            white-space: nowrap;
-            flex-shrink: 0;
-            touch-action: manipulation;
-        }
-
-        .lib-browse svg {
-            width: 13px;
-            height: 13px;
-            flex-shrink: 0;
-        }
-
-        .lib-browse:hover {
-            background: rgba(255, 255, 255, .28);
-        }
-
-        .lib-stats {
-            display: flex;
-            gap: 6px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .lib-stat {
-            flex: 1 1 0;
-            min-width: 0;
-            background: rgba(255, 255, 255, .1);
-            border: 1px solid rgba(255, 255, 255, .1);
-            border-radius: 9px;
-            padding: 7px 8px;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-
-        .lib-stat-lbl {
-            font-family: var(--font);
-            font-size: .5rem;
-            font-weight: 600;
-            color: rgba(255, 255, 255, .55);
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: block;
-        }
-
-        .lib-stat-val {
-            font-family: var(--mono);
-            font-size: .9rem;
-            font-weight: 800;
-            color: white;
-            line-height: 1.2;
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .book-letter {
-            width: 34px;
-            height: 34px;
-            border-radius: 9px;
-            background: var(--indigo-light);
-            color: var(--indigo);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font);
-            font-weight: 800;
-            font-size: .8rem;
-            flex-shrink: 0;
-        }
-
-        .book-title {
-            font-family: var(--font);
-            font-size: .82rem;
-            font-weight: 600;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .book-author {
-            font-family: var(--font);
-            font-size: .7rem;
-            color: var(--text-sub);
-            margin-top: 1px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        body.dark .book-letter {
-            background: rgba(55, 48, 163, .2);
-            color: #818cf8;
-        }
-
-        .borrow-row {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            background: var(--input-bg);
-            border-radius: 10px;
-            padding: 9px 12px;
-            border: 1px solid var(--border-subtle);
-        }
-
-        /* ── AI finder ── */
-        .rag-wrap {
-            position: relative;
-            margin-top: 12px;
-        }
-
-        .rag-icon-pos {
-            position: absolute;
-            left: 11px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: var(--text-sub);
-            display: flex;
-        }
-
-        .rag-icon-pos svg {
-            width: 13px;
-            height: 13px;
-            flex-shrink: 0;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 11px 12px 11px 34px;
-            border-radius: var(--r-sm);
-            border: 1px solid rgba(99, 102, 241, .15);
-            font-family: var(--font);
-            font-size: .85rem;
-            background: var(--input-bg);
-            color: var(--text);
-            transition: all var(--ease);
-            outline: none;
-            appearance: none;
-            -webkit-appearance: none;
-        }
-
-        .search-input:focus {
-            border-color: #818cf8;
-            background: var(--card);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-sub);
-        }
-
-        .ai-result-box {
-            display: none;
-            margin-top: .75rem;
-            background: var(--indigo-light);
-            border: 1px solid var(--indigo-border);
-            border-radius: var(--r-sm);
-            padding: 12px 14px;
-            overflow: hidden;
-        }
-
-        .ai-result-box.show {
-            display: block;
-            animation: l-slide-up .3s ease;
-        }
-
-        #ragBooks {
-            margin-top: 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            overflow: hidden;
-        }
-
-        #ragBooks a {
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .find-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 10px 16px;
-            background: var(--indigo);
-            color: white;
-            border-radius: var(--r-sm);
-            font-family: var(--font);
-            font-size: .8rem;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: all var(--ease);
-            touch-action: manipulation;
-        }
-
-        .find-btn svg {
-            width: 13px;
-            height: 13px;
-            flex-shrink: 0;
-        }
-
-        .find-btn:hover {
-            background: #312e81;
-        }
-
-        .find-btn:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
-
-        body.dark .ai-result-box {
-            background: rgba(55, 48, 163, .15) !important;
-            border-color: rgba(99, 102, 241, .25) !important;
-        }
-
-        body.dark #ragText,
-        body.dark #ragText * {
-            color: #a5b4fc !important;
-        }
-
-        /* ── Login toast ── */
-        .login-toast {
-            position: fixed;
-            bottom: calc(var(--mob-nav-total) + 8px);
-            right: 16px;
-            z-index: 400;
-            max-width: 280px;
-            background: #0f172a;
-            border-radius: 14px;
-            padding: 12px 14px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
-            transform: translateY(8px);
-            opacity: 0;
-            pointer-events: none;
-            transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
-        }
-
-        .login-toast.show {
-            transform: none;
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .toast-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .toast-close {
-            background: rgba(255, 255, 255, .08);
-            border: none;
-            border-radius: 6px;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-            margin-top: 1px;
-            touch-action: manipulation;
-        }
-
-        .toast-close svg {
-            width: 10px;
-            height: 10px;
-            flex-shrink: 0;
-        }
-
-        #toastTitle {
-            font-family: var(--font);
-            font-weight: 700;
-            font-size: 12px;
-            line-height: 1.3;
-            color: white;
-        }
-
-        #toastBody {
-            font-family: var(--font);
-            font-size: 10px;
-            color: rgba(255, 255, 255, .6);
-            margin-top: 2px;
-        }
-
-        @media(min-width:1024px) {
-            .login-toast {
-                bottom: 24px;
-            }
-        }
-
-        @media(max-width:479px) {
-            .login-toast {
-                bottom: calc(var(--mob-nav-total) + 6px);
-                left: 12px;
-                right: 12px;
-                max-width: none;
-            }
-        }
-
-        /* ── Responsive — library grid ── */
-        @media(max-width:900px) {
-            .grid-lib {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media(max-width:639px) {
-            .grid-lib {
-                grid-template-columns: 1fr !important;
-                gap: 12px;
-            }
-
-            .grid-lib>div {
-                width: 100%;
-                min-width: 0;
-            }
-
-            .topbar {
-                margin-bottom: 14px;
-            }
-
-            .lib-banner {
-                padding: 14px 14px 12px;
-            }
-
-            .lib-banner-top {
-                gap: 10px;
-            }
-
-            .lib-title {
-                font-size: 1.35rem;
-            }
-
-            .lib-browse {
-                padding: 8px 11px;
-                font-size: .72rem;
-            }
-
-            .lib-stats {
-                gap: 5px;
-            }
-
-            .lib-stat {
-                padding: 6px 7px;
-                border-radius: 8px;
-            }
-
-            .lib-stat-lbl {
-                font-size: .44rem;
-                letter-spacing: 0;
-            }
-
-            .lib-stat-val {
-                font-size: .82rem;
-            }
-        }
-
-        @media(max-width:479px) {
-            .lib-stats {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 4px;
-            }
-
-            .lib-stat-lbl {
-                font-size: .42rem;
-                letter-spacing: 0;
-            }
-
-            .lib-stat-val {
-                font-size: .78rem;
-            }
-
-            .lib-browse {
-                padding: 7px 9px;
-                font-size: .68rem;
-                gap: 4px;
-            }
-        }
-
-        @media(max-width:380px) {
-            .lib-stat-lbl {
-                font-size: .4rem;
-            }
-
-            .lib-stat-val {
-                font-size: .75rem;
-            }
-
-            .lib-stat {
-                padding: 5px 6px;
-            }
-        }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>eLibReserve — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --p:#5448C8;--p2:#6C5FD8;--p-light:#ECEAFE;
+  --bg:#F4F3FC;--card:#fff;
+  --text:#1C1744;--muted:#8985A8;--faint:#C4C1DD;--border:#ECEAF4;
+  --green:#22C997;--amber:#F5A623;--red:#F16063;
+  --font:'Plus Jakarta Sans',sans-serif;--display:'Sora',sans-serif;
+  --shadow:0 2px 16px rgba(84,72,200,.07);
+  --shadow-md:0 6px 28px rgba(84,72,200,.13);
+  --sidebar-w:228px;
+}
+html,body{height:100%;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100%;}
+
+/* ── OVERLAY ── */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(28,23,68,.45);z-index:199;opacity:0;transition:opacity .25s;}
+.sidebar-overlay.open{opacity:1;}
+
+/* ── LAYOUT ── */
+.layout{display:flex;flex:1;height:100vh;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;background:var(--p);
+  display:flex;flex-direction:column;position:relative;overflow:hidden;
+  transition:transform .3s cubic-bezier(.16,1,.3,1);
+  z-index:200;
+}
+.sidebar::before{content:'';position:absolute;top:-70px;right:-55px;width:180px;height:180px;background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none;}
+.sidebar::after{content:'';position:absolute;bottom:-50px;left:-40px;width:140px;height:140px;background:rgba(255,255,255,.05);border-radius:50%;pointer-events:none;}
+
+.logo-wrap{padding:26px 22px 22px;border-bottom:1px solid rgba(255,255,255,.1);}
+.logo{display:flex;align-items:center;gap:11px;}
+.logo-mark{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-mark svg{width:20px;height:20px;color:#fff;}
+.logo-name{font-family:var(--display);font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px;line-height:1.1;}
+.logo-name span{color:rgba(255,255,255,.5);font-weight:600;}
+
+.nav-body{flex:1;padding:18px 14px;display:flex;flex-direction:column;gap:3px;overflow-y:auto;}
+.nav-body::-webkit-scrollbar{display:none;}
+.nav-label{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.18em;text-transform:uppercase;padding:0 8px;margin:10px 0 5px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;color:rgba(255,255,255,.6);font-size:13.5px;font-weight:600;text-decoration:none;cursor:pointer;transition:all .18s;border:1.5px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff;}
+.nav-item.active{background:rgba(255,255,255,.16);color:#fff;border-color:rgba(255,255,255,.12);box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.nav-item svg{width:17px;height:17px;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#F5A623;color:#fff;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;}
+
+/* ── PRIMARY NAV SECTION (hidden on mobile — bottom nav handles it) ── */
+.nav-primary{display:contents;}
+
+.sidebar-footer{padding:14px 14px 22px;border-top:1px solid rgba(255,255,255,.1);}
+.user-chip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border-radius:13px;padding:10px 12px;cursor:pointer;transition:background .18s;}
+.user-chip:hover{background:rgba(255,255,255,.16);}
+.user-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:12px;color:#fff;background:linear-gradient(135deg,#F472B6,#A78BFA);}
+.user-nm{font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}
+.user-rl{font-size:10px;color:rgba(255,255,255,.45);font-weight:500;}
+.user-more{margin-left:auto;color:rgba(255,255,255,.35);flex-shrink:0;}
+.user-more svg{width:14px;height:14px;}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;}
+.main::-webkit-scrollbar{width:5px;}
+.main::-webkit-scrollbar-thumb{background:var(--faint);border-radius:999px;}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;padding:22px 24px 0;gap:12px;flex-shrink:0;flex-wrap:wrap;}
+.topbar-left{display:flex;align-items:flex-start;gap:12px;}
+.hamburger{display:none;width:38px;height:38px;background:var(--card);border:1.5px solid var(--border);border-radius:11px;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:2px;}
+.hamburger svg{width:18px;height:18px;color:var(--muted);}
+.page-title{font-family:var(--display);font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px;}
+.filter-row{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.filter-label{font-size:12px;font-weight:600;color:var(--muted);}
+.filter-pill{display:flex;align-items:center;gap:5px;padding:7px 12px;background:var(--card);border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;user-select:none;}
+.filter-pill:hover{border-color:var(--p);color:var(--p);}
+.filter-pill svg{width:12px;height:12px;}
+
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.icon-btn{width:38px;height:38px;background:var(--card);border:1.5px solid var(--border);border-radius:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;position:relative;flex-shrink:0;}
+.icon-btn:hover{border-color:var(--p);}
+.icon-btn svg{width:17px;height:17px;color:var(--muted);}
+.badge-dot{position:absolute;top:6px;right:7px;width:7px;height:7px;background:#F16063;border-radius:50%;border:1.5px solid var(--bg);}
+.profile-pill{display:flex;align-items:center;gap:9px;background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:5px 13px 5px 5px;cursor:pointer;transition:border-color .15s;}
+.profile-pill:hover{border-color:var(--p);}
+.profile-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#F472B6,#A78BFA);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:10px;color:#fff;flex-shrink:0;}
+.profile-name{font-size:12px;font-weight:700;color:var(--text);line-height:1.2;}
+.profile-id{font-size:10px;color:var(--muted);}
+
+/* ── CONTENT ── */
+.content{display:grid;grid-template-columns:1fr 284px;gap:20px;padding:18px 24px 32px;align-items:start;}
+.left-col{display:flex;flex-direction:column;gap:16px;min-width:0;}
+.right-col{display:flex;flex-direction:column;gap:14px;min-width:0;}
+
+/* ── STATS ── */
+.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.stat-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:16px 16px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;transition:transform .18s,box-shadow .18s;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-top{display:flex;align-items:flex-start;justify-content:space-between;}
+.stat-icon{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stat-icon svg{width:17px;height:17px;}
+.stat-lbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+.stat-num{font-family:var(--display);font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.05em;line-height:1;}
+.stat-hint{font-size:11px;color:var(--faint);font-weight:500;}
+
+/* ── SECTION HEAD ── */
+.sec-head{display:flex;align-items:center;justify-content:space-between;}
+.sec-title{font-family:var(--display);font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.2px;}
+.sec-link{font-size:12px;font-weight:700;color:var(--p);text-decoration:none;cursor:pointer;transition:opacity .15s;}
+.sec-link:hover{opacity:.65;}
+
+/* ── QA BAR ── */
+.qa-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.qa-tile{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-decoration:none;color:inherit;transition:all .18s;}
+.qa-tile:hover{border-color:var(--p);transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.qa-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
+.qa-ico svg{width:18px;height:18px;}
+.qa-lbl{font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.3;}
+
+/* ── RES CARDS ── */
+.res-list{display:flex;flex-direction:column;gap:10px;}
+.res-card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px 16px 16px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:all .2s;cursor:pointer;position:relative;overflow:hidden;}
+.res-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;background:var(--stripe-color,var(--p));}
+.res-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:rgba(84,72,200,.18);}
+.res-icon-wrap{width:50px;height:50px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.res-icon-wrap svg{width:22px;height:22px;}
+.res-body{flex:1;min-width:0;}
+.res-name{font-family:var(--display);font-size:14px;font-weight:800;color:var(--text);letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.res-desc{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:500;}
+.res-meta{font-size:11px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.res-go{width:32px;height:32px;background:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;box-shadow:0 4px 12px rgba(84,72,200,.3);}
+.res-card:hover .res-go{background:var(--p2);transform:scale(1.08);}
+.res-go svg{width:12px;height:12px;color:#fff;}
+
+/* ── TAGS ── */
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap;}
+.tag-pending{background:#FEF3C7;color:#92400E;}
+.tag-approved{background:#D1FAE5;color:#065F46;}
+.tag-claimed{background:#EDE9FE;color:#5B21B6;}
+.tag-declined{background:#FEE2E2;color:#991B1B;}
+.tag-unclaimed{background:#FFF7ED;color:#9A3412;}
+.tag-expired{background:#F1F5F9;color:#475569;}
+
+/* ── CALENDAR ── */
+.cal-card{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:20px;box-shadow:var(--shadow);}
+.cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-month{font-family:var(--display);font-size:15px;font-weight:800;color:var(--text);}
+.cal-navs{display:flex;gap:4px;}
+.cal-nav{width:28px;height:28px;border-radius:8px;background:var(--bg);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;}
+.cal-nav:hover{background:var(--p);color:#fff;}
+.cal-nav svg{width:13px;height:13px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-dow{font-size:9px;font-weight:700;color:var(--faint);text-align:center;padding:4px 0;}
+.cal-day{aspect-ratio:1;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;position:relative;}
+.cal-day:hover:not(.empty){background:var(--p-light);color:var(--p);}
+.cal-day.today{background:var(--p);color:#fff;font-weight:800;box-shadow:0 3px 10px rgba(84,72,200,.35);}
+.cal-day.has-ev::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:3px;height:3px;background:var(--amber);border-radius:50%;}
+.cal-day.today.has-ev::after{background:rgba(255,255,255,.8);}
+.cal-day.empty{cursor:default;}
+
+/* ── USERS ── */
+.users-card{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:18px 20px;box-shadow:var(--shadow);}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.user-row:last-child{border-bottom:none;}
+.member-av{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:11px;color:#fff;}
+.member-name{font-size:12px;font-weight:700;color:var(--text);}
+.member-id{font-size:10px;color:var(--faint);}
+.online-dot{width:8px;height:8px;background:var(--green);border-radius:50%;margin-left:auto;flex-shrink:0;box-shadow:0 0 0 3px rgba(34,201,151,.15);}
+
+/* ── MOBILE BOTTOM NAV — removed, sidebar is the sole nav ── */
+
+/* ════════ RESPONSIVE ════════ */
+
+@media(max-width:1080px){
+  .content{grid-template-columns:1fr 250px;gap:16px;}
+  .stats-strip{grid-template-columns:repeat(2,1fr);}
+}
+
+/* Tablet portrait: sidebar becomes drawer */
+@media(max-width:860px){
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;
+    transform:translateX(-100%);
+    box-shadow:4px 0 24px rgba(28,23,68,.2);
+  }
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay{display:block;}
+
+  /* Restore full primary nav in drawer */
+  .nav-primary{display:contents;}
+
+  .layout{display:block;}
+  .main{height:100vh;overflow-y:auto;}
+
+  .hamburger{display:flex;}
+
+  .topbar{padding:16px 16px 0;}
+
+  .content{grid-template-columns:1fr;padding:14px 16px 32px;}
+  .right-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+  .stats-strip{grid-template-columns:repeat(2,1fr);}
+}
+
+@media(max-width:600px){
+  .topbar{padding:12px 14px 0;gap:8px;flex-wrap:nowrap;align-items:center;}
+  .topbar-left{gap:8px;}
+  .page-title{font-size:17px;}
+  .filter-row{display:none;}
+
+  .topbar-right{gap:6px;}
+  .profile-id,.profile-name:not(:first-child){display:none;}
+
+  .content{padding:12px 12px 32px;gap:12px;}
+
+  .stats-strip{gap:8px;}
+  .stat-card{padding:13px 13px 11px;gap:8px;}
+  .stat-num{font-size:24px;}
+  .stat-hint{display:none;}
+
+  .qa-bar{gap:7px;}
+  .qa-tile{padding:11px 6px;gap:6px;border-radius:12px;}
+  .qa-ico{width:32px;height:32px;border-radius:9px;}
+  .qa-ico svg{width:14px;height:14px;}
+  .qa-lbl{font-size:9.5px;}
+
+  .res-card{padding:13px 12px 13px 16px;gap:10px;border-radius:14px;}
+  .res-icon-wrap{width:42px;height:42px;border-radius:11px;}
+  .res-icon-wrap svg{width:18px;height:18px;}
+  .res-name{font-size:13px;}
+  .res-desc{font-size:11px;margin-top:2px;}
+  .res-go{width:28px;height:28px;}
+  .res-go svg{width:10px;height:10px;}
+
+  .right-col{grid-template-columns:1fr;gap:12px;}
+  .sec-title{font-size:13.5px;}
+}
+
+@media(max-width:400px){
+  .topbar-right .icon-btn:first-child{display:none;}
+  .content{padding:10px 10px 24px;}
+  .stats-strip{gap:7px;}
+  .qa-bar{grid-template-columns:repeat(2,1fr);gap:7px;}
+  .qa-tile{flex-direction:row;justify-content:flex-start;padding:12px 12px;border-radius:12px;}
+  .qa-lbl{text-align:left;font-size:11.5px;}
+  .qa-ico{flex-shrink:0;}
+  .stat-card{padding:12px 11px 10px;}
+  .stat-num{font-size:22px;}
+}
+
+
+</style>
 </head>
-
 <body>
 
-    <?php
-    $page = 'dashboard';
-    include(APPPATH . 'Views/partials/layout.php');
-    ?>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
-    <main class="main-area">
+<div class="layout">
 
-        <!-- Topbar -->
-        <div class="topbar fade-up">
-            <div>
-                <div class="greeting-eyebrow"><?php $h = (int)date('H');
-                                                echo $h < 12 ? 'Good morning' : ($h < 17 ? 'Good afternoon' : 'Good evening'); ?></div>
-                <div class="greeting-name"><?= esc($user_name) ?></div>
-                <div class="greeting-sub"><?= date('l, F j, Y') ?></div>
-            </div>
-            <div class="topbar-right">
-                <?= layout_dark_toggle() ?>
-                <a href="<?= base_url('/reservation') ?>" class="reserve-btn">
-                    <?= icon('plus', 16, 'white') ?> Reserve
-                </a>
-                <div class="notif-bell" onclick="toggleNotifications()">
-                    <div class="l-icon-btn"><?= icon('bell', 16, 'currentColor') ?></div>
-                    <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
-                </div>
-            </div>
-        </div>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo-wrap">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+          <path d="M9 10h6M9 13h4"/>
+        </svg>
+      </div>
+      <div class="logo-name">eLib<span>Reserve</span></div>
+    </div>
+  </div>
 
-        <!-- Notification dropdown -->
-        <div id="notifDD" class="notif-dd">
-            <div style="padding:11px 13px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-family:var(--font);font-weight:700;font-size:13px;color:var(--text);">Notifications</span>
-                <button onclick="markAllRead()" style="font-family:var(--font);font-size:11px;color:var(--indigo);font-weight:600;background:none;border:none;cursor:pointer;touch-action:manipulation;">Mark all read</button>
-            </div>
-            <div id="notifList" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
-        </div>
-
-        <!-- Flash message -->
-        <?php if (session()->getFlashdata('success')): ?>
-            <div class="flash-ok fade-up">
-                <?= icon('check-circle', 14, 'var(--indigo)') ?>
-                <?= session()->getFlashdata('success') ?>
-            </div>
-        <?php endif; ?>
-
-        <!-- Next-action card -->
-        <?php if ($nextAction): $nc = $nextColors[$nextAction['color']]; ?>
-            <div class="next-card fade-up" style="background:<?= $nc['bg'] ?>;border-color:<?= $nc['border'] ?>;">
-                <div class="next-icon-wrap" style="background:<?= $nc['icon_bg'] ?>;">
-                    <?= icon($nc['icon'], 14, $nc['icon_fg']) ?>
-                </div>
-                <div style="flex:1;min-width:0;">
-                    <div class="next-eyebrow" style="color:<?= $nc['icon_fg'] ?>;">What to do next</div>
-                    <div class="next-msg"><?= $nextAction['msg'] ?></div>
-                    <a href="<?= base_url($nextAction['url']) ?>" class="next-cta" style="background:<?= $nc['btn_bg'] ?>;">
-                        <?= $nextAction['cta'] ?> <?= icon('arrow-right', 12, 'white') ?>
-                    </a>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <!-- Countdown timer banner -->
-        <div id="timerBanner" class="timer-banner">
-            <div class="timer-inner">
-                <div id="timerIconWrap" style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.07);flex-shrink:0;">
-                    <?= icon('hourglass', 16, 'currentColor') ?>
-                </div>
-                <div class="timer-text-col">
-                    <p style="font-weight:700;font-size:.9rem;line-height:1.3;" id="timerTitle">Your reservation ends soon</p>
-                    <p style="font-size:.76rem;opacity:.7;margin-top:2px;" id="timerSub"></p>
-                </div>
-                <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-                    <div class="timer-digit"><span id="tdH">00</span><span>hrs</span></div>
-                    <span style="font-family:var(--font);font-weight:700;font-size:14px;opacity:.4;" class="timer-pulse">:</span>
-                    <div class="timer-digit"><span id="tdM">00</span><span>min</span></div>
-                    <span style="font-family:var(--font);font-weight:700;font-size:14px;opacity:.4;" class="timer-pulse">:</span>
-                    <div class="timer-digit"><span id="tdS">00</span><span>sec</span></div>
-                </div>
-            </div>
-            <div id="timerPW" class="timer-progress-wrap" style="display:none;">
-                <div id="timerPF" class="timer-progress-fill" style="width:0%;"></div>
-            </div>
-        </div>
-
-        <!-- Upcoming reservation pill -->
-        <?php if ($upcoming): ?>
-            <div class="upcoming-pill fade-up-1">
-                <div class="up-icon"><?= icon('ticket', 16, 'white') ?></div>
-                <div style="flex:1;min-width:0;">
-                    <div class="up-eyebrow">Upcoming Reservation</div>
-                    <div class="up-name"><?= esc($upcoming['resource_name'] ?? 'Resource') ?><?php if (!empty($upcoming['pc_number'])): ?> &middot; <span style="font-weight:400;"><?= esc($upcoming['pc_number']) ?></span><?php endif; ?></div>
-                    <div class="up-time"><?= date('M j, Y', strtotime($upcoming['reservation_date'])) ?> &nbsp;&middot;&nbsp; <?= date('g:i A', strtotime($upcoming['start_time'])) ?> – <?= date('g:i A', strtotime($upcoming['end_time'])) ?></div>
-                </div>
-                <a href="<?= base_url('/reservation-list') ?>" class="up-btn">View →</a>
-            </div>
-        <?php endif; ?>
-
-        <!-- Stats grid -->
-        <div class="stats-grid fade-up-2">
-            <div class="stat-card">
-                <div class="stat-card-top">
-                    <div class="stat-icon" style="background:#eef2ff;"><?= icon('layers', 16, '#3730a3') ?></div>
-                    <span class="stat-lbl">Total</span>
-                </div>
-                <div class="stat-num"><?= $total ?></div>
-                <div class="stat-hint">All time</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-card-top">
-                    <div class="stat-icon" style="background:#fef3c7;"><?= icon('clock', 16, '#d97706') ?></div>
-                    <span class="stat-lbl">Pending</span>
-                </div>
-                <div class="stat-num" style="color:#d97706;"><?= $pending ?></div>
-                <div class="stat-hint">Awaiting review</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-card-top">
-                    <div class="stat-icon" style="background:#dcfce7;"><?= icon('check-circle', 16, '#16a34a') ?></div>
-                    <span class="stat-lbl">Approved</span>
-                </div>
-                <div class="stat-num" style="color:#16a34a;"><?= $approved ?></div>
-                <div class="stat-hint">Ready to use</div>
-            </div>
-            <?php if ($unclaimedCount > 0): ?>
-                <div class="stat-card" style="border-color:rgba(251,146,60,.25);">
-                    <div class="stat-card-top">
-                        <div class="stat-icon" style="background:#fff7ed;"><?= icon('ticket', 16, '#ea580c') ?></div>
-                        <span class="stat-lbl">No-show</span>
-                    </div>
-                    <div class="stat-num" style="color:#ea580c;"><?= $unclaimedCount ?></div>
-                    <div class="stat-hint" style="color:#fb923c;">Slot<?= $unclaimedCount > 1 ? 's' : '' ?> missed</div>
-                </div>
-            <?php elseif ($claimedCount > 0): ?>
-                <div class="stat-card">
-                    <div class="stat-card-top">
-                        <div class="stat-icon" style="background:#ede9fe;"><?= icon('check-double', 16, '#7c3aed') ?></div>
-                        <span class="stat-lbl">Claimed</span>
-                    </div>
-                    <div class="stat-num" style="color:#7c3aed;"><?= $claimedCount ?></div>
-                    <div class="stat-hint">Tickets used</div>
-                </div>
-            <?php else: ?>
-                <div class="stat-card">
-                    <div class="stat-card-top">
-                        <div class="stat-icon" style="background:#fee2e2;"><?= icon('ban', 16, '#dc2626') ?></div>
-                        <span class="stat-lbl">Declined</span>
-                    </div>
-                    <div class="stat-num" style="color:#dc2626;"><?= $declined ?></div>
-                    <div class="stat-hint">Not approved</div>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Calendar + Quick actions + Recent bookings -->
-        <div class="grid-main fade-up-3">
-            <div class="card card-p-lg">
-                <div class="card-head" style="flex-wrap:wrap;gap:10px;">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="card-icon" style="background:#eef2ff;"><?= icon('calendar-days', 16, 'var(--indigo)') ?></div>
-                        <div>
-                            <div class="card-title">Community Schedule</div>
-                            <div class="card-sub">Tap any date to see reservations</div>
-                        </div>
-                    </div>
-                    <div class="cal-legend">
-                        <?php foreach ([['#fbbf24', 'Pending'], ['#10b981', 'Approved'], ['#f87171', 'Declined'], ['#a855f7', 'Claimed']] as [$c, $l]): ?>
-                            <div class="leg-item">
-                                <div class="leg-dot" style="background:<?= $c ?>;"></div>
-                                <span class="leg-lbl"><?= $l ?></span>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <div id="calendar"></div>
-            </div>
-
-            <div class="side-col">
-                <!-- Quick actions -->
-                <div class="card card-p">
-                    <div class="section-lbl">Quick Actions</div>
-                    <div style="display:flex;flex-direction:column;gap:5px;">
-                        <a href="<?= base_url('/reservation') ?>" class="qa-link">
-                            <div class="qa-icon" style="background:#eef2ff;"><?= icon('plus', 16, 'var(--indigo)') ?></div>
-                            New Reservation
-                            <span class="qa-chev"><?= icon('chevron-right', 14, 'currentColor') ?></span>
-                        </a>
-                        <a href="<?= base_url('/reservation-list') ?>" class="qa-link">
-                            <div class="qa-icon" style="background:#ede9fe;"><?= icon('calendar', 16, '#7c3aed') ?></div>
-                            My Reservations
-                            <?php if ($pending > 0): ?>
-                                <span style="margin-left:auto;background:#fef3c7;color:#92400e;font-family:var(--font);font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;"><?= $pending ?></span>
-                            <?php else: ?>
-                                <span class="qa-chev"><?= icon('chevron-right', 14, 'currentColor') ?></span>
-                            <?php endif; ?>
-                        </a>
-                        <a href="<?= base_url('/books') ?>" class="qa-link">
-                            <div class="qa-icon" style="background:#fef3c7;"><?= icon('book-open', 16, '#d97706') ?></div>
-                            Browse Library
-                            <span class="qa-chev"><?= icon('chevron-right', 14, 'currentColor') ?></span>
-                        </a>
-                        <a href="<?= base_url('/profile') ?>" class="qa-link">
-                            <div class="qa-icon" style="background:#f3e8ff;"><?= icon('user', 16, '#9333ea') ?></div>
-                            View Profile
-                            <span class="qa-chev"><?= icon('chevron-right', 14, 'currentColor') ?></span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Recent bookings -->
-                <div class="card card-p" style="flex:1;">
-                    <div class="card-head">
-                        <div class="section-lbl" style="margin-bottom:0;">Recent Bookings</div>
-                        <a href="<?= base_url('/reservation-list') ?>" class="link-sm">View all →</a>
-                    </div>
-                    <?php if (!empty($processedRecent)): ?>
-                        <div>
-                            <?php foreach (array_slice($processedRecent, 0, 5) as $res):
-                                $s  = $res['_status'];
-                                $dt = new DateTime($res['reservation_date']);
-                            ?>
-                                <a href="<?= base_url('/reservation-list') ?>" class="bk-row">
-                                    <div class="bk-date">
-                                        <div class="bk-month"><?= $dt->format('M') ?></div>
-                                        <div class="bk-day"><?= $dt->format('j') ?></div>
-                                    </div>
-                                    <div style="flex:1;min-width:0;">
-                                        <div class="bk-name"><?= esc($res['resource_name'] ?? 'Resource #' . $res['resource_id']) ?></div>
-                                        <div class="bk-time"><?= date('g:i A', strtotime($res['start_time'])) ?> – <?= date('g:i A', strtotime($res['end_time'])) ?></div>
-                                    </div>
-                                    <span class="tag tag-<?= $s ?>"><?= $s === 'unclaimed' ? 'No-show' : ucfirst($s) ?></span>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php else: ?>
-                        <div style="text-align:center;padding:22px 12px;">
-                            <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('calendar-x', 28, 'currentColor') ?></div>
-                            <p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">No bookings yet</p>
-                            <a href="<?= base_url('/reservation') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:9px;font-family:var(--font);font-size:11px;font-weight:700;color:var(--indigo);text-decoration:none;touch-action:manipulation;">
-                                <?= icon('plus', 12, 'var(--indigo)') ?> Make your first reservation
-                            </a>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-
-        <!-- How-to + Status guide -->
-        <?php if (empty($reservations) || $unclaimedCount > 0 || $pending > 0): ?>
-            <div class="grid-main" style="margin-bottom:16px;">
-                <div class="card card-p">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                        <div class="card-icon" style="background:#eef2ff;"><?= icon('list-check', 16, 'var(--indigo)') ?></div>
-                        <div>
-                            <div class="card-title">How to Reserve</div>
-                            <div class="card-sub">Step-by-step guide</div>
-                        </div>
-                    </div>
-                    <?php $step = 1;
-                    foreach (
-                        [
-                            ['Click "New Reservation"', 'Choose a resource, pick your date and time, and describe your purpose.'],
-                            ['Wait for approval',        'An SK officer will review your request, usually within 24 hours.'],
-                            ['Download your e-ticket',   'Once approved, open My Reservations and download your QR code.'],
-                            ['Scan at the entrance',      'Show your e-ticket to be scanned when you arrive.'],
-                            ['Be on time',                "Slots expire if you don't show up. Cancel in advance if plans change."],
-                        ] as [$title, $body]
-                    ): ?>
-                        <div class="how-step">
-                            <div class="step-num"><?= $step++ ?></div>
-                            <div>
-                                <p style="font-weight:600;font-size:12.5px;color:var(--text);letter-spacing:-.1px;"><?= $title ?></p>
-                                <p style="font-size:11px;color:var(--text-sub);margin-top:2px;"><?= $body ?></p>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <div class="card card-p">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                        <div class="card-icon" style="background:#eef2ff;"><?= icon('info', 16, 'var(--indigo)') ?></div>
-                        <div>
-                            <div class="card-title">Status Reference</div>
-                            <div class="card-sub">What each status means</div>
-                        </div>
-                    </div>
-                    <?php foreach (
-                        [
-                            ['pending',   'clock',        '#fef3c7', '#92400e', '#d97706', 'Pending',  'Waiting for SK officer review.'],
-                            ['approved',  'check-circle', '#dcfce7', '#166534', '#16a34a', 'Approved', 'Confirmed. Get your e-ticket.'],
-                            ['claimed',   'check-double', '#ede9fe', '#5b21b6', '#7c3aed', 'Claimed',  'E-ticket scanned. Slot used.'],
-                            ['unclaimed', 'ticket',       '#fff7ed', '#c2410c', '#ea580c', 'No-show',  "Approved but you didn't attend."],
-                            ['declined',  'ban',          '#fee2e2', '#991b1b', '#dc2626', 'Declined', 'Not approved. Try another time.'],
-                            ['expired',   'hourglass',    '#f1f5f9', '#475569', '#64748b', 'Expired',  'Date passed before approval.'],
-                        ] as [$key, $ico, $bg, $fg, $ic, $label, $desc]
-                    ): ?>
-                        <div class="status-guide-row">
-                            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:7px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;min-width:74px;justify-content:center;background:<?= $bg ?>;color:<?= $fg ?>;">
-                                <?= icon($ico, 8, $ic) ?><?= $label ?>
-                            </span>
-                            <p><?= $desc ?></p>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <!-- LIBRARY SECTION -->
-        <div class="grid-lib fade-up-4">
-
-            <!-- LEFT COL: banner + AI finder -->
-            <div style="display:flex;flex-direction:column;gap:14px;min-width:0;">
-
-                <!-- Banner -->
-                <div class="lib-banner">
-                    <div class="lib-banner-inner">
-                        <div class="lib-banner-top">
-                            <div>
-                                <div class="lib-eyebrow">Community Library</div>
-                                <div class="lib-title"><?= $availableCount ?></div>
-                                <div class="lib-sub">available · <?= $totalBooks ?> total titles</div>
-                            </div>
-                            <a href="<?= base_url('/books') ?>" class="lib-browse">
-                                <?= icon('book-open', 13, 'white') ?> Browse
-                            </a>
-                        </div>
-                        <div class="lib-stats">
-                            <div class="lib-stat">
-                                <span class="lib-stat-lbl">My Borrows</span>
-                                <span class="lib-stat-val"><?= count($myBorrowings) ?></span>
-                            </div>
-                            <div class="lib-stat">
-                                <span class="lib-stat-lbl">Pending</span>
-                                <span class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'pending')) ?></span>
-                            </div>
-                            <div class="lib-stat">
-                                <span class="lib-stat-lbl">Active</span>
-                                <span class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'approved')) ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI Book Finder -->
-                <div class="card card-p">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', 16, '#7c3aed') ?></div>
-                        <div>
-                            <div class="card-title">AI Book Finder</div>
-                            <div class="card-sub">Describe what you want to read</div>
-                        </div>
-                    </div>
-                    <div class="rag-wrap">
-                        <span class="rag-icon-pos"><?= icon('search', 13, 'currentColor') ?></span>
-                        <input type="text" id="ragInput" class="search-input"
-                            placeholder="e.g. Filipino history, funny stories…"
-                            autocomplete="off" autocorrect="off" spellcheck="false"
-                            onkeydown="if(event.key==='Enter') doRagSearch()">
-                    </div>
-                    <div id="ragSkel" style="display:none;margin-top:.5rem;">
-                        <div class="shimmer" style="width:90%;"></div>
-                        <div class="shimmer" style="width:70%;"></div>
-                        <div class="shimmer" style="width:52%;"></div>
-                    </div>
-                    <div class="ai-result-box" id="ragResult">
-                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                            <?= icon('robot', 14, 'var(--indigo)') ?>
-                            <p style="font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
-                        </div>
-                        <p style="font-family:var(--font);font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
-                        <div id="ragBooks"></div>
-                    </div>
-                    <div id="ragErr" style="display:none;margin-top:5px;font-family:var(--font);font-size:11px;color:#dc2626;font-weight:500;"></div>
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;">
-                        <button onclick="doRagSearch()" id="ragBtn" class="find-btn">
-                            <?= icon('sparkles', 13, 'white') ?> Find Books
-                        </button>
-                        <a href="<?= base_url('/books') ?>" class="link-sm">Full library →</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RIGHT COL: books catalog + my borrows -->
-            <div style="display:flex;flex-direction:column;gap:14px;min-width:0;">
-
-                <!-- Available Now -->
-                <div class="card card-p" style="flex:1;">
-                    <div class="card-head">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <div class="card-icon" style="background:var(--indigo-light);">
-                                <?= icon('book-open', 16, 'var(--indigo)') ?>
-                            </div>
-                            <div>
-                                <div class="card-title">Available Now</div>
-                                <div class="card-sub">Books you can borrow today</div>
-                            </div>
-                        </div>
-                        <a href="<?= base_url('/books') ?>" class="link-sm">All →</a>
-                    </div>
-                    <?php if (!empty($featuredBooks)): ?>
-                        <div style="display:flex;flex-direction:column;gap:2px;">
-                            <?php foreach (array_slice($featuredBooks, 0, 6) as $book):
-                                $avail = (int)($book['available_copies'] ?? 0);
-                                $pillStyle = $avail === 0
-                                    ? 'background:#fee2e2;color:#991b1b;'
-                                    : ($avail <= 1 ? 'background:#fef3c7;color:#92400e;' : 'background:#dcfce7;color:#166634;');
-                                $pillText = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
-                            ?>
-                                <a href="<?= base_url('/books') ?>"
-                                    style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;min-width:0;">
-                                    <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
-                                    <div style="flex:1;min-width:0;">
-                                        <div class="book-title"><?= esc($book['title']) ?></div>
-                                        <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
-                                    </div>
-                                    <span style="font-family:var(--font);font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;white-space:nowrap;<?= $pillStyle ?>">
-                                        <?= $pillText ?>
-                                    </span>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                        <?php if (count($featuredBooks) > 6): ?>
-                            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-subtle);text-align:center;">
-                                <a href="<?= base_url('/books') ?>" class="link-sm">+<?= count($featuredBooks) - 6 ?> more →</a>
-                            </div>
-                        <?php endif; ?>
-                    <?php else: ?>
-                        <div style="text-align:center;padding:32px 12px;">
-                            <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('book-open', 28, 'currentColor') ?></div>
-                            <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);font-weight:600;">No books available</p>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <!-- My Active Borrows -->
-                <?php
-                $activeBorrows = array_slice(
-                    array_values(array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved', 'pending']))),
-                    0,
-                    4
-                );
-                if (!empty($activeBorrows)): ?>
-                    <div class="card card-p">
-                        <div class="card-head">
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                <div class="card-icon" style="background:#dcfce7;"><?= icon('bookmark', 16, '#16a34a') ?></div>
-                                <div>
-                                    <div class="card-title">My Active Borrows</div>
-                                    <div class="card-sub">Currently checked out</div>
-                                </div>
-                            </div>
-                            <a href="<?= base_url('/books') ?>#mine" class="link-sm">All →</a>
-                        </div>
-                        <div style="display:flex;flex-direction:column;gap:7px;">
-                            <?php foreach ($activeBorrows as $borrow):
-                                $bs  = strtolower($borrow['status'] ?? 'pending');
-                                $due = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
-                                $overdue = $due && $due < time();
-                                $dueSoon = $due && !$overdue && $due < time() + 3 * 86400;
-                            ?>
-                                <div class="borrow-row">
-                                    <div class="book-letter" style="width:30px;height:30px;font-size:.7rem;">
-                                        <?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?>
-                                    </div>
-                                    <div style="flex:1;min-width:0;">
-                                        <p style="font-family:var(--font);font-weight:600;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                            <?= esc($borrow['title'] ?? 'Unknown Book') ?>
-                                        </p>
-                                        <?php if ($due && $bs === 'approved'): ?>
-                                            <p style="font-family:var(--mono);font-size:.68rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : 'var(--text-sub)') ?>;">
-                                                <?= $overdue ? 'Overdue · ' : ($dueSoon ? 'Due soon · ' : '') ?><?= date('M j, Y', $due) ?>
-                                            </p>
-                                        <?php endif; ?>
-                                    </div>
-                                    <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>">
-                                        <?= $overdue ? 'Overdue' : ($dueSoon ? 'Due Soon' : ucfirst($bs)) ?>
-                                    </span>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <div class="card card-p" style="text-align:center;padding:28px 20px;">
-                        <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('bookmark', 26, 'currentColor') ?></div>
-                        <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
-                        <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-family:var(--font);font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
-                            <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
-                        </a>
-                    </div>
-                <?php endif; ?>
-
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Date Modal -->
-    <div id="dateModal" class="modal-back" onclick="handleModalBack(event)">
-        <div class="modal-card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
-                <div>
-                    <h3 style="font-family:var(--font);font-size:16px;font-weight:700;letter-spacing:-.2px;" id="modalDateTitle"></h3>
-                    <p style="font-family:var(--font);font-size:11px;color:var(--text-sub);margin-top:2px;" id="modalDateSub"></p>
-                </div>
-                <button onclick="closeDateModal()" style="width:36px;height:36px;border-radius:9px;background:var(--input-bg);border:none;color:var(--text-sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation;">
-                    <?= icon('x', 13, 'currentColor') ?>
-                </button>
-            </div>
-            <div id="modalList"></div>
-            <div class="hidden" id="modalEmpty" style="text-align:center;padding:24px 12px;">
-                <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('calendar-x', 26, 'currentColor') ?></div>
-                <p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">No reservations for this date.</p>
-            </div>
-            <button onclick="closeDateModal()" style="margin-top:16px;width:100%;padding:12px;background:var(--input-bg);border-radius:var(--r-sm);font-family:var(--font);font-weight:600;color:var(--text-muted);border:1px solid var(--border);cursor:pointer;font-size:.82rem;touch-action:manipulation;">Close</button>
-        </div>
+  <nav class="nav-body">
+    <!-- PRIMARY NAV — visible on desktop, hidden on mobile (bottom nav handles it) -->
+    <div class="nav-primary">
+      <div class="nav-label">Main Menu</div>
+      <a class="nav-item active" href="#" onclick="closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" href="#" onclick="closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        Library
+      </a>
+      <a class="nav-item" href="#" onclick="closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Members
+      </a>
+      <a class="nav-item" href="#" onclick="closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Messages
+      </a>
+      <a class="nav-item" href="#" onclick="closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Schedule
+        <span class="nav-badge">2</span>
+      </a>
     </div>
 
-    <!-- Login Toast -->
-    <div id="loginToast" class="login-toast">
-        <div class="toast-icon" id="toastIcon"></div>
-        <div style="flex:1;min-width:0;">
-            <p id="toastTitle"></p>
-            <p id="toastBody"></p>
+    <!-- SECONDARY NAV — always visible (desktop + mobile drawer) -->
+    <div class="nav-label" style="margin-top:10px;">Account</div>
+    <a class="nav-item" href="#" onclick="closeSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+      Settings
+    </a>
+    <a class="nav-item" href="#" onclick="closeSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="6" height="18" rx="1"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+      Directory
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-av" id="sideAv">CE</div>
+      <div style="flex:1;min-width:0;">
+        <div class="user-nm" id="sideNm">Christine Eva</div>
+        <div class="user-rl">SK Member</div>
+      </div>
+      <div class="user-more">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="hamburger" onclick="openSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </div>
+      <div>
+        <div class="page-title">My Reservations</div>
+        <div class="filter-row">
+          <span class="filter-label">Filter by:</span>
+          <div class="filter-pill">Time <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="filter-pill">Status <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="filter-pill">Type <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
         </div>
-        <button class="toast-close" onclick="dismissToast()"><?= icon('x', 10, 'white') ?></button>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <div class="icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="badge-dot"></div>
+      </div>
+      <div class="profile-pill">
+        <div class="profile-av" id="topAv">CE</div>
+        <div>
+          <div class="profile-name" id="topNm">Christine Eva</div>
+          <div class="profile-id" id="topId">1094881999</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <!-- LEFT -->
+    <div class="left-col">
+
+      <div class="stats-strip">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon" style="background:#ECEAFE;"><svg viewBox="0 0 24 24" fill="none" stroke="#5448C8" stroke-width="2" stroke-linecap="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
+            <div class="stat-lbl">Total</div>
+          </div>
+          <div class="stat-num">12</div>
+          <div class="stat-hint">All reservations</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon" style="background:#FEF3C7;"><svg viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="stat-lbl">Pending</div>
+          </div>
+          <div class="stat-num" style="color:#D97706;">3</div>
+          <div class="stat-hint">Awaiting review</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon" style="background:#D1FAE5;"><svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            <div class="stat-lbl">Approved</div>
+          </div>
+          <div class="stat-num" style="color:#059669;">7</div>
+          <div class="stat-hint">Ready to use</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon" style="background:#EDE9FE;"><svg viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg></div>
+            <div class="stat-lbl">Claimed</div>
+          </div>
+          <div class="stat-num" style="color:#7C3AED;">2</div>
+          <div class="stat-hint">Tickets used</div>
+        </div>
+      </div>
+
+      <div class="qa-bar">
+        <a class="qa-tile" href="#">
+          <div class="qa-ico" style="background:#ECEAFE;"><svg viewBox="0 0 24 24" fill="none" stroke="#5448C8" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          <div class="qa-lbl">New Reservation</div>
+        </a>
+        <a class="qa-tile" href="#">
+          <div class="qa-ico" style="background:#FEF3C7;"><svg viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div class="qa-lbl">My Bookings</div>
+        </a>
+        <a class="qa-tile" href="#">
+          <div class="qa-ico" style="background:#D1FAE5;"><svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+          <div class="qa-lbl">Browse Library</div>
+        </a>
+        <a class="qa-tile" href="#">
+          <div class="qa-ico" style="background:#FCE7F3;"><svg viewBox="0 0 24 24" fill="none" stroke="#BE185D" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="qa-lbl">View Profile</div>
+        </a>
+      </div>
+
+      <div>
+        <div class="sec-head" style="margin-bottom:12px;">
+          <div class="sec-title">Recent Reservations</div>
+          <a class="sec-link" href="#">See all →</a>
+        </div>
+        <div class="res-list" id="resList"></div>
+      </div>
+
     </div>
 
-    <script>
-        const NOTIF_KEY = 'notified_ids_<?= session()->get('user_id') ?>';
-        const reservations = <?= json_encode($reservations ?? []) ?>;
-        const allResData = <?= json_encode($allReservations ?? []) ?>;
-        const approvedRes = reservations.filter(r => r.status === 'approved' && !r.claimed);
-        let notifications = [];
+    <!-- RIGHT -->
+    <div class="right-col">
+      <div class="cal-card">
+        <div class="cal-hd">
+          <div class="cal-month" id="calTitle">May 2026</div>
+          <div class="cal-navs">
+            <button class="cal-nav" onclick="calMove(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <button class="cal-nav" onclick="calMove(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="users-card">
+        <div class="sec-head" style="margin-bottom:10px;">
+          <div class="sec-title">Online Users</div>
+          <a class="sec-link" href="#">See all</a>
+        </div>
+        <div id="usersList"></div>
+      </div>
+    </div>
+  </div>
 
-        const getSeenIds = () => {
-            try {
-                return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]');
-            } catch (e) {
-                return [];
-            }
-        };
-        const saveSeenIds = ids => localStorage.setItem(NOTIF_KEY, JSON.stringify(ids));
+</main>
+</div>
 
-        function loadNotifications() {
-            const seen = getSeenIds();
-            notifications = reservations.filter(r => r.status === 'approved').map(r => ({
-                id: parseInt(r.id),
-                title: 'Reservation Approved',
-                msg: `${r.resource_name || 'Resource'} · ${new Date(r.reservation_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`,
-                time: r.updated_at || r.created_at || new Date().toISOString(),
-                read: seen.includes(parseInt(r.id))
-            }));
-            updateBadge();
-            renderNotifs();
-        }
 
-        function markAllRead() {
-            saveSeenIds([...new Set([...getSeenIds(), ...notifications.map(n => n.id)])]);
-            notifications.forEach(n => n.read = true);
-            updateBadge();
-            renderNotifs();
-        }
 
-        function markRead(id) {
-            const ids = getSeenIds();
-            if (!ids.includes(id)) saveSeenIds([...ids, id]);
-            const n = notifications.find(n => n.id === id);
-            if (n) {
-                n.read = true;
-                updateBadge();
-                renderNotifs();
-            }
-        }
+<script>
+const USER={name:'Christine Eva',id:'1094881999'};
+const MEMBERS=[
+  {name:'Maren Maureen',id:'1094882001',bg:'linear-gradient(135deg,#F472B6,#FB7185)'},
+  {name:'Jenniffer Jane',id:'1094872000',bg:'linear-gradient(135deg,#60A5FA,#818CF8)'},
+  {name:'Ryan Herwinds',id:'1094342003',bg:'linear-gradient(135deg,#34D399,#10B981)'},
+  {name:'Kierra Culhane',id:'1094662002',bg:'linear-gradient(135deg,#FBBF24,#F59E0B)'},
+];
+const RES=[
+  {name:'Computer Lab A',sub:'PC-04 · Computer Station',start:'09:00',end:'11:00',status:'approved',stripe:'#22C997',iconBg:'#ECEAFE',iconStroke:'#5448C8',icon:'<path d="M20 16V7a2 2 0 00-2-2H6a2 2 0 00-2 2v9m16 0H4m16 0l1.28 2.55a1 1 0 01-.9 1.45H3.62a1 1 0 01-.9-1.45L4 16"/>'},
+  {name:'Study Room 2',sub:'4-person room · Floor 2',start:'13:00',end:'15:00',status:'pending',stripe:'#F5A623',iconBg:'#FEF3C7',iconStroke:'#D97706',icon:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'},
+  {name:'SK Library Corner',sub:'Reading & Research Zone',start:'10:00',end:'12:00',status:'claimed',stripe:'#818CF8',iconBg:'#EDE9FE',iconStroke:'#7C3AED',icon:'<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>'},
+  {name:'Meeting Room 1',sub:'Projector · Whiteboard',start:'14:00',end:'16:00',status:'declined',stripe:'#F16063',iconBg:'#FEE2E2',iconStroke:'#DC2626',icon:'<rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>'},
+];
 
-        function updateBadge() {
-            const badge = document.getElementById('notifBadge');
-            const unread = notifications.filter(n => !n.read).length;
-            badge.style.display = unread > 0 ? 'block' : 'none';
-            badge.textContent = unread > 9 ? '9+' : unread;
-        }
+const fmt=t=>{const[h,m]=t.split(':');const n=+h;return`${n%12||12}:${m} ${n<12?'AM':'PM'}`;};
+const initials=n=>n.trim().split(/\s+/).slice(0,2).map(w=>w[0].toUpperCase()).join('');
 
-        function renderNotifs() {
-            const list = document.getElementById('notifList');
-            if (!notifications.length) {
-                list.innerHTML = `<div style="text-align:center;padding:24px 16px;"><p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">All caught up!</p></div>`;
-                return;
-            }
-            list.innerHTML = notifications
-                .sort((a, b) => new Date(b.time) - new Date(a.time))
-                .map(n => `
-        <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="markRead(${n.id})">
-            <div style="display:flex;align-items:flex-start;gap:9px;">
-                <div style="width:30px;height:30px;background:var(--indigo-light);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <div style="flex:1;min-width:0;">
-                    <p style="font-family:var(--font);font-weight:700;font-size:12px;color:var(--text);">${n.title}</p>
-                    <p style="font-family:var(--font);font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p>
-                    <p style="font-family:var(--font);font-size:9px;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
-                </div>
-                ${!n.read ? '<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>' : ''}
-            </div>
-        </div>`).join('');
-        }
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  const ov=document.getElementById('overlay');
+  ov.style.display='block';
+  requestAnimationFrame(()=>ov.classList.add('open'));
+  document.body.style.overflow='hidden';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  const ov=document.getElementById('overlay');
+  ov.classList.remove('open');
+  setTimeout(()=>{ov.style.display='none';},260);
+  document.body.style.overflow='';
+}
 
-        function toggleNotifications() {
-            document.getElementById('notifDD').classList.toggle('show');
-        }
-        document.addEventListener('click', e => {
-            const dd = document.getElementById('notifDD');
-            const bell = document.querySelector('.notif-bell');
-            if (!bell.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('show');
-        });
+function setUser(){
+  const av=initials(USER.name);
+  ['sideAv','topAv'].forEach(id=>document.getElementById(id).textContent=av);
+  document.getElementById('sideNm').textContent=USER.name;
+  document.getElementById('topNm').textContent=USER.name;
+  document.getElementById('topId').textContent=USER.id;
+}
 
-        const timeAgo = t => {
-            const s = Math.floor((Date.now() - new Date(t)) / 1000);
-            if (s < 60) return 'Just now';
-            if (s < 3600) return `${Math.floor(s/60)}m ago`;
-            if (s < 86400) return `${Math.floor(s/3600)}h ago`;
-            return `${Math.floor(s/86400)}d ago`;
-        };
+function renderRes(){
+  const el=document.getElementById('resList');
+  RES.forEach(r=>{
+    const c=document.createElement('div');
+    c.className='res-card';
+    c.style.setProperty('--stripe-color',r.stripe);
+    c.innerHTML=`<div class="res-icon-wrap" style="background:${r.iconBg};"><svg viewBox="0 0 24 24" fill="none" stroke="${r.iconStroke}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${r.icon}</svg></div><div class="res-body"><div class="res-name">${r.name}</div><div class="res-desc">${r.sub}</div><div class="res-meta"><span>${fmt(r.start)} – ${fmt(r.end)}</span><span class="tag tag-${r.status}">${r.status.charAt(0).toUpperCase()+r.status.slice(1)}</span></div></div><div class="res-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>`;
+    el.appendChild(c);
+  });
+}
 
-        function to12hPHT(ts) {
-            if (!ts) return '—';
-            const parts = ts.split(':');
-            let h = parseInt(parts[0], 10);
-            const m = parts[1] ? parts[1].padStart(2, '0') : '00';
-            if (isNaN(h)) return ts;
-            const ampm = h < 12 ? 'AM' : 'PM';
-            h = h % 12 || 12;
-            return `${h}:${m} ${ampm}`;
-        }
+function renderUsers(){
+  const el=document.getElementById('usersList');
+  MEMBERS.forEach(m=>{
+    const r=document.createElement('div');r.className='user-row';
+    r.innerHTML=`<div class="member-av" style="background:${m.bg};">${initials(m.name)}</div><div style="min-width:0;"><div class="member-name">${m.name}</div><div class="member-id">${m.id}</div></div><div class="online-dot"></div>`;
+    el.appendChild(r);
+  });
+}
 
-        function openDateModal(date, items) {
-            const d = new Date(date + 'T00:00:00');
-            document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-            });
-            document.getElementById('modalDateSub').textContent = items.length ?
-                `${items.length} reservation${items.length > 1 ? 's' : ''}` :
-                '';
-            const list = document.getElementById('modalList');
-            const empty = document.getElementById('modalEmpty');
-            list.innerHTML = '';
+let calCur=new Date(2026,4,1);
+const MONTHS='January February March April May June July August September October November December'.split(' ');
+const EV=[1,3,7,14,15,22,28];
+function renderCal(){
+  document.getElementById('calTitle').textContent=`${MONTHS[calCur.getMonth()]} ${calCur.getFullYear()}`;
+  const grid=document.getElementById('calGrid');
+  grid.innerHTML='';
+  'M T W T F S S'.split(' ').forEach(d=>{const e=document.createElement('div');e.className='cal-dow';e.textContent=d;grid.appendChild(e);});
+  let start=new Date(calCur.getFullYear(),calCur.getMonth(),1).getDay();
+  start=(start+6)%7;
+  const days=new Date(calCur.getFullYear(),calCur.getMonth()+1,0).getDate();
+  const now=new Date();
+  for(let i=0;i<start;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+  for(let d=1;d<=days;d++){
+    const e=document.createElement('div');e.className='cal-day';e.textContent=d;
+    if(d===now.getDate()&&calCur.getMonth()===now.getMonth()&&calCur.getFullYear()===now.getFullYear())e.classList.add('today');
+    if(EV.includes(d))e.classList.add('has-ev');
+    grid.appendChild(e);
+  }
+}
+function calMove(dir){calCur=new Date(calCur.getFullYear(),calCur.getMonth()+dir,1);renderCal();}
 
-            if (items.length) {
-                empty.classList.add('hidden');
-                const cmap = {
-                    approved: '#dcfce7|#166534',
-                    pending: '#fef3c7|#92400e',
-                    declined: '#fee2e2|#991b1b',
-                    canceled: '#fee2e2|#991b1b',
-                    claimed: '#ede9fe|#5b21b6'
-                };
-
-                items.sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')).forEach(r => {
-                    const isClaimed = r.claimed == 1 || r.status === 'claimed' || !!r.claimed_at;
-                    const s = isClaimed ? 'claimed' : (r.status || 'pending').toLowerCase();
-                    const [cbg, cfg] = (cmap[s] || '#f1f5f9|#475569').split('|');
-                    const tFmt = r.start_time ? to12hPHT(r.start_time) : 'All day';
-                    const etFmt = r.end_time ? to12hPHT(r.end_time) : '';
-                    const timeDisplay = etFmt ? `${tFmt} – ${etFmt} PHT` : tFmt;
-
-                    const row = document.createElement('div');
-                    row.className = 'date-row';
-                    row.innerHTML = `
-            <div style="width:32px;height:32px;background:var(--input-bg);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--border);">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-sub)" stroke-width="1.5" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-                <p style="font-family:var(--font);font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name || 'Reserved'}</p>
-                <p style="font-family:var(--font);font-size:11px;color:#3730a3;margin-top:1px;font-weight:600;">${timeDisplay}</p>
-            </div>
-            <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};flex-shrink:0;">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
-                    list.appendChild(row);
-                });
-            } else {
-                empty.classList.remove('hidden');
-            }
-
-            document.getElementById('dateModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDateModal() {
-            document.getElementById('dateModal').classList.remove('show');
-            document.body.style.overflow = '';
-        }
-
-        function handleModalBack(e) {
-            if (e.target.classList.contains('modal-back')) closeDateModal();
-        }
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeDateModal();
-        });
-
-        function initTimer() {
-            const banner = document.getElementById('timerBanner'),
-                titleEl = document.getElementById('timerTitle'),
-                subEl = document.getElementById('timerSub'),
-                hEl = document.getElementById('tdH'),
-                mEl = document.getElementById('tdM'),
-                sEl = document.getElementById('tdS'),
-                iconW = document.getElementById('timerIconWrap'),
-                pw = document.getElementById('timerPW'),
-                pf = document.getElementById('timerPF');
-
-            const mkSvg = (path, sw) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" style="width:16px;height:16px;flex-shrink:0;">${path}</svg>`;
-            const icons = {
-                urgent: mkSvg('<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', '1.8'),
-                warning: mkSvg('<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round"/>', '1.8'),
-                safe: mkSvg('<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>', '1.8'),
-            };
-
-            function findTarget() {
-                const now = Date.now();
-                let active = null,
-                    upcoming = null;
-                approvedRes.forEach(r => {
-                    if (!r.reservation_date || !r.start_time || !r.end_time) return;
-                    const start = new Date(r.reservation_date + 'T' + r.start_time).getTime();
-                    const end = new Date(r.reservation_date + 'T' + r.end_time).getTime();
-                    const minsToStart = (start - now) / 60000;
-                    const minsToEnd = (end - now) / 60000;
-                    if (now >= start && now < end && !active) active = {
-                        r,
-                        start,
-                        end,
-                        mode: 'active',
-                        minsLeft: minsToEnd
-                    };
-                    if (!upcoming && minsToStart > 0 && minsToStart <= 30) upcoming = {
-                        r,
-                        start,
-                        end,
-                        mode: 'upcoming',
-                        minsLeft: minsToStart
-                    };
-                });
-                return active || upcoming || null;
-            }
-
-            function tick() {
-                const target = findTarget();
-                if (!target) {
-                    banner.style.display = 'none';
-                    return;
-                }
-                const {
-                    r,
-                    start,
-                    end,
-                    mode,
-                    minsLeft
-                } = target;
-                const now = Date.now();
-                const diff = Math.max(0, (mode === 'active' ? end : start) - now);
-                const h = Math.floor(diff / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                hEl.textContent = String(h).padStart(2, '0');
-                mEl.textContent = String(m).padStart(2, '0');
-                sEl.textContent = String(s).padStart(2, '0');
-                banner.classList.remove('urgent', 'warning', 'safe');
-                if (mode === 'active') {
-                    if (minsLeft <= 10) {
-                        banner.classList.add('urgent');
-                        iconW.innerHTML = icons.urgent;
-                    } else if (minsLeft <= 20) {
-                        banner.classList.add('warning');
-                        iconW.innerHTML = icons.warning;
-                    } else {
-                        banner.classList.add('safe');
-                        iconW.innerHTML = icons.safe;
-                    }
-                    titleEl.textContent = minsLeft <= 10 ? '⚠ Reservation ends very soon!' : 'Your reservation is active';
-                    subEl.textContent = `${r.resource_name||'Resource'} · Ends at ${(r.end_time||'').substring(0,5)}`;
-                    const pct = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
-                    pw.style.display = 'block';
-                    pf.style.width = pct.toFixed(1) + '%';
-                } else {
-                    banner.classList.add('safe');
-                    iconW.innerHTML = icons.safe;
-                    titleEl.textContent = 'Your reservation starts soon';
-                    subEl.textContent = `${r.resource_name||'Resource'} · Starts at ${(r.start_time||'').substring(0,5)}`;
-                    pw.style.display = 'none';
-                }
-                banner.style.display = 'block';
-            }
-            tick();
-            setInterval(tick, 1000);
-        }
-
-        function showLoginToast() {
-            const key = 'toast_<?= session()->get('user_id') ?>_' + new Date().toDateString();
-            if (sessionStorage.getItem(key)) return;
-            sessionStorage.setItem(key, '1');
-            const now = Date.now();
-            let td = null;
-            approvedRes.forEach(r => {
-                if (!r.reservation_date || !r.start_time || !r.end_time) return;
-                const start = new Date(r.reservation_date + 'T' + r.start_time).getTime();
-                const end = new Date(r.reservation_date + 'T' + r.end_time).getTime();
-                const minsToStart = (start - now) / 60000;
-                const today = new Date().toDateString();
-                const resDay = new Date(r.reservation_date + 'T00:00:00').toDateString();
-                if (now >= start && now < end && !td)
-                    td = {
-                        icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
-                        bg: 'rgba(37,99,235,.2)',
-                        title: 'Active reservation now!',
-                        body: `${r.resource_name||'Resource'} ends at ${(r.end_time||'').substring(0,5)}`
-                    };
-                if (!td && resDay === today && minsToStart > 0 && minsToStart <= 120)
-                    td = {
-                        icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
-                        bg: 'rgba(217,119,6,.2)',
-                        title: `In ${Math.round(minsToStart)} min`,
-                        body: `${r.resource_name||'Resource'} · ${(r.start_time||'').substring(0,5)} – ${(r.end_time||'').substring(0,5)}`
-                    };
-                if (!td && resDay === today) {
-                    const fmt = t => {
-                        const [h, m] = t.split(':');
-                        const hr = +h;
-                        return `${hr%12||12}:${m} ${hr<12?'AM':'PM'}`;
-                    };
-                    td = {
-                        icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>',
-                        bg: 'rgba(37,99,235,.2)',
-                        title: 'Reservation today',
-                        body: `${r.resource_name||'Resource'} · ${fmt(r.start_time)} – ${fmt(r.end_time)}`
-                    };
-                }
-            });
-            if (!td) return;
-            const toast = document.getElementById('loginToast');
-            document.getElementById('toastIcon').innerHTML = td.icon;
-            document.getElementById('toastIcon').style.background = td.bg;
-            document.getElementById('toastTitle').textContent = td.title;
-            document.getElementById('toastBody').textContent = td.body;
-            setTimeout(() => toast.classList.add('show'), 900);
-            setTimeout(() => toast.classList.remove('show'), 7500);
-        }
-
-        function dismissToast() {
-            document.getElementById('loginToast').classList.remove('show');
-        }
-
-        async function doRagSearch() {
-            const query = document.getElementById('ragInput').value.trim();
-            if (query.length < 2) return;
-            const skel = document.getElementById('ragSkel'),
-                res = document.getElementById('ragResult'),
-                err = document.getElementById('ragErr'),
-                btn = document.getElementById('ragBtn');
-            res.classList.remove('show');
-            err.style.display = 'none';
-            skel.style.display = 'block';
-            btn.disabled = true;
-            try {
-                const r = await fetch('/rag/suggest', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        query
-                    })
-                });
-                const d = await r.json();
-                skel.style.display = 'none';
-                btn.disabled = false;
-                if (d.message && !d.suggestion) {
-                    err.textContent = d.message;
-                    err.style.display = 'block';
-                    return;
-                }
-                if (d.error && !d.books) {
-                    err.textContent = d.error;
-                    err.style.display = 'block';
-                    return;
-                }
-                document.getElementById('ragText').textContent = d.suggestion || '';
-                const booksRow = document.getElementById('ragBooks');
-                booksRow.innerHTML = '';
-                (d.books || []).slice(0, 4).forEach(b => {
-                    const avail = (b.available_copies || 0) > 0;
-                    const chip = document.createElement('a');
-                    chip.href = '/books';
-                    chip.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:8px;font-family:var(--font);font-size:10px;font-weight:600;border:1px solid;transition:all .15s;text-decoration:none;max-width:100%;overflow:hidden;${avail?'background:var(--card);border-color:var(--indigo-border);color:var(--indigo);':'background:var(--input-bg);border-color:var(--border);color:var(--text-sub);'}`;
-                    const titleSpan = document.createElement('span');
-                    titleSpan.style.cssText = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-                    titleSpan.textContent = b.title + (!avail ? ' (out)' : '');
-                    chip.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:9px;height:9px;flex-shrink:0;"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round"/></svg>`;
-                    chip.appendChild(titleSpan);
-                    booksRow.appendChild(chip);
-                });
-                res.classList.add('show');
-            } catch (e) {
-                skel.style.display = 'none';
-                btn.disabled = false;
-                err.textContent = 'Network error. Try again.';
-                err.style.display = 'block';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.documentElement.classList.remove('dark-pre');
-            if ('Notification' in window) Notification.requestPermission();
-            loadNotifications();
-            initTimer();
-            showLoginToast();
-
-            const byDate = {};
-            allResData.forEach(r => {
-                if (!r.reservation_date) return;
-                if (!byDate[r.reservation_date]) byDate[r.reservation_date] = [];
-                byDate[r.reservation_date].push(r);
-            });
-
-            const colorMap = {
-                approved: '#10b981',
-                pending: '#fbbf24',
-                declined: '#f87171',
-                canceled: '#f87171',
-                claimed: '#a855f7'
-            };
-            const events = allResData.filter(r => r.reservation_date).map(r => {
-                const isClaimed = r.claimed == 1 || r.status === 'claimed' || !!r.claimed_at;
-                const s = isClaimed ? 'claimed' : (r.status || 'pending').toLowerCase();
-                const d = r.reservation_date.trim();
-                return {
-                    title: r.resource_name || 'Reservation',
-                    start: d + (r.start_time ? 'T' + r.start_time.substring(0, 8) : ''),
-                    end: d + (r.end_time ? 'T' + r.end_time.substring(0, 8) : ''),
-                    allDay: !r.start_time,
-                    backgroundColor: colorMap[s] || '#94a3b8',
-                    borderColor: 'transparent',
-                    textColor: '#fff',
-                    extendedProps: {
-                        status: s
-                    }
-                };
-            });
-
-            const w = window.innerWidth;
-            const calView = w < 480 ? 'listWeek' : 'dayGridMonth';
-            const calHeight = w < 640 ? 'auto' : 360;
-
-            const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: calView,
-                headerToolbar: {
-                    left: 'prev,next',
-                    center: 'title',
-                    right: 'today'
-                },
-                events,
-                height: calHeight,
-                eventDisplay: 'block',
-                eventMaxStack: 2,
-                dateClick: info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
-                eventClick: info => {
-                    const d = info.event.startStr.split('T')[0];
-                    openDateModal(d, byDate[d] || []);
-                },
-                dayCellDidMount: info => {
-                    const d = info.date.toISOString().split('T')[0];
-                    const items = byDate[d];
-                    if (items && items.length) {
-                        const badge = document.createElement('div');
-                        badge.style.cssText = 'font-family:var(--mono);font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;margin-bottom:1px;';
-                        badge.textContent = items.length;
-                        info.el.querySelector('.fc-daygrid-day-top')?.appendChild(badge);
-                    }
-                }
-            });
-            cal.render();
-        });
-    </script>
-
-    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
-    <?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
+setUser();renderRes();renderUsers();renderCal();
+</script>
 </body>
-
 </html>
