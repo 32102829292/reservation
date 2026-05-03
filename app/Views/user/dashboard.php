@@ -1,5 +1,5 @@
 <?php
-/* ── Status logic (unchanged from original) ── */
+/* ── Status logic ── */
 $unclaimedCount = 0;
 $claimedCount   = 0;
 $processedRecent = [];
@@ -45,7 +45,6 @@ function sk_icon(string $name, int $size = 20): string
         'home'       => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
         'users'      => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0',
         'book'       => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-        'search'     => 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0',
         'bell'       => 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
         'plus'       => 'M12 5v14M5 12h14',
         'calendar'   => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
@@ -183,13 +182,11 @@ SVG;
     --text-2:      #4A4A6A;
     --text-3:      #8888AA;
 
-    /* Sidebar-specific tokens */
-    --sb-bg1:      #1E1535;
-    --sb-bg2:      #160F2B;
-    --sb-link:     rgba(255,255,255,.55);
-    --sb-link-h:   rgba(255,255,255,.92);
-    --sb-active-bg:rgba(255,255,255,.1);
-    --sb-label:    rgba(255,255,255,.3);
+    /* Sidebar tokens */
+    --sb-bg:       #1E1535;
+    --sb-link:     rgba(255,255,255,.5);
+    --sb-link-h:   rgba(255,255,255,.9);
+    --sb-label:    rgba(255,255,255,.28);
     --sb-border:   rgba(255,255,255,.07);
 
     --r-sm: 12px;
@@ -219,12 +216,12 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
 .sk-shell { display: flex; height: 100vh; overflow: hidden; }
 
 /* ═══════════════════════════════════
-   REDESIGNED SIDEBAR
+   SIMPLIFIED SIDEBAR
 ═══════════════════════════════════ */
 .sk-sidebar {
-    width: 252px;
+    width: 232px;
     flex-shrink: 0;
-    background: var(--sb-bg1);
+    background: var(--sb-bg);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -234,215 +231,141 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     overflow: hidden;
 }
 
-/* Subtle geometric background texture */
-.sk-sidebar::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,58,237,.35) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(67,56,202,.2) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* Dot-grid texture overlay */
-.sk-sidebar::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
-    background-size: 20px 20px;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.sk-sidebar > * { position: relative; z-index: 1; }
-
 /* ── Logo area ── */
 .sk-logo {
     display: flex;
     align-items: center;
-    gap: 11px;
-    padding: 22px 18px 18px;
+    gap: 10px;
+    padding: 20px 16px 16px;
     border-bottom: 1px solid var(--sb-border);
     flex-shrink: 0;
 }
 
 .sk-logo-mark {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, #9F7AEA 0%, #7C3AED 50%, #4338CA 100%);
-    border-radius: 11px;
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #9F7AEA 0%, #6D28D9 100%);
+    border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 0 1px rgba(255,255,255,.15), 0 4px 14px rgba(124,58,237,.5);
     flex-shrink: 0;
 }
 .sk-logo-mark svg { color: white; }
 
 .sk-logo-text { display: flex; flex-direction: column; gap: 1px; }
 .sk-logo-name {
-    font-size: 15px; font-weight: 700;
-    color: white; letter-spacing: -.4px; line-height: 1.1;
+    font-size: 14px; font-weight: 700;
+    color: white; letter-spacing: -.3px; line-height: 1.1;
 }
 .sk-logo-tag {
-    font-size: 9.5px; font-weight: 600; letter-spacing: .12em;
-    text-transform: uppercase; color: rgba(255,255,255,.35);
+    font-size: 9px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: rgba(255,255,255,.3);
 }
 
 /* ── Nav ── */
-.sk-nav { flex: 1; overflow-y: auto; padding: 16px 12px 10px; }
-.sk-nav::-webkit-scrollbar { width: 3px; }
-.sk-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 99px; }
-
-.sk-nav-section { margin-bottom: 4px; }
+.sk-nav { flex: 1; overflow-y: auto; padding: 12px 10px; }
+.sk-nav::-webkit-scrollbar { width: 0; }
 
 .sk-nav-label {
-    font-size: 10px; font-weight: 700; letter-spacing: .13em;
+    font-size: 9.5px; font-weight: 700; letter-spacing: .13em;
     text-transform: uppercase; color: var(--sb-label);
-    padding: 0 12px; margin-bottom: 5px; margin-top: 20px; display: block;
+    padding: 0 10px; margin-bottom: 4px; margin-top: 16px; display: block;
 }
 .sk-nav-label:first-child { margin-top: 2px; }
 
 .sk-nav-link {
-    display: flex; align-items: center; gap: 12px;
-    padding: 11px 12px; border-radius: 12px;
-    color: var(--sb-link); font-size: 14.5px; font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 10px;
+    color: var(--sb-link); font-size: 13.5px; font-weight: 500;
     text-decoration: none; cursor: pointer; border: none; background: none;
-    width: 100%; transition: all .18s ease; position: relative;
-    letter-spacing: -.1px;
+    width: 100%; transition: all .15s ease; position: relative;
 }
 .sk-nav-link:hover {
-    background: rgba(255,255,255,.09);
+    background: rgba(255,255,255,.07);
     color: var(--sb-link-h);
-    transform: translateX(2px);
 }
 .sk-nav-link.active {
-    background: linear-gradient(90deg, rgba(124,58,237,.4) 0%, rgba(124,58,237,.15) 100%);
-    color: white; font-weight: 650;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+    background: rgba(255,255,255,.1);
+    color: white; font-weight: 600;
 }
-/* Active left bar */
 .sk-nav-link.active::before {
     content: '';
     position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-    width: 3.5px; height: 60%; background: linear-gradient(180deg,#C4B5FD,#7C3AED);
-    border-radius: 0 4px 4px 0;
+    width: 3px; height: 55%; background: linear-gradient(180deg,#C4B5FD,#7C3AED);
+    border-radius: 0 3px 3px 0;
 }
 
-.sk-nav-link svg { opacity: .65; transition: opacity .15s ease; width: 18px; height: 18px; flex-shrink: 0; }
+.sk-nav-link svg { opacity: .6; transition: opacity .15s ease; width: 15px; height: 15px; flex-shrink: 0; }
 .sk-nav-link:hover svg, .sk-nav-link.active svg { opacity: 1; }
 
 .sk-nav-link .nav-count {
     margin-left: auto;
-    background: linear-gradient(135deg,#9F7AEA,#7C3AED);
+    background: var(--purple);
     color: white; font-size: 10px; font-weight: 700;
-    padding: 2px 8px; border-radius: 999px; min-width: 22px; text-align: center;
-    box-shadow: 0 2px 6px rgba(124,58,237,.4);
+    padding: 1px 7px; border-radius: 999px; min-width: 20px; text-align: center;
 }
 
-/* Sign out link special color */
-.sk-nav-link.danger { color: rgba(252,165,165,.55); }
-.sk-nav-link.danger:hover { background: rgba(239,68,68,.12); color: #FCA5A5; transform: translateX(2px); }
+.sk-nav-link.danger { color: rgba(252,165,165,.5); }
+.sk-nav-link.danger:hover { background: rgba(239,68,68,.1); color: #FCA5A5; }
 .sk-nav-link.danger svg { opacity: .5; }
 .sk-nav-link.danger:hover svg { opacity: 1; }
 
 /* ── Divider ── */
 .sk-nav-divider {
     height: 1px; background: var(--sb-border);
-    margin: 10px 10px;
+    margin: 8px 8px;
 }
 
 /* ── User footer card ── */
 .sk-sidebar-footer {
-    margin: 10px 12px 14px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.09);
-    border-radius: 14px;
-    padding: 12px 12px;
-    display: flex; align-items: center; gap: 9px;
-    backdrop-filter: blur(8px);
+    margin: 10px 10px 14px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 10px 11px;
+    display: flex; align-items: center; gap: 8px;
     flex-shrink: 0;
 }
 
 .sk-footer-avatar {
-    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
     background: linear-gradient(135deg, #C4B5FD 0%, #7C3AED 100%);
     display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 700; font-size: 13px;
-    box-shadow: 0 0 0 2px rgba(255,255,255,.15);
+    color: white; font-weight: 700; font-size: 12px;
 }
 .sk-footer-info { flex: 1; min-width: 0; }
 .sk-footer-name {
-    font-size: 12.5px; font-weight: 650; color: rgba(255,255,255,.9);
+    font-size: 12px; font-weight: 600; color: rgba(255,255,255,.88);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
 }
 .sk-footer-role {
-    font-size: 10px; font-weight: 500; color: rgba(255,255,255,.4);
-    margin-top: 2px; text-transform: uppercase; letter-spacing: .08em;
+    font-size: 9.5px; font-weight: 500; color: rgba(255,255,255,.35);
+    margin-top: 1px; text-transform: uppercase; letter-spacing: .07em;
 }
 .sk-footer-dot {
-    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
     background: #4ADE80;
-    box-shadow: 0 0 0 2px rgba(74,222,128,.25);
 }
 
 /* ─────────── MAIN AREA ─────────── */
 .sk-main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 
-/* ─────────── TOPBAR ─────────── */
+/* ─────────── TOPBAR (no search) ─────────── */
 .sk-topbar {
     display: flex; align-items: center; gap: 14px;
-    padding: 16px 28px; background: var(--card);
+    padding: 14px 28px; background: var(--card);
     border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
 
-.sk-search { flex: 1; max-width: 420px; position: relative; }
-.sk-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
-.sk-search-input {
-    width: 100%; padding: 10px 16px 10px 42px;
-    background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 50px; font-family: var(--font); font-size: 14px;
-    color: var(--text); outline: none; transition: all var(--ease);
+.sk-topbar-title {
+    font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.2px;
 }
-.sk-search-input::placeholder { color: var(--text-3); }
-.sk-search-input:focus { border-color: var(--purple-mid); background: var(--card); box-shadow: 0 0 0 4px rgba(124,58,237,.1); }
-
-/* Search dropdown */
-.sk-search-drop {
-    display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.12);
-    z-index: 500; overflow: hidden; max-height: 380px; overflow-y: auto;
-}
-.sk-search-drop.show { display: block; animation: fadeUp .15s ease; }
-.sk-search-drop-header {
-    padding: 10px 14px 6px; font-size: 10px; font-weight: 700;
-    letter-spacing: .1em; text-transform: uppercase; color: var(--text-3);
-}
-.sk-search-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 14px; cursor: pointer; transition: background var(--ease);
-    text-decoration: none; color: var(--text);
-}
-.sk-search-item:hover { background: var(--purple-lt); }
-.sk-search-icon-sm {
-    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-}
-.sk-search-item-title { font-size: 13px; font-weight: 600; color: var(--text); }
-.sk-search-item-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
-.sk-search-empty { padding: 24px 14px; text-align: center; font-size: 13px; color: var(--text-3); }
-.sk-search-kbd {
-    margin-left: auto; flex-shrink: 0;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 5px; padding: 1px 6px; font-size: 10px;
-    font-family: var(--mono); color: var(--text-3);
+.sk-topbar-sub {
+    font-size: 12px; color: var(--text-3); margin-top: 1px;
 }
 
 .sk-topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
 .sk-icon-btn {
-    width: 38px; height: 38px; border-radius: 50%;
+    width: 36px; height: 36px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     background: var(--bg); border: 1px solid var(--border);
     color: var(--text-2); cursor: pointer; transition: all var(--ease); position: relative;
@@ -451,7 +374,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
 
 .sk-notif-dot {
     position: absolute; top: 6px; right: 6px;
-    width: 8px; height: 8px; border-radius: 50%;
+    width: 7px; height: 7px; border-radius: 50%;
     background: #EF4444; border: 2px solid var(--card);
 }
 
@@ -459,17 +382,17 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     display: flex; align-items: center; gap: 7px;
     padding: 9px 18px; background: var(--purple);
     color: white; border-radius: 50px;
-    font-family: var(--font); font-size: 13.5px; font-weight: 600;
+    font-family: var(--font); font-size: 13px; font-weight: 600;
     border: none; cursor: pointer; text-decoration: none;
-    box-shadow: 0 4px 14px rgba(124,58,237,.35); transition: all var(--ease);
+    box-shadow: 0 4px 14px rgba(124,58,237,.3); transition: all var(--ease);
 }
 .sk-reserve-btn:hover { background: var(--purple-dk); transform: translateY(-1px); }
 
 .sk-avatar {
-    width: 38px; height: 38px; border-radius: 50%;
+    width: 36px; height: 36px; border-radius: 50%;
     background: linear-gradient(135deg, var(--purple) 0%, #9F7AEA 100%);
     display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 700; font-size: 14px; flex-shrink: 0; cursor: pointer;
+    color: white; font-weight: 700; font-size: 13px; flex-shrink: 0; cursor: pointer;
 }
 
 /* ─────────── SCROLL AREA ─────────── */
@@ -601,7 +524,7 @@ body.dark .fc-daygrid-day-number, body.dark .fc-col-header-cell-cushion { color:
 @keyframes fadeUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 /* ─────────── NOTIFICATIONS ─────────── */
-.sk-notif-dd { position: fixed; top: 72px; right: 24px; width: 300px; background: var(--card); border-radius: var(--r-xl); box-shadow: var(--shadow-lg); border: 1px solid var(--border); z-index: 200; display: none; overflow: hidden; }
+.sk-notif-dd { position: fixed; top: 64px; right: 24px; width: 300px; background: var(--card); border-radius: var(--r-xl); box-shadow: var(--shadow-lg); border: 1px solid var(--border); z-index: 200; display: none; overflow: hidden; }
 .sk-notif-dd.show { display: block; animation: fadeUp .15s ease; }
 .sk-notif-item { padding: 11px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background var(--ease); }
 .sk-notif-item:hover { background: var(--purple-lt); }
@@ -668,7 +591,7 @@ $pendingStr = $pending ?? 0;
 
         <!-- Logo -->
         <div class="sk-logo">
-            <div class="sk-logo-mark"><?= sk_icon('book', 17) ?></div>
+            <div class="sk-logo-mark"><?= sk_icon('book', 15) ?></div>
             <div class="sk-logo-text">
                 <span class="sk-logo-name">eLibReserve</span>
                 <span class="sk-logo-tag">Community Library</span>
@@ -680,13 +603,13 @@ $pendingStr = $pending ?? 0;
             <span class="sk-nav-label">Main</span>
 
             <a href="<?= function_exists('base_url') ? base_url('/dashboard') : '#' ?>" class="sk-nav-link active">
-                <?= sk_icon('home', 16) ?> Dashboard
+                <?= sk_icon('home', 15) ?> Dashboard
             </a>
             <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-nav-link">
-                <?= sk_icon('plus', 16) ?> New Reservation
+                <?= sk_icon('plus', 15) ?> New Reservation
             </a>
             <a href="<?= function_exists('base_url') ? base_url('/reservation-list') : '#' ?>" class="sk-nav-link">
-                <?= sk_icon('calendar', 16) ?> My Reservations
+                <?= sk_icon('calendar', 15) ?> My Reservations
                 <?php if ($pendingStr > 0): ?><span class="nav-count"><?= $pendingStr ?></span><?php endif; ?>
             </a>
 
@@ -694,24 +617,24 @@ $pendingStr = $pending ?? 0;
             <span class="sk-nav-label">Library</span>
 
             <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>" class="sk-nav-link">
-                <?= sk_icon('book', 16) ?> Browse Books
+                <?= sk_icon('book', 15) ?> Browse Books
             </a>
             <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>#mine" class="sk-nav-link">
-                <?= sk_icon('bookmark', 16) ?> My Borrows
+                <?= sk_icon('bookmark', 15) ?> My Borrows
             </a>
 
             <div class="sk-nav-divider"></div>
             <span class="sk-nav-label">Account</span>
 
             <a href="<?= function_exists('base_url') ? base_url('/profile') : '#' ?>" class="sk-nav-link">
-                <?= sk_icon('user', 16) ?> Profile
+                <?= sk_icon('user', 15) ?> Profile
             </a>
             <a href="<?= function_exists('base_url') ? base_url('/logout') : '#' ?>" class="sk-nav-link danger">
-                <?= sk_icon('logout', 16) ?> Sign Out
+                <?= sk_icon('logout', 15) ?> Sign Out
             </a>
         </nav>
 
-        <!-- User footer card -->
+        <!-- User footer -->
         <div class="sk-sidebar-footer">
             <div class="sk-footer-avatar"><?= esc($initials) ?></div>
             <div class="sk-footer-info">
@@ -725,7 +648,7 @@ $pendingStr = $pending ?? 0;
     <!-- ═══════════════ MAIN ═══════════════ -->
     <div class="sk-main">
 
-        <!-- ── Topbar ── -->
+        <!-- ── Topbar (no search bar) ── -->
         <header class="sk-topbar">
             <button class="sk-icon-btn" style="display:none;border-radius:10px;" id="menuBtn" onclick="document.getElementById('skSidebar').classList.toggle('open')" aria-label="Menu">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:18px;height:18px;">
@@ -733,29 +656,24 @@ $pendingStr = $pending ?? 0;
                 </svg>
             </button>
 
-            <div class="sk-search" id="skSearchWrap">
-                <span class="sk-search-icon"><?= sk_icon('search', 16) ?></span>
-                <input type="text" class="sk-search-input" id="skSearchInput"
-                    placeholder="Search books, reservations…" autocomplete="off"
-                    oninput="handleSearch(this.value)"
-                    onfocus="handleSearch(this.value)"
-                />
-                <div class="sk-search-drop" id="skSearchDrop"></div>
+            <div>
+                <div class="sk-topbar-title">Dashboard</div>
+                <div class="sk-topbar-sub"><?= $greeting ?>, <?= esc(explode(' ', $user_name ?? 'there')[0]) ?> &middot; <?= date('F j, Y') ?></div>
             </div>
 
             <div class="sk-topbar-actions">
                 <button class="sk-icon-btn" onclick="toggleDark()" title="Toggle theme" aria-label="Toggle dark mode">
-                    <span id="themeIconLight"><?= sk_icon('moon', 16) ?></span>
-                    <span id="themeIconDark" style="display:none;"><?= sk_icon('sun', 16) ?></span>
+                    <span id="themeIconLight"><?= sk_icon('moon', 15) ?></span>
+                    <span id="themeIconDark" style="display:none;"><?= sk_icon('sun', 15) ?></span>
                 </button>
 
                 <button class="sk-icon-btn" onclick="toggleNotifications()" style="position:relative;" aria-label="Notifications">
-                    <?= sk_icon('bell', 16) ?>
+                    <?= sk_icon('bell', 15) ?>
                     <span class="sk-notif-dot" id="notifDot" style="display:none;"></span>
                 </button>
 
                 <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-reserve-btn">
-                    <?= sk_icon('plus', 15) ?> Reserve
+                    <?= sk_icon('plus', 14) ?> Reserve
                 </a>
 
                 <div class="sk-avatar" title="<?= esc($user_name ?? '') ?>"><?= esc($initials) ?></div>
@@ -1112,7 +1030,6 @@ $pendingStr = $pending ?? 0;
 const NOTIF_KEY  = 'sk_notifs_<?= session()->get('user_id') ?? 0 ?>';
 const reservations = <?= json_encode($reservations ?? []) ?>;
 const allResData   = <?= json_encode($allReservations ?? []) ?>;
-const approvedRes  = reservations.filter(r => r.status === 'approved' && !r.claimed);
 
 function toggleDark() {
     const isDark = document.body.classList.toggle('dark');
