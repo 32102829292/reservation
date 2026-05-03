@@ -3,10 +3,6 @@ $unclaimedCount = 0;
 $claimedCount   = 0;
 $processedRecent = [];
 foreach (($reservations ?? []) as $r) {
-    // ── FIX: mirror sk_reservations.php robust claimed detection ──
-    // 1. in_array strict — catches bool true, int 1, strings '1','t','true'
-    // 2. status column set to "claimed" by the scanner
-    // 3. claimed_at timestamp — most reliable; only set when scanner processes the ticket
     $isCl = in_array($r['claimed'] ?? false, [true, 1, 't', 'true', '1'], true)
         || strtolower($r['status'] ?? '') === 'claimed'
         || !empty($r['claimed_at']);
@@ -67,9 +63,6 @@ $nextColors = [
     'slate'  => ['bg' => 'rgba(100,116,139,.05)', 'border' => 'rgba(100,116,139,.15)', 'icon_bg' => 'rgba(100,116,139,.1)', 'icon_fg' => '#64748b', 'btn_bg' => '#64748b', 'icon' => 'calendar-x'],
 ];
 
-/**
- * Render an inline SVG icon with explicit, fixed dimensions.
- */
 function icon(string $name, int $size = 16, string $stroke = 'currentColor', string $extra = ''): string
 {
     static $icons = [
@@ -107,14 +100,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
     [$d, $sw] = $icons[$name] ?? ['<circle cx="12" cy="12" r="10"/>', '1.8'];
     return sprintf(
         '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="%s" style="width:%dpx;height:%dpx;flex-shrink:0;" %s>%s</svg>',
-        $size,
-        $size,
-        htmlspecialchars($stroke, ENT_QUOTES),
-        $sw,
-        $size,
-        $size,
-        $extra,
-        $d
+        $size, $size, htmlspecialchars($stroke, ENT_QUOTES), $sw, $size, $size, $extra, $d
     );
 }
 ?>
@@ -130,7 +116,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
     <meta name="theme-color" content="#1e1b4b">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script>
@@ -177,9 +163,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         }
 
         @media(min-width:480px) {
-            .reserve-btn {
-                display: flex;
-            }
+            .reserve-btn { display: flex; }
         }
 
         .reserve-btn:hover {
@@ -188,1477 +172,616 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             box-shadow: 0 6px 18px rgba(55, 48, 163, .35);
         }
 
-        .reserve-btn svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
+        .reserve-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
 
         /* ── Notification dropdown ── */
-        .notif-bell {
-            position: relative;
-        }
-
+        .notif-bell { position: relative; }
         .notif-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ef4444;
-            color: white;
-            font-family: var(--font);
-            font-size: .55rem;
-            font-weight: 700;
-            padding: 2px 5px;
-            border-radius: 999px;
-            min-width: 17px;
-            text-align: center;
-            border: 2px solid var(--bg);
-            line-height: 1.3;
-            pointer-events: none;
+            position: absolute; top: -5px; right: -5px;
+            background: #ef4444; color: white;
+            font-family: var(--font); font-size: .55rem; font-weight: 700;
+            padding: 2px 5px; border-radius: 999px; min-width: 17px;
+            text-align: center; border: 2px solid var(--bg);
+            line-height: 1.3; pointer-events: none;
         }
-
         .notif-dd {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 320px;
-            background: var(--card);
-            border-radius: var(--r-xl);
-            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99, 102, 241, .09);
-            z-index: 200;
-            display: none;
-            overflow: hidden;
+            position: fixed; top: 80px; right: 20px; width: 320px;
+            background: var(--card); border-radius: var(--r-xl);
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99,102,241,.09);
+            z-index: 200; display: none; overflow: hidden;
         }
-
-        .notif-dd.show {
-            display: block;
-            animation: l-fade-in .15s ease;
-        }
-
+        .notif-dd.show { display: block; animation: l-fade-in .15s ease; }
         .notif-item {
-            padding: .85rem 1.1rem;
-            border-bottom: 1px solid var(--border-subtle);
-            transition: background .15s;
-            cursor: pointer;
-            touch-action: manipulation;
+            padding: .85rem 1.1rem; border-bottom: 1px solid var(--border-subtle);
+            transition: background .15s; cursor: pointer; touch-action: manipulation;
         }
-
-        .notif-item:hover {
-            background: var(--input-bg);
-        }
-
-        .notif-item.unread {
-            background: var(--indigo-light);
-        }
-
-        .notif-item:last-child {
-            border-bottom: none;
-        }
-
+        .notif-item:hover { background: var(--input-bg); }
+        .notif-item.unread { background: var(--indigo-light); }
+        .notif-item:last-child { border-bottom: none; }
         @media(max-width:479px) {
-            .notif-dd {
-                left: 12px;
-                right: 12px;
-                width: auto;
-                top: 72px;
-            }
+            .notif-dd { left: 12px; right: 12px; width: auto; top: 72px; }
         }
 
         /* ── Next-action card ── */
         .next-card {
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            border-radius: var(--r-md);
-            padding: 16px 18px;
-            border: 1px solid;
-            margin-bottom: 20px;
-            animation: l-slide-up .4s ease both;
+            display: flex; align-items: flex-start; gap: 14px;
+            border-radius: var(--r-md); padding: 16px 18px; border: 1px solid;
+            margin-bottom: 20px; animation: l-slide-up .4s ease both;
         }
-
         .next-icon-wrap {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-
-        .next-icon-wrap svg {
-            width: 14px;
-            height: 14px;
-            flex-shrink: 0;
-        }
-
+        .next-icon-wrap svg { width: 14px; height: 14px; flex-shrink: 0; }
         .next-eyebrow {
-            font-family: var(--font);
-            font-size: .6rem;
-            font-weight: 700;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-            margin-bottom: 4px;
+            font-family: var(--font); font-size: .6rem; font-weight: 700;
+            letter-spacing: .16em; text-transform: uppercase; margin-bottom: 4px;
         }
-
-        .next-msg {
-            font-family: var(--font);
-            font-size: .83rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
+        .next-msg { font-family: var(--font); font-size: .83rem; color: var(--text-muted); line-height: 1.6; }
         .next-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 10px;
-            padding: 9px 16px;
-            border-radius: 9px;
-            font-family: var(--font);
-            font-size: .75rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            transition: opacity var(--ease);
-            touch-action: manipulation;
+            display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+            padding: 9px 16px; border-radius: 9px; font-family: var(--font);
+            font-size: .75rem; font-weight: 700; color: #fff; text-decoration: none;
+            transition: opacity var(--ease); touch-action: manipulation;
         }
-
-        .next-cta:hover {
-            opacity: .85;
-        }
-
-        .next-cta svg {
-            width: 12px;
-            height: 12px;
-            flex-shrink: 0;
-        }
+        .next-cta:hover { opacity: .85; }
+        .next-cta svg { width: 12px; height: 12px; flex-shrink: 0; }
 
         /* ── Countdown timer banner ── */
         .timer-banner {
-            display: none;
-            border-radius: var(--r-md);
-            padding: 14px 18px;
-            margin-bottom: 18px;
-            border: 1px solid;
-            animation: l-slide-up .35s cubic-bezier(.34, 1.56, .64, 1) both;
+            display: none; border-radius: var(--r-md); padding: 14px 18px;
+            margin-bottom: 18px; border: 1px solid;
+            animation: l-slide-up .35s cubic-bezier(.34,1.56,.64,1) both;
         }
-
-        .timer-banner.urgent {
-            background: #fff7ed;
-            border-color: #fed7aa;
-            color: #9a3412;
-        }
-
-        .timer-banner.warning {
-            background: #fefce8;
-            border-color: #fde68a;
-            color: #854d0e;
-        }
-
-        .timer-banner.safe {
-            background: var(--indigo-light);
-            border-color: var(--indigo-border);
-            color: #312e81;
-        }
-
-        body.dark .timer-banner.safe {
-            background: rgba(55, 48, 163, .15);
-            border-color: rgba(55, 48, 163, .3);
-            color: #a5b4fc;
-        }
-
-        body.dark .timer-banner.warning {
-            background: rgba(180, 83, 9, .2);
-            border-color: rgba(180, 83, 9, .35);
-            color: #fcd34d;
-        }
-
-        body.dark .timer-banner.urgent {
-            background: rgba(154, 52, 18, .2);
-            border-color: rgba(154, 52, 18, .35);
-            color: #fb923c;
-        }
-
-        .timer-inner {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            flex-wrap: wrap;
-        }
-
-        .timer-text-col {
-            flex: 1;
-            min-width: 140px;
-        }
-
-        .timer-text-col p {
-            font-family: var(--font);
-        }
-
+        .timer-banner.urgent  { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+        .timer-banner.warning { background: #fefce8; border-color: #fde68a; color: #854d0e; }
+        .timer-banner.safe    { background: var(--indigo-light); border-color: var(--indigo-border); color: #312e81; }
+        body.dark .timer-banner.safe    { background: rgba(55,48,163,.15); border-color: rgba(55,48,163,.3); color: #a5b4fc; }
+        body.dark .timer-banner.warning { background: rgba(180,83,9,.2); border-color: rgba(180,83,9,.35); color: #fcd34d; }
+        body.dark .timer-banner.urgent  { background: rgba(154,52,18,.2); border-color: rgba(154,52,18,.35); color: #fb923c; }
+        .timer-inner { display: flex; align-items: center; gap: 11px; flex-wrap: wrap; }
+        .timer-text-col { flex: 1; min-width: 140px; }
+        .timer-text-col p { font-family: var(--font); }
         .timer-digit {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            background: rgba(0, 0, 0, .07);
-            border-radius: 8px;
-            padding: .2rem .5rem;
-            min-width: 2.6rem;
-            font-variant-numeric: tabular-nums;
-            font-weight: 700;
-            font-size: 1.1rem;
-            line-height: 1;
-            font-family: var(--mono);
+            display: inline-flex; flex-direction: column; align-items: center;
+            background: rgba(0,0,0,.07); border-radius: 8px; padding: .2rem .5rem;
+            min-width: 2.6rem; font-variant-numeric: tabular-nums; font-weight: 700;
+            font-size: 1.1rem; line-height: 1; font-family: var(--mono);
         }
-
         .timer-digit span {
-            font-family: var(--font);
-            font-size: .5rem;
-            font-weight: 500;
-            opacity: .6;
-            text-transform: uppercase;
-            letter-spacing: .07em;
-            margin-top: 3px;
+            font-family: var(--font); font-size: .5rem; font-weight: 500;
+            opacity: .6; text-transform: uppercase; letter-spacing: .07em; margin-top: 3px;
         }
-
-        .timer-pulse {
-            animation: pulse .9s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1
-            }
-
-            50% {
-                opacity: .3
-            }
-        }
-
-        .timer-progress-wrap {
-            height: 3px;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, .08);
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .timer-progress-fill {
-            height: 100%;
-            border-radius: 999px;
-            background: currentColor;
-            opacity: .4;
-            transition: width 1s linear;
-        }
-
+        .timer-pulse { animation: pulse .9s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+        .timer-progress-wrap { height: 3px; border-radius: 999px; background: rgba(0,0,0,.08); overflow: hidden; margin-top: 10px; }
+        .timer-progress-fill { height: 100%; border-radius: 999px; background: currentColor; opacity: .4; transition: width 1s linear; }
         @media(max-width:400px) {
-            .timer-digit {
-                min-width: 2.1rem;
-                padding: .15rem .35rem;
-                font-size: .95rem;
-            }
-
-            .timer-inner {
-                gap: 8px;
-            }
+            .timer-digit { min-width: 2.1rem; padding: .15rem .35rem; font-size: .95rem; }
+            .timer-inner { gap: 8px; }
         }
 
         /* ── Upcoming pill ── */
         .upcoming-pill {
-            background: var(--indigo-light);
-            border: 1px solid var(--indigo-border);
-            border-radius: var(--r-md);
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 20px;
-            animation: l-slide-up .4s ease both;
-            flex-wrap: wrap;
+            background: var(--indigo-light); border: 1px solid var(--indigo-border);
+            border-radius: var(--r-md); padding: 14px 16px;
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 20px; animation: l-slide-up .4s ease both; flex-wrap: wrap;
         }
-
         .up-icon {
-            width: 38px;
-            height: 38px;
-            background: var(--indigo);
-            border-radius: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(55, 48, 163, .28);
+            width: 38px; height: 38px; background: var(--indigo); border-radius: 11px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(55,48,163,.28);
         }
-
-        .up-icon svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        .up-eyebrow {
-            font-family: var(--font);
-            font-size: .6rem;
-            font-weight: 700;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-            color: var(--indigo);
-            margin-bottom: 2px;
-        }
-
-        .up-name {
-            font-family: var(--font);
-            font-size: .88rem;
-            font-weight: 700;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 180px;
-        }
-
-        .up-time {
-            font-family: var(--mono);
-            font-size: .72rem;
-            color: #4338ca;
-            margin-top: 1px;
-        }
-
+        .up-icon svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .up-eyebrow { font-family: var(--font); font-size: .6rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--indigo); margin-bottom: 2px; }
+        .up-name { font-family: var(--font); font-size: .88rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .up-time { font-family: var(--mono); font-size: .72rem; color: #4338ca; margin-top: 1px; }
         .up-btn {
-            margin-left: auto;
-            font-family: var(--font);
-            font-size: .72rem;
-            font-weight: 700;
-            color: var(--indigo);
-            background: var(--card);
-            border: 1px solid var(--indigo-border);
-            border-radius: 8px;
-            padding: 8px 14px;
-            text-decoration: none;
-            white-space: nowrap;
-            transition: all var(--ease);
-            touch-action: manipulation;
+            margin-left: auto; font-family: var(--font); font-size: .72rem; font-weight: 700;
+            color: var(--indigo); background: var(--card); border: 1px solid var(--indigo-border);
+            border-radius: 8px; padding: 8px 14px; text-decoration: none; white-space: nowrap;
+            transition: all var(--ease); touch-action: manipulation;
         }
-
-        .up-btn:hover {
-            background: var(--indigo);
-            color: white;
-            box-shadow: 0 2px 8px rgba(55, 48, 163, .22);
-        }
-
+        .up-btn:hover { background: var(--indigo); color: white; box-shadow: 0 2px 8px rgba(55,48,163,.22); }
         @media(max-width:479px) {
-            .up-name {
-                max-width: 100%;
-            }
-
-            .up-btn {
-                margin-left: 0;
-                width: 100%;
-                text-align: center;
-                display: block;
-            }
+            .up-name { max-width: 100%; }
+            .up-btn { margin-left: 0; width: 100%; text-align: center; display: block; }
         }
 
         /* ── Stats grid ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-
+        .stats-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
         .stat-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg);
-            padding: 18px 20px;
-            box-shadow: var(--shadow-sm);
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--r-lg);
+            padding: 18px 20px; box-shadow: var(--shadow-sm);
             transition: transform var(--ease), box-shadow var(--ease);
         }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .stat-card-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .stat-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .stat-icon svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        .stat-lbl {
-            font-family: var(--font);
-            font-size: .62rem;
-            font-weight: 700;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-            color: var(--text-sub);
-        }
-
-        .stat-num {
-            font-family: var(--mono);
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1;
-            letter-spacing: -.04em;
-        }
-
-        .stat-hint {
-            font-family: var(--font);
-            font-size: .72rem;
-            color: var(--text-sub);
-            margin-top: 4px;
-        }
-
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+        .stat-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .stat-icon svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .stat-lbl { font-family: var(--font); font-size: .62rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--text-sub); }
+        .stat-num { font-family: var(--mono); font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -.04em; }
+        .stat-hint { font-family: var(--font); font-size: .72rem; color: var(--text-sub); margin-top: 4px; }
         @media(max-width:639px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 10px;
-            }
-
-            .stat-card {
-                padding: 14px 16px;
-            }
-
-            .stat-num {
-                font-size: 1.6rem;
-            }
-
-            .stat-card-top {
-                margin-bottom: 10px;
-            }
+            .stats-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+            .stat-card { padding: 14px 16px; }
+            .stat-num { font-size: 1.6rem; }
+            .stat-card-top { margin-bottom: 10px; }
         }
-
         @media(max-width:360px) {
-            .stats-grid {
-                gap: 8px;
-            }
-
-            .stat-card {
-                padding: 12px 14px;
-            }
-
-            .stat-num {
-                font-size: 1.4rem;
-            }
-
-            .stat-icon {
-                width: 30px;
-                height: 30px;
-            }
+            .stats-grid { gap: 8px; }
+            .stat-card { padding: 12px 14px; }
+            .stat-num { font-size: 1.4rem; }
+            .stat-icon { width: 30px; height: 30px; }
         }
 
         /* ── Main two-col grid ── */
-        .grid-main {
-            display: grid;
-            grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
-            gap: 16px;
-            margin-bottom: 18px;
-        }
-
-        .side-col {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        @media(max-width:900px) {
-            .grid-main {
-                grid-template-columns: 1fr;
-            }
-        }
+        .grid-main { display: grid; grid-template-columns: minmax(0,1.9fr) minmax(0,1fr); gap: 16px; margin-bottom: 18px; }
+        .side-col { display: flex; flex-direction: column; gap: 14px; }
+        @media(max-width:900px) { .grid-main { grid-template-columns: 1fr; } }
 
         /* ── Card sub-elements ── */
-        .card-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .card-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .card-icon svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        .card-title {
-            font-family: var(--font);
-            font-size: .9rem;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: -.01em;
-        }
-
-        .card-sub {
-            font-family: var(--font);
-            font-size: .7rem;
-            color: var(--text-sub);
-            margin-top: 2px;
-        }
-
+        .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .card-icon svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .card-title { font-family: var(--font); font-size: .9rem; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+        .card-sub { font-family: var(--font); font-size: .7rem; color: var(--text-sub); margin-top: 2px; }
         .section-lbl {
-            font-family: var(--font);
-            font-size: .62rem;
-            font-weight: 700;
-            letter-spacing: .18em;
-            text-transform: uppercase;
-            color: var(--text-sub);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-family: var(--font); font-size: .62rem; font-weight: 700; letter-spacing: .18em;
+            text-transform: uppercase; color: var(--text-sub); margin-bottom: 14px;
+            display: flex; align-items: center; gap: 6px;
         }
-
-        .section-lbl::before {
-            content: '';
-            width: 3px;
-            height: 13px;
-            border-radius: 2px;
-            background: var(--indigo);
-            flex-shrink: 0;
-        }
-
-        .link-sm {
-            font-family: var(--font);
-            font-size: .65rem;
-            font-weight: 700;
-            color: var(--indigo);
-            text-decoration: none;
-            letter-spacing: .05em;
-            text-transform: uppercase;
-            transition: opacity .15s;
-            touch-action: manipulation;
-        }
-
-        .link-sm:hover {
-            opacity: .7;
-        }
+        .section-lbl::before { content: ''; width: 3px; height: 13px; border-radius: 2px; background: var(--indigo); flex-shrink: 0; }
+        .link-sm { font-family: var(--font); font-size: .65rem; font-weight: 700; color: var(--indigo); text-decoration: none; letter-spacing: .05em; text-transform: uppercase; transition: opacity .15s; touch-action: manipulation; }
+        .link-sm:hover { opacity: .7; }
 
         /* ── FullCalendar overrides ── */
-        #calendar {
-            font-family: var(--font) !important;
-            font-size: .8rem;
-        }
-
-        .fc .fc-toolbar {
-            flex-wrap: wrap;
-            gap: .5rem;
-        }
-
-        .fc-toolbar-title {
-            font-family: var(--font) !important;
-            font-size: .95rem !important;
-            font-weight: 800 !important;
-            color: var(--text) !important;
-            letter-spacing: -.02em !important;
-        }
-
-        .fc-button-primary {
-            background: var(--indigo) !important;
-            border-color: var(--indigo) !important;
-            border-radius: 9px !important;
-            font-family: var(--font) !important;
-            font-weight: 700 !important;
-            font-size: .72rem !important;
-            padding: .3rem .65rem !important;
-            box-shadow: none !important;
-            touch-action: manipulation !important;
-        }
-
-        .fc-button-primary:hover {
-            background: #312e81 !important;
-        }
-
-        .fc-button-primary:not(:disabled):active,
-        .fc-button-primary:not(:disabled).fc-button-active {
-            background: #1e1b4b !important;
-        }
-
-        .fc-daygrid-event {
-            border-radius: 5px !important;
-            font-family: var(--font) !important;
-            font-size: .65rem !important;
-            font-weight: 600 !important;
-            padding: 2px 5px !important;
-            border: none !important;
-            cursor: pointer !important;
-        }
-
-        .fc-daygrid-day:hover {
-            background-color: var(--indigo-light) !important;
-            cursor: pointer;
-        }
-
-        .fc-day-today {
-            background: rgba(55, 48, 163, .06) !important;
-        }
-
-        .fc-day-today .fc-daygrid-day-number {
-            color: var(--indigo) !important;
-            font-weight: 800 !important;
-        }
-
-        .fc-daygrid-day-number {
-            font-family: var(--font);
-            font-size: .72rem;
-            font-weight: 600;
-        }
-
-        .fc-col-header-cell-cushion {
-            font-family: var(--font);
-            font-size: .72rem;
-            font-weight: 700;
-            letter-spacing: .04em;
-        }
-
-        body.dark .fc-toolbar-title {
-            color: var(--text) !important;
-        }
-
-        body.dark .fc-daygrid-day-number {
-            color: #7fb3e8;
-        }
-
-        body.dark .fc-col-header-cell-cushion {
-            color: #7fb3e8;
-        }
-
-        body.dark .fc-day-today {
-            background: rgba(55, 48, 163, .15) !important;
-        }
-
-        body.dark .fc-daygrid-day {
-            background: var(--card) !important;
-        }
-
-        body.dark .fc-theme-standard td,
-        body.dark .fc-theme-standard th,
-        body.dark .fc-theme-standard .fc-scrollgrid {
-            border-color: #101e35 !important;
-        }
-
-        body.dark .fc-list-empty {
-            background: var(--card) !important;
-        }
-
-        body.dark .fc-list-empty-cushion {
-            color: var(--text-sub) !important;
-        }
-
-        body.dark .fc-list-table td {
-            background: var(--card) !important;
-            border-color: var(--input-bg) !important;
-            color: #7fb3e8 !important;
-        }
-
-        body.dark .fc-list-table th {
-            background: var(--input-bg) !important;
-            border-color: var(--input-bg) !important;
-            color: var(--text-sub) !important;
-        }
-
-        body.dark .fc-list-event-title a {
-            color: var(--text) !important;
-        }
-
+        #calendar { font-family: var(--font) !important; font-size: .8rem; }
+        .fc .fc-toolbar { flex-wrap: wrap; gap: .5rem; }
+        .fc-toolbar-title { font-family: var(--font) !important; font-size: .95rem !important; font-weight: 800 !important; color: var(--text) !important; letter-spacing: -.02em !important; }
+        .fc-button-primary { background: var(--indigo) !important; border-color: var(--indigo) !important; border-radius: 9px !important; font-family: var(--font) !important; font-weight: 700 !important; font-size: .72rem !important; padding: .3rem .65rem !important; box-shadow: none !important; touch-action: manipulation !important; }
+        .fc-button-primary:hover { background: #312e81 !important; }
+        .fc-button-primary:not(:disabled):active, .fc-button-primary:not(:disabled).fc-button-active { background: #1e1b4b !important; }
+        .fc-daygrid-event { border-radius: 5px !important; font-family: var(--font) !important; font-size: .65rem !important; font-weight: 600 !important; padding: 2px 5px !important; border: none !important; cursor: pointer !important; }
+        .fc-daygrid-day:hover { background-color: var(--indigo-light) !important; cursor: pointer; }
+        .fc-day-today { background: rgba(55,48,163,.06) !important; }
+        .fc-day-today .fc-daygrid-day-number { color: var(--indigo) !important; font-weight: 800 !important; }
+        .fc-daygrid-day-number { font-family: var(--font); font-size: .72rem; font-weight: 600; }
+        .fc-col-header-cell-cushion { font-family: var(--font); font-size: .72rem; font-weight: 700; letter-spacing: .04em; }
+        body.dark .fc-toolbar-title { color: var(--text) !important; }
+        body.dark .fc-daygrid-day-number { color: #7fb3e8; }
+        body.dark .fc-col-header-cell-cushion { color: #7fb3e8; }
+        body.dark .fc-day-today { background: rgba(55,48,163,.15) !important; }
+        body.dark .fc-daygrid-day { background: var(--card) !important; }
+        body.dark .fc-theme-standard td, body.dark .fc-theme-standard th, body.dark .fc-theme-standard .fc-scrollgrid { border-color: #101e35 !important; }
+        body.dark .fc-list-empty { background: var(--card) !important; }
+        body.dark .fc-list-empty-cushion { color: var(--text-sub) !important; }
+        body.dark .fc-list-table td { background: var(--card) !important; border-color: var(--input-bg) !important; color: #7fb3e8 !important; }
+        body.dark .fc-list-table th { background: var(--input-bg) !important; border-color: var(--input-bg) !important; color: var(--text-sub) !important; }
+        body.dark .fc-list-event-title a { color: var(--text) !important; }
         @media(max-width:479px) {
-            .fc .fc-toolbar {
-                display: grid;
-                grid-template-columns: auto 1fr auto;
-                align-items: center;
-                gap: 6px;
-            }
-
-            .fc-toolbar-chunk:nth-child(2) {
-                text-align: center;
-            }
-
-            .fc-toolbar-title {
-                font-size: .8rem !important;
-            }
-
-            .fc-button-primary {
-                font-size: .65rem !important;
-                padding: .25rem .5rem !important;
-            }
-
-            #calendar {
-                font-size: .7rem;
-            }
-
-            .fc .fc-daygrid-body {
-                min-height: auto !important;
-            }
-
-            #calendar .fc-daygrid-body,
-            #calendar .fc-scrollgrid-sync-table {
-                width: 100% !important;
-            }
-
-            .fc .fc-daygrid-day-frame {
-                min-height: 32px !important;
-            }
+            .fc .fc-toolbar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px; }
+            .fc-toolbar-chunk:nth-child(2) { text-align: center; }
+            .fc-toolbar-title { font-size: .8rem !important; }
+            .fc-button-primary { font-size: .65rem !important; padding: .25rem .5rem !important; }
+            #calendar { font-size: .7rem; }
+            .fc .fc-daygrid-body { min-height: auto !important; }
+            #calendar .fc-daygrid-body, #calendar .fc-scrollgrid-sync-table { width: 100% !important; }
+            .fc .fc-daygrid-day-frame { min-height: 32px !important; }
         }
 
         /* ── Calendar legend ── */
-        .cal-legend {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .leg-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .leg-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .leg-lbl {
-            font-family: var(--font);
-            font-size: .68rem;
-            font-weight: 600;
-            color: var(--text-sub);
-        }
-
-        @media(max-width:479px) {
-            .cal-legend {
-                gap: 8px;
-            }
-
-            .leg-lbl {
-                display: none;
-            }
-
-            .leg-dot {
-                width: 9px;
-                height: 9px;
-            }
-        }
+        .cal-legend { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .leg-item { display: flex; align-items: center; gap: 5px; }
+        .leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .leg-lbl { font-family: var(--font); font-size: .68rem; font-weight: 600; color: var(--text-sub); }
+        @media(max-width:479px) { .cal-legend { gap: 8px; } .leg-lbl { display: none; } .leg-dot { width: 9px; height: 9px; } }
 
         /* ── Quick-action links ── */
         .qa-link {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 12px;
-            border-radius: var(--r-sm);
-            border: 1px solid var(--border);
-            background: var(--card);
-            text-decoration: none;
-            color: var(--text-muted);
-            font-family: var(--font);
-            font-size: .83rem;
-            font-weight: 600;
-            transition: all var(--ease);
-            touch-action: manipulation;
+            display: flex; align-items: center; gap: 11px; padding: 12px; border-radius: var(--r-sm);
+            border: 1px solid var(--border); background: var(--card); text-decoration: none;
+            color: var(--text-muted); font-family: var(--font); font-size: .83rem; font-weight: 600;
+            transition: all var(--ease); touch-action: manipulation;
         }
-
-        .qa-link:hover {
-            border-color: var(--indigo);
-            background: var(--indigo-light);
-            color: var(--indigo);
-        }
-
-        @media(pointer:fine) {
-            .qa-link:hover {
-                transform: translateX(3px);
-            }
-        }
-
-        .qa-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .qa-icon svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        .qa-chev {
-            margin-left: auto;
-            color: var(--text-faint);
-            transition: color var(--ease);
-        }
-
-        .qa-chev svg {
-            width: 14px;
-            height: 14px;
-            flex-shrink: 0;
-        }
-
-        .qa-link:hover .qa-chev {
-            color: var(--indigo);
-        }
+        .qa-link:hover { border-color: var(--indigo); background: var(--indigo-light); color: var(--indigo); }
+        @media(pointer:fine) { .qa-link:hover { transform: translateX(3px); } }
+        .qa-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .qa-icon svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .qa-chev { margin-left: auto; color: var(--text-faint); transition: color var(--ease); }
+        .qa-chev svg { width: 14px; height: 14px; flex-shrink: 0; }
+        .qa-link:hover .qa-chev { color: var(--indigo); }
 
         /* ── Recent booking rows ── */
         .bk-row {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 9px 8px;
-            border-radius: 11px;
-            text-decoration: none;
-            color: inherit;
-            transition: background var(--ease);
-            touch-action: manipulation;
+            display: flex; align-items: center; gap: 11px; padding: 9px 8px; border-radius: 11px;
+            text-decoration: none; color: inherit; transition: background var(--ease); touch-action: manipulation;
         }
-
-        .bk-row:hover {
-            background: var(--indigo-light);
-        }
-
-        .bk-date {
-            width: 38px;
-            height: 38px;
-            background: var(--input-bg);
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            border: 1px solid var(--border-subtle);
-        }
-
-        .bk-month {
-            font-family: var(--font);
-            font-size: .55rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-sub);
-        }
-
-        .bk-day {
-            font-family: var(--mono);
-            font-size: .95rem;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1;
-        }
-
-        .bk-name {
-            font-family: var(--font);
-            font-size: .82rem;
-            font-weight: 600;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .bk-time {
-            font-family: var(--mono);
-            font-size: .68rem;
-            color: var(--text-sub);
-            margin-top: 1px;
-        }
+        .bk-row:hover { background: var(--indigo-light); }
+        .bk-date { width: 38px; height: 38px; background: var(--input-bg); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border-subtle); }
+        .bk-month { font-family: var(--font); font-size: .55rem; font-weight: 700; text-transform: uppercase; color: var(--text-sub); }
+        .bk-day { font-family: var(--mono); font-size: .95rem; font-weight: 800; color: var(--text); line-height: 1; }
+        .bk-name { font-family: var(--font); font-size: .82rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bk-time { font-family: var(--mono); font-size: .68rem; color: var(--text-sub); margin-top: 1px; }
 
         /* ── Date modal rows ── */
-        .date-row {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: .75rem;
-            border-bottom: 1px solid var(--border-subtle);
-            border-radius: 10px;
-            transition: background .15s;
-        }
-
-        .date-row:hover {
-            background: var(--input-bg);
-        }
-
-        .date-row:last-child {
-            border-bottom: none;
-        }
+        .date-row { display: flex; align-items: center; gap: 11px; padding: .75rem; border-bottom: 1px solid var(--border-subtle); border-radius: 10px; transition: background .15s; }
+        .date-row:hover { background: var(--input-bg); }
+        .date-row:last-child { border-bottom: none; }
 
         /* ── How-to / status guide ── */
-        .how-step {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-subtle);
-        }
+        .how-step { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+        .how-step:last-child { border-bottom: none; }
+        .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--indigo); color: white; font-family: var(--font); font-size: .7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+        .how-step p { font-family: var(--font); }
+        .status-guide-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border-subtle); }
+        .status-guide-row:last-child { border-bottom: none; }
+        .status-guide-row p { font-family: var(--font); font-size: .72rem; color: var(--text-muted); }
 
-        .how-step:last-child {
-            border-bottom: none;
-        }
+        /* ══════════════════════════════════════════════════════
+           LIBRARY SECTION — Full redesign (grid-lib and children)
+           Vibrant purple gradient style inspired by SkillSet UI
+           ══════════════════════════════════════════════════════ */
 
-        .step-num {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: var(--indigo);
-            color: white;
-            font-family: var(--font);
-            font-size: .7rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .how-step p {
-            font-family: var(--font);
-        }
-
-        .status-guide-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 7px 0;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .status-guide-row:last-child {
-            border-bottom: none;
-        }
-
-        .status-guide-row p {
-            font-family: var(--font);
-            font-size: .72rem;
-            color: var(--text-muted);
-        }
-
-        /* ── Library section ── */
+        /* ── Section wrapper ── */
         .grid-lib {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 16px;
-            margin-bottom: 16px;
-            align-items: start;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+            gap: 18px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #f0efff 0%, #f6f3ff 50%, #fdf0ff 100%);
+            border-radius: 24px;
+            padding: 22px;
+            box-shadow: 0 4px 32px rgba(99,102,241,.07);
         }
 
-        .lib-banner {
-            background: linear-gradient(135deg, #3730a3 0%, #4338ca 60%, #6366f1 100%);
-            border-radius: var(--r-lg);
-            padding: 20px 20px 16px;
-            overflow: hidden;
-            position: relative;
-            box-sizing: border-box;
-            width: 100%;
-        }
-
-        .lib-banner::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E") repeat;
-            opacity: .4;
-            pointer-events: none;
-        }
-
-        .lib-banner-inner {
-            position: relative;
-            z-index: 1;
-        }
-
-        .lib-banner-top {
+        /* ── Left column ── */
+        .grid-lib > div:first-child {
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 14px;
+            flex-direction: column;
+            gap: 14px;
+            min-width: 0;
         }
+
+        /* ── Library Hero Banner ── */
+        .lib-banner {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 35%, #9333ea 65%, #c026d3 100%) !important;
+            border-radius: 22px !important;
+            padding: 22px 20px 18px !important;
+            position: relative !important;
+            overflow: hidden !important;
+            box-shadow: 0 14px 40px rgba(124,58,237,.38) !important;
+            min-height: 156px;
+        }
+        .lib-banner::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -50px !important; right: -50px !important;
+            width: 200px !important; height: 200px !important;
+            background: rgba(255,255,255,.08) !important;
+            border-radius: 50% !important;
+            pointer-events: none !important;
+        }
+        .lib-banner::after {
+            content: '' !important;
+            position: absolute !important;
+            bottom: -60px !important; right: 60px !important;
+            width: 150px !important; height: 150px !important;
+            background: rgba(255,255,255,.05) !important;
+            border-radius: 50% !important;
+            pointer-events: none !important;
+        }
+        /* Floating book emoji */
+        .lib-banner-inner::before {
+            content: '📚';
+            position: absolute;
+            right: 18px; top: 10px;
+            font-size: 3.4rem;
+            opacity: .92;
+            filter: drop-shadow(0 8px 18px rgba(0,0,0,.28));
+            animation: lib-float 3.2s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+        @keyframes lib-float {
+            0%,100% { transform: translateY(0) rotate(-4deg); }
+            50%      { transform: translateY(-9px) rotate(4deg); }
+        }
+        .lib-banner-inner { position: relative !important; z-index: 1 !important; }
 
         .lib-eyebrow {
-            font-family: var(--font);
-            font-size: .6rem;
-            font-weight: 700;
-            letter-spacing: .22em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, .55);
-            margin-bottom: 4px;
+            font-family: 'Nunito', var(--font) !important;
+            font-size: .58rem !important;
+            font-weight: 800 !important;
+            letter-spacing: .26em !important;
+            text-transform: uppercase !important;
+            color: rgba(255,255,255,.58) !important;
+            margin-bottom: 3px !important;
         }
-
         .lib-title {
-            font-family: var(--mono);
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: white;
-            letter-spacing: -.04em;
-            line-height: 1.1;
+            font-family: 'Nunito', var(--font) !important;
+            font-size: 2.9rem !important;
+            font-weight: 900 !important;
+            color: #fff !important;
+            letter-spacing: -.05em !important;
+            line-height: 1 !important;
+            text-shadow: 0 2px 14px rgba(0,0,0,.18) !important;
         }
-
         .lib-sub {
-            font-family: var(--font);
-            font-size: .72rem;
-            color: rgba(255, 255, 255, .5);
-            margin-top: 3px;
-            font-weight: 500;
+            font-family: 'Nunito', var(--font) !important;
+            font-size: .75rem !important;
+            color: rgba(255,255,255,.58) !important;
+            margin-top: 4px !important;
+            font-weight: 600 !important;
+            font-style: italic !important;
         }
-
         .lib-browse {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 13px;
-            background: rgba(255, 255, 255, .18);
-            color: white;
-            border-radius: 9px;
-            font-family: var(--font);
-            font-size: .75rem;
-            font-weight: 700;
-            text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, .2);
-            transition: background var(--ease);
-            white-space: nowrap;
-            flex-shrink: 0;
-            touch-action: manipulation;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 9px 15px !important;
+            background: rgba(255,255,255,.18) !important;
+            color: #fff !important;
+            border-radius: 12px !important;
+            font-family: 'Nunito', var(--font) !important;
+            font-size: .76rem !important;
+            font-weight: 800 !important;
+            text-decoration: none !important;
+            border: 1.5px solid rgba(255,255,255,.3) !important;
+            transition: all .2s !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            touch-action: manipulation !important;
         }
+        .lib-browse svg { width: 13px; height: 13px; flex-shrink: 0; }
+        .lib-browse:hover { background: rgba(255,255,255,.3) !important; transform: translateY(-1px) !important; }
 
-        .lib-browse svg {
-            width: 13px;
-            height: 13px;
-            flex-shrink: 0;
-        }
-
-        .lib-browse:hover {
-            background: rgba(255, 255, 255, .28);
-        }
-
-        .lib-stats {
-            display: flex;
-            gap: 6px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
+        .lib-stats { display: flex !important; gap: 8px !important; width: 100% !important; box-sizing: border-box !important; margin-top: 2px !important; }
         .lib-stat {
-            flex: 1 1 0;
-            min-width: 0;
-            background: rgba(255, 255, 255, .1);
-            border: 1px solid rgba(255, 255, 255, .1);
-            border-radius: 9px;
-            padding: 7px 8px;
-            box-sizing: border-box;
-            overflow: hidden;
+            flex: 1 1 0 !important; min-width: 0 !important;
+            background: rgba(255,255,255,.13) !important;
+            border: 1.5px solid rgba(255,255,255,.16) !important;
+            border-radius: 12px !important;
+            padding: 8px 10px !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            transition: background .2s !important;
         }
-
+        .lib-stat:hover { background: rgba(255,255,255,.22) !important; }
         .lib-stat-lbl {
-            font-family: var(--font);
-            font-size: .5rem;
-            font-weight: 600;
-            color: rgba(255, 255, 255, .55);
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: block;
+            font-family: 'Nunito', var(--font) !important;
+            font-size: .5rem !important;
+            font-weight: 700 !important;
+            color: rgba(255,255,255,.58) !important;
+            text-transform: uppercase !important;
+            letter-spacing: .07em !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            display: block !important;
         }
-
         .lib-stat-val {
-            font-family: var(--mono);
-            font-size: .9rem;
-            font-weight: 800;
-            color: white;
-            line-height: 1.2;
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-family: 'Nunito', var(--font) !important;
+            font-size: 1rem !important;
+            font-weight: 900 !important;
+            color: #fff !important;
+            line-height: 1.2 !important;
+            display: block !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
 
-        .book-letter {
-            width: 34px;
-            height: 34px;
-            border-radius: 9px;
-            background: var(--indigo-light);
-            color: var(--indigo);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font);
-            font-weight: 800;
-            font-size: .8rem;
-            flex-shrink: 0;
+        /* ── Cards inside lib section ── */
+        .grid-lib .card {
+            background: #fff !important;
+            border: 1.5px solid rgba(124,58,237,.12) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 4px 20px rgba(124,58,237,.08) !important;
+            transition: box-shadow .2s, border-color .2s !important;
         }
+        .grid-lib .card:hover {
+            box-shadow: 0 8px 32px rgba(124,58,237,.14) !important;
+            border-color: rgba(124,58,237,.22) !important;
+        }
+        body.dark .grid-lib .card {
+            background: #1a1033 !important;
+            border-color: rgba(124,58,237,.18) !important;
+        }
+        .grid-lib .card-title {
+            font-family: 'Nunito', var(--font) !important;
+            font-size: .92rem !important;
+            font-weight: 800 !important;
+            color: #1e1b4b !important;
+        }
+        .grid-lib .card-sub {
+            font-size: .7rem !important;
+            color: #8b5cf6 !important;
+            font-style: italic !important;
+            font-weight: 600 !important;
+        }
+        body.dark .grid-lib .card-title { color: #e9d5ff !important; }
+        body.dark .grid-lib .card-sub   { color: #a78bfa !important; }
 
-        .book-title {
-            font-family: var(--font);
-            font-size: .82rem;
-            font-weight: 600;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .grid-lib .section-lbl::before {
+            background: linear-gradient(180deg, #8b5cf6, #c026d3) !important;
         }
+        .grid-lib .link-sm { color: #7c3aed !important; }
+        .grid-lib .link-sm:hover { color: #6d28d9 !important; opacity: 1 !important; }
 
-        .book-author {
-            font-family: var(--font);
-            font-size: .7rem;
-            color: var(--text-sub);
-            margin-top: 1px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        body.dark .book-letter {
-            background: rgba(55, 48, 163, .2);
-            color: #818cf8;
-        }
-
-        .borrow-row {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            background: var(--input-bg);
-            border-radius: 10px;
-            padding: 9px 12px;
-            border: 1px solid var(--border-subtle);
-        }
-
-        /* ── AI finder ── */
-        .rag-wrap {
-            position: relative;
-            margin-top: 12px;
-        }
-
-        .rag-icon-pos {
-            position: absolute;
-            left: 11px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: var(--text-sub);
-            display: flex;
-        }
-
-        .rag-icon-pos svg {
-            width: 13px;
-            height: 13px;
-            flex-shrink: 0;
-        }
+        /* ── AI Book Finder ── */
+        .rag-wrap { position: relative; margin-top: 12px; }
+        .rag-icon-pos { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-sub); display: flex; }
+        .rag-icon-pos svg { width: 13px; height: 13px; flex-shrink: 0; }
 
         .search-input {
             width: 100%;
             padding: 11px 12px 11px 34px;
-            border-radius: var(--r-sm);
-            border: 1px solid rgba(99, 102, 241, .15);
-            font-family: var(--font);
+            border-radius: 12px !important;
+            border: 1.5px solid rgba(124,58,237,.2) !important;
+            font-family: 'Nunito', var(--font) !important;
             font-size: .85rem;
-            background: var(--input-bg);
-            color: var(--text);
+            font-weight: 600 !important;
+            background: #f5f3ff !important;
+            color: #1e1b4b !important;
             transition: all var(--ease);
             outline: none;
             appearance: none;
             -webkit-appearance: none;
         }
-
         .search-input:focus {
-            border-color: #818cf8;
-            background: var(--card);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
+            border-color: #8b5cf6 !important;
+            background: #fff !important;
+            box-shadow: 0 0 0 3px rgba(124,58,237,.1) !important;
         }
-
-        .search-input::placeholder {
-            color: var(--text-sub);
-        }
+        .search-input::placeholder { color: #a78bfa !important; font-style: italic !important; font-weight: 500 !important; }
+        body.dark .search-input { background: #1e1240 !important; border-color: rgba(124,58,237,.28) !important; color: #e9d5ff !important; }
 
         .ai-result-box {
-            display: none;
-            margin-top: .75rem;
-            background: var(--indigo-light);
-            border: 1px solid var(--indigo-border);
-            border-radius: var(--r-sm);
+            display: none; margin-top: .75rem;
+            background: linear-gradient(135deg, #faf5ff, #f5f3ff) !important;
+            border: 1.5px solid rgba(124,58,237,.2) !important;
+            border-radius: 14px !important;
             padding: 12px 14px;
             overflow: hidden;
         }
-
-        .ai-result-box.show {
-            display: block;
-            animation: l-slide-up .3s ease;
-        }
-
-        #ragBooks {
-            margin-top: 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            overflow: hidden;
-        }
-
-        #ragBooks a {
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+        .ai-result-box.show { display: block; animation: l-slide-up .3s ease; }
+        body.dark .ai-result-box { background: rgba(124,58,237,.12) !important; border-color: rgba(124,58,237,.25) !important; }
+        #ragBooks { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; overflow: hidden; }
+        #ragBooks a { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .find-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 10px 16px;
-            background: var(--indigo);
-            color: white;
-            border-radius: var(--r-sm);
-            font-family: var(--font);
-            font-size: .8rem;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: all var(--ease);
-            touch-action: manipulation;
+            display: inline-flex; align-items: center; gap: 7px; padding: 10px 16px;
+            background: linear-gradient(135deg, #8b5cf6, #a855f7) !important;
+            color: white; border-radius: 12px !important;
+            font-family: 'Nunito', var(--font) !important;
+            font-size: .8rem; font-weight: 800 !important; border: none; cursor: pointer;
+            transition: all .2s; touch-action: manipulation;
+            box-shadow: 0 4px 16px rgba(124,58,237,.3) !important;
+        }
+        .find-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+        .find-btn:hover { background: linear-gradient(135deg, #7c3aed, #9333ea) !important; transform: translateY(-1px) !important; box-shadow: 0 6px 22px rgba(124,58,237,.4) !important; }
+        .find-btn:disabled { opacity: .6; cursor: not-allowed; transform: none !important; }
+        body.dark #ragText, body.dark #ragText * { color: #c4b5fd !important; }
+
+        /* ── Book letter avatars — 6 vivid gradient cycle ── */
+        .book-letter {
+            width: 36px !important; height: 36px !important;
+            border-radius: 10px !important; border: none !important;
+            font-family: 'Nunito', var(--font) !important;
+            font-weight: 900 !important; font-style: normal !important;
+            font-size: .82rem !important;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .grid-lib a:nth-child(6n+1) .book-letter { background: linear-gradient(135deg,#818cf8,#6366f1) !important; color:#fff !important; }
+        .grid-lib a:nth-child(6n+2) .book-letter { background: linear-gradient(135deg,#f472b6,#ec4899) !important; color:#fff !important; }
+        .grid-lib a:nth-child(6n+3) .book-letter { background: linear-gradient(135deg,#34d399,#10b981) !important; color:#fff !important; }
+        .grid-lib a:nth-child(6n+4) .book-letter { background: linear-gradient(135deg,#fb923c,#f97316) !important; color:#fff !important; }
+        .grid-lib a:nth-child(6n+5) .book-letter { background: linear-gradient(135deg,#60a5fa,#3b82f6) !important; color:#fff !important; }
+        .grid-lib a:nth-child(6n+6) .book-letter { background: linear-gradient(135deg,#a78bfa,#8b5cf6) !important; color:#fff !important; }
+
+        .book-title { font-family: 'Nunito', var(--font) !important; font-size: .83rem !important; font-weight: 700 !important; color: #1e1b4b !important; }
+        .book-author { font-size: .7rem !important; color: #8b5cf6 !important; font-style: italic !important; font-weight: 600 !important; }
+        body.dark .book-title  { color: #e9d5ff !important; }
+        body.dark .book-author { color: #a78bfa !important; }
+
+        /* Book row hover */
+        .grid-lib a[href*="/books"] {
+            border-radius: 12px !important;
+            transition: background .15s, transform .15s !important;
+        }
+        .grid-lib a[href*="/books"]:hover {
+            background: #f5f3ff !important;
+            transform: translateX(3px) !important;
+        }
+        body.dark .grid-lib a[href*="/books"]:hover { background: rgba(124,58,237,.1) !important; }
+
+        /* Availability pills — vivid gradient */
+        .grid-lib span[style*="dcfce7"],
+        .grid-lib span[style*="166"] {
+            background: linear-gradient(135deg,#bbf7d0,#86efac) !important;
+            color: #14532d !important;
+            font-size: .6rem !important; font-weight: 800 !important;
+            font-family: 'Nunito', var(--font) !important;
+        }
+        .grid-lib span[style*="fef3c7"],
+        .grid-lib span[style*="92400"] {
+            background: linear-gradient(135deg,#fde68a,#fbbf24) !important;
+            color: #78350f !important;
+            font-size: .6rem !important; font-weight: 800 !important;
+            font-family: 'Nunito', var(--font) !important;
+        }
+        .grid-lib span[style*="fee2e2"],
+        .grid-lib span[style*="991b"] {
+            background: linear-gradient(135deg,#fecaca,#f87171) !important;
+            color: #7f1d1d !important;
+            font-size: .6rem !important; font-weight: 800 !important;
+            font-family: 'Nunito', var(--font) !important;
         }
 
-        .find-btn svg {
-            width: 13px;
-            height: 13px;
-            flex-shrink: 0;
+        /* ── My Active Borrows card ── */
+        .borrow-row {
+            display: flex; align-items: center; gap: 9px;
+            background: #f8f5ff !important;
+            border: 1.5px solid rgba(124,58,237,.12) !important;
+            border-radius: 14px !important;
+            padding: 10px 13px !important;
+            transition: border-color .15s, box-shadow .15s !important;
+        }
+        .borrow-row:hover { border-color: rgba(124,58,237,.28) !important; box-shadow: 0 2px 12px rgba(124,58,237,.1) !important; }
+        body.dark .borrow-row { background: #1e1240 !important; border-color: rgba(124,58,237,.2) !important; }
+
+        /* Borrow book letters — purple gradient */
+        .grid-lib .borrow-row .book-letter {
+            background: linear-gradient(135deg,#c4b5fd,#a78bfa) !important;
+            color: #fff !important; border: none !important;
         }
 
-        .find-btn:hover {
-            background: #312e81;
+        /* Empty borrow state */
+        .grid-lib .card[style*="text-align:center"] {
+            background: linear-gradient(135deg,#faf5ff,#f5f3ff) !important;
+            border: 1.5px dashed rgba(124,58,237,.25) !important;
+        }
+        body.dark .grid-lib .card[style*="text-align:center"] {
+            background: rgba(124,58,237,.08) !important;
+            border-color: rgba(124,58,237,.2) !important;
         }
 
-        .find-btn:disabled {
-            opacity: .6;
-            cursor: not-allowed;
+        /* ── Responsive library ── */
+        @media(max-width:900px) { .grid-lib { grid-template-columns: 1fr; } }
+        @media(max-width:639px) {
+            .grid-lib { padding: 16px !important; gap: 14px !important; border-radius: 18px !important; }
+            .lib-title { font-size: 2.1rem !important; }
+            .lib-banner { min-height: auto !important; padding: 16px 16px 14px !important; }
+            .lib-banner-inner::before { font-size: 2.4rem !important; right: 12px !important; top: 10px !important; }
         }
-
-        body.dark .ai-result-box {
-            background: rgba(55, 48, 163, .15) !important;
-            border-color: rgba(99, 102, 241, .25) !important;
+        @media(max-width:479px) {
+            .lib-stats { display: grid !important; grid-template-columns: repeat(3,minmax(0,1fr)) !important; gap: 5px !important; }
+            .lib-stat-lbl { font-size: .42rem !important; letter-spacing: 0 !important; }
+            .lib-stat-val { font-size: .82rem !important; }
+            .lib-browse { padding: 7px 10px !important; font-size: .7rem !important; gap: 4px !important; }
         }
-
-        body.dark #ragText,
-        body.dark #ragText * {
-            color: #a5b4fc !important;
+        @media(max-width:380px) {
+            .lib-stat { padding: 5px 6px !important; }
+            .lib-stat-val { font-size: .78rem !important; }
         }
 
         /* ── Login toast ── */
         .login-toast {
-            position: fixed;
-            bottom: calc(var(--mob-nav-total) + 8px);
-            right: 16px;
-            z-index: 400;
-            max-width: 280px;
-            background: #0f172a;
-            border-radius: 14px;
-            padding: 12px 14px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
-            transform: translateY(8px);
-            opacity: 0;
-            pointer-events: none;
-            transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
+            position: fixed; bottom: calc(var(--mob-nav-total) + 8px); right: 16px; z-index: 400;
+            max-width: 280px; background: #0f172a; border-radius: 14px; padding: 12px 14px;
+            display: flex; align-items: flex-start; gap: 10px; box-shadow: 0 8px 32px rgba(0,0,0,.3);
+            transform: translateY(8px); opacity: 0; pointer-events: none; transition: all .35s cubic-bezier(.34,1.56,.64,1);
         }
-
-        .login-toast.show {
-            transform: none;
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .toast-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .toast-close {
-            background: rgba(255, 255, 255, .08);
-            border: none;
-            border-radius: 6px;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-            margin-top: 1px;
-            touch-action: manipulation;
-        }
-
-        .toast-close svg {
-            width: 10px;
-            height: 10px;
-            flex-shrink: 0;
-        }
-
-        #toastTitle {
-            font-family: var(--font);
-            font-weight: 700;
-            font-size: 12px;
-            line-height: 1.3;
-            color: white;
-        }
-
-        #toastBody {
-            font-family: var(--font);
-            font-size: 10px;
-            color: rgba(255, 255, 255, .6);
-            margin-top: 2px;
-        }
-
-        @media(min-width:1024px) {
-            .login-toast {
-                bottom: 24px;
-            }
-        }
-
-        @media(max-width:479px) {
-            .login-toast {
-                bottom: calc(var(--mob-nav-total) + 6px);
-                left: 12px;
-                right: 12px;
-                max-width: none;
-            }
-        }
-
-        /* ── Responsive — library grid ── */
-        @media(max-width:900px) {
-            .grid-lib {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media(max-width:639px) {
-            .grid-lib {
-                grid-template-columns: 1fr !important;
-                gap: 12px;
-            }
-
-            .grid-lib>div {
-                width: 100%;
-                min-width: 0;
-            }
-
-            .topbar {
-                margin-bottom: 14px;
-            }
-
-            .lib-banner {
-                padding: 14px 14px 12px;
-            }
-
-            .lib-banner-top {
-                gap: 10px;
-            }
-
-            .lib-title {
-                font-size: 1.35rem;
-            }
-
-            .lib-browse {
-                padding: 8px 11px;
-                font-size: .72rem;
-            }
-
-            .lib-stats {
-                gap: 5px;
-            }
-
-            .lib-stat {
-                padding: 6px 7px;
-                border-radius: 8px;
-            }
-
-            .lib-stat-lbl {
-                font-size: .44rem;
-                letter-spacing: 0;
-            }
-
-            .lib-stat-val {
-                font-size: .82rem;
-            }
-        }
-
-        @media(max-width:479px) {
-            .lib-stats {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 4px;
-            }
-
-            .lib-stat-lbl {
-                font-size: .42rem;
-                letter-spacing: 0;
-            }
-
-            .lib-stat-val {
-                font-size: .78rem;
-            }
-
-            .lib-browse {
-                padding: 7px 9px;
-                font-size: .68rem;
-                gap: 4px;
-            }
-        }
-
-        @media(max-width:380px) {
-            .lib-stat-lbl {
-                font-size: .4rem;
-            }
-
-            .lib-stat-val {
-                font-size: .75rem;
-            }
-
-            .lib-stat {
-                padding: 5px 6px;
-            }
-        }
+        .login-toast.show { transform: none; opacity: 1; pointer-events: auto; }
+        .toast-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .toast-close { background: rgba(255,255,255,.08); border: none; border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: 1px; touch-action: manipulation; }
+        .toast-close svg { width: 10px; height: 10px; flex-shrink: 0; }
+        #toastTitle { font-family: var(--font); font-weight: 700; font-size: 12px; line-height: 1.3; color: white; }
+        #toastBody  { font-family: var(--font); font-size: 10px; color: rgba(255,255,255,.6); margin-top: 2px; }
+        @media(min-width:1024px) { .login-toast { bottom: 24px; } }
+        @media(max-width:479px)  { .login-toast { bottom: calc(var(--mob-nav-total) + 6px); left: 12px; right: 12px; max-width: none; } }
     </style>
 </head>
 
@@ -1674,8 +797,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         <!-- Topbar -->
         <div class="topbar fade-up">
             <div>
-                <div class="greeting-eyebrow"><?php $h = (int)date('H');
-                                                echo $h < 12 ? 'Good morning' : ($h < 17 ? 'Good afternoon' : 'Good evening'); ?></div>
+                <div class="greeting-eyebrow"><?php $h = (int)date('H'); echo $h < 12 ? 'Good morning' : ($h < 17 ? 'Good afternoon' : 'Good evening'); ?></div>
                 <div class="greeting-name"><?= esc($user_name) ?></div>
                 <div class="greeting-sub"><?= date('l, F j, Y') ?></div>
             </div>
@@ -1828,7 +950,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                         </div>
                     </div>
                     <div class="cal-legend">
-                        <?php foreach ([['#fbbf24', 'Pending'], ['#10b981', 'Approved'], ['#f87171', 'Declined'], ['#a855f7', 'Claimed']] as [$c, $l]): ?>
+                        <?php foreach ([['#fbbf24','Pending'],['#10b981','Approved'],['#f87171','Declined'],['#a855f7','Claimed']] as [$c,$l]): ?>
                             <div class="leg-item">
                                 <div class="leg-dot" style="background:<?= $c ?>;"></div>
                                 <span class="leg-lbl"><?= $l ?></span>
@@ -1921,15 +1043,13 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                         </div>
                     </div>
                     <?php $step = 1;
-                    foreach (
-                        [
-                            ['Click "New Reservation"', 'Choose a resource, pick your date and time, and describe your purpose.'],
-                            ['Wait for approval',        'An SK officer will review your request, usually within 24 hours.'],
-                            ['Download your e-ticket',   'Once approved, open My Reservations and download your QR code.'],
-                            ['Scan at the entrance',      'Show your e-ticket to be scanned when you arrive.'],
-                            ['Be on time',                "Slots expire if you don't show up. Cancel in advance if plans change."],
-                        ] as [$title, $body]
-                    ): ?>
+                    foreach ([
+                        ['Click "New Reservation"', 'Choose a resource, pick your date and time, and describe your purpose.'],
+                        ['Wait for approval',        'An SK officer will review your request, usually within 24 hours.'],
+                        ['Download your e-ticket',   'Once approved, open My Reservations and download your QR code.'],
+                        ['Scan at the entrance',      'Show your e-ticket to be scanned when you arrive.'],
+                        ['Be on time',                "Slots expire if you don't show up. Cancel in advance if plans change."],
+                    ] as [$title,$body]): ?>
                         <div class="how-step">
                             <div class="step-num"><?= $step++ ?></div>
                             <div>
@@ -1948,16 +1068,14 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                             <div class="card-sub">What each status means</div>
                         </div>
                     </div>
-                    <?php foreach (
-                        [
-                            ['pending',   'clock',        '#fef3c7', '#92400e', '#d97706', 'Pending',  'Waiting for SK officer review.'],
-                            ['approved',  'check-circle', '#dcfce7', '#166534', '#16a34a', 'Approved', 'Confirmed. Get your e-ticket.'],
-                            ['claimed',   'check-double', '#ede9fe', '#5b21b6', '#7c3aed', 'Claimed',  'E-ticket scanned. Slot used.'],
-                            ['unclaimed', 'ticket',       '#fff7ed', '#c2410c', '#ea580c', 'No-show',  "Approved but you didn't attend."],
-                            ['declined',  'ban',          '#fee2e2', '#991b1b', '#dc2626', 'Declined', 'Not approved. Try another time.'],
-                            ['expired',   'hourglass',    '#f1f5f9', '#475569', '#64748b', 'Expired',  'Date passed before approval.'],
-                        ] as [$key, $ico, $bg, $fg, $ic, $label, $desc]
-                    ): ?>
+                    <?php foreach ([
+                        ['pending',   'clock',        '#fef3c7','#92400e','#d97706','Pending',  'Waiting for SK officer review.'],
+                        ['approved',  'check-circle', '#dcfce7','#166534','#16a34a','Approved', 'Confirmed. Get your e-ticket.'],
+                        ['claimed',   'check-double', '#ede9fe','#5b21b6','#7c3aed','Claimed',  'E-ticket scanned. Slot used.'],
+                        ['unclaimed', 'ticket',       '#fff7ed','#c2410c','#ea580c','No-show',  "Approved but you didn't attend."],
+                        ['declined',  'ban',          '#fee2e2','#991b1b','#dc2626','Declined', 'Not approved. Try another time.'],
+                        ['expired',   'hourglass',    '#f1f5f9','#475569','#64748b','Expired',  'Date passed before approval.'],
+                    ] as [$key,$ico,$bg,$fg,$ic,$label,$desc]): ?>
                         <div class="status-guide-row">
                             <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:7px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;min-width:74px;justify-content:center;background:<?= $bg ?>;color:<?= $fg ?>;">
                                 <?= icon($ico, 8, $ic) ?><?= $label ?>
@@ -1969,20 +1087,22 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             </div>
         <?php endif; ?>
 
-        <!-- LIBRARY SECTION -->
+        <!-- ═══════════════════════════════════════════════════
+             LIBRARY SECTION — redesigned with vibrant purple UI
+             ═══════════════════════════════════════════════════ -->
         <div class="grid-lib fade-up-4">
 
             <!-- LEFT COL: banner + AI finder -->
             <div style="display:flex;flex-direction:column;gap:14px;min-width:0;">
 
-                <!-- Banner -->
+                <!-- Hero Banner -->
                 <div class="lib-banner">
                     <div class="lib-banner-inner">
                         <div class="lib-banner-top">
                             <div>
                                 <div class="lib-eyebrow">Community Library</div>
                                 <div class="lib-title"><?= $availableCount ?></div>
-                                <div class="lib-sub">available · <?= $totalBooks ?> total titles</div>
+                                <div class="lib-sub">available &middot; <?= $totalBooks ?> total titles</div>
                             </div>
                             <a href="<?= base_url('/books') ?>" class="lib-browse">
                                 <?= icon('book-open', 13, 'white') ?> Browse
@@ -2008,7 +1128,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 <!-- AI Book Finder -->
                 <div class="card card-p">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', 16, '#7c3aed') ?></div>
+                        <div class="card-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);"><?= icon('sparkles', 16, '#7c3aed') ?></div>
                         <div>
                             <div class="card-title">AI Book Finder</div>
                             <div class="card-sub">Describe what you want to read</div>
@@ -2028,8 +1148,8 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     </div>
                     <div class="ai-result-box" id="ragResult">
                         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                            <?= icon('robot', 14, 'var(--indigo)') ?>
-                            <p style="font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
+                            <?= icon('robot', 14, '#7c3aed') ?>
+                            <p style="font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#5b21b6;">Librarian Suggestion</p>
                         </div>
                         <p style="font-family:var(--font);font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
                         <div id="ragBooks"></div>
@@ -2051,8 +1171,8 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 <div class="card card-p" style="flex:1;">
                     <div class="card-head">
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div class="card-icon" style="background:var(--indigo-light);">
-                                <?= icon('book-open', 16, 'var(--indigo)') ?>
+                            <div class="card-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);">
+                                <?= icon('book-open', 16, '#7c3aed') ?>
                             </div>
                             <div>
                                 <div class="card-title">Available Now</div>
@@ -2066,18 +1186,20 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                             <?php foreach (array_slice($featuredBooks, 0, 6) as $book):
                                 $avail = (int)($book['available_copies'] ?? 0);
                                 $pillStyle = $avail === 0
-                                    ? 'background:#fee2e2;color:#991b1b;'
-                                    : ($avail <= 1 ? 'background:#fef3c7;color:#92400e;' : 'background:#dcfce7;color:#166634;');
+                                    ? 'background:linear-gradient(135deg,#fecaca,#f87171);color:#7f1d1d;'
+                                    : ($avail <= 1
+                                        ? 'background:linear-gradient(135deg,#fde68a,#fbbf24);color:#78350f;'
+                                        : 'background:linear-gradient(135deg,#bbf7d0,#86efac);color:#14532d;');
                                 $pillText = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
                             ?>
                                 <a href="<?= base_url('/books') ?>"
-                                    style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;min-width:0;">
+                                    style="display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:12px;text-decoration:none;color:inherit;transition:background .15s,transform .15s;min-width:0;">
                                     <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
                                     <div style="flex:1;min-width:0;">
                                         <div class="book-title"><?= esc($book['title']) ?></div>
                                         <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
                                     </div>
-                                    <span style="font-family:var(--font);font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;white-space:nowrap;<?= $pillStyle ?>">
+                                    <span style="font-family:'Nunito',var(--font);font-size:.6rem;font-weight:800;padding:3px 9px;border-radius:999px;flex-shrink:0;white-space:nowrap;<?= $pillStyle ?>">
                                         <?= $pillText ?>
                                     </span>
                                 </a>
@@ -2099,15 +1221,14 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 <!-- My Active Borrows -->
                 <?php
                 $activeBorrows = array_slice(
-                    array_values(array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved', 'pending']))),
-                    0,
-                    4
+                    array_values(array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved','pending']))),
+                    0, 4
                 );
                 if (!empty($activeBorrows)): ?>
                     <div class="card card-p">
                         <div class="card-head">
                             <div style="display:flex;align-items:center;gap:10px;">
-                                <div class="card-icon" style="background:#dcfce7;"><?= icon('bookmark', 16, '#16a34a') ?></div>
+                                <div class="card-icon" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);"><?= icon('bookmark', 16, '#16a34a') ?></div>
                                 <div>
                                     <div class="card-title">My Active Borrows</div>
                                     <div class="card-sub">Currently checked out</div>
@@ -2123,20 +1244,20 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                                 $dueSoon = $due && !$overdue && $due < time() + 3 * 86400;
                             ?>
                                 <div class="borrow-row">
-                                    <div class="book-letter" style="width:30px;height:30px;font-size:.7rem;">
+                                    <div class="book-letter" style="width:32px;height:32px;font-size:.72rem;">
                                         <?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?>
                                     </div>
                                     <div style="flex:1;min-width:0;">
-                                        <p style="font-family:var(--font);font-weight:600;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                        <p style="font-family:'Nunito',var(--font);font-weight:700;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                                             <?= esc($borrow['title'] ?? 'Unknown Book') ?>
                                         </p>
                                         <?php if ($due && $bs === 'approved'): ?>
-                                            <p style="font-family:var(--mono);font-size:.68rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : 'var(--text-sub)') ?>;">
+                                            <p style="font-family:var(--mono);font-size:.68rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : '#8b5cf6') ?>;">
                                                 <?= $overdue ? 'Overdue · ' : ($dueSoon ? 'Due soon · ' : '') ?><?= date('M j, Y', $due) ?>
                                             </p>
                                         <?php endif; ?>
                                     </div>
-                                    <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>">
+                                    <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>" style="border-radius:8px;">
                                         <?= $overdue ? 'Overdue' : ($dueSoon ? 'Due Soon' : ucfirst($bs)) ?>
                                     </span>
                                 </div>
@@ -2147,8 +1268,8 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     <div class="card card-p" style="text-align:center;padding:28px 20px;">
                         <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('bookmark', 26, 'currentColor') ?></div>
                         <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
-                        <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-family:var(--font);font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
-                            <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
+                        <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-family:var(--font);font-size:.72rem;font-weight:700;color:#7c3aed;text-decoration:none;">
+                            <?= icon('book-open', 12, '#7c3aed') ?> Borrow a book
                         </a>
                     </div>
                 <?php endif; ?>
@@ -2192,17 +1313,11 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
     <script>
         const NOTIF_KEY = 'notified_ids_<?= session()->get('user_id') ?>';
         const reservations = <?= json_encode($reservations ?? []) ?>;
-        const allResData = <?= json_encode($allReservations ?? []) ?>;
-        const approvedRes = reservations.filter(r => r.status === 'approved' && !r.claimed);
-        let notifications = [];
+        const allResData   = <?= json_encode($allReservations ?? []) ?>;
+        const approvedRes  = reservations.filter(r => r.status === 'approved' && !r.claimed);
+        let notifications  = [];
 
-        const getSeenIds = () => {
-            try {
-                return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]');
-            } catch (e) {
-                return [];
-            }
-        };
+        const getSeenIds  = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch(e){ return []; } };
         const saveSeenIds = ids => localStorage.setItem(NOTIF_KEY, JSON.stringify(ids));
 
         function loadNotifications() {
@@ -2214,26 +1329,20 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 time: r.updated_at || r.created_at || new Date().toISOString(),
                 read: seen.includes(parseInt(r.id))
             }));
-            updateBadge();
-            renderNotifs();
+            updateBadge(); renderNotifs();
         }
 
         function markAllRead() {
             saveSeenIds([...new Set([...getSeenIds(), ...notifications.map(n => n.id)])]);
             notifications.forEach(n => n.read = true);
-            updateBadge();
-            renderNotifs();
+            updateBadge(); renderNotifs();
         }
 
         function markRead(id) {
             const ids = getSeenIds();
             if (!ids.includes(id)) saveSeenIds([...ids, id]);
             const n = notifications.find(n => n.id === id);
-            if (n) {
-                n.read = true;
-                updateBadge();
-                renderNotifs();
-            }
+            if (n) { n.read = true; updateBadge(); renderNotifs(); }
         }
 
         function updateBadge() {
@@ -2250,9 +1359,9 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 return;
             }
             list.innerHTML = notifications
-                .sort((a, b) => new Date(b.time) - new Date(a.time))
+                .sort((a,b) => new Date(b.time) - new Date(a.time))
                 .map(n => `
-        <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="markRead(${n.id})">
+        <div class="notif-item ${!n.read?'unread':''}" onclick="markRead(${n.id})">
             <div style="display:flex;align-items:flex-start;gap:9px;">
                 <div style="width:30px;height:30px;background:var(--indigo-light);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>
@@ -2262,17 +1371,14 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     <p style="font-family:var(--font);font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p>
                     <p style="font-family:var(--font);font-size:9px;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
                 </div>
-                ${!n.read ? '<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>' : ''}
+                ${!n.read?'<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>':''}
             </div>
         </div>`).join('');
         }
 
-        function toggleNotifications() {
-            document.getElementById('notifDD').classList.toggle('show');
-        }
+        function toggleNotifications() { document.getElementById('notifDD').classList.toggle('show'); }
         document.addEventListener('click', e => {
-            const dd = document.getElementById('notifDD');
-            const bell = document.querySelector('.notif-bell');
+            const dd = document.getElementById('notifDD'), bell = document.querySelector('.notif-bell');
             if (!bell.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('show');
         });
 
@@ -2288,7 +1394,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             if (!ts) return '—';
             const parts = ts.split(':');
             let h = parseInt(parts[0], 10);
-            const m = parts[1] ? parts[1].padStart(2, '0') : '00';
+            const m = parts[1] ? parts[1].padStart(2,'0') : '00';
             if (isNaN(h)) return ts;
             const ampm = h < 12 ? 'AM' : 'PM';
             h = h % 12 || 12;
@@ -2297,37 +1403,20 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
 
         function openDateModal(date, items) {
             const d = new Date(date + 'T00:00:00');
-            document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-            });
-            document.getElementById('modalDateSub').textContent = items.length ?
-                `${items.length} reservation${items.length > 1 ? 's' : ''}` :
-                '';
-            const list = document.getElementById('modalList');
-            const empty = document.getElementById('modalEmpty');
+            document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+            document.getElementById('modalDateSub').textContent = items.length ? `${items.length} reservation${items.length>1?'s':''}` : '';
+            const list = document.getElementById('modalList'), empty = document.getElementById('modalEmpty');
             list.innerHTML = '';
-
             if (items.length) {
                 empty.classList.add('hidden');
-                const cmap = {
-                    approved: '#dcfce7|#166534',
-                    pending: '#fef3c7|#92400e',
-                    declined: '#fee2e2|#991b1b',
-                    canceled: '#fee2e2|#991b1b',
-                    claimed: '#ede9fe|#5b21b6'
-                };
-
-                items.sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')).forEach(r => {
-                    const isClaimed = r.claimed == 1 || r.status === 'claimed' || !!r.claimed_at;
-                    const s = isClaimed ? 'claimed' : (r.status || 'pending').toLowerCase();
-                    const [cbg, cfg] = (cmap[s] || '#f1f5f9|#475569').split('|');
+                const cmap = { approved:'#dcfce7|#166534', pending:'#fef3c7|#92400e', declined:'#fee2e2|#991b1b', canceled:'#fee2e2|#991b1b', claimed:'#ede9fe|#5b21b6' };
+                items.sort((a,b) => (a.start_time||'').localeCompare(b.start_time||'')).forEach(r => {
+                    const isClaimed = r.claimed==1 || r.status==='claimed' || !!r.claimed_at;
+                    const s = isClaimed ? 'claimed' : (r.status||'pending').toLowerCase();
+                    const [cbg,cfg] = (cmap[s]||'#f1f5f9|#475569').split('|');
                     const tFmt = r.start_time ? to12hPHT(r.start_time) : 'All day';
                     const etFmt = r.end_time ? to12hPHT(r.end_time) : '';
                     const timeDisplay = etFmt ? `${tFmt} – ${etFmt} PHT` : tFmt;
-
                     const row = document.createElement('div');
                     row.className = 'date-row';
                     row.innerHTML = `
@@ -2335,309 +1424,155 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-sub)" stroke-width="1.5" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
             <div style="flex:1;min-width:0;">
-                <p style="font-family:var(--font);font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name || 'Reserved'}</p>
+                <p style="font-family:var(--font);font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name||'Reserved'}</p>
                 <p style="font-family:var(--font);font-size:11px;color:#3730a3;margin-top:1px;font-weight:600;">${timeDisplay}</p>
             </div>
-            <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};flex-shrink:0;">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
+            <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};flex-shrink:0;">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
                     list.appendChild(row);
                 });
-            } else {
-                empty.classList.remove('hidden');
-            }
-
+            } else { empty.classList.remove('hidden'); }
             document.getElementById('dateModal').classList.add('show');
             document.body.style.overflow = 'hidden';
         }
 
-        function closeDateModal() {
-            document.getElementById('dateModal').classList.remove('show');
-            document.body.style.overflow = '';
-        }
-
-        function handleModalBack(e) {
-            if (e.target.classList.contains('modal-back')) closeDateModal();
-        }
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeDateModal();
-        });
+        function closeDateModal() { document.getElementById('dateModal').classList.remove('show'); document.body.style.overflow = ''; }
+        function handleModalBack(e) { if (e.target.classList.contains('modal-back')) closeDateModal(); }
+        document.addEventListener('keydown', e => { if (e.key==='Escape') closeDateModal(); });
 
         function initTimer() {
-            const banner = document.getElementById('timerBanner'),
-                titleEl = document.getElementById('timerTitle'),
-                subEl = document.getElementById('timerSub'),
-                hEl = document.getElementById('tdH'),
-                mEl = document.getElementById('tdM'),
-                sEl = document.getElementById('tdS'),
-                iconW = document.getElementById('timerIconWrap'),
-                pw = document.getElementById('timerPW'),
-                pf = document.getElementById('timerPF');
-
-            const mkSvg = (path, sw) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" style="width:16px;height:16px;flex-shrink:0;">${path}</svg>`;
+            const banner=document.getElementById('timerBanner'), titleEl=document.getElementById('timerTitle'),
+                subEl=document.getElementById('timerSub'), hEl=document.getElementById('tdH'),
+                mEl=document.getElementById('tdM'), sEl=document.getElementById('tdS'),
+                iconW=document.getElementById('timerIconWrap'), pw=document.getElementById('timerPW'),
+                pf=document.getElementById('timerPF');
+            const mkSvg=(path,sw)=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" style="width:16px;height:16px;flex-shrink:0;">${path}</svg>`;
             const icons = {
-                urgent: mkSvg('<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', '1.8'),
-                warning: mkSvg('<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round"/>', '1.8'),
-                safe: mkSvg('<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>', '1.8'),
+                urgent: mkSvg('<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>','1.8'),
+                warning: mkSvg('<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round"/>','1.8'),
+                safe:   mkSvg('<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>','1.8'),
             };
-
             function findTarget() {
-                const now = Date.now();
-                let active = null,
-                    upcoming = null;
+                const now = Date.now(); let active=null, upcoming=null;
                 approvedRes.forEach(r => {
-                    if (!r.reservation_date || !r.start_time || !r.end_time) return;
-                    const start = new Date(r.reservation_date + 'T' + r.start_time).getTime();
-                    const end = new Date(r.reservation_date + 'T' + r.end_time).getTime();
-                    const minsToStart = (start - now) / 60000;
-                    const minsToEnd = (end - now) / 60000;
-                    if (now >= start && now < end && !active) active = {
-                        r,
-                        start,
-                        end,
-                        mode: 'active',
-                        minsLeft: minsToEnd
-                    };
-                    if (!upcoming && minsToStart > 0 && minsToStart <= 30) upcoming = {
-                        r,
-                        start,
-                        end,
-                        mode: 'upcoming',
-                        minsLeft: minsToStart
-                    };
+                    if (!r.reservation_date||!r.start_time||!r.end_time) return;
+                    const start = new Date(r.reservation_date+'T'+r.start_time).getTime();
+                    const end   = new Date(r.reservation_date+'T'+r.end_time).getTime();
+                    const minsToStart = (start-now)/60000, minsToEnd = (end-now)/60000;
+                    if (now>=start&&now<end&&!active) active={r,start,end,mode:'active',minsLeft:minsToEnd};
+                    if (!upcoming&&minsToStart>0&&minsToStart<=30) upcoming={r,start,end,mode:'upcoming',minsLeft:minsToStart};
                 });
-                return active || upcoming || null;
+                return active||upcoming||null;
             }
-
             function tick() {
                 const target = findTarget();
-                if (!target) {
-                    banner.style.display = 'none';
-                    return;
-                }
-                const {
-                    r,
-                    start,
-                    end,
-                    mode,
-                    minsLeft
-                } = target;
-                const now = Date.now();
-                const diff = Math.max(0, (mode === 'active' ? end : start) - now);
-                const h = Math.floor(diff / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                hEl.textContent = String(h).padStart(2, '0');
-                mEl.textContent = String(m).padStart(2, '0');
-                sEl.textContent = String(s).padStart(2, '0');
-                banner.classList.remove('urgent', 'warning', 'safe');
-                if (mode === 'active') {
-                    if (minsLeft <= 10) {
-                        banner.classList.add('urgent');
-                        iconW.innerHTML = icons.urgent;
-                    } else if (minsLeft <= 20) {
-                        banner.classList.add('warning');
-                        iconW.innerHTML = icons.warning;
-                    } else {
-                        banner.classList.add('safe');
-                        iconW.innerHTML = icons.safe;
-                    }
-                    titleEl.textContent = minsLeft <= 10 ? '⚠ Reservation ends very soon!' : 'Your reservation is active';
+                if (!target) { banner.style.display='none'; return; }
+                const {r,start,end,mode,minsLeft} = target;
+                const now = Date.now(), diff = Math.max(0,(mode==='active'?end:start)-now);
+                const h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000), s=Math.floor((diff%60000)/1000);
+                hEl.textContent=String(h).padStart(2,'0'); mEl.textContent=String(m).padStart(2,'0'); sEl.textContent=String(s).padStart(2,'0');
+                banner.classList.remove('urgent','warning','safe');
+                if (mode==='active') {
+                    if (minsLeft<=10){ banner.classList.add('urgent'); iconW.innerHTML=icons.urgent; }
+                    else if (minsLeft<=20){ banner.classList.add('warning'); iconW.innerHTML=icons.warning; }
+                    else { banner.classList.add('safe'); iconW.innerHTML=icons.safe; }
+                    titleEl.textContent = minsLeft<=10 ? '⚠ Reservation ends very soon!' : 'Your reservation is active';
                     subEl.textContent = `${r.resource_name||'Resource'} · Ends at ${(r.end_time||'').substring(0,5)}`;
-                    const pct = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
-                    pw.style.display = 'block';
-                    pf.style.width = pct.toFixed(1) + '%';
+                    const pct = Math.min(100,Math.max(0,((now-start)/(end-start))*100));
+                    pw.style.display='block'; pf.style.width=pct.toFixed(1)+'%';
                 } else {
-                    banner.classList.add('safe');
-                    iconW.innerHTML = icons.safe;
-                    titleEl.textContent = 'Your reservation starts soon';
-                    subEl.textContent = `${r.resource_name||'Resource'} · Starts at ${(r.start_time||'').substring(0,5)}`;
-                    pw.style.display = 'none';
+                    banner.classList.add('safe'); iconW.innerHTML=icons.safe;
+                    titleEl.textContent='Your reservation starts soon';
+                    subEl.textContent=`${r.resource_name||'Resource'} · Starts at ${(r.start_time||'').substring(0,5)}`;
+                    pw.style.display='none';
                 }
-                banner.style.display = 'block';
+                banner.style.display='block';
             }
-            tick();
-            setInterval(tick, 1000);
+            tick(); setInterval(tick,1000);
         }
 
         function showLoginToast() {
-            const key = 'toast_<?= session()->get('user_id') ?>_' + new Date().toDateString();
+            const key='toast_<?= session()->get('user_id') ?>_'+new Date().toDateString();
             if (sessionStorage.getItem(key)) return;
-            sessionStorage.setItem(key, '1');
-            const now = Date.now();
-            let td = null;
+            sessionStorage.setItem(key,'1');
+            const now=Date.now(); let td=null;
             approvedRes.forEach(r => {
-                if (!r.reservation_date || !r.start_time || !r.end_time) return;
-                const start = new Date(r.reservation_date + 'T' + r.start_time).getTime();
-                const end = new Date(r.reservation_date + 'T' + r.end_time).getTime();
-                const minsToStart = (start - now) / 60000;
-                const today = new Date().toDateString();
-                const resDay = new Date(r.reservation_date + 'T00:00:00').toDateString();
-                if (now >= start && now < end && !td)
-                    td = {
-                        icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
-                        bg: 'rgba(37,99,235,.2)',
-                        title: 'Active reservation now!',
-                        body: `${r.resource_name||'Resource'} ends at ${(r.end_time||'').substring(0,5)}`
-                    };
-                if (!td && resDay === today && minsToStart > 0 && minsToStart <= 120)
-                    td = {
-                        icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
-                        bg: 'rgba(217,119,6,.2)',
-                        title: `In ${Math.round(minsToStart)} min`,
-                        body: `${r.resource_name||'Resource'} · ${(r.start_time||'').substring(0,5)} – ${(r.end_time||'').substring(0,5)}`
-                    };
-                if (!td && resDay === today) {
-                    const fmt = t => {
-                        const [h, m] = t.split(':');
-                        const hr = +h;
-                        return `${hr%12||12}:${m} ${hr<12?'AM':'PM'}`;
-                    };
-                    td = {
-                        icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>',
-                        bg: 'rgba(37,99,235,.2)',
-                        title: 'Reservation today',
-                        body: `${r.resource_name||'Resource'} · ${fmt(r.start_time)} – ${fmt(r.end_time)}`
-                    };
-                }
+                if (!r.reservation_date||!r.start_time||!r.end_time) return;
+                const start=new Date(r.reservation_date+'T'+r.start_time).getTime();
+                const end=new Date(r.reservation_date+'T'+r.end_time).getTime();
+                const minsToStart=(start-now)/60000;
+                const today=new Date().toDateString(), resDay=new Date(r.reservation_date+'T00:00:00').toDateString();
+                if (now>=start&&now<end&&!td) td={icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><polygon points="5 3 19 12 5 21 5 3"/></svg>',bg:'rgba(37,99,235,.2)',title:'Active reservation now!',body:`${r.resource_name||'Resource'} ends at ${(r.end_time||'').substring(0,5)}`};
+                if (!td&&resDay===today&&minsToStart>0&&minsToStart<=120) td={icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',bg:'rgba(217,119,6,.2)',title:`In ${Math.round(minsToStart)} min`,body:`${r.resource_name||'Resource'} · ${(r.start_time||'').substring(0,5)} – ${(r.end_time||'').substring(0,5)}`};
+                if (!td&&resDay===today) { const fmt=t=>{const[h,m]=t.split(':');const hr=+h;return `${hr%12||12}:${m} ${hr<12?'AM':'PM'}`;}; td={icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>',bg:'rgba(37,99,235,.2)',title:'Reservation today',body:`${r.resource_name||'Resource'} · ${fmt(r.start_time)} – ${fmt(r.end_time)}`}; }
             });
             if (!td) return;
-            const toast = document.getElementById('loginToast');
-            document.getElementById('toastIcon').innerHTML = td.icon;
-            document.getElementById('toastIcon').style.background = td.bg;
-            document.getElementById('toastTitle').textContent = td.title;
-            document.getElementById('toastBody').textContent = td.body;
-            setTimeout(() => toast.classList.add('show'), 900);
-            setTimeout(() => toast.classList.remove('show'), 7500);
+            const toast=document.getElementById('loginToast');
+            document.getElementById('toastIcon').innerHTML=td.icon;
+            document.getElementById('toastIcon').style.background=td.bg;
+            document.getElementById('toastTitle').textContent=td.title;
+            document.getElementById('toastBody').textContent=td.body;
+            setTimeout(()=>toast.classList.add('show'),900);
+            setTimeout(()=>toast.classList.remove('show'),7500);
         }
 
-        function dismissToast() {
-            document.getElementById('loginToast').classList.remove('show');
-        }
+        function dismissToast() { document.getElementById('loginToast').classList.remove('show'); }
 
         async function doRagSearch() {
             const query = document.getElementById('ragInput').value.trim();
             if (query.length < 2) return;
-            const skel = document.getElementById('ragSkel'),
-                res = document.getElementById('ragResult'),
-                err = document.getElementById('ragErr'),
-                btn = document.getElementById('ragBtn');
-            res.classList.remove('show');
-            err.style.display = 'none';
-            skel.style.display = 'block';
-            btn.disabled = true;
+            const skel=document.getElementById('ragSkel'), res=document.getElementById('ragResult'),
+                err=document.getElementById('ragErr'), btn=document.getElementById('ragBtn');
+            res.classList.remove('show'); err.style.display='none'; skel.style.display='block'; btn.disabled=true;
             try {
-                const r = await fetch('/rag/suggest', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        query
-                    })
-                });
+                const r = await fetch('/rag/suggest',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({query})});
                 const d = await r.json();
-                skel.style.display = 'none';
-                btn.disabled = false;
-                if (d.message && !d.suggestion) {
-                    err.textContent = d.message;
-                    err.style.display = 'block';
-                    return;
-                }
-                if (d.error && !d.books) {
-                    err.textContent = d.error;
-                    err.style.display = 'block';
-                    return;
-                }
-                document.getElementById('ragText').textContent = d.suggestion || '';
-                const booksRow = document.getElementById('ragBooks');
-                booksRow.innerHTML = '';
-                (d.books || []).slice(0, 4).forEach(b => {
-                    const avail = (b.available_copies || 0) > 0;
-                    const chip = document.createElement('a');
-                    chip.href = '/books';
-                    chip.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:8px;font-family:var(--font);font-size:10px;font-weight:600;border:1px solid;transition:all .15s;text-decoration:none;max-width:100%;overflow:hidden;${avail?'background:var(--card);border-color:var(--indigo-border);color:var(--indigo);':'background:var(--input-bg);border-color:var(--border);color:var(--text-sub);'}`;
-                    const titleSpan = document.createElement('span');
-                    titleSpan.style.cssText = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-                    titleSpan.textContent = b.title + (!avail ? ' (out)' : '');
-                    chip.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:9px;height:9px;flex-shrink:0;"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round"/></svg>`;
-                    chip.appendChild(titleSpan);
-                    booksRow.appendChild(chip);
+                skel.style.display='none'; btn.disabled=false;
+                if (d.message&&!d.suggestion){ err.textContent=d.message; err.style.display='block'; return; }
+                if (d.error&&!d.books){ err.textContent=d.error; err.style.display='block'; return; }
+                document.getElementById('ragText').textContent=d.suggestion||'';
+                const booksRow=document.getElementById('ragBooks'); booksRow.innerHTML='';
+                (d.books||[]).slice(0,4).forEach(b => {
+                    const avail=(b.available_copies||0)>0;
+                    const chip=document.createElement('a'); chip.href='/books';
+                    chip.style.cssText=`display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-family:'Nunito',var(--font);font-size:10px;font-weight:700;border:1.5px solid;transition:all .15s;text-decoration:none;max-width:100%;overflow:hidden;${avail?'background:#f5f3ff;border-color:rgba(124,58,237,.2);color:#7c3aed;':'background:var(--input-bg);border-color:var(--border);color:var(--text-sub);'}`;
+                    const titleSpan=document.createElement('span'); titleSpan.style.cssText='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                    titleSpan.textContent=b.title+(!avail?' (out)':'');
+                    chip.innerHTML=`<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:9px;height:9px;flex-shrink:0;"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round"/></svg>`;
+                    chip.appendChild(titleSpan); booksRow.appendChild(chip);
                 });
                 res.classList.add('show');
-            } catch (e) {
-                skel.style.display = 'none';
-                btn.disabled = false;
-                err.textContent = 'Network error. Try again.';
-                err.style.display = 'block';
-            }
+            } catch(e) { skel.style.display='none'; btn.disabled=false; err.textContent='Network error. Try again.'; err.style.display='block'; }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.classList.remove('dark-pre');
             if ('Notification' in window) Notification.requestPermission();
-            loadNotifications();
-            initTimer();
-            showLoginToast();
+            loadNotifications(); initTimer(); showLoginToast();
 
-            const byDate = {};
-            allResData.forEach(r => {
-                if (!r.reservation_date) return;
-                if (!byDate[r.reservation_date]) byDate[r.reservation_date] = [];
-                byDate[r.reservation_date].push(r);
+            const byDate={};
+            allResData.forEach(r => { if (!r.reservation_date) return; if (!byDate[r.reservation_date]) byDate[r.reservation_date]=[]; byDate[r.reservation_date].push(r); });
+
+            const colorMap = { approved:'#10b981', pending:'#fbbf24', declined:'#f87171', canceled:'#f87171', claimed:'#a855f7' };
+            const events = allResData.filter(r=>r.reservation_date).map(r => {
+                const isClaimed=r.claimed==1||r.status==='claimed'||!!r.claimed_at;
+                const s=isClaimed?'claimed':(r.status||'pending').toLowerCase();
+                const d=r.reservation_date.trim();
+                return { title:r.resource_name||'Reservation', start:d+(r.start_time?'T'+r.start_time.substring(0,8):''), end:d+(r.end_time?'T'+r.end_time.substring(0,8):''), allDay:!r.start_time, backgroundColor:colorMap[s]||'#94a3b8', borderColor:'transparent', textColor:'#fff', extendedProps:{status:s} };
             });
 
-            const colorMap = {
-                approved: '#10b981',
-                pending: '#fbbf24',
-                declined: '#f87171',
-                canceled: '#f87171',
-                claimed: '#a855f7'
-            };
-            const events = allResData.filter(r => r.reservation_date).map(r => {
-                const isClaimed = r.claimed == 1 || r.status === 'claimed' || !!r.claimed_at;
-                const s = isClaimed ? 'claimed' : (r.status || 'pending').toLowerCase();
-                const d = r.reservation_date.trim();
-                return {
-                    title: r.resource_name || 'Reservation',
-                    start: d + (r.start_time ? 'T' + r.start_time.substring(0, 8) : ''),
-                    end: d + (r.end_time ? 'T' + r.end_time.substring(0, 8) : ''),
-                    allDay: !r.start_time,
-                    backgroundColor: colorMap[s] || '#94a3b8',
-                    borderColor: 'transparent',
-                    textColor: '#fff',
-                    extendedProps: {
-                        status: s
-                    }
-                };
-            });
-
-            const w = window.innerWidth;
-            const calView = w < 480 ? 'listWeek' : 'dayGridMonth';
-            const calHeight = w < 640 ? 'auto' : 360;
-
-            const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: calView,
-                headerToolbar: {
-                    left: 'prev,next',
-                    center: 'title',
-                    right: 'today'
-                },
-                events,
-                height: calHeight,
-                eventDisplay: 'block',
-                eventMaxStack: 2,
-                dateClick: info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
-                eventClick: info => {
-                    const d = info.event.startStr.split('T')[0];
-                    openDateModal(d, byDate[d] || []);
-                },
+            const w=window.innerWidth, calView=w<480?'listWeek':'dayGridMonth', calHeight=w<640?'auto':360;
+            const cal=new FullCalendar.Calendar(document.getElementById('calendar'),{
+                initialView:calView,
+                headerToolbar:{left:'prev,next',center:'title',right:'today'},
+                events, height:calHeight, eventDisplay:'block', eventMaxStack:2,
+                dateClick: info => openDateModal(info.dateStr,byDate[info.dateStr]||[]),
+                eventClick: info => { const d=info.event.startStr.split('T')[0]; openDateModal(d,byDate[d]||[]); },
                 dayCellDidMount: info => {
-                    const d = info.date.toISOString().split('T')[0];
-                    const items = byDate[d];
-                    if (items && items.length) {
-                        const badge = document.createElement('div');
-                        badge.style.cssText = 'font-family:var(--mono);font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;margin-bottom:1px;';
-                        badge.textContent = items.length;
+                    const d=info.date.toISOString().split('T')[0], items=byDate[d];
+                    if (items&&items.length) {
+                        const badge=document.createElement('div');
+                        badge.style.cssText='font-family:var(--mono);font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;margin-bottom:1px;';
+                        badge.textContent=items.length;
                         info.el.querySelector('.fc-daygrid-day-top')?.appendChild(badge);
                     }
                 }
