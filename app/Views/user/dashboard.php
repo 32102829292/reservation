@@ -105,11 +105,7 @@ function book_art(string $palette, float $rotate = -8): string
       <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="{$c2}" flood-opacity="0.3"/>
     </filter>
   </defs>
-
-  <!-- glow circle -->
   <circle cx="80" cy="88" r="54" fill="{$glow}"/>
-
-  <!-- book 3 (back, tilted left) -->
   <g transform="translate(80,88) rotate(-18) translate(-80,-88)">
     <rect x="38" y="42" width="50" height="68" rx="5" fill="{$c3}" filter="url(#bs2_{$palette})"/>
     <rect x="38" y="42" width="7" height="68" rx="3" fill="{$c2}"/>
@@ -117,8 +113,6 @@ function book_art(string $palette, float $rotate = -8): string
     <rect x="49" y="62" width="20" height="3" rx="1.5" fill="rgba(255,255,255,.35)"/>
     <rect x="49" y="69" width="24" height="3" rx="1.5" fill="rgba(255,255,255,.3)"/>
   </g>
-
-  <!-- book 2 (middle, tilted right) -->
   <g transform="translate(80,88) rotate(10) translate(-80,-88)">
     <rect x="58" y="48" width="48" height="66" rx="5" fill="{$c2}" filter="url(#bs_{$palette})"/>
     <rect x="58" y="48" width="7" height="66" rx="3" fill="{$c1}"/>
@@ -127,20 +121,14 @@ function book_art(string $palette, float $rotate = -8): string
     <rect x="69" y="74" width="22" height="3" rx="1.5" fill="rgba(255,255,255,.35)"/>
     <rect x="69" y="81" width="16" height="3" rx="1.5" fill="rgba(255,255,255,.3)"/>
   </g>
-
-  <!-- book 1 (front, center) -->
   <rect x="46" y="44" width="52" height="72" rx="6" fill="{$c1}" filter="url(#bs_{$palette})"/>
   <rect x="46" y="44" width="8" height="72" rx="4" fill="rgba(0,0,0,.15)"/>
-  <!-- spine highlight -->
   <rect x="48" y="44" width="3" height="72" rx="1.5" fill="rgba(255,255,255,.25)"/>
-  <!-- cover lines -->
   <rect x="58" y="62" width="30" height="4" rx="2" fill="rgba(255,255,255,.6)"/>
   <rect x="58" y="70" width="22" height="3" rx="1.5" fill="rgba(255,255,255,.45)"/>
   <rect x="58" y="77" width="26" height="3" rx="1.5" fill="rgba(255,255,255,.4)"/>
   <rect x="58" y="84" width="18" height="3" rx="1.5" fill="rgba(255,255,255,.35)"/>
-  <!-- cover top accent shape -->
   <rect x="58" y="50" width="32" height="8" rx="3" fill="rgba(255,255,255,.2)"/>
-  <!-- sheen overlay -->
   <path d="M46 50 Q52 44 98 44 L98 56 Q70 58 46 62Z" fill="rgba(255,255,255,.12)"/>
 </svg>
 SVG;
@@ -183,7 +171,6 @@ SVG;
     --font:   'DM Sans', system-ui, sans-serif;
     --mono:   'DM Mono', monospace;
 
-    /* Palette */
     --purple:      #7C3AED;
     --purple-mid:  #9F7AEA;
     --purple-lt:   #EDE9FE;
@@ -254,9 +241,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     display: flex; align-items: center; justify-content: center;
 }
 .sk-logo-mark svg { color: white; }
-.sk-logo-name {
-    font-size: 16px; font-weight: 700; letter-spacing: -.3px; color: var(--text);
-}
+.sk-logo-name { font-size: 16px; font-weight: 700; letter-spacing: -.3px; color: var(--text); }
 
 .sk-nav { flex: 1; overflow-y: auto; padding: 16px 12px; }
 .sk-nav-section { margin-bottom: 6px; }
@@ -272,9 +257,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     width: 100%; transition: all var(--ease);
 }
 .sk-nav-link:hover { background: var(--purple-lt); color: var(--purple); }
-.sk-nav-link.active {
-    background: var(--purple-lt); color: var(--purple); font-weight: 600;
-}
+.sk-nav-link.active { background: var(--purple-lt); color: var(--purple); font-weight: 600; }
 .sk-nav-link .nav-count {
     margin-left: auto;
     background: var(--purple); color: white;
@@ -282,49 +265,23 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     padding: 1px 7px; border-radius: 999px; min-width: 20px; text-align: center;
 }
 
-.sk-upgrade {
-    margin: 12px; padding: 14px 16px;
-    background: linear-gradient(135deg, var(--purple) 0%, #9F7AEA 100%);
-    border-radius: var(--r-md); color: white;
-}
-.sk-upgrade p { font-size: 12px; opacity: .8; margin-top: 3px; line-height: 1.4; }
-.sk-upgrade-btn {
-    margin-top: 10px; width: 100%; padding: 8px;
-    background: white; color: var(--purple);
-    font-family: var(--font); font-size: 12px; font-weight: 700;
-    border: none; border-radius: 10px; cursor: pointer;
-    transition: opacity var(--ease);
-}
-.sk-upgrade-btn:hover { opacity: .9; }
-
 /* ─────────── MAIN AREA ─────────── */
-.sk-main {
-    flex: 1; min-width: 0; display: flex; flex-direction: column;
-    height: 100%; overflow: hidden;
-}
+.sk-main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 
 /* ─────────── TOPBAR ─────────── */
 .sk-topbar {
     display: flex; align-items: center; gap: 14px;
     padding: 16px 28px; background: var(--card);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
 
-.sk-search {
-    flex: 1; max-width: 360px;
-    position: relative;
-}
-.sk-search-icon {
-    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-    color: var(--text-3);
-}
+.sk-search { flex: 1; max-width: 360px; position: relative; }
+.sk-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
 .sk-search-input {
     width: 100%; padding: 9px 14px 9px 38px;
     background: var(--bg); border: 1px solid var(--border);
     border-radius: 50px; font-family: var(--font); font-size: 13.5px;
-    color: var(--text); outline: none;
-    transition: all var(--ease);
+    color: var(--text); outline: none; transition: all var(--ease);
 }
 .sk-search-input::placeholder { color: var(--text-3); }
 .sk-search-input:focus { border-color: var(--purple-mid); box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
@@ -335,8 +292,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     width: 38px; height: 38px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     background: var(--bg); border: 1px solid var(--border);
-    color: var(--text-2); cursor: pointer; transition: all var(--ease);
-    position: relative;
+    color: var(--text-2); cursor: pointer; transition: all var(--ease); position: relative;
 }
 .sk-icon-btn:hover { background: var(--purple-lt); color: var(--purple); border-color: transparent; }
 
@@ -352,8 +308,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     color: white; border-radius: 50px;
     font-family: var(--font); font-size: 13.5px; font-weight: 600;
     border: none; cursor: pointer; text-decoration: none;
-    box-shadow: 0 4px 14px rgba(124,58,237,.35);
-    transition: all var(--ease);
+    box-shadow: 0 4px 14px rgba(124,58,237,.35); transition: all var(--ease);
 }
 .sk-reserve-btn:hover { background: var(--purple-dk); transform: translateY(-1px); }
 
@@ -361,15 +316,11 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     width: 38px; height: 38px; border-radius: 50%;
     background: linear-gradient(135deg, var(--purple) 0%, #9F7AEA 100%);
     display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 700; font-size: 14px; flex-shrink: 0;
-    cursor: pointer;
+    color: white; font-weight: 700; font-size: 14px; flex-shrink: 0; cursor: pointer;
 }
 
 /* ─────────── SCROLL AREA ─────────── */
-.sk-scroll {
-    flex: 1; overflow-y: auto; padding: 24px 28px 32px;
-    scroll-behavior: smooth;
-}
+.sk-scroll { flex: 1; overflow-y: auto; padding: 24px 28px 32px; scroll-behavior: smooth; }
 .sk-scroll::-webkit-scrollbar { width: 5px; }
 .sk-scroll::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 99px; }
 
@@ -378,35 +329,25 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     background: linear-gradient(130deg, #4338CA 0%, #7C3AED 45%, #9F7AEA 100%);
     border-radius: var(--r-xl); padding: 0 32px;
     display: flex; align-items: flex-end; justify-content: space-between;
-    overflow: hidden; position: relative; min-height: 172px;
-    margin-bottom: 28px;
+    overflow: hidden; position: relative; min-height: 172px; margin-bottom: 28px;
 }
 .sk-hero::before {
     content: '';
     position: absolute; inset: 0;
     background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
-
 .sk-hero-text { padding: 28px 0; position: relative; z-index: 1; max-width: 380px; }
-.sk-hero-eyebrow {
-    font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
-    color: rgba(255,255,255,.65); margin-bottom: 6px;
-}
+.sk-hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.65); margin-bottom: 6px; }
 .sk-hero-name { font-size: 22px; font-weight: 700; color: white; margin-bottom: 6px; line-height: 1.25; }
 .sk-hero-sub { font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.55; margin-bottom: 16px; }
 .sk-hero-cta {
     display: inline-flex; align-items: center; gap: 7px;
     padding: 9px 20px; background: white; color: var(--purple);
     border-radius: 50px; font-weight: 700; font-size: 13px;
-    border: none; cursor: pointer; text-decoration: none;
-    transition: all var(--ease);
+    border: none; cursor: pointer; text-decoration: none; transition: all var(--ease);
 }
 .sk-hero-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.15); }
-
-.sk-hero-books {
-    position: relative; display: flex; align-items: flex-end; gap: 4px;
-    padding-bottom: 0; flex-shrink: 0;
-}
+.sk-hero-books { position: relative; display: flex; align-items: flex-end; gap: 4px; padding-bottom: 0; flex-shrink: 0; }
 .sk-hero-books > * { filter: drop-shadow(0 8px 20px rgba(0,0,0,.25)); }
 
 /* ─────────── STATS ROW ─────────── */
@@ -417,67 +358,33 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     box-shadow: var(--shadow-sm); transition: all var(--ease);
 }
 .sk-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.sk-stat-icon {
-    width: 38px; height: 38px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 14px;
-}
+.sk-stat-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
 .sk-stat-val { font-family: var(--mono); font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; letter-spacing: -.04em; }
 .sk-stat-lbl { font-size: 12px; color: var(--text-3); font-weight: 500; }
 .sk-stat-trend { font-size: 11px; font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
 
 /* ─────────── SECTION HEADING ─────────── */
-.sk-section-head {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 16px;
-}
+.sk-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .sk-section-title { font-size: 16px; font-weight: 700; letter-spacing: -.2px; }
-.sk-section-link {
-    font-size: 12px; font-weight: 600; color: var(--purple); text-decoration: none;
-    display: flex; align-items: center; gap: 4px; transition: gap var(--ease);
-}
+.sk-section-link { font-size: 12px; font-weight: 600; color: var(--purple); text-decoration: none; display: flex; align-items: center; gap: 4px; transition: gap var(--ease); }
 .sk-section-link:hover { gap: 7px; }
 
 /* ─────────── BOOK CARDS GRID ─────────── */
 .sk-books-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
-.sk-book-card {
-    border-radius: var(--r-lg); overflow: hidden;
-    border: 1px solid var(--border); background: var(--card);
-    transition: all var(--ease); cursor: pointer;
-}
+.sk-book-card { border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--border); background: var(--card); transition: all var(--ease); cursor: pointer; }
 .sk-book-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: transparent; }
-
-.sk-book-art {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 150px; position: relative; overflow: hidden;
-}
+.sk-book-art { display: flex; align-items: center; justify-content: center; min-height: 150px; position: relative; overflow: hidden; }
 .sk-book-body { padding: 12px 14px 14px; }
-.sk-book-label {
-    font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--text-3); margin-bottom: 4px;
-}
-.sk-book-title {
-    font-size: 13px; font-weight: 700; color: var(--text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    margin-bottom: 2px;
-}
+.sk-book-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
+.sk-book-title { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
 .sk-book-author { font-size: 11.5px; color: var(--text-3); }
-.sk-book-meta {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
-}
-.sk-avail-pill {
-    font-size: 10px; font-weight: 700; padding: 3px 9px;
-    border-radius: 999px;
-}
+.sk-book-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.sk-avail-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
 .sk-stars { display: flex; align-items: center; gap: 2px; color: #F59E0B; }
 
-/* ─────────── TWO-COL GRID (calendar + side) ─────────── */
+/* ─────────── TWO-COL GRID ─────────── */
 .sk-grid-2 { display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-bottom: 28px; }
-.sk-card {
-    background: var(--card); border-radius: var(--r-lg);
-    border: 1px solid var(--border); box-shadow: var(--shadow-sm);
-}
+.sk-card { background: var(--card); border-radius: var(--r-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
 .sk-card-pad { padding: 20px 22px; }
 .sk-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .sk-card-title { font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
@@ -495,49 +402,22 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
 .sk-qa-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 /* ─────────── BORROW ROW ─────────── */
-.bk-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 6px; border-radius: 10px;
-    transition: background var(--ease);
-}
+.bk-row { display: flex; align-items: center; gap: 10px; padding: 9px 6px; border-radius: 10px; transition: background var(--ease); }
 .bk-row:hover { background: var(--purple-lt); }
-.bk-avatar {
-    width: 36px; height: 36px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 13px; flex-shrink: 0;
-}
+.bk-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
 .tag-claimed  { background: #EDE9FE; color: #5B21B6; }
 .tag-approved { background: #DCFCE7; color: #166534; }
 .tag-pending  { background: #FEF3C7; color: #92400E; }
 .tag-unclaimed{ background: #FFF7ED; color: #C2410C; }
 .tag-declined { background: #FEE2E2; color: #991B1B; }
 .tag-expired  { background: #F1F5F9; color: #475569; }
-.tag {
-    display: inline-flex; align-items: center; gap: 3px;
-    padding: 2px 9px; border-radius: 999px;
-    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
-}
+.tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 
 /* ─────────── ACHIEVEMENT CARD ─────────── */
-.sk-achieve-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 0; border-bottom: 1px solid var(--border);
-}
+.sk-achieve-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .sk-achieve-row:last-child { border-bottom: none; }
 .sk-achieve-name { font-size: 13px; font-weight: 600; color: var(--text); }
 .sk-achieve-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
-
-/* ─────────── BEST SALES ─────────── */
-.sk-sale-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid var(--border);
-}
-.sk-sale-row:last-child { border-bottom: none; }
-.sk-sale-cover {
-    width: 32px; height: 40px; border-radius: 5px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 800; color: white;
-}
 
 /* ─────────── CALENDAR OVERRIDES ─────────── */
 #dashboard-calendar { font-family: var(--font) !important; font-size: 12px; }
@@ -555,50 +435,22 @@ body.dark .fc-daygrid-day { background: var(--card) !important; }
 body.dark .fc-daygrid-day-number, body.dark .fc-col-header-cell-cushion { color: var(--text-2) !important; }
 
 /* ─────────── NEXT-ACTION BANNER ─────────── */
-.sk-next {
-    border-radius: var(--r-md); padding: 14px 18px;
-    border: 1px solid; margin-bottom: 20px;
-    display: flex; align-items: flex-start; gap: 13px;
-}
+.sk-next { border-radius: var(--r-md); padding: 14px 18px; border: 1px solid; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 13px; }
 .sk-next-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 /* ─────────── FLASH ─────────── */
-.sk-flash {
-    display: flex; align-items: center; gap: 9px;
-    padding: 12px 16px; border-radius: var(--r-sm);
-    background: #DCFCE7; border: 1px solid #BBF7D0; color: #166534;
-    font-size: 13px; font-weight: 500; margin-bottom: 18px;
-}
+.sk-flash { display: flex; align-items: center; gap: 9px; padding: 12px 16px; border-radius: var(--r-sm); background: #DCFCE7; border: 1px solid #BBF7D0; color: #166534; font-size: 13px; font-weight: 500; margin-bottom: 18px; }
 
 /* ─────────── MODAL ─────────── */
-.sk-modal-back {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.45); z-index: 300;
-    align-items: center; justify-content: center;
-    backdrop-filter: blur(4px);
-}
+.sk-modal-back { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 300; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .sk-modal-back.show { display: flex; }
-.sk-modal {
-    background: var(--card); border-radius: var(--r-xl);
-    padding: 24px; width: 90%; max-width: 420px;
-    max-height: 80vh; overflow-y: auto;
-    box-shadow: var(--shadow-lg);
-    animation: fadeUp .2s ease;
-}
+.sk-modal { background: var(--card); border-radius: var(--r-xl); padding: 24px; width: 90%; max-width: 420px; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: fadeUp .2s ease; }
 @keyframes fadeUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 /* ─────────── NOTIFICATIONS ─────────── */
-.sk-notif-dd {
-    position: fixed; top: 72px; right: 24px; width: 300px;
-    background: var(--card); border-radius: var(--r-xl);
-    box-shadow: var(--shadow-lg); border: 1px solid var(--border);
-    z-index: 200; display: none; overflow: hidden;
-}
+.sk-notif-dd { position: fixed; top: 72px; right: 24px; width: 300px; background: var(--card); border-radius: var(--r-xl); box-shadow: var(--shadow-lg); border: 1px solid var(--border); z-index: 200; display: none; overflow: hidden; }
 .sk-notif-dd.show { display: block; animation: fadeUp .15s ease; }
-.sk-notif-item {
-    padding: 11px 14px; border-bottom: 1px solid var(--border);
-    cursor: pointer; transition: background var(--ease);
-}
+.sk-notif-item { padding: 11px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background var(--ease); }
 .sk-notif-item:hover { background: var(--purple-lt); }
 .sk-notif-item.unread { background: rgba(124,58,237,.04); }
 
@@ -636,7 +488,6 @@ if (strpos($user_name ?? '', ' ') !== false) {
     $initials = strtoupper(substr($parts[0],0,1) . substr(end($parts),0,1));
 }
 
-/* next-action config */
 $nextAction = null;
 if (($pending ?? 0) > 0) {
     $nextAction = ['type'=>'pending','msg'=>"You have {$pending} reservation".($pending>1?'s':'')." awaiting approval.",'color'=>'amber','icon'=>'clock','url'=>'/reservation-list','cta'=>'View Reservations'];
@@ -652,7 +503,6 @@ $nextPalette = [
     'coral'  => ['rgba(239,68,68,.06)','rgba(239,68,68,.2)','rgba(239,68,68,.1)','#ef4444'],
 ];
 
-/* book art palettes cycling */
 $artPalettes = ['rose','violet','sky','amber','emerald','indigo','coral','teal'];
 $pendingStr = $pending ?? 0;
 ?>
@@ -661,11 +511,10 @@ $pendingStr = $pending ?? 0;
 <div class="sk-shell">
 
     <!-- ═══════════════ SIDEBAR ═══════════════ -->
+    <!-- ONLY ONE sidebar here. The layout.php partial include has been removed from the bottom of this file. -->
     <aside class="sk-sidebar" id="skSidebar">
         <div class="sk-logo">
-            <div class="sk-logo-mark">
-                <?= sk_icon('book', 17) ?>
-            </div>
+            <div class="sk-logo-mark"><?= sk_icon('book', 17) ?></div>
             <span class="sk-logo-name">SKReserve</span>
         </div>
 
@@ -702,14 +551,7 @@ $pendingStr = $pending ?? 0;
                 </a>
             </div>
         </nav>
-
-        <div class="sk-upgrade">
-            <strong style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
-                <?= sk_icon('sparkle', 14) ?> Pro Features
-            </strong>
-            <p>Get priority booking &amp; extended slots every month.</p>
-            <button class="sk-upgrade-btn">Upgrade to Pro</button>
-        </div>
+        <!-- Pro Features box REMOVED intentionally -->
     </aside>
 
     <!-- ═══════════════ MAIN ═══════════════ -->
@@ -717,7 +559,6 @@ $pendingStr = $pending ?? 0;
 
         <!-- ── Topbar ── -->
         <header class="sk-topbar">
-            <!-- hamburger (mobile) -->
             <button class="sk-icon-btn" style="display:none;border-radius:10px;" id="menuBtn" onclick="document.getElementById('skSidebar').classList.toggle('open')" aria-label="Menu">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:18px;height:18px;">
                     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -730,24 +571,20 @@ $pendingStr = $pending ?? 0;
             </div>
 
             <div class="sk-topbar-actions">
-                <!-- dark mode -->
                 <button class="sk-icon-btn" onclick="toggleDark()" title="Toggle theme" aria-label="Toggle dark mode">
                     <span id="themeIconLight"><?= sk_icon('moon', 16) ?></span>
                     <span id="themeIconDark" style="display:none;"><?= sk_icon('sun', 16) ?></span>
                 </button>
 
-                <!-- notifications -->
                 <button class="sk-icon-btn" onclick="toggleNotifications()" style="position:relative;" aria-label="Notifications">
                     <?= sk_icon('bell', 16) ?>
                     <span class="sk-notif-dot" id="notifDot" style="display:none;"></span>
                 </button>
 
-                <!-- reserve CTA -->
                 <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-reserve-btn">
                     <?= sk_icon('plus', 15) ?> Reserve
                 </a>
 
-                <!-- avatar -->
                 <div class="sk-avatar" title="<?= esc($user_name ?? '') ?>"><?= esc($initials) ?></div>
             </div>
         </header>
@@ -808,16 +645,9 @@ $pendingStr = $pending ?? 0;
                     </a>
                 </div>
                 <div class="sk-hero-books">
-                    <!-- 3D book stack illustrations in the hero -->
-                    <div style="transform:translateY(12px) rotate(-6deg);opacity:.85;">
-                        <?= book_art('sky') ?>
-                    </div>
-                    <div style="transform:translateY(0px);z-index:2;position:relative;">
-                        <?= book_art('rose') ?>
-                    </div>
-                    <div style="transform:translateY(16px) rotate(8deg);opacity:.9;">
-                        <?= book_art('amber') ?>
-                    </div>
+                    <div style="transform:translateY(12px) rotate(-6deg);opacity:.85;"><?= book_art('sky') ?></div>
+                    <div style="transform:translateY(0px);z-index:2;position:relative;"><?= book_art('rose') ?></div>
+                    <div style="transform:translateY(16px) rotate(8deg);opacity:.9;"><?= book_art('amber') ?></div>
                 </div>
             </div>
 
@@ -864,7 +694,6 @@ $pendingStr = $pending ?? 0;
                         $pillBg = $avail === 0 ? '#FEE2E2' : ($avail <= 1 ? '#FEF3C7' : '#DCFCE7');
                         $pillFg = $avail === 0 ? '#991B1B' : ($avail <= 1 ? '#92400E' : '#166534');
                         $pillTx = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail.' left');
-
                         $artBg = [
                             'rose'   =>'linear-gradient(145deg,#FFE4EC 0%,#FFCCD8 100%)',
                             'violet' =>'linear-gradient(145deg,#EDE9FE 0%,#DDD6FE 100%)',
@@ -877,17 +706,13 @@ $pendingStr = $pending ?? 0;
                         ][$pal];
                     ?>
                         <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>" class="sk-book-card" style="text-decoration:none;">
-                            <div class="sk-book-art" style="background:<?= $artBg ?>;">
-                                <?= book_art($pal) ?>
-                            </div>
+                            <div class="sk-book-art" style="background:<?= $artBg ?>;"><?= book_art($pal) ?></div>
                             <div class="sk-book-body">
                                 <div class="sk-book-label">Book</div>
                                 <div class="sk-book-title"><?= esc($book['title']) ?></div>
                                 <div class="sk-book-author"><?= esc($book['author'] ?? 'Unknown Author') ?></div>
                                 <div class="sk-book-meta">
-                                    <span class="sk-avail-pill" style="background:<?= $pillBg ?>;color:<?= $pillFg ?>;">
-                                        <?= $pillTx ?>
-                                    </span>
+                                    <span class="sk-avail-pill" style="background:<?= $pillBg ?>;color:<?= $pillFg ?>;"><?= $pillTx ?></span>
                                     <div class="sk-stars">
                                         <?= sk_icon('star', 11) ?>
                                         <span style="font-size:11px;font-weight:600;color:var(--text-2);margin-left:2px;">4.<?= (int)($i*1.3+4)%10 ?></span>
@@ -899,7 +724,7 @@ $pendingStr = $pending ?? 0;
                 </div>
             <?php endif; ?>
 
-            <!-- ═══ MY ACTIVE BORROWS (ongoing) ═══ -->
+            <!-- ═══ MY ACTIVE BORROWS ═══ -->
             <?php
             $activeBorrows = array_slice(
                 array_values(array_filter($myBorrowings, fn($b)=>in_array($b['status']??'',['approved','pending']))),
@@ -925,16 +750,12 @@ $pendingStr = $pending ?? 0;
                         $tagTx = $over?'Overdue':($soon?'Due Soon':ucfirst($bs));
                     ?>
                         <div class="sk-book-card">
-                            <div class="sk-book-art" style="background:<?= $artBg ?>;">
-                                <?= book_art($pal) ?>
-                            </div>
+                            <div class="sk-book-art" style="background:<?= $artBg ?>;"><?= book_art($pal) ?></div>
                             <div class="sk-book-body">
                                 <div class="sk-book-label">Borrowed</div>
                                 <div class="sk-book-title"><?= esc($borrow['title']??'Unknown') ?></div>
                                 <?php if ($due && $bs==='approved'): ?>
-                                    <div class="sk-book-author" style="color:<?= $over?'#EF4444':($soon?'#D97706':'') ?>;">
-                                        Due: <?= date('M j, Y', $due) ?>
-                                    </div>
+                                    <div class="sk-book-author" style="color:<?= $over?'#EF4444':($soon?'#D97706':'') ?>;">Due: <?= date('M j, Y', $due) ?></div>
                                 <?php else: ?>
                                     <div class="sk-book-author">&nbsp;</div>
                                 <?php endif; ?>
@@ -962,7 +783,6 @@ $pendingStr = $pending ?? 0;
                                 <div class="sk-card-sub">Tap a date to see reservations</div>
                             </div>
                         </div>
-                        <!-- legend -->
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                             <?php foreach ([['#10b981','Approved'],['#fbbf24','Pending'],['#f87171','Declined'],['#a855f7','Claimed']] as [$c,$l]): ?>
                                 <div style="display:flex;align-items:center;gap:4px;">
@@ -1026,21 +846,14 @@ $pendingStr = $pending ?? 0;
                                     [$abg,$afg] = $avatarColors[$s] ?? ['#EDE9FE','#7C3AED'];
                                 ?>
                                     <a href="<?= function_exists('base_url') ? base_url('/reservation-list') : '#' ?>" class="bk-row" style="text-decoration:none;display:flex;">
-                                        <div class="bk-avatar" style="background:<?= $abg ?>;color:<?= $afg ?>;">
-                                            <?= $dt->format('j') ?>
-                                        </div>
+                                        <div class="bk-avatar" style="background:<?= $abg ?>;color:<?= $afg ?>;"><?= $dt->format('j') ?></div>
                                         <div style="flex:1;min-width:0;margin-left:10px;">
-                                            <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                                <?= esc($res['resource_name'] ?? 'Resource') ?>
-                                            </div>
+                                            <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= esc($res['resource_name'] ?? 'Resource') ?></div>
                                             <div style="font-family:var(--mono);font-size:11px;color:var(--text-3);margin-top:1px;">
-                                                <?= date('M j', strtotime($res['reservation_date'])) ?>
-                                                &middot; <?= date('g:iA', strtotime($res['start_time'])) ?>
+                                                <?= date('M j', strtotime($res['reservation_date'])) ?> &middot; <?= date('g:iA', strtotime($res['start_time'])) ?>
                                             </div>
                                         </div>
-                                        <span class="tag tag-<?= $s ?>" style="align-self:center;">
-                                            <?= $s==='unclaimed'?'No-show':ucfirst($s) ?>
-                                        </span>
+                                        <span class="tag tag-<?= $s ?>" style="align-self:center;"><?= $s==='unclaimed'?'No-show':ucfirst($s) ?></span>
                                     </a>
                                 <?php endforeach; ?>
                             </div>
@@ -1056,7 +869,7 @@ $pendingStr = $pending ?? 0;
                         <?php endif; ?>
                     </div>
 
-                    <!-- Achievements / Activity Snapshot -->
+                    <!-- Activity Snapshot -->
                     <div class="sk-card sk-card-pad">
                         <div class="sk-card-title" style="margin-bottom:14px;">Activity Snapshot</div>
                         <?php
@@ -1082,7 +895,7 @@ $pendingStr = $pending ?? 0;
                 </div>
             </div>
 
-            <!-- quota bar -->
+            <!-- Quota bar -->
             <?php $used = 3 - ($remaining ?? 3); ?>
             <div class="sk-card sk-card-pad" style="margin-bottom:24px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -1123,13 +936,11 @@ $pendingStr = $pending ?? 0;
 </div>
 
 <script>
-/* ── Data ── */
 const NOTIF_KEY  = 'sk_notifs_<?= session()->get('user_id') ?? 0 ?>';
 const reservations = <?= json_encode($reservations ?? []) ?>;
 const allResData   = <?= json_encode($allReservations ?? []) ?>;
 const approvedRes  = reservations.filter(r => r.status === 'approved' && !r.claimed);
 
-/* ── Dark mode ── */
 function toggleDark() {
     const isDark = document.body.classList.toggle('dark');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -1144,7 +955,6 @@ function toggleDark() {
     }
 })();
 
-/* ── Responsive: show hamburger ── */
 function checkWidth() {
     document.getElementById('menuBtn').style.display = window.innerWidth <= 900 ? 'flex' : 'none';
 }
@@ -1157,7 +967,6 @@ document.addEventListener('click', e => {
     }
 });
 
-/* ── Notifications ── */
 let notifications = [];
 const getSeenIds = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch { return []; } };
 const saveSeenIds = ids => localStorage.setItem(NOTIF_KEY, JSON.stringify(ids));
@@ -1223,7 +1032,6 @@ document.addEventListener('click', e => {
     if (!dd.contains(e.target) && !e.target.closest('[onclick="toggleNotifications()"]')) dd.classList.remove('show');
 });
 
-/* ── Date modal ── */
 function openDateModal(date, items) {
     const d = new Date(date + 'T00:00');
     document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'});
@@ -1254,13 +1062,13 @@ function openDateModal(date, items) {
     document.getElementById('dateModal').classList.add('show');
     document.body.style.overflow = 'hidden';
 }
+
 function closeDateModal() {
     document.getElementById('dateModal').classList.remove('show');
     document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
 
-/* ── FullCalendar ── */
 document.addEventListener('DOMContentLoaded', () => {
     loadNotifications();
 
@@ -1316,8 +1124,8 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <?php if (function_exists('base_url') && defined('APPPATH')): ?>
-    <?php include(APPPATH . 'Views/partials/layout.php'); ?>
-    <?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
+    <?php /* layout.php and onboarding_help.php intentionally removed — they inject a second sidebar */ ?>
 <?php endif; ?>
 </body>
 </html>
