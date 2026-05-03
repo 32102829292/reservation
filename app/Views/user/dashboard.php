@@ -1316,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <?php if (function_exists('base_url') && defined('APPPATH')): ?>
-    <?php include(APPPATH . 'Views/partials/layout_scripts.php'); ?>
+    <?php include(APPPATH . 'Views/partials/layout.php'); ?>
     <?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 <?php endif; ?>
 </body>
