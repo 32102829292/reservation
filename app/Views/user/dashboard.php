@@ -1,12 +1,16 @@
 <?php
-/* ── Status logic ── */
 $unclaimedCount = 0;
 $claimedCount   = 0;
 $processedRecent = [];
 foreach (($reservations ?? []) as $r) {
+    // ── FIX: mirror sk_reservations.php robust claimed detection ──
+    // 1. in_array strict — catches bool true, int 1, strings '1','t','true'
+    // 2. status column set to "claimed" by the scanner
+    // 3. claimed_at timestamp — most reliable; only set when scanner processes the ticket
     $isCl = in_array($r['claimed'] ?? false, [true, 1, 't', 'true', '1'], true)
         || strtolower($r['status'] ?? '') === 'claimed'
         || !empty($r['claimed_at']);
+
     $s = $isCl ? 'claimed' : strtolower($r['status'] ?? 'pending');
     if ($s === 'approved') {
         $edt = strtotime(($r['reservation_date'] ?? '') . ' ' . ($r['end_time'] ?? '23:59:59'));
@@ -21,1200 +25,2629 @@ foreach (($reservations ?? []) as $r) {
     $processedRecent[] = $r;
 }
 
-$remaining       = $remainingReservations ?? 3;
-$maxSlots        = 3;
-$featuredBooks   = $featuredBooks  ?? [];
-$myBorrowings    = $myBorrowings   ?? [];
-$availableCount  = $availableCount ?? 0;
-$totalBooks      = $totalBooks     ?? 0;
+$remaining = $remainingReservations ?? 3;
+$maxSlots  = 3;
+$usedSlots = $maxSlots - $remaining;
+$featuredBooks  = $featuredBooks  ?? [];
+$myBorrowings   = $myBorrowings   ?? [];
+$availableCount = $availableCount ?? 0;
+$totalBooks     = $totalBooks     ?? 0;
 
 $upcoming = null;
 if (!empty($reservations)) {
+    $now = time();
     foreach ($reservations as $r) {
         if (($r['status'] ?? '') === 'approved' && empty($r['claimed'])) {
             $dt = strtotime($r['reservation_date'] . ' ' . ($r['end_time'] ?? '23:59'));
-            if ($dt > time()) { $upcoming = $r; break; }
+            if ($dt > $now) {
+                $upcoming = $r;
+                break;
+            }
         }
     }
 }
 
-/* ── SVG icon helper ── */
-function sk_icon(string $name, int $size = 20): string
+$nextAction = null;
+if ($pending > 0) {
+    $nextAction = ['type' => 'pending', 'msg' => "You have {$pending} reservation" . ($pending > 1 ? 's' : '') . " awaiting approval. SK officers usually respond within 24 hours.", 'cta' => 'View Reservations', 'url' => '/reservation-list', 'color' => 'amber'];
+} elseif ($upcoming) {
+    $nextAction = ['type' => 'upcoming', 'msg' => "Your approved slot is coming up. Download your e-ticket from My Reservations and scan it at the entrance when you arrive.", 'cta' => 'Get E-Ticket', 'url' => '/reservation-list', 'color' => 'blue'];
+} elseif ($unclaimedCount > 0) {
+    $nextAction = ['type' => 'unclaimed', 'msg' => "You missed {$unclaimedCount} approved slot" . ($unclaimedCount > 1 ? 's' : '') . " without showing up. Please cancel in advance if you can't attend — repeated no-shows may limit future bookings.", 'cta' => 'See Details', 'url' => '/reservation-list', 'color' => 'orange'];
+} elseif ($remaining === 0) {
+    $nextAction = ['type' => 'quota', 'msg' => "You've used all 3 reservation slots for this month. Your quota resets on the 1st of next month.", 'cta' => 'Browse Library', 'url' => '/books', 'color' => 'slate'];
+} elseif (empty($reservations)) {
+    $nextAction = ['type' => 'empty', 'msg' => "Welcome! You haven't made any reservations yet. Book a computer, study space, or other facility anytime.", 'cta' => 'Make First Reservation', 'url' => '/reservation', 'color' => 'blue'];
+}
+
+$nextColors = [
+    'amber'  => ['bg' => 'rgba(251,191,36,.08)',  'border' => 'rgba(251,191,36,.25)',  'icon_bg' => 'rgba(251,191,36,.15)',  'icon_fg' => '#d97706', 'btn_bg' => '#d97706', 'icon' => 'clock'],
+    'blue'   => ['bg' => 'rgba(99,102,241,.06)',  'border' => 'rgba(99,102,241,.2)',   'icon_bg' => 'rgba(99,102,241,.12)', 'icon_fg' => '#4338ca', 'btn_bg' => '#4338ca', 'icon' => 'ticket'],
+    'orange' => ['bg' => 'rgba(234,88,12,.06)',   'border' => 'rgba(234,88,12,.2)',    'icon_bg' => 'rgba(234,88,12,.1)',   'icon_fg' => '#ea580c', 'btn_bg' => '#ea580c', 'icon' => 'triangle'],
+    'slate'  => ['bg' => 'rgba(100,116,139,.05)', 'border' => 'rgba(100,116,139,.15)', 'icon_bg' => 'rgba(100,116,139,.1)', 'icon_fg' => '#64748b', 'btn_bg' => '#64748b', 'icon' => 'calendar-x'],
+];
+
+/**
+ * Render an inline SVG icon with explicit, fixed dimensions.
+ */
+function icon(string $name, int $size = 16, string $stroke = 'currentColor', string $extra = ''): string
 {
-    static $p = [
-        'home'       => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
-        'users'      => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0',
-        'book'       => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-        'bell'       => 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
-        'plus'       => 'M12 5v14M5 12h14',
-        'calendar'   => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-        'arrow-r'    => 'M14 5l7 7m0 0l-7 7m7-7H3',
-        'star'       => 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
-        'clock'      => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0',
-        'logout'     => 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
-        'sparkle'    => 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z',
-        'eye'        => 'M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c-3 6-6 9-9 9S3 18 3 12s3-9 9-9 9 3 9 9z',
-        'bookmark'   => 'M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z',
-        'user'       => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-        'chevron-r'  => 'M9 5l7 7-7 7',
-        'x'          => 'M6 18L18 6M6 6l12 12',
-        'sun'        => 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 000 10A5 5 0 0012 7z',
-        'moon'       => 'M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z',
-        'check-c'    => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0',
-        'ban'        => 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636',
-        'trending'   => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
-        'check'      => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
-        'cash'       => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
-        'ticket'     => 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z',
-        'chart'      => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+    static $icons = [
+        'house'         => ['<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'plus'          => ['<path d="M12 5v14M5 12h14" stroke-linecap="round"/>', '1.8'],
+        'calendar'      => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', '1.5'],
+        'book-open'     => ['<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/>', '1.5'],
+        'user'          => ['<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'logout'        => ['<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'clock'         => ['<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', '1.8'],
+        'check-circle'  => ['<path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22 4 12 14.01 9 11.01"/>', '1.8'],
+        'ticket'        => ['<path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'triangle'      => ['<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', '1.8'],
+        'calendar-x'    => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="14" x2="14" y2="18"/><line x1="14" y1="14" x2="10" y2="18"/>', '1.5'],
+        'bell'          => ['<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>', '1.8'],
+        'check'         => ['<polyline points="20 6 9 17 4 12"/>', '1.8'],
+        'x'             => ['<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', '1.8'],
+        'chevron-right' => ['<polyline points="9 18 15 12 9 6"/>', '1.8'],
+        'arrow-right'   => ['<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>', '1.8'],
+        'ban'           => ['<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>', '1.8'],
+        'hourglass'     => ['<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'layers'        => ['<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>', '1.8'],
+        'list-check'    => ['<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'sparkles'      => ['<path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'search'        => ['<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>', '1.8'],
+        'bookmark'      => ['<path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>', '1.5'],
+        'robot'         => ['<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="5" r="1"/>', '1.5'],
+        'info'          => ['<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', '1.8'],
+        'check-double'  => ['<path d="M17 1l-8.5 8.5L6 7M22 6l-8.5 8.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13l-4 4 1.5 1.5" stroke-linecap="round" stroke-linejoin="round"/>', '1.8'],
+        'calendar-days' => ['<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1" fill="currentColor" stroke="none"/>', '1.5'],
+        'bar-chart'     => ['<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>', '1.5'],
+        'eye'           => ['<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>', '1.8'],
+        'trending-up'   => ['<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>', '1.8'],
     ];
-    $d = $p[$name] ?? 'M12 12h.01';
+    [$d, $sw] = $icons[$name] ?? ['<circle cx="12" cy="12" r="10"/>', '1.8'];
     return sprintf(
-        '<svg width="%1$d" height="%1$d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:%1$dpx;height:%1$dpx;flex-shrink:0;">
-            <path d="%2$s"/>
-        </svg>',
-        $size, $d
+        '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="%s" style="width:%dpx;height:%dpx;flex-shrink:0;" %s>%s</svg>',
+        $size,
+        $size,
+        htmlspecialchars($stroke, ENT_QUOTES),
+        $sw,
+        $size,
+        $size,
+        $extra,
+        $d
     );
-}
-
-/* ── Book SVG illustrations ── */
-function book_art(string $palette, float $rotate = -8): string
-{
-    $palettes = [
-        'rose'   => ['#FF6B8A','#FF8FA3','#FFB3C1','#FFF0F3','rgba(255,107,138,.15)'],
-        'violet' => ['#7C3AED','#9F7AEA','#C4B5FD','#F5F3FF','rgba(124,58,237,.15)'],
-        'sky'    => ['#0EA5E9','#38BDF8','#BAE6FD','#F0F9FF','rgba(14,165,233,.15)'],
-        'amber'  => ['#F59E0B','#FCD34D','#FDE68A','#FFFBEB','rgba(245,158,11,.15)'],
-        'emerald'=> ['#10B981','#34D399','#A7F3D0','#ECFDF5','rgba(16,185,129,.15)'],
-        'indigo' => ['#4338CA','#6366F1','#A5B4FC','#EEF2FF','rgba(67,56,202,.15)'],
-        'coral'  => ['#EF4444','#F87171','#FCA5A5','#FFF1F2','rgba(239,68,68,.15)'],
-        'teal'   => ['#0D9488','#2DD4BF','#99F6E4','#F0FDFA','rgba(13,148,136,.15)'],
-    ];
-    [$c1,$c2,$c3,$bg,$glow] = $palettes[$palette] ?? $palettes['violet'];
-    $r = $rotate;
-    return <<<SVG
-<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:130px;height:130px;">
-  <defs>
-    <filter id="bs_{$palette}" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="{$c1}" flood-opacity="0.35"/>
-    </filter>
-    <filter id="bs2_{$palette}" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="{$c2}" flood-opacity="0.3"/>
-    </filter>
-  </defs>
-  <circle cx="80" cy="88" r="54" fill="{$glow}"/>
-  <g transform="translate(80,88) rotate(-18) translate(-80,-88)">
-    <rect x="38" y="42" width="50" height="68" rx="5" fill="{$c3}" filter="url(#bs2_{$palette})"/>
-    <rect x="38" y="42" width="7" height="68" rx="3" fill="{$c2}"/>
-    <rect x="49" y="55" width="28" height="3" rx="1.5" fill="rgba(255,255,255,.45)"/>
-    <rect x="49" y="62" width="20" height="3" rx="1.5" fill="rgba(255,255,255,.35)"/>
-    <rect x="49" y="69" width="24" height="3" rx="1.5" fill="rgba(255,255,255,.3)"/>
-  </g>
-  <g transform="translate(80,88) rotate(10) translate(-80,-88)">
-    <rect x="58" y="48" width="48" height="66" rx="5" fill="{$c2}" filter="url(#bs_{$palette})"/>
-    <rect x="58" y="48" width="7" height="66" rx="3" fill="{$c1}"/>
-    <rect x="69" y="60" width="26" height="3" rx="1.5" fill="rgba(255,255,255,.5)"/>
-    <rect x="69" y="67" width="18" height="3" rx="1.5" fill="rgba(255,255,255,.4)"/>
-    <rect x="69" y="74" width="22" height="3" rx="1.5" fill="rgba(255,255,255,.35)"/>
-    <rect x="69" y="81" width="16" height="3" rx="1.5" fill="rgba(255,255,255,.3)"/>
-  </g>
-  <rect x="46" y="44" width="52" height="72" rx="6" fill="{$c1}" filter="url(#bs_{$palette})"/>
-  <rect x="46" y="44" width="8" height="72" rx="4" fill="rgba(0,0,0,.15)"/>
-  <rect x="48" y="44" width="3" height="72" rx="1.5" fill="rgba(255,255,255,.25)"/>
-  <rect x="58" y="62" width="30" height="4" rx="2" fill="rgba(255,255,255,.6)"/>
-  <rect x="58" y="70" width="22" height="3" rx="1.5" fill="rgba(255,255,255,.45)"/>
-  <rect x="58" y="77" width="26" height="3" rx="1.5" fill="rgba(255,255,255,.4)"/>
-  <rect x="58" y="84" width="18" height="3" rx="1.5" fill="rgba(255,255,255,.35)"/>
-  <rect x="58" y="50" width="32" height="8" rx="3" fill="rgba(255,255,255,.2)"/>
-  <path d="M46 50 Q52 44 98 44 L98 56 Q70 58 46 62Z" fill="rgba(255,255,255,.12)"/>
-</svg>
-SVG;
-}
-
-/* ── Achievement SVG ── */
-function achievement_art(string $color, string $letter): string
-{
-    $c = ['rose'=>'#FF6B8A','violet'=>'#7C3AED','sky'=>'#0EA5E9','amber'=>'#F59E0B','emerald'=>'#10B981'][$color]??'#7C3AED';
-    return <<<SVG
-<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="width:40px;height:40px;flex-shrink:0;">
-  <circle cx="20" cy="20" r="18" fill="{$c}" opacity=".15"/>
-  <circle cx="20" cy="20" r="14" fill="{$c}" opacity=".25"/>
-  <circle cx="20" cy="20" r="10" fill="{$c}"/>
-  <text x="20" y="24.5" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" font-weight="700" fill="white">{$letter}</text>
-</svg>
-SVG;
 }
 ?>
 <!DOCTYPE html>
-<html lang="en" id="htmlRoot">
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-    <title>Dashboard · <?= esc($user_name ?? 'User') ?></title>
-    <?php if (function_exists('base_url')): ?>
-        <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
-        <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
-    <?php endif; ?>
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>Dashboard | <?= esc($user_name) ?></title>
+    <link rel="manifest" href="/manifest.json">
+    <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
+    <meta name="theme-color" content="#1e1b4b">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script>
+        (function() {
+            try {
+                if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark-pre');
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        /* ── Layout shell ── */
+        body {
+            display: flex;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
 
-<style>
-/* ─────────── RESET & TOKENS ─────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html.dark-pre body,
+        html.dark-pre .l-sidebar__inner,
+        html.dark-pre .l-mobile-nav {
+            background: #060e1e;
+        }
 
-:root {
-    --font:   'DM Sans', system-ui, sans-serif;
-    --mono:   'DM Mono', monospace;
+        /* ── Reserve button ── */
+        .reserve-btn {
+            display: none;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 18px;
+            background: var(--indigo);
+            color: #fff;
+            border-radius: var(--r-sm);
+            font-family: var(--font);
+            font-size: .85rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            letter-spacing: -.01em;
+            transition: all var(--ease);
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(55, 48, 163, .28);
+            touch-action: manipulation;
+        }
 
-    --purple:      #7C3AED;
-    --purple-mid:  #9F7AEA;
-    --purple-lt:   #EDE9FE;
-    --purple-dk:   #5B21B6;
+        @media(min-width:480px) {
+            .reserve-btn {
+                display: flex;
+            }
+        }
 
-    --bg:          #F4F4FB;
-    --card:        #FFFFFF;
-    --border:      rgba(0,0,0,.07);
-    --border-md:   rgba(0,0,0,.1);
+        .reserve-btn:hover {
+            background: #312e81;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(55, 48, 163, .35);
+        }
 
-    --text:        #1A1A2E;
-    --text-2:      #4A4A6A;
-    --text-3:      #8888AA;
+        .reserve-btn svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
 
-    /* Sidebar tokens */
-    --sb-bg:       #1E1535;
-    --sb-link:     rgba(255,255,255,.5);
-    --sb-link-h:   rgba(255,255,255,.9);
-    --sb-label:    rgba(255,255,255,.28);
-    --sb-border:   rgba(255,255,255,.07);
+        /* ── Notification dropdown ── */
+        .notif-bell {
+            position: relative;
+        }
 
-    --r-sm: 12px;
-    --r-md: 16px;
-    --r-lg: 20px;
-    --r-xl: 24px;
-    --ease: .2s ease;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,.05);
-    --shadow-md: 0 4px 20px rgba(0,0,0,.08);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,.1);
-}
+        .notif-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-family: var(--font);
+            font-size: .55rem;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 999px;
+            min-width: 17px;
+            text-align: center;
+            border: 2px solid var(--bg);
+            line-height: 1.3;
+            pointer-events: none;
+        }
 
-body.dark {
-    --bg:         #0F0E1A;
-    --card:       #1E1D30;
-    --border:     rgba(255,255,255,.07);
-    --border-md:  rgba(255,255,255,.1);
-    --text:       #E8E8F8;
-    --text-2:     #A8A8C8;
-    --text-3:     #6868A8;
-    --purple-lt:  rgba(124,58,237,.2);
-}
+        .notif-dd {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 320px;
+            background: var(--card);
+            border-radius: var(--r-xl);
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99, 102, 241, .09);
+            z-index: 200;
+            display: none;
+            overflow: hidden;
+        }
 
-html, body { height: 100%; overflow: hidden; font-family: var(--font); background: var(--bg); color: var(--text); }
+        .notif-dd.show {
+            display: block;
+            animation: l-fade-in .15s ease;
+        }
 
-/* ─────────── LAYOUT SHELL ─────────── */
-.sk-shell { display: flex; height: 100vh; overflow: hidden; }
+        .notif-item {
+            padding: .85rem 1.1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background .15s;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
 
-/* ═══════════════════════════════════
-   SIMPLIFIED SIDEBAR
-═══════════════════════════════════ */
-.sk-sidebar {
-    width: 232px;
-    flex-shrink: 0;
-    background: var(--sb-bg);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
-    z-index: 100;
-    transition: transform var(--ease);
-    overflow: hidden;
-}
+        .notif-item:hover {
+            background: var(--input-bg);
+        }
 
-/* ── Logo area ── */
-.sk-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 20px 16px 16px;
-    border-bottom: 1px solid var(--sb-border);
-    flex-shrink: 0;
-}
+        .notif-item.unread {
+            background: var(--indigo-light);
+        }
 
-.sk-logo-mark {
-    width: 32px; height: 32px;
-    background: linear-gradient(135deg, #9F7AEA 0%, #6D28D9 100%);
-    border-radius: 9px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-}
-.sk-logo-mark svg { color: white; }
+        .notif-item:last-child {
+            border-bottom: none;
+        }
 
-.sk-logo-text { display: flex; flex-direction: column; gap: 1px; }
-.sk-logo-name {
-    font-size: 14px; font-weight: 700;
-    color: white; letter-spacing: -.3px; line-height: 1.1;
-}
-.sk-logo-tag {
-    font-size: 9px; font-weight: 600; letter-spacing: .12em;
-    text-transform: uppercase; color: rgba(255,255,255,.3);
-}
+        @media(max-width:479px) {
+            .notif-dd {
+                left: 12px;
+                right: 12px;
+                width: auto;
+                top: 72px;
+            }
+        }
 
-/* ── Nav ── */
-.sk-nav { flex: 1; overflow-y: auto; padding: 12px 10px; }
-.sk-nav::-webkit-scrollbar { width: 0; }
+        /* ── Next-action card ── */
+        .next-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            border-radius: var(--r-md);
+            padding: 16px 18px;
+            border: 1px solid;
+            margin-bottom: 20px;
+            animation: l-slide-up .4s ease both;
+        }
 
-.sk-nav-label {
-    font-size: 9.5px; font-weight: 700; letter-spacing: .13em;
-    text-transform: uppercase; color: var(--sb-label);
-    padding: 0 10px; margin-bottom: 4px; margin-top: 16px; display: block;
-}
-.sk-nav-label:first-child { margin-top: 2px; }
+        .next-icon-wrap {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
 
-.sk-nav-link {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 10px; border-radius: 10px;
-    color: var(--sb-link); font-size: 13.5px; font-weight: 500;
-    text-decoration: none; cursor: pointer; border: none; background: none;
-    width: 100%; transition: all .15s ease; position: relative;
-}
-.sk-nav-link:hover {
-    background: rgba(255,255,255,.07);
-    color: var(--sb-link-h);
-}
-.sk-nav-link.active {
-    background: rgba(255,255,255,.1);
-    color: white; font-weight: 600;
-}
-.sk-nav-link.active::before {
-    content: '';
-    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-    width: 3px; height: 55%; background: linear-gradient(180deg,#C4B5FD,#7C3AED);
-    border-radius: 0 3px 3px 0;
-}
+        .next-icon-wrap svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
 
-.sk-nav-link svg { opacity: .6; transition: opacity .15s ease; width: 15px; height: 15px; flex-shrink: 0; }
-.sk-nav-link:hover svg, .sk-nav-link.active svg { opacity: 1; }
+        .next-eyebrow {
+            font-family: var(--font);
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
 
-.sk-nav-link .nav-count {
-    margin-left: auto;
-    background: var(--purple);
-    color: white; font-size: 10px; font-weight: 700;
-    padding: 1px 7px; border-radius: 999px; min-width: 20px; text-align: center;
-}
+        .next-msg {
+            font-family: var(--font);
+            font-size: .83rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
 
-.sk-nav-link.danger { color: rgba(252,165,165,.5); }
-.sk-nav-link.danger:hover { background: rgba(239,68,68,.1); color: #FCA5A5; }
-.sk-nav-link.danger svg { opacity: .5; }
-.sk-nav-link.danger:hover svg { opacity: 1; }
+        .next-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 9px 16px;
+            border-radius: 9px;
+            font-family: var(--font);
+            font-size: .75rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            transition: opacity var(--ease);
+            touch-action: manipulation;
+        }
 
-/* ── Divider ── */
-.sk-nav-divider {
-    height: 1px; background: var(--sb-border);
-    margin: 8px 8px;
-}
+        .next-cta:hover {
+            opacity: .85;
+        }
 
-/* ── User footer card ── */
-.sk-sidebar-footer {
-    margin: 10px 10px 14px;
-    background: rgba(255,255,255,.05);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 12px;
-    padding: 10px 11px;
-    display: flex; align-items: center; gap: 8px;
-    flex-shrink: 0;
-}
+        .next-cta svg {
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+        }
 
-.sk-footer-avatar {
-    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
-    background: linear-gradient(135deg, #C4B5FD 0%, #7C3AED 100%);
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 700; font-size: 12px;
-}
-.sk-footer-info { flex: 1; min-width: 0; }
-.sk-footer-name {
-    font-size: 12px; font-weight: 600; color: rgba(255,255,255,.88);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
-}
-.sk-footer-role {
-    font-size: 9.5px; font-weight: 500; color: rgba(255,255,255,.35);
-    margin-top: 1px; text-transform: uppercase; letter-spacing: .07em;
-}
-.sk-footer-dot {
-    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-    background: #4ADE80;
-}
+        /* ── Countdown timer banner ── */
+        .timer-banner {
+            display: none;
+            border-radius: var(--r-md);
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border: 1px solid;
+            animation: l-slide-up .35s cubic-bezier(.34, 1.56, .64, 1) both;
+        }
 
-/* ─────────── MAIN AREA ─────────── */
-.sk-main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+        .timer-banner.urgent {
+            background: #fff7ed;
+            border-color: #fed7aa;
+            color: #9a3412;
+        }
 
-/* ─────────── TOPBAR (no search) ─────────── */
-.sk-topbar {
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 28px; background: var(--card);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
-}
+        .timer-banner.warning {
+            background: #fefce8;
+            border-color: #fde68a;
+            color: #854d0e;
+        }
 
-.sk-topbar-title {
-    font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.2px;
-}
-.sk-topbar-sub {
-    font-size: 12px; color: var(--text-3); margin-top: 1px;
-}
+        .timer-banner.safe {
+            background: var(--indigo-light);
+            border-color: var(--indigo-border);
+            color: #312e81;
+        }
 
-.sk-topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+        body.dark .timer-banner.safe {
+            background: rgba(55, 48, 163, .15);
+            border-color: rgba(55, 48, 163, .3);
+            color: #a5b4fc;
+        }
 
-.sk-icon-btn {
-    width: 36px; height: 36px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--bg); border: 1px solid var(--border);
-    color: var(--text-2); cursor: pointer; transition: all var(--ease); position: relative;
-}
-.sk-icon-btn:hover { background: var(--purple-lt); color: var(--purple); border-color: transparent; }
+        body.dark .timer-banner.warning {
+            background: rgba(180, 83, 9, .2);
+            border-color: rgba(180, 83, 9, .35);
+            color: #fcd34d;
+        }
 
-.sk-notif-dot {
-    position: absolute; top: 6px; right: 6px;
-    width: 7px; height: 7px; border-radius: 50%;
-    background: #EF4444; border: 2px solid var(--card);
-}
+        body.dark .timer-banner.urgent {
+            background: rgba(154, 52, 18, .2);
+            border-color: rgba(154, 52, 18, .35);
+            color: #fb923c;
+        }
 
-.sk-reserve-btn {
-    display: flex; align-items: center; gap: 7px;
-    padding: 9px 18px; background: var(--purple);
-    color: white; border-radius: 50px;
-    font-family: var(--font); font-size: 13px; font-weight: 600;
-    border: none; cursor: pointer; text-decoration: none;
-    box-shadow: 0 4px 14px rgba(124,58,237,.3); transition: all var(--ease);
-}
-.sk-reserve-btn:hover { background: var(--purple-dk); transform: translateY(-1px); }
+        .timer-inner {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            flex-wrap: wrap;
+        }
 
-.sk-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--purple) 0%, #9F7AEA 100%);
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 700; font-size: 13px; flex-shrink: 0; cursor: pointer;
-}
+        .timer-text-col {
+            flex: 1;
+            min-width: 140px;
+        }
 
-/* ─────────── SCROLL AREA ─────────── */
-.sk-scroll { flex: 1; overflow-y: auto; padding: 24px 28px 32px; scroll-behavior: smooth; }
-.sk-scroll::-webkit-scrollbar { width: 5px; }
-.sk-scroll::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 99px; }
+        .timer-text-col p {
+            font-family: var(--font);
+        }
 
-/* ─────────── HERO BANNER ─────────── */
-.sk-hero {
-    background: linear-gradient(130deg, #4338CA 0%, #7C3AED 45%, #9F7AEA 100%);
-    border-radius: var(--r-xl); padding: 0 32px;
-    display: flex; align-items: flex-end; justify-content: space-between;
-    overflow: hidden; position: relative; min-height: 172px; margin-bottom: 28px;
-}
-.sk-hero::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-.sk-hero-text { padding: 28px 0; position: relative; z-index: 1; max-width: 380px; }
-.sk-hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.65); margin-bottom: 6px; }
-.sk-hero-name { font-size: 22px; font-weight: 700; color: white; margin-bottom: 6px; line-height: 1.25; }
-.sk-hero-sub { font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.55; margin-bottom: 16px; }
-.sk-hero-cta {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 9px 20px; background: white; color: var(--purple);
-    border-radius: 50px; font-weight: 700; font-size: 13px;
-    border: none; cursor: pointer; text-decoration: none; transition: all var(--ease);
-}
-.sk-hero-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.15); }
-.sk-hero-books { position: relative; display: flex; align-items: flex-end; gap: 4px; padding-bottom: 0; flex-shrink: 0; }
-.sk-hero-books > * { filter: drop-shadow(0 8px 20px rgba(0,0,0,.25)); }
+        .timer-digit {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 0, 0, .07);
+            border-radius: 8px;
+            padding: .2rem .5rem;
+            min-width: 2.6rem;
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            font-size: 1.1rem;
+            line-height: 1;
+            font-family: var(--mono);
+        }
 
-/* ─────────── STATS ROW ─────────── */
-.sk-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 28px; }
-.sk-stat {
-    background: var(--card); border-radius: var(--r-lg);
-    border: 1px solid var(--border); padding: 18px 20px;
-    box-shadow: var(--shadow-sm); transition: all var(--ease);
-}
-.sk-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.sk-stat-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
-.sk-stat-val { font-family: var(--mono); font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; letter-spacing: -.04em; }
-.sk-stat-lbl { font-size: 12px; color: var(--text-3); font-weight: 500; }
-.sk-stat-trend { font-size: 11px; font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+        .timer-digit span {
+            font-family: var(--font);
+            font-size: .5rem;
+            font-weight: 500;
+            opacity: .6;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin-top: 3px;
+        }
 
-/* ─────────── SECTION HEADING ─────────── */
-.sk-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.sk-section-title { font-size: 16px; font-weight: 700; letter-spacing: -.2px; }
-.sk-section-link { font-size: 12px; font-weight: 600; color: var(--purple); text-decoration: none; display: flex; align-items: center; gap: 4px; transition: gap var(--ease); }
-.sk-section-link:hover { gap: 7px; }
+        .timer-pulse {
+            animation: pulse .9s ease-in-out infinite;
+        }
 
-/* ─────────── BOOK CARDS GRID ─────────── */
-.sk-books-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
-.sk-book-card { border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--border); background: var(--card); transition: all var(--ease); cursor: pointer; }
-.sk-book-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: transparent; }
-.sk-book-art { display: flex; align-items: center; justify-content: center; min-height: 150px; position: relative; overflow: hidden; }
-.sk-book-body { padding: 12px 14px 14px; }
-.sk-book-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
-.sk-book-title { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-.sk-book-author { font-size: 11.5px; color: var(--text-3); }
-.sk-book-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-.sk-avail-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
-.sk-stars { display: flex; align-items: center; gap: 2px; color: #F59E0B; }
+        @keyframes pulse {
 
-/* ─────────── TWO-COL GRID ─────────── */
-.sk-grid-2 { display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-bottom: 28px; }
-.sk-card { background: var(--card); border-radius: var(--r-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
-.sk-card-pad { padding: 20px 22px; }
-.sk-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-.sk-card-title { font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
-.sk-card-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+            0%,
+            100% {
+                opacity: 1
+            }
 
-/* ─────────── QUICK ACTIONS ─────────── */
-.sk-qa-link {
-    display: flex; align-items: center; gap: 11px;
-    padding: 11px 12px; border-radius: var(--r-sm);
-    border: 1px solid var(--border); color: var(--text-2);
-    font-size: 13px; font-weight: 500; text-decoration: none;
-    transition: all var(--ease); background: var(--card);
-}
-.sk-qa-link:hover { border-color: var(--purple); background: var(--purple-lt); color: var(--purple); }
-.sk-qa-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            50% {
+                opacity: .3
+            }
+        }
 
-/* ─────────── BORROW ROW ─────────── */
-.bk-row { display: flex; align-items: center; gap: 10px; padding: 9px 6px; border-radius: 10px; transition: background var(--ease); }
-.bk-row:hover { background: var(--purple-lt); }
-.bk-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
-.tag-claimed  { background: #EDE9FE; color: #5B21B6; }
-.tag-approved { background: #DCFCE7; color: #166534; }
-.tag-pending  { background: #FEF3C7; color: #92400E; }
-.tag-unclaimed{ background: #FFF7ED; color: #C2410C; }
-.tag-declined { background: #FEE2E2; color: #991B1B; }
-.tag-expired  { background: #F1F5F9; color: #475569; }
-.tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+        .timer-progress-wrap {
+            height: 3px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, .08);
+            overflow: hidden;
+            margin-top: 10px;
+        }
 
-/* ─────────── ACHIEVEMENT CARD ─────────── */
-.sk-achieve-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-.sk-achieve-row:last-child { border-bottom: none; }
-.sk-achieve-name { font-size: 13px; font-weight: 600; color: var(--text); }
-.sk-achieve-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+        .timer-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: currentColor;
+            opacity: .4;
+            transition: width 1s linear;
+        }
 
-/* ─────────── CALENDAR OVERRIDES ─────────── */
-#dashboard-calendar { font-family: var(--font) !important; font-size: 12px; }
-.fc-toolbar-title { font-family: var(--font) !important; font-size: 14px !important; font-weight: 700 !important; color: var(--text) !important; }
-.fc-button-primary { background: var(--purple) !important; border-color: var(--purple) !important; font-family: var(--font) !important; font-weight: 600 !important; font-size: 12px !important; padding: .25rem .6rem !important; border-radius: 8px !important; box-shadow: none !important; }
-.fc-button-primary:hover { background: var(--purple-dk) !important; }
-.fc-daygrid-event { border-radius: 4px !important; font-family: var(--font) !important; font-size: 10px !important; font-weight: 600 !important; border: none !important; padding: 1px 4px !important; }
-.fc-day-today { background: rgba(124,58,237,.06) !important; }
-.fc-day-today .fc-daygrid-day-number { color: var(--purple) !important; font-weight: 700 !important; }
-.fc-daygrid-day-number { font-family: var(--font); font-size: 11px; font-weight: 500; }
-.fc-col-header-cell-cushion { font-family: var(--font); font-size: 11px; font-weight: 600; letter-spacing: .04em; }
-body.dark .fc-toolbar-title { color: var(--text) !important; }
-body.dark .fc-theme-standard td, body.dark .fc-theme-standard th, body.dark .fc-theme-standard .fc-scrollgrid { border-color: rgba(255,255,255,.06) !important; }
-body.dark .fc-daygrid-day { background: var(--card) !important; }
-body.dark .fc-daygrid-day-number, body.dark .fc-col-header-cell-cushion { color: var(--text-2) !important; }
+        @media(max-width:400px) {
+            .timer-digit {
+                min-width: 2.1rem;
+                padding: .15rem .35rem;
+                font-size: .95rem;
+            }
 
-/* ─────────── NEXT-ACTION BANNER ─────────── */
-.sk-next { border-radius: var(--r-md); padding: 14px 18px; border: 1px solid; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 13px; }
-.sk-next-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .timer-inner {
+                gap: 8px;
+            }
+        }
 
-/* ─────────── FLASH ─────────── */
-.sk-flash { display: flex; align-items: center; gap: 9px; padding: 12px 16px; border-radius: var(--r-sm); background: #DCFCE7; border: 1px solid #BBF7D0; color: #166534; font-size: 13px; font-weight: 500; margin-bottom: 18px; }
+        /* ── Upcoming pill ── */
+        .upcoming-pill {
+            background: var(--indigo-light);
+            border: 1px solid var(--indigo-border);
+            border-radius: var(--r-md);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+            animation: l-slide-up .4s ease both;
+            flex-wrap: wrap;
+        }
 
-/* ─────────── MODAL ─────────── */
-.sk-modal-back { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 300; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-.sk-modal-back.show { display: flex; }
-.sk-modal { background: var(--card); border-radius: var(--r-xl); padding: 24px; width: 90%; max-width: 420px; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: fadeUp .2s ease; }
-@keyframes fadeUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .up-icon {
+            width: 38px;
+            height: 38px;
+            background: var(--indigo);
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(55, 48, 163, .28);
+        }
 
-/* ─────────── NOTIFICATIONS ─────────── */
-.sk-notif-dd { position: fixed; top: 64px; right: 24px; width: 300px; background: var(--card); border-radius: var(--r-xl); box-shadow: var(--shadow-lg); border: 1px solid var(--border); z-index: 200; display: none; overflow: hidden; }
-.sk-notif-dd.show { display: block; animation: fadeUp .15s ease; }
-.sk-notif-item { padding: 11px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background var(--ease); }
-.sk-notif-item:hover { background: var(--purple-lt); }
-.sk-notif-item.unread { background: rgba(124,58,237,.04); }
+        .up-icon svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
 
-/* ─────────── RESPONSIVE ─────────── */
-@media (max-width: 1100px) {
-    .sk-books-grid { grid-template-columns: repeat(3,1fr); }
-    .sk-grid-2 { grid-template-columns: 1fr; }
-}
-@media (max-width: 900px) {
-    .sk-sidebar { position: fixed; left: 0; top: 0; height: 100%; transform: translateX(-100%); }
-    .sk-sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
-    .sk-books-grid { grid-template-columns: repeat(2,1fr); }
-    .sk-stats { grid-template-columns: repeat(2,1fr); }
-    .sk-hero { flex-direction: column; align-items: flex-start; }
-    .sk-hero-books { display: none; }
-}
-@media (max-width: 560px) {
-    .sk-scroll { padding: 16px 14px 24px; }
-    .sk-topbar { padding: 12px 14px; }
-    .sk-books-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .sk-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
-}
-@media (max-width: 380px) {
-    .sk-books-grid { grid-template-columns: 1fr; }
-}
-</style>
+        .up-eyebrow {
+            font-family: var(--font);
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--indigo);
+            margin-bottom: 2px;
+        }
+
+        .up-name {
+            font-family: var(--font);
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+
+        .up-time {
+            font-family: var(--mono);
+            font-size: .72rem;
+            color: #4338ca;
+            margin-top: 1px;
+        }
+
+        .up-btn {
+            margin-left: auto;
+            font-family: var(--font);
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--indigo);
+            background: var(--card);
+            border: 1px solid var(--indigo-border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all var(--ease);
+            touch-action: manipulation;
+        }
+
+        .up-btn:hover {
+            background: var(--indigo);
+            color: white;
+            box-shadow: 0 2px 8px rgba(55, 48, 163, .22);
+        }
+
+        @media(max-width:479px) {
+            .up-name {
+                max-width: 100%;
+            }
+
+            .up-btn {
+                margin-left: 0;
+                width: 100%;
+                text-align: center;
+                display: block;
+            }
+        }
+
+        /* ── Stats grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: 18px 20px;
+            box-shadow: var(--shadow-sm);
+            transition: transform var(--ease), box-shadow var(--ease);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-icon svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .stat-lbl {
+            font-family: var(--font);
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--text-sub);
+        }
+
+        .stat-num {
+            font-family: var(--mono);
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+            letter-spacing: -.04em;
+        }
+
+        .stat-hint {
+            font-family: var(--font);
+            font-size: .72rem;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        @media(max-width:639px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 14px 16px;
+            }
+
+            .stat-num {
+                font-size: 1.6rem;
+            }
+
+            .stat-card-top {
+                margin-bottom: 10px;
+            }
+        }
+
+        @media(max-width:360px) {
+            .stats-grid {
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 12px 14px;
+            }
+
+            .stat-num {
+                font-size: 1.4rem;
+            }
+
+            .stat-icon {
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        /* ── Main two-col grid ── */
+        .grid-main {
+            display: grid;
+            grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .side-col {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        @media(max-width:900px) {
+            .grid-main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Card sub-elements ── */
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-icon svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            font-family: var(--font);
+            font-size: .9rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -.01em;
+        }
+
+        .card-sub {
+            font-family: var(--font);
+            font-size: .7rem;
+            color: var(--text-sub);
+            margin-top: 2px;
+        }
+
+        .section-lbl {
+            font-family: var(--font);
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--text-sub);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-lbl::before {
+            content: '';
+            width: 3px;
+            height: 13px;
+            border-radius: 2px;
+            background: var(--indigo);
+            flex-shrink: 0;
+        }
+
+        .link-sm {
+            font-family: var(--font);
+            font-size: .65rem;
+            font-weight: 700;
+            color: var(--indigo);
+            text-decoration: none;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            transition: opacity .15s;
+            touch-action: manipulation;
+        }
+
+        .link-sm:hover {
+            opacity: .7;
+        }
+
+        /* ── FullCalendar overrides ── */
+        #calendar {
+            font-family: var(--font) !important;
+            font-size: .8rem;
+        }
+
+        .fc .fc-toolbar {
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .fc-toolbar-title {
+            font-family: var(--font) !important;
+            font-size: .95rem !important;
+            font-weight: 800 !important;
+            color: var(--text) !important;
+            letter-spacing: -.02em !important;
+        }
+
+        .fc-button-primary {
+            background: var(--indigo) !important;
+            border-color: var(--indigo) !important;
+            border-radius: 9px !important;
+            font-family: var(--font) !important;
+            font-weight: 700 !important;
+            font-size: .72rem !important;
+            padding: .3rem .65rem !important;
+            box-shadow: none !important;
+            touch-action: manipulation !important;
+        }
+
+        .fc-button-primary:hover {
+            background: #312e81 !important;
+        }
+
+        .fc-button-primary:not(:disabled):active,
+        .fc-button-primary:not(:disabled).fc-button-active {
+            background: #1e1b4b !important;
+        }
+
+        .fc-daygrid-event {
+            border-radius: 5px !important;
+            font-family: var(--font) !important;
+            font-size: .65rem !important;
+            font-weight: 600 !important;
+            padding: 2px 5px !important;
+            border: none !important;
+            cursor: pointer !important;
+        }
+
+        .fc-daygrid-day:hover {
+            background-color: var(--indigo-light) !important;
+            cursor: pointer;
+        }
+
+        .fc-day-today {
+            background: rgba(55, 48, 163, .06) !important;
+        }
+
+        .fc-day-today .fc-daygrid-day-number {
+            color: var(--indigo) !important;
+            font-weight: 800 !important;
+        }
+
+        .fc-daygrid-day-number {
+            font-family: var(--font);
+            font-size: .72rem;
+            font-weight: 600;
+        }
+
+        .fc-col-header-cell-cushion {
+            font-family: var(--font);
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+        }
+
+        body.dark .fc-toolbar-title {
+            color: var(--text) !important;
+        }
+
+        body.dark .fc-daygrid-day-number {
+            color: #7fb3e8;
+        }
+
+        body.dark .fc-col-header-cell-cushion {
+            color: #7fb3e8;
+        }
+
+        body.dark .fc-day-today {
+            background: rgba(55, 48, 163, .15) !important;
+        }
+
+        body.dark .fc-daygrid-day {
+            background: var(--card) !important;
+        }
+
+        body.dark .fc-theme-standard td,
+        body.dark .fc-theme-standard th,
+        body.dark .fc-theme-standard .fc-scrollgrid {
+            border-color: #101e35 !important;
+        }
+
+        body.dark .fc-list-empty {
+            background: var(--card) !important;
+        }
+
+        body.dark .fc-list-empty-cushion {
+            color: var(--text-sub) !important;
+        }
+
+        body.dark .fc-list-table td {
+            background: var(--card) !important;
+            border-color: var(--input-bg) !important;
+            color: #7fb3e8 !important;
+        }
+
+        body.dark .fc-list-table th {
+            background: var(--input-bg) !important;
+            border-color: var(--input-bg) !important;
+            color: var(--text-sub) !important;
+        }
+
+        body.dark .fc-list-event-title a {
+            color: var(--text) !important;
+        }
+
+        @media(max-width:479px) {
+            .fc .fc-toolbar {
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .fc-toolbar-chunk:nth-child(2) {
+                text-align: center;
+            }
+
+            .fc-toolbar-title {
+                font-size: .8rem !important;
+            }
+
+            .fc-button-primary {
+                font-size: .65rem !important;
+                padding: .25rem .5rem !important;
+            }
+
+            #calendar {
+                font-size: .7rem;
+            }
+
+            .fc .fc-daygrid-body {
+                min-height: auto !important;
+            }
+
+            #calendar .fc-daygrid-body,
+            #calendar .fc-scrollgrid-sync-table {
+                width: 100% !important;
+            }
+
+            .fc .fc-daygrid-day-frame {
+                min-height: 32px !important;
+            }
+        }
+
+        /* ── Calendar legend ── */
+        .cal-legend {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .leg-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .leg-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .leg-lbl {
+            font-family: var(--font);
+            font-size: .68rem;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        @media(max-width:479px) {
+            .cal-legend {
+                gap: 8px;
+            }
+
+            .leg-lbl {
+                display: none;
+            }
+
+            .leg-dot {
+                width: 9px;
+                height: 9px;
+            }
+        }
+
+        /* ── Quick-action links ── */
+        .qa-link {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 12px;
+            border-radius: var(--r-sm);
+            border: 1px solid var(--border);
+            background: var(--card);
+            text-decoration: none;
+            color: var(--text-muted);
+            font-family: var(--font);
+            font-size: .83rem;
+            font-weight: 600;
+            transition: all var(--ease);
+            touch-action: manipulation;
+        }
+
+        .qa-link:hover {
+            border-color: var(--indigo);
+            background: var(--indigo-light);
+            color: var(--indigo);
+        }
+
+        @media(pointer:fine) {
+            .qa-link:hover {
+                transform: translateX(3px);
+            }
+        }
+
+        .qa-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .qa-icon svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .qa-chev {
+            margin-left: auto;
+            color: var(--text-faint);
+            transition: color var(--ease);
+        }
+
+        .qa-chev svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        .qa-link:hover .qa-chev {
+            color: var(--indigo);
+        }
+
+        /* ── Recent booking rows ── */
+        .bk-row {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 9px 8px;
+            border-radius: 11px;
+            text-decoration: none;
+            color: inherit;
+            transition: background var(--ease);
+            touch-action: manipulation;
+        }
+
+        .bk-row:hover {
+            background: var(--indigo-light);
+        }
+
+        .bk-date {
+            width: 38px;
+            height: 38px;
+            background: var(--input-bg);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .bk-month {
+            font-family: var(--font);
+            font-size: .55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-sub);
+        }
+
+        .bk-day {
+            font-family: var(--mono);
+            font-size: .95rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .bk-name {
+            font-family: var(--font);
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bk-time {
+            font-family: var(--mono);
+            font-size: .68rem;
+            color: var(--text-sub);
+            margin-top: 1px;
+        }
+
+        /* ── Date modal rows ── */
+        .date-row {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: .75rem;
+            border-bottom: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            transition: background .15s;
+        }
+
+        .date-row:hover {
+            background: var(--input-bg);
+        }
+
+        .date-row:last-child {
+            border-bottom: none;
+        }
+
+        /* ── How-to / status guide ── */
+        .how-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .how-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--indigo);
+            color: white;
+            font-family: var(--font);
+            font-size: .7rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .how-step p {
+            font-family: var(--font);
+        }
+
+        .status-guide-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .status-guide-row:last-child {
+            border-bottom: none;
+        }
+
+        .status-guide-row p {
+            font-family: var(--font);
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Library section ── */
+        .grid-lib {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: start;
+        }
+
+        .lib-banner {
+            background: linear-gradient(135deg, #3730a3 0%, #4338ca 60%, #6366f1 100%);
+            border-radius: var(--r-lg);
+            padding: 20px 20px 16px;
+            overflow: hidden;
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .lib-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E") repeat;
+            opacity: .4;
+            pointer-events: none;
+        }
+
+        .lib-banner-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .lib-banner-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .lib-eyebrow {
+            font-family: var(--font);
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .55);
+            margin-bottom: 4px;
+        }
+
+        .lib-title {
+            font-family: var(--mono);
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -.04em;
+            line-height: 1.1;
+        }
+
+        .lib-sub {
+            font-family: var(--font);
+            font-size: .72rem;
+            color: rgba(255, 255, 255, .5);
+            margin-top: 3px;
+            font-weight: 500;
+        }
+
+        .lib-browse {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 13px;
+            background: rgba(255, 255, 255, .18);
+            color: white;
+            border-radius: 9px;
+            font-family: var(--font);
+            font-size: .75rem;
+            font-weight: 700;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, .2);
+            transition: background var(--ease);
+            white-space: nowrap;
+            flex-shrink: 0;
+            touch-action: manipulation;
+        }
+
+        .lib-browse svg {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+        }
+
+        .lib-browse:hover {
+            background: rgba(255, 255, 255, .28);
+        }
+
+        .lib-stats {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .lib-stat {
+            flex: 1 1 0;
+            min-width: 0;
+            background: rgba(255, 255, 255, .1);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 9px;
+            padding: 7px 8px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .lib-stat-lbl {
+            font-family: var(--font);
+            font-size: .5rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .55);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .lib-stat-val {
+            font-family: var(--mono);
+            font-size: .9rem;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .book-letter {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: var(--indigo-light);
+            color: var(--indigo);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font);
+            font-weight: 800;
+            font-size: .8rem;
+            flex-shrink: 0;
+        }
+
+        .book-title {
+            font-family: var(--font);
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .book-author {
+            font-family: var(--font);
+            font-size: .7rem;
+            color: var(--text-sub);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.dark .book-letter {
+            background: rgba(55, 48, 163, .2);
+            color: #818cf8;
+        }
+
+        .borrow-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            background: var(--input-bg);
+            border-radius: 10px;
+            padding: 9px 12px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* ── AI finder ── */
+        .rag-wrap {
+            position: relative;
+            margin-top: 12px;
+        }
+
+        .rag-icon-pos {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--text-sub);
+            display: flex;
+        }
+
+        .rag-icon-pos svg {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 11px 12px 11px 34px;
+            border-radius: var(--r-sm);
+            border: 1px solid rgba(99, 102, 241, .15);
+            font-family: var(--font);
+            font-size: .85rem;
+            background: var(--input-bg);
+            color: var(--text);
+            transition: all var(--ease);
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .search-input:focus {
+            border-color: #818cf8;
+            background: var(--card);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-sub);
+        }
+
+        .ai-result-box {
+            display: none;
+            margin-top: .75rem;
+            background: var(--indigo-light);
+            border: 1px solid var(--indigo-border);
+            border-radius: var(--r-sm);
+            padding: 12px 14px;
+            overflow: hidden;
+        }
+
+        .ai-result-box.show {
+            display: block;
+            animation: l-slide-up .3s ease;
+        }
+
+        #ragBooks {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            overflow: hidden;
+        }
+
+        #ragBooks a {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .find-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 16px;
+            background: var(--indigo);
+            color: white;
+            border-radius: var(--r-sm);
+            font-family: var(--font);
+            font-size: .8rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all var(--ease);
+            touch-action: manipulation;
+        }
+
+        .find-btn svg {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+        }
+
+        .find-btn:hover {
+            background: #312e81;
+        }
+
+        .find-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        body.dark .ai-result-box {
+            background: rgba(55, 48, 163, .15) !important;
+            border-color: rgba(99, 102, 241, .25) !important;
+        }
+
+        body.dark #ragText,
+        body.dark #ragText * {
+            color: #a5b4fc !important;
+        }
+
+        /* ── Login toast ── */
+        .login-toast {
+            position: fixed;
+            bottom: calc(var(--mob-nav-total) + 8px);
+            right: 16px;
+            z-index: 400;
+            max-width: 280px;
+            background: #0f172a;
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
+            transform: translateY(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        .login-toast.show {
+            transform: none;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .toast-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-close {
+            background: rgba(255, 255, 255, .08);
+            border: none;
+            border-radius: 6px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 1px;
+            touch-action: manipulation;
+        }
+
+        .toast-close svg {
+            width: 10px;
+            height: 10px;
+            flex-shrink: 0;
+        }
+
+        #toastTitle {
+            font-family: var(--font);
+            font-weight: 700;
+            font-size: 12px;
+            line-height: 1.3;
+            color: white;
+        }
+
+        #toastBody {
+            font-family: var(--font);
+            font-size: 10px;
+            color: rgba(255, 255, 255, .6);
+            margin-top: 2px;
+        }
+
+        @media(min-width:1024px) {
+            .login-toast {
+                bottom: 24px;
+            }
+        }
+
+        @media(max-width:479px) {
+            .login-toast {
+                bottom: calc(var(--mob-nav-total) + 6px);
+                left: 12px;
+                right: 12px;
+                max-width: none;
+            }
+        }
+
+        /* ── Responsive — library grid ── */
+        @media(max-width:900px) {
+            .grid-lib {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width:639px) {
+            .grid-lib {
+                grid-template-columns: 1fr !important;
+                gap: 12px;
+            }
+
+            .grid-lib>div {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .topbar {
+                margin-bottom: 14px;
+            }
+
+            .lib-banner {
+                padding: 14px 14px 12px;
+            }
+
+            .lib-banner-top {
+                gap: 10px;
+            }
+
+            .lib-title {
+                font-size: 1.35rem;
+            }
+
+            .lib-browse {
+                padding: 8px 11px;
+                font-size: .72rem;
+            }
+
+            .lib-stats {
+                gap: 5px;
+            }
+
+            .lib-stat {
+                padding: 6px 7px;
+                border-radius: 8px;
+            }
+
+            .lib-stat-lbl {
+                font-size: .44rem;
+                letter-spacing: 0;
+            }
+
+            .lib-stat-val {
+                font-size: .82rem;
+            }
+        }
+
+        @media(max-width:479px) {
+            .lib-stats {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 4px;
+            }
+
+            .lib-stat-lbl {
+                font-size: .42rem;
+                letter-spacing: 0;
+            }
+
+            .lib-stat-val {
+                font-size: .78rem;
+            }
+
+            .lib-browse {
+                padding: 7px 9px;
+                font-size: .68rem;
+                gap: 4px;
+            }
+        }
+
+        @media(max-width:380px) {
+            .lib-stat-lbl {
+                font-size: .4rem;
+            }
+
+            .lib-stat-val {
+                font-size: .75rem;
+            }
+
+            .lib-stat {
+                padding: 5px 6px;
+            }
+        }
+    </style>
 </head>
 
-<?php
-$h = (int)date('H');
-$greeting = $h < 12 ? 'Good morning' : ($h < 17 ? 'Good afternoon' : 'Good evening');
-$initials = strtoupper(substr($user_name ?? 'U', 0, 1));
-if (strpos($user_name ?? '', ' ') !== false) {
-    $parts = explode(' ', $user_name);
-    $initials = strtoupper(substr($parts[0],0,1) . substr(end($parts),0,1));
-}
-
-$nextAction = null;
-if (($pending ?? 0) > 0) {
-    $nextAction = ['type'=>'pending','msg'=>"You have {$pending} reservation".($pending>1?'s':'')." awaiting approval.",'color'=>'amber','icon'=>'clock','url'=>'/reservation-list','cta'=>'View Reservations'];
-} elseif ($upcoming) {
-    $nextAction = ['type'=>'upcoming','msg'=>"Approved slot coming up. Download your e-ticket and scan at the entrance.",'color'=>'purple','icon'=>'ticket','url'=>'/reservation-list','cta'=>'Get E-Ticket'];
-} elseif ($unclaimedCount > 0) {
-    $nextAction = ['type'=>'unclaimed','msg'=>"You missed {$unclaimedCount} approved slot".($unclaimedCount>1?'s':'').". Please cancel in advance if you can't attend.",'color'=>'coral','icon'=>'ban','url'=>'/reservation-list','cta'=>'See Details'];
-}
-
-$nextPalette = [
-    'amber'  => ['rgba(251,191,36,.08)','rgba(251,191,36,.25)','rgba(251,191,36,.18)','#d97706'],
-    'purple' => ['rgba(124,58,237,.07)','rgba(124,58,237,.2)','rgba(124,58,237,.12)','#7C3AED'],
-    'coral'  => ['rgba(239,68,68,.06)','rgba(239,68,68,.2)','rgba(239,68,68,.1)','#ef4444'],
-];
-
-$artPalettes = ['rose','violet','sky','amber','emerald','indigo','coral','teal'];
-$pendingStr = $pending ?? 0;
-?>
-
 <body>
-<div class="sk-shell">
 
-    <!-- ═══════════════ SIDEBAR ═══════════════ -->
-    <aside class="sk-sidebar" id="skSidebar">
+    <?php
+    $page = 'dashboard';
+    include(APPPATH . 'Views/partials/layout.php');
+    ?>
 
-        <!-- Logo -->
-        <div class="sk-logo">
-            <div class="sk-logo-mark"><?= sk_icon('book', 15) ?></div>
-            <div class="sk-logo-text">
-                <span class="sk-logo-name">eLibReserve</span>
-                <span class="sk-logo-tag">Community Library</span>
-            </div>
-        </div>
+    <main class="main-area">
 
-        <!-- Navigation -->
-        <nav class="sk-nav">
-            <span class="sk-nav-label">Main</span>
-
-            <a href="<?= function_exists('base_url') ? base_url('/dashboard') : '#' ?>" class="sk-nav-link active">
-                <?= sk_icon('home', 15) ?> Dashboard
-            </a>
-            <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-nav-link">
-                <?= sk_icon('plus', 15) ?> New Reservation
-            </a>
-            <a href="<?= function_exists('base_url') ? base_url('/reservation-list') : '#' ?>" class="sk-nav-link">
-                <?= sk_icon('calendar', 15) ?> My Reservations
-                <?php if ($pendingStr > 0): ?><span class="nav-count"><?= $pendingStr ?></span><?php endif; ?>
-            </a>
-
-            <div class="sk-nav-divider"></div>
-            <span class="sk-nav-label">Library</span>
-
-            <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>" class="sk-nav-link">
-                <?= sk_icon('book', 15) ?> Browse Books
-            </a>
-            <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>#mine" class="sk-nav-link">
-                <?= sk_icon('bookmark', 15) ?> My Borrows
-            </a>
-
-            <div class="sk-nav-divider"></div>
-            <span class="sk-nav-label">Account</span>
-
-            <a href="<?= function_exists('base_url') ? base_url('/profile') : '#' ?>" class="sk-nav-link">
-                <?= sk_icon('user', 15) ?> Profile
-            </a>
-            <a href="<?= function_exists('base_url') ? base_url('/logout') : '#' ?>" class="sk-nav-link danger">
-                <?= sk_icon('logout', 15) ?> Sign Out
-            </a>
-        </nav>
-
-        <!-- User footer -->
-        <div class="sk-sidebar-footer">
-            <div class="sk-footer-avatar"><?= esc($initials) ?></div>
-            <div class="sk-footer-info">
-                <div class="sk-footer-name"><?= esc($user_name ?? 'User') ?></div>
-                <div class="sk-footer-role">Resident</div>
-            </div>
-            <div class="sk-footer-dot" title="Online"></div>
-        </div>
-    </aside>
-
-    <!-- ═══════════════ MAIN ═══════════════ -->
-    <div class="sk-main">
-
-        <!-- ── Topbar (no search bar) ── -->
-        <header class="sk-topbar">
-            <button class="sk-icon-btn" style="display:none;border-radius:10px;" id="menuBtn" onclick="document.getElementById('skSidebar').classList.toggle('open')" aria-label="Menu">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:18px;height:18px;">
-                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-            </button>
-
+        <!-- Topbar -->
+        <div class="topbar fade-up">
             <div>
-                <div class="sk-topbar-title">Dashboard</div>
-                <div class="sk-topbar-sub"><?= $greeting ?>, <?= esc(explode(' ', $user_name ?? 'there')[0]) ?> &middot; <?= date('F j, Y') ?></div>
+                <div class="greeting-eyebrow"><?php $h = (int)date('H');
+                                                echo $h < 12 ? 'Good morning' : ($h < 17 ? 'Good afternoon' : 'Good evening'); ?></div>
+                <div class="greeting-name"><?= esc($user_name) ?></div>
+                <div class="greeting-sub"><?= date('l, F j, Y') ?></div>
             </div>
-
-            <div class="sk-topbar-actions">
-                <button class="sk-icon-btn" onclick="toggleDark()" title="Toggle theme" aria-label="Toggle dark mode">
-                    <span id="themeIconLight"><?= sk_icon('moon', 15) ?></span>
-                    <span id="themeIconDark" style="display:none;"><?= sk_icon('sun', 15) ?></span>
-                </button>
-
-                <button class="sk-icon-btn" onclick="toggleNotifications()" style="position:relative;" aria-label="Notifications">
-                    <?= sk_icon('bell', 15) ?>
-                    <span class="sk-notif-dot" id="notifDot" style="display:none;"></span>
-                </button>
-
-                <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-reserve-btn">
-                    <?= sk_icon('plus', 14) ?> Reserve
+            <div class="topbar-right">
+                <?= layout_dark_toggle() ?>
+                <a href="<?= base_url('/reservation') ?>" class="reserve-btn">
+                    <?= icon('plus', 16, 'white') ?> Reserve
                 </a>
-
-                <div class="sk-avatar" title="<?= esc($user_name ?? '') ?>"><?= esc($initials) ?></div>
+                <div class="notif-bell" onclick="toggleNotifications()">
+                    <div class="l-icon-btn"><?= icon('bell', 16, 'currentColor') ?></div>
+                    <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                </div>
             </div>
-        </header>
-
-        <!-- ── Notification dropdown ── -->
-        <div id="skNotifDD" class="sk-notif-dd">
-            <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:13px;font-weight:700;color:var(--text);">Notifications</span>
-                <button onclick="markAllRead()" style="font-size:11px;color:var(--purple);font-weight:600;background:none;border:none;cursor:pointer;">Mark all read</button>
-            </div>
-            <div id="skNotifList" style="max-height:260px;overflow-y:auto;"></div>
         </div>
 
-        <!-- ── Scrollable content ── -->
-        <div class="sk-scroll" id="skScroll">
+        <!-- Notification dropdown -->
+        <div id="notifDD" class="notif-dd">
+            <div style="padding:11px 13px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-family:var(--font);font-weight:700;font-size:13px;color:var(--text);">Notifications</span>
+                <button onclick="markAllRead()" style="font-family:var(--font);font-size:11px;color:var(--indigo);font-weight:600;background:none;border:none;cursor:pointer;touch-action:manipulation;">Mark all read</button>
+            </div>
+            <div id="notifList" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+        </div>
 
-            <!-- Flash -->
-            <?php if (function_exists('session') && session()->getFlashdata('success')): ?>
-                <div class="sk-flash">
-                    <?= sk_icon('check-c', 16) ?>
-                    <?= session()->getFlashdata('success') ?>
+        <!-- Flash message -->
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="flash-ok fade-up">
+                <?= icon('check-circle', 14, 'var(--indigo)') ?>
+                <?= session()->getFlashdata('success') ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Next-action card -->
+        <?php if ($nextAction): $nc = $nextColors[$nextAction['color']]; ?>
+            <div class="next-card fade-up" style="background:<?= $nc['bg'] ?>;border-color:<?= $nc['border'] ?>;">
+                <div class="next-icon-wrap" style="background:<?= $nc['icon_bg'] ?>;">
+                    <?= icon($nc['icon'], 14, $nc['icon_fg']) ?>
                 </div>
-            <?php endif; ?>
-
-            <!-- Next-action banner -->
-            <?php if ($nextAction): $np = $nextPalette[$nextAction['color']] ?? $nextPalette['purple']; ?>
-                <div class="sk-next" style="background:<?= $np[0] ?>;border-color:<?= $np[1] ?>;">
-                    <div class="sk-next-icon" style="background:<?= $np[2] ?>;color:<?= $np[3] ?>;">
-                        <?= sk_icon($nextAction['icon'], 16) ?>
-                    </div>
-                    <div style="flex:1;min-width:0;">
-                        <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:<?= $np[3] ?>;margin-bottom:3px;">What to do next</p>
-                        <p style="font-size:13px;color:var(--text-2);line-height:1.55;"><?= $nextAction['msg'] ?></p>
-                        <a href="<?= function_exists('base_url') ? base_url($nextAction['url']) : '#' ?>"
-                           style="display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:8px 15px;border-radius:50px;font-size:12px;font-weight:700;color:white;background:<?= $np[3] ?>;text-decoration:none;transition:opacity .2s;"
-                           onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-                            <?= $nextAction['cta'] ?> <?= sk_icon('arrow-r', 12) ?>
-                        </a>
-                    </div>
-                </div>
-            <?php endif; ?>
-
-            <!-- ═══ HERO BANNER ═══ -->
-            <div class="sk-hero">
-                <div class="sk-hero-text">
-                    <div class="sk-hero-eyebrow"><?= $greeting ?> &middot; <?= date('l, F j') ?></div>
-                    <div class="sk-hero-name">Hi, <?= esc(explode(' ', $user_name ?? 'there')[0]) ?>!</div>
-                    <div class="sk-hero-sub">
-                        <?php if (!empty($reservations)): ?>
-                            You have <strong style="color:white;"><?= count($reservations) ?> reservation<?= count($reservations)>1?'s':'' ?></strong>
-                            and <?= $availableCount ?> books available to borrow today.
-                        <?php else: ?>
-                            Welcome to eLibReserve. Book resources and browse <?= $totalBooks ?> titles anytime.
-                        <?php endif; ?>
-                    </div>
-                    <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-hero-cta">
-                        <?= sk_icon('plus', 14) ?> Make a Reservation
+                <div style="flex:1;min-width:0;">
+                    <div class="next-eyebrow" style="color:<?= $nc['icon_fg'] ?>;">What to do next</div>
+                    <div class="next-msg"><?= $nextAction['msg'] ?></div>
+                    <a href="<?= base_url($nextAction['url']) ?>" class="next-cta" style="background:<?= $nc['btn_bg'] ?>;">
+                        <?= $nextAction['cta'] ?> <?= icon('arrow-right', 12, 'white') ?>
                     </a>
                 </div>
-                <div class="sk-hero-books">
-                    <div style="transform:translateY(12px) rotate(-6deg);opacity:.85;"><?= book_art('sky') ?></div>
-                    <div style="transform:translateY(0px);z-index:2;position:relative;"><?= book_art('rose') ?></div>
-                    <div style="transform:translateY(16px) rotate(8deg);opacity:.9;"><?= book_art('amber') ?></div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Countdown timer banner -->
+        <div id="timerBanner" class="timer-banner">
+            <div class="timer-inner">
+                <div id="timerIconWrap" style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.07);flex-shrink:0;">
+                    <?= icon('hourglass', 16, 'currentColor') ?>
+                </div>
+                <div class="timer-text-col">
+                    <p style="font-weight:700;font-size:.9rem;line-height:1.3;" id="timerTitle">Your reservation ends soon</p>
+                    <p style="font-size:.76rem;opacity:.7;margin-top:2px;" id="timerSub"></p>
+                </div>
+                <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                    <div class="timer-digit"><span id="tdH">00</span><span>hrs</span></div>
+                    <span style="font-family:var(--font);font-weight:700;font-size:14px;opacity:.4;" class="timer-pulse">:</span>
+                    <div class="timer-digit"><span id="tdM">00</span><span>min</span></div>
+                    <span style="font-family:var(--font);font-weight:700;font-size:14px;opacity:.4;" class="timer-pulse">:</span>
+                    <div class="timer-digit"><span id="tdS">00</span><span>sec</span></div>
                 </div>
             </div>
-
-            <!-- ═══ STATS ═══ -->
-            <div class="sk-stats">
-                <div class="sk-stat">
-                    <div class="sk-stat-icon" style="background:#EDE9FE;color:#7C3AED;"><?= sk_icon('calendar', 18) ?></div>
-                    <div class="sk-stat-val"><?= $total ?? 0 ?></div>
-                    <div class="sk-stat-lbl">Total Reservations</div>
-                    <div class="sk-stat-trend" style="color:#7C3AED;"><?= sk_icon('trending', 11) ?> All time</div>
-                </div>
-                <div class="sk-stat">
-                    <div class="sk-stat-icon" style="background:#FEF3C7;color:#D97706;"><?= sk_icon('clock', 18) ?></div>
-                    <div class="sk-stat-val" style="color:#D97706;"><?= $pending ?? 0 ?></div>
-                    <div class="sk-stat-lbl">Awaiting Approval</div>
-                    <div class="sk-stat-trend" style="color:#D97706;"><?= sk_icon('eye', 11) ?> Under review</div>
-                </div>
-                <div class="sk-stat">
-                    <div class="sk-stat-icon" style="background:#DCFCE7;color:#16A34A;"><?= sk_icon('check-c', 18) ?></div>
-                    <div class="sk-stat-val" style="color:#16A34A;"><?= $approved ?? 0 ?></div>
-                    <div class="sk-stat-lbl">Approved Slots</div>
-                    <div class="sk-stat-trend" style="color:#16A34A;"><?= sk_icon('check', 11) ?> Ready to use</div>
-                </div>
-                <div class="sk-stat">
-                    <div class="sk-stat-icon" style="background:#F5F3FF;color:#7C3AED;"><?= sk_icon('book', 18) ?></div>
-                    <div class="sk-stat-val"><?= $availableCount ?></div>
-                    <div class="sk-stat-lbl">Books Available</div>
-                    <div class="sk-stat-trend" style="color:#7C3AED;"><?= sk_icon('bookmark', 11) ?> of <?= $totalBooks ?> titles</div>
-                </div>
+            <div id="timerPW" class="timer-progress-wrap" style="display:none;">
+                <div id="timerPF" class="timer-progress-fill" style="width:0%;"></div>
             </div>
+        </div>
 
-            <!-- ═══ POPULAR BOOKS ═══ -->
-            <?php if (!empty($featuredBooks)): ?>
-                <div class="sk-section-head">
-                    <span class="sk-section-title">Available Now</span>
-                    <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>" class="sk-section-link">
-                        View all <?= sk_icon('arrow-r', 12) ?>
-                    </a>
+        <!-- Upcoming reservation pill -->
+        <?php if ($upcoming): ?>
+            <div class="upcoming-pill fade-up-1">
+                <div class="up-icon"><?= icon('ticket', 16, 'white') ?></div>
+                <div style="flex:1;min-width:0;">
+                    <div class="up-eyebrow">Upcoming Reservation</div>
+                    <div class="up-name"><?= esc($upcoming['resource_name'] ?? 'Resource') ?><?php if (!empty($upcoming['pc_number'])): ?> &middot; <span style="font-weight:400;"><?= esc($upcoming['pc_number']) ?></span><?php endif; ?></div>
+                    <div class="up-time"><?= date('M j, Y', strtotime($upcoming['reservation_date'])) ?> &nbsp;&middot;&nbsp; <?= date('g:i A', strtotime($upcoming['start_time'])) ?> – <?= date('g:i A', strtotime($upcoming['end_time'])) ?></div>
                 </div>
-                <div class="sk-books-grid">
-                    <?php foreach (array_slice($featuredBooks, 0, 8) as $i => $book):
-                        $pal   = $artPalettes[$i % count($artPalettes)];
-                        $avail = (int)($book['available_copies'] ?? 0);
-                        $pillBg = $avail === 0 ? '#FEE2E2' : ($avail <= 1 ? '#FEF3C7' : '#DCFCE7');
-                        $pillFg = $avail === 0 ? '#991B1B' : ($avail <= 1 ? '#92400E' : '#166534');
-                        $pillTx = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail.' left');
-                        $artBg = [
-                            'rose'   =>'linear-gradient(145deg,#FFE4EC 0%,#FFCCD8 100%)',
-                            'violet' =>'linear-gradient(145deg,#EDE9FE 0%,#DDD6FE 100%)',
-                            'sky'    =>'linear-gradient(145deg,#E0F2FE 0%,#BAE6FD 100%)',
-                            'amber'  =>'linear-gradient(145deg,#FEF9C3 0%,#FDE68A 100%)',
-                            'emerald'=>'linear-gradient(145deg,#DCFCE7 0%,#BBF7D0 100%)',
-                            'indigo' =>'linear-gradient(145deg,#EEF2FF 0%,#C7D2FE 100%)',
-                            'coral'  =>'linear-gradient(145deg,#FEE2E2 0%,#FECACA 100%)',
-                            'teal'   =>'linear-gradient(145deg,#CCFBF1 0%,#99F6E4 100%)',
-                        ][$pal];
-                    ?>
-                        <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>" class="sk-book-card" style="text-decoration:none;">
-                            <div class="sk-book-art" style="background:<?= $artBg ?>;"><?= book_art($pal) ?></div>
-                            <div class="sk-book-body">
-                                <div class="sk-book-label">Book</div>
-                                <div class="sk-book-title"><?= esc($book['title']) ?></div>
-                                <div class="sk-book-author"><?= esc($book['author'] ?? 'Unknown Author') ?></div>
-                                <div class="sk-book-meta">
-                                    <span class="sk-avail-pill" style="background:<?= $pillBg ?>;color:<?= $pillFg ?>;"><?= $pillTx ?></span>
-                                    <div class="sk-stars">
-                                        <?= sk_icon('star', 11) ?>
-                                        <span style="font-size:11px;font-weight:600;color:var(--text-2);margin-left:2px;">4.<?= (int)($i*1.3+4)%10 ?></span>
-                                    </div>
-                                </div>
+                <a href="<?= base_url('/reservation-list') ?>" class="up-btn">View →</a>
+            </div>
+        <?php endif; ?>
+
+        <!-- Stats grid -->
+        <div class="stats-grid fade-up-2">
+            <div class="stat-card">
+                <div class="stat-card-top">
+                    <div class="stat-icon" style="background:#eef2ff;"><?= icon('layers', 16, '#3730a3') ?></div>
+                    <span class="stat-lbl">Total</span>
+                </div>
+                <div class="stat-num"><?= $total ?></div>
+                <div class="stat-hint">All time</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-top">
+                    <div class="stat-icon" style="background:#fef3c7;"><?= icon('clock', 16, '#d97706') ?></div>
+                    <span class="stat-lbl">Pending</span>
+                </div>
+                <div class="stat-num" style="color:#d97706;"><?= $pending ?></div>
+                <div class="stat-hint">Awaiting review</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-top">
+                    <div class="stat-icon" style="background:#dcfce7;"><?= icon('check-circle', 16, '#16a34a') ?></div>
+                    <span class="stat-lbl">Approved</span>
+                </div>
+                <div class="stat-num" style="color:#16a34a;"><?= $approved ?></div>
+                <div class="stat-hint">Ready to use</div>
+            </div>
+            <?php if ($unclaimedCount > 0): ?>
+                <div class="stat-card" style="border-color:rgba(251,146,60,.25);">
+                    <div class="stat-card-top">
+                        <div class="stat-icon" style="background:#fff7ed;"><?= icon('ticket', 16, '#ea580c') ?></div>
+                        <span class="stat-lbl">No-show</span>
+                    </div>
+                    <div class="stat-num" style="color:#ea580c;"><?= $unclaimedCount ?></div>
+                    <div class="stat-hint" style="color:#fb923c;">Slot<?= $unclaimedCount > 1 ? 's' : '' ?> missed</div>
+                </div>
+            <?php elseif ($claimedCount > 0): ?>
+                <div class="stat-card">
+                    <div class="stat-card-top">
+                        <div class="stat-icon" style="background:#ede9fe;"><?= icon('check-double', 16, '#7c3aed') ?></div>
+                        <span class="stat-lbl">Claimed</span>
+                    </div>
+                    <div class="stat-num" style="color:#7c3aed;"><?= $claimedCount ?></div>
+                    <div class="stat-hint">Tickets used</div>
+                </div>
+            <?php else: ?>
+                <div class="stat-card">
+                    <div class="stat-card-top">
+                        <div class="stat-icon" style="background:#fee2e2;"><?= icon('ban', 16, '#dc2626') ?></div>
+                        <span class="stat-lbl">Declined</span>
+                    </div>
+                    <div class="stat-num" style="color:#dc2626;"><?= $declined ?></div>
+                    <div class="stat-hint">Not approved</div>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Calendar + Quick actions + Recent bookings -->
+        <div class="grid-main fade-up-3">
+            <div class="card card-p-lg">
+                <div class="card-head" style="flex-wrap:wrap;gap:10px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div class="card-icon" style="background:#eef2ff;"><?= icon('calendar-days', 16, 'var(--indigo)') ?></div>
+                        <div>
+                            <div class="card-title">Community Schedule</div>
+                            <div class="card-sub">Tap any date to see reservations</div>
+                        </div>
+                    </div>
+                    <div class="cal-legend">
+                        <?php foreach ([['#fbbf24', 'Pending'], ['#10b981', 'Approved'], ['#f87171', 'Declined'], ['#a855f7', 'Claimed']] as [$c, $l]): ?>
+                            <div class="leg-item">
+                                <div class="leg-dot" style="background:<?= $c ?>;"></div>
+                                <span class="leg-lbl"><?= $l ?></span>
                             </div>
-                        </a>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
-            <?php endif; ?>
+                <div id="calendar"></div>
+            </div>
 
-            <!-- ═══ MY ACTIVE BORROWS ═══ -->
-            <?php
-            $activeBorrows = array_slice(
-                array_values(array_filter($myBorrowings, fn($b)=>in_array($b['status']??'',['approved','pending']))),
-                0, 4
-            );
-            if (!empty($activeBorrows)):
-            ?>
-                <div class="sk-section-head">
-                    <span class="sk-section-title">My Active Borrows</span>
-                    <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>#mine" class="sk-section-link">
-                        View all <?= sk_icon('arrow-r', 12) ?>
-                    </a>
+            <div class="side-col">
+                <!-- Quick actions -->
+                <div class="card card-p">
+                    <div class="section-lbl">Quick Actions</div>
+                    <div style="display:flex;flex-direction:column;gap:5px;">
+                        <a href="<?= base_url('/reservation') ?>" class="qa-link">
+                            <div class="qa-icon" style="background:#eef2ff;"><?= icon('plus', 16, 'var(--indigo)') ?></div>
+                            New Reservation
+                            <span class="qa-chev"><?= icon('chevron-right', 14, 'currentColor') ?></span>
+                        </a>
+                        <a href="<?= base_url('/reservation-list') ?>" class="qa-link">
+                            <div class="qa-icon" style="background:#ede9fe;"><?= icon('calendar', 16, '#7c3aed') ?></div>
+                            My Reservations
+                            <?php if ($pending > 0): ?>
+                                <span style="margin-left:auto;background:#fef3c7;color:#92400e;font-family:var(--font);font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;"><?= $pending ?></span>
+                            <?php else: ?>
+                                <span class="qa-chev"><?= icon('chevron-right', 14, 'currentColor') ?></span>
+                            <?php endif; ?>
+                        </a>
+                        <a href="<?= base_url('/books') ?>" class="qa-link">
+                            <div class="qa-icon" style="background:#fef3c7;"><?= icon('book-open', 16, '#d97706') ?></div>
+                            Browse Library
+                            <span class="qa-chev"><?= icon('chevron-right', 14, 'currentColor') ?></span>
+                        </a>
+                        <a href="<?= base_url('/profile') ?>" class="qa-link">
+                            <div class="qa-icon" style="background:#f3e8ff;"><?= icon('user', 16, '#9333ea') ?></div>
+                            View Profile
+                            <span class="qa-chev"><?= icon('chevron-right', 14, 'currentColor') ?></span>
+                        </a>
+                    </div>
                 </div>
-                <div class="sk-books-grid" style="margin-bottom:28px;">
-                    <?php foreach ($activeBorrows as $i => $borrow):
-                        $pal   = $artPalettes[($i+3) % count($artPalettes)];
-                        $due   = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
-                        $over  = $due && $due < time();
-                        $soon  = $due && !$over && $due < time()+3*86400;
-                        $artBg = ['rose'=>'linear-gradient(145deg,#FFE4EC 0%,#FFCCD8 100%)','violet'=>'linear-gradient(145deg,#EDE9FE 0%,#DDD6FE 100%)','sky'=>'linear-gradient(145deg,#E0F2FE 0%,#BAE6FD 100%)','amber'=>'linear-gradient(145deg,#FEF9C3 0%,#FDE68A 100%)','emerald'=>'linear-gradient(145deg,#DCFCE7 0%,#BBF7D0 100%)','indigo'=>'linear-gradient(145deg,#EEF2FF 0%,#C7D2FE 100%)','coral'=>'linear-gradient(145deg,#FEE2E2 0%,#FECACA 100%)','teal'=>'linear-gradient(145deg,#CCFBF1 0%,#99F6E4 100%)'][$pal];
-                        $bs    = strtolower($borrow['status']??'pending');
-                        $tagCls= $over?'declined':($soon?'pending':$bs);
-                        $tagTx = $over?'Overdue':($soon?'Due Soon':ucfirst($bs));
-                    ?>
-                        <div class="sk-book-card">
-                            <div class="sk-book-art" style="background:<?= $artBg ?>;"><?= book_art($pal) ?></div>
-                            <div class="sk-book-body">
-                                <div class="sk-book-label">Borrowed</div>
-                                <div class="sk-book-title"><?= esc($borrow['title']??'Unknown') ?></div>
-                                <?php if ($due && $bs==='approved'): ?>
-                                    <div class="sk-book-author" style="color:<?= $over?'#EF4444':($soon?'#D97706':'') ?>;">Due: <?= date('M j, Y', $due) ?></div>
-                                <?php else: ?>
-                                    <div class="sk-book-author">&nbsp;</div>
-                                <?php endif; ?>
-                                <div class="sk-book-meta">
-                                    <span class="tag tag-<?= $tagCls ?>"><?= $tagTx ?></span>
-                                </div>
+
+                <!-- Recent bookings -->
+                <div class="card card-p" style="flex:1;">
+                    <div class="card-head">
+                        <div class="section-lbl" style="margin-bottom:0;">Recent Bookings</div>
+                        <a href="<?= base_url('/reservation-list') ?>" class="link-sm">View all →</a>
+                    </div>
+                    <?php if (!empty($processedRecent)): ?>
+                        <div>
+                            <?php foreach (array_slice($processedRecent, 0, 5) as $res):
+                                $s  = $res['_status'];
+                                $dt = new DateTime($res['reservation_date']);
+                            ?>
+                                <a href="<?= base_url('/reservation-list') ?>" class="bk-row">
+                                    <div class="bk-date">
+                                        <div class="bk-month"><?= $dt->format('M') ?></div>
+                                        <div class="bk-day"><?= $dt->format('j') ?></div>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div class="bk-name"><?= esc($res['resource_name'] ?? 'Resource #' . $res['resource_id']) ?></div>
+                                        <div class="bk-time"><?= date('g:i A', strtotime($res['start_time'])) ?> – <?= date('g:i A', strtotime($res['end_time'])) ?></div>
+                                    </div>
+                                    <span class="tag tag-<?= $s ?>"><?= $s === 'unclaimed' ? 'No-show' : ucfirst($s) ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div style="text-align:center;padding:22px 12px;">
+                            <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('calendar-x', 28, 'currentColor') ?></div>
+                            <p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">No bookings yet</p>
+                            <a href="<?= base_url('/reservation') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:9px;font-family:var(--font);font-size:11px;font-weight:700;color:var(--indigo);text-decoration:none;touch-action:manipulation;">
+                                <?= icon('plus', 12, 'var(--indigo)') ?> Make your first reservation
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- How-to + Status guide -->
+        <?php if (empty($reservations) || $unclaimedCount > 0 || $pending > 0): ?>
+            <div class="grid-main" style="margin-bottom:16px;">
+                <div class="card card-p">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                        <div class="card-icon" style="background:#eef2ff;"><?= icon('list-check', 16, 'var(--indigo)') ?></div>
+                        <div>
+                            <div class="card-title">How to Reserve</div>
+                            <div class="card-sub">Step-by-step guide</div>
+                        </div>
+                    </div>
+                    <?php $step = 1;
+                    foreach (
+                        [
+                            ['Click "New Reservation"', 'Choose a resource, pick your date and time, and describe your purpose.'],
+                            ['Wait for approval',        'An SK officer will review your request, usually within 24 hours.'],
+                            ['Download your e-ticket',   'Once approved, open My Reservations and download your QR code.'],
+                            ['Scan at the entrance',      'Show your e-ticket to be scanned when you arrive.'],
+                            ['Be on time',                "Slots expire if you don't show up. Cancel in advance if plans change."],
+                        ] as [$title, $body]
+                    ): ?>
+                        <div class="how-step">
+                            <div class="step-num"><?= $step++ ?></div>
+                            <div>
+                                <p style="font-weight:600;font-size:12.5px;color:var(--text);letter-spacing:-.1px;"><?= $title ?></p>
+                                <p style="font-size:11px;color:var(--text-sub);margin-top:2px;"><?= $body ?></p>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
-            <?php endif; ?>
 
-            <!-- ═══ CALENDAR + SIDE PANEL ═══ -->
-            <div class="sk-grid-2">
+                <div class="card card-p">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                        <div class="card-icon" style="background:#eef2ff;"><?= icon('info', 16, 'var(--indigo)') ?></div>
+                        <div>
+                            <div class="card-title">Status Reference</div>
+                            <div class="card-sub">What each status means</div>
+                        </div>
+                    </div>
+                    <?php foreach (
+                        [
+                            ['pending',   'clock',        '#fef3c7', '#92400e', '#d97706', 'Pending',  'Waiting for SK officer review.'],
+                            ['approved',  'check-circle', '#dcfce7', '#166534', '#16a34a', 'Approved', 'Confirmed. Get your e-ticket.'],
+                            ['claimed',   'check-double', '#ede9fe', '#5b21b6', '#7c3aed', 'Claimed',  'E-ticket scanned. Slot used.'],
+                            ['unclaimed', 'ticket',       '#fff7ed', '#c2410c', '#ea580c', 'No-show',  "Approved but you didn't attend."],
+                            ['declined',  'ban',          '#fee2e2', '#991b1b', '#dc2626', 'Declined', 'Not approved. Try another time.'],
+                            ['expired',   'hourglass',    '#f1f5f9', '#475569', '#64748b', 'Expired',  'Date passed before approval.'],
+                        ] as [$key, $ico, $bg, $fg, $ic, $label, $desc]
+                    ): ?>
+                        <div class="status-guide-row">
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:7px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;min-width:74px;justify-content:center;background:<?= $bg ?>;color:<?= $fg ?>;">
+                                <?= icon($ico, 8, $ic) ?><?= $label ?>
+                            </span>
+                            <p><?= $desc ?></p>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
 
-                <!-- Calendar -->
-                <div class="sk-card sk-card-pad">
-                    <div class="sk-card-head">
+        <!-- LIBRARY SECTION -->
+        <div class="grid-lib fade-up-4">
+
+            <!-- LEFT COL: banner + AI finder -->
+            <div style="display:flex;flex-direction:column;gap:14px;min-width:0;">
+
+                <!-- Banner -->
+                <div class="lib-banner">
+                    <div class="lib-banner-inner">
+                        <div class="lib-banner-top">
+                            <div>
+                                <div class="lib-eyebrow">Community Library</div>
+                                <div class="lib-title"><?= $availableCount ?></div>
+                                <div class="lib-sub">available · <?= $totalBooks ?> total titles</div>
+                            </div>
+                            <a href="<?= base_url('/books') ?>" class="lib-browse">
+                                <?= icon('book-open', 13, 'white') ?> Browse
+                            </a>
+                        </div>
+                        <div class="lib-stats">
+                            <div class="lib-stat">
+                                <span class="lib-stat-lbl">My Borrows</span>
+                                <span class="lib-stat-val"><?= count($myBorrowings) ?></span>
+                            </div>
+                            <div class="lib-stat">
+                                <span class="lib-stat-lbl">Pending</span>
+                                <span class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'pending')) ?></span>
+                            </div>
+                            <div class="lib-stat">
+                                <span class="lib-stat-lbl">Active</span>
+                                <span class="lib-stat-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status'] ?? '') === 'approved')) ?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Book Finder -->
+                <div class="card card-p">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div class="card-icon" style="background:#ede9fe;"><?= icon('sparkles', 16, '#7c3aed') ?></div>
+                        <div>
+                            <div class="card-title">AI Book Finder</div>
+                            <div class="card-sub">Describe what you want to read</div>
+                        </div>
+                    </div>
+                    <div class="rag-wrap">
+                        <span class="rag-icon-pos"><?= icon('search', 13, 'currentColor') ?></span>
+                        <input type="text" id="ragInput" class="search-input"
+                            placeholder="e.g. Filipino history, funny stories…"
+                            autocomplete="off" autocorrect="off" spellcheck="false"
+                            onkeydown="if(event.key==='Enter') doRagSearch()">
+                    </div>
+                    <div id="ragSkel" style="display:none;margin-top:.5rem;">
+                        <div class="shimmer" style="width:90%;"></div>
+                        <div class="shimmer" style="width:70%;"></div>
+                        <div class="shimmer" style="width:52%;"></div>
+                    </div>
+                    <div class="ai-result-box" id="ragResult">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                            <?= icon('robot', 14, 'var(--indigo)') ?>
+                            <p style="font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#3730a3;">Librarian Suggestion</p>
+                        </div>
+                        <p style="font-family:var(--font);font-size:12px;color:#312e81;line-height:1.6;" id="ragText"></p>
+                        <div id="ragBooks"></div>
+                    </div>
+                    <div id="ragErr" style="display:none;margin-top:5px;font-family:var(--font);font-size:11px;color:#dc2626;font-weight:500;"></div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;">
+                        <button onclick="doRagSearch()" id="ragBtn" class="find-btn">
+                            <?= icon('sparkles', 13, 'white') ?> Find Books
+                        </button>
+                        <a href="<?= base_url('/books') ?>" class="link-sm">Full library →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COL: books catalog + my borrows -->
+            <div style="display:flex;flex-direction:column;gap:14px;min-width:0;">
+
+                <!-- Available Now -->
+                <div class="card card-p" style="flex:1;">
+                    <div class="card-head">
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div style="width:34px;height:34px;border-radius:10px;background:var(--purple-lt);color:var(--purple);display:flex;align-items:center;justify-content:center;">
-                                <?= sk_icon('calendar', 16) ?>
+                            <div class="card-icon" style="background:var(--indigo-light);">
+                                <?= icon('book-open', 16, 'var(--indigo)') ?>
                             </div>
                             <div>
-                                <div class="sk-card-title">Community Schedule</div>
-                                <div class="sk-card-sub">Tap a date to see reservations</div>
+                                <div class="card-title">Available Now</div>
+                                <div class="card-sub">Books you can borrow today</div>
                             </div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                            <?php foreach ([['#10b981','Approved'],['#fbbf24','Pending'],['#f87171','Declined'],['#a855f7','Claimed']] as [$c,$l]): ?>
-                                <div style="display:flex;align-items:center;gap:4px;">
-                                    <div style="width:8px;height:8px;border-radius:50%;background:<?= $c ?>;flex-shrink:0;"></div>
-                                    <span style="font-size:11px;color:var(--text-3);font-weight:500;"><?= $l ?></span>
+                        <a href="<?= base_url('/books') ?>" class="link-sm">All →</a>
+                    </div>
+                    <?php if (!empty($featuredBooks)): ?>
+                        <div style="display:flex;flex-direction:column;gap:2px;">
+                            <?php foreach (array_slice($featuredBooks, 0, 6) as $book):
+                                $avail = (int)($book['available_copies'] ?? 0);
+                                $pillStyle = $avail === 0
+                                    ? 'background:#fee2e2;color:#991b1b;'
+                                    : ($avail <= 1 ? 'background:#fef3c7;color:#92400e;' : 'background:#dcfce7;color:#166634;');
+                                $pillText = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
+                            ?>
+                                <a href="<?= base_url('/books') ?>"
+                                    style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s;min-width:0;">
+                                    <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div class="book-title"><?= esc($book['title']) ?></div>
+                                        <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
+                                    </div>
+                                    <span style="font-family:var(--font);font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;white-space:nowrap;<?= $pillStyle ?>">
+                                        <?= $pillText ?>
+                                    </span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php if (count($featuredBooks) > 6): ?>
+                            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-subtle);text-align:center;">
+                                <a href="<?= base_url('/books') ?>" class="link-sm">+<?= count($featuredBooks) - 6 ?> more →</a>
+                            </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div style="text-align:center;padding:32px 12px;">
+                            <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('book-open', 28, 'currentColor') ?></div>
+                            <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);font-weight:600;">No books available</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- My Active Borrows -->
+                <?php
+                $activeBorrows = array_slice(
+                    array_values(array_filter($myBorrowings, fn($b) => in_array($b['status'] ?? '', ['approved', 'pending']))),
+                    0,
+                    4
+                );
+                if (!empty($activeBorrows)): ?>
+                    <div class="card card-p">
+                        <div class="card-head">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div class="card-icon" style="background:#dcfce7;"><?= icon('bookmark', 16, '#16a34a') ?></div>
+                                <div>
+                                    <div class="card-title">My Active Borrows</div>
+                                    <div class="card-sub">Currently checked out</div>
+                                </div>
+                            </div>
+                            <a href="<?= base_url('/books') ?>#mine" class="link-sm">All →</a>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:7px;">
+                            <?php foreach ($activeBorrows as $borrow):
+                                $bs  = strtolower($borrow['status'] ?? 'pending');
+                                $due = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
+                                $overdue = $due && $due < time();
+                                $dueSoon = $due && !$overdue && $due < time() + 3 * 86400;
+                            ?>
+                                <div class="borrow-row">
+                                    <div class="book-letter" style="width:30px;height:30px;font-size:.7rem;">
+                                        <?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <p style="font-family:var(--font);font-weight:600;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                            <?= esc($borrow['title'] ?? 'Unknown Book') ?>
+                                        </p>
+                                        <?php if ($due && $bs === 'approved'): ?>
+                                            <p style="font-family:var(--mono);font-size:.68rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : 'var(--text-sub)') ?>;">
+                                                <?= $overdue ? 'Overdue · ' : ($dueSoon ? 'Due soon · ' : '') ?><?= date('M j, Y', $due) ?>
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>">
+                                        <?= $overdue ? 'Overdue' : ($dueSoon ? 'Due Soon' : ucfirst($bs)) ?>
+                                    </span>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
-                    <div id="dashboard-calendar"></div>
-                </div>
-
-                <!-- Side column -->
-                <div style="display:flex;flex-direction:column;gap:14px;">
-
-                    <!-- Quick Actions -->
-                    <div class="sk-card sk-card-pad">
-                        <div class="sk-card-title" style="margin-bottom:12px;">Quick Actions</div>
-                        <div style="display:flex;flex-direction:column;gap:6px;">
-                            <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-qa-link">
-                                <div class="sk-qa-icon" style="background:#EDE9FE;color:#7C3AED;"><?= sk_icon('plus', 16) ?></div>
-                                New Reservation
-                                <span style="margin-left:auto;color:var(--text-3);"><?= sk_icon('chevron-r', 14) ?></span>
-                            </a>
-                            <a href="<?= function_exists('base_url') ? base_url('/reservation-list') : '#' ?>" class="sk-qa-link">
-                                <div class="sk-qa-icon" style="background:#FEF3C7;color:#D97706;"><?= sk_icon('calendar', 16) ?></div>
-                                My Reservations
-                                <?php if (($pending??0) > 0): ?>
-                                    <span style="margin-left:auto;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;"><?= $pending ?></span>
-                                <?php else: ?>
-                                    <span style="margin-left:auto;color:var(--text-3);"><?= sk_icon('chevron-r', 14) ?></span>
-                                <?php endif; ?>
-                            </a>
-                            <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>" class="sk-qa-link">
-                                <div class="sk-qa-icon" style="background:#DCFCE7;color:#16A34A;"><?= sk_icon('book', 16) ?></div>
-                                Browse Library
-                                <span style="margin-left:auto;color:var(--text-3);"><?= sk_icon('chevron-r', 14) ?></span>
-                            </a>
-                            <a href="<?= function_exists('base_url') ? base_url('/profile') : '#' ?>" class="sk-qa-link">
-                                <div class="sk-qa-icon" style="background:#F5F3FF;color:#7C3AED;"><?= sk_icon('user', 16) ?></div>
-                                View Profile
-                                <span style="margin-left:auto;color:var(--text-3);"><?= sk_icon('chevron-r', 14) ?></span>
-                            </a>
-                        </div>
+                <?php else: ?>
+                    <div class="card card-p" style="text-align:center;padding:28px 20px;">
+                        <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('bookmark', 26, 'currentColor') ?></div>
+                        <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
+                        <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-family:var(--font);font-size:.72rem;font-weight:700;color:var(--indigo);text-decoration:none;">
+                            <?= icon('book-open', 12, 'var(--indigo)') ?> Borrow a book
+                        </a>
                     </div>
+                <?php endif; ?>
 
-                    <!-- Recent Bookings -->
-                    <div class="sk-card sk-card-pad" style="flex:1;">
-                        <div class="sk-card-head">
-                            <div class="sk-card-title">Recent Bookings</div>
-                            <a href="<?= function_exists('base_url') ? base_url('/reservation-list') : '#' ?>" class="sk-section-link" style="font-size:11px;">
-                                All <?= sk_icon('arrow-r', 11) ?>
-                            </a>
-                        </div>
-                        <?php if (!empty($processedRecent)): ?>
-                            <div>
-                                <?php foreach (array_slice($processedRecent, 0, 5) as $res):
-                                    $s  = $res['_status'];
-                                    $dt = new DateTime($res['reservation_date']);
-                                    $avatarColors = ['claimed'=>['#EDE9FE','#7C3AED'],'approved'=>['#DCFCE7','#16A34A'],'pending'=>['#FEF3C7','#D97706'],'unclaimed'=>['#FFF7ED','#EA580C'],'declined'=>['#FEE2E2','#DC2626'],'expired'=>['#F1F5F9','#64748B']];
-                                    [$abg,$afg] = $avatarColors[$s] ?? ['#EDE9FE','#7C3AED'];
-                                ?>
-                                    <a href="<?= function_exists('base_url') ? base_url('/reservation-list') : '#' ?>" class="bk-row" style="text-decoration:none;display:flex;">
-                                        <div class="bk-avatar" style="background:<?= $abg ?>;color:<?= $afg ?>;"><?= $dt->format('j') ?></div>
-                                        <div style="flex:1;min-width:0;margin-left:10px;">
-                                            <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= esc($res['resource_name'] ?? 'Resource') ?></div>
-                                            <div style="font-family:var(--mono);font-size:11px;color:var(--text-3);margin-top:1px;">
-                                                <?= date('M j', strtotime($res['reservation_date'])) ?> &middot; <?= date('g:iA', strtotime($res['start_time'])) ?>
-                                            </div>
-                                        </div>
-                                        <span class="tag tag-<?= $s ?>" style="align-self:center;"><?= $s==='unclaimed'?'No-show':ucfirst($s) ?></span>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <div style="text-align:center;padding:28px 10px;">
-                                <div style="color:var(--text-3);display:flex;justify-content:center;margin-bottom:8px;"><?= sk_icon('calendar', 28) ?></div>
-                                <p style="font-size:12px;color:var(--text-3);">No bookings yet</p>
-                                <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>"
-                                   style="display:inline-flex;align-items:center;gap:4px;margin-top:9px;font-size:12px;font-weight:700;color:var(--purple);text-decoration:none;">
-                                    <?= sk_icon('plus', 12) ?> First reservation
-                                </a>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Activity Snapshot -->
-                    <div class="sk-card sk-card-pad">
-                        <div class="sk-card-title" style="margin-bottom:14px;">Activity Snapshot</div>
-                        <?php
-                        $achieves = [];
-                        if (($total??0) >= 1)     $achieves[] = ['color'=>'violet','letter'=>'R','name'=>'First Reservation','sub'=>'Made your first booking'];
-                        if (($approved??0) >= 3)  $achieves[] = ['color'=>'sky','letter'=>'A','name'=>'Approved ×3','sub'=>'3 reservations approved'];
-                        if ($claimedCount >= 1)   $achieves[] = ['color'=>'emerald','letter'=>'C','name'=>'Ticket Claimed','sub'=>'Scanned your first e-ticket'];
-                        if (count($myBorrowings)>=1) $achieves[] = ['color'=>'amber','letter'=>'B','name'=>'First Borrow','sub'=>'Borrowed from the library'];
-                        if (empty($achieves)):
-                        ?>
-                            <p style="font-size:12px;color:var(--text-3);text-align:center;padding:12px 0;">Make your first reservation to earn badges!</p>
-                        <?php else: foreach ($achieves as $a): ?>
-                            <div class="sk-achieve-row">
-                                <?= achievement_art($a['color'], $a['letter']) ?>
-                                <div>
-                                    <div class="sk-achieve-name"><?= esc($a['name']) ?></div>
-                                    <div class="sk-achieve-sub"><?= esc($a['sub']) ?></div>
-                                </div>
-                            </div>
-                        <?php endforeach; endif; ?>
-                    </div>
-
-                </div>
             </div>
-
-            <!-- Quota bar -->
-            <?php $used = 3 - ($remaining ?? 3); ?>
-            <div class="sk-card sk-card-pad" style="margin-bottom:24px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                    <span style="font-size:13px;font-weight:600;color:var(--text);">Monthly Reservation Quota</span>
-                    <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--purple);"><?= $used ?> / 3 used</span>
-                </div>
-                <div style="height:7px;background:var(--purple-lt);border-radius:99px;overflow:hidden;">
-                    <div style="height:100%;width:<?= min(100, round($used/3*100)) ?>%;background:linear-gradient(90deg,var(--purple),#9F7AEA);border-radius:99px;transition:width .6s ease;"></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;margin-top:7px;">
-                    <span style="font-size:11px;color:var(--text-3);">Resets on the 1st of next month</span>
-                    <span style="font-size:11px;color:var(--text-3);"><?= 3 - $used ?> slot<?= (3-$used)!==1?'s':'' ?> remaining</span>
-                </div>
-            </div>
-
-        </div><!-- /sk-scroll -->
-    </div><!-- /sk-main -->
-</div><!-- /sk-shell -->
-
-<!-- ═══ DATE MODAL ═══ -->
-<div id="dateModal" class="sk-modal-back" onclick="if(event.target===this)closeDateModal()">
-    <div class="sk-modal">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
-            <div>
-                <h3 style="font-size:15px;font-weight:700;" id="modalDateTitle"></h3>
-                <p style="font-size:11px;color:var(--text-3);margin-top:2px;" id="modalDateSub"></p>
-            </div>
-            <button onclick="closeDateModal()" style="width:34px;height:34px;border-radius:10px;background:var(--bg);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-2);">
-                <?= sk_icon('x', 14) ?>
-            </button>
         </div>
-        <div id="modalList"></div>
-        <div id="modalEmpty" style="display:none;text-align:center;padding:24px;">
-            <p style="font-size:13px;color:var(--text-3);">No reservations on this date.</p>
+
+    </main>
+
+    <!-- Date Modal -->
+    <div id="dateModal" class="modal-back" onclick="handleModalBack(event)">
+        <div class="modal-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+                <div>
+                    <h3 style="font-family:var(--font);font-size:16px;font-weight:700;letter-spacing:-.2px;" id="modalDateTitle"></h3>
+                    <p style="font-family:var(--font);font-size:11px;color:var(--text-sub);margin-top:2px;" id="modalDateSub"></p>
+                </div>
+                <button onclick="closeDateModal()" style="width:36px;height:36px;border-radius:9px;background:var(--input-bg);border:none;color:var(--text-sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation;">
+                    <?= icon('x', 13, 'currentColor') ?>
+                </button>
+            </div>
+            <div id="modalList"></div>
+            <div class="hidden" id="modalEmpty" style="text-align:center;padding:24px 12px;">
+                <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('calendar-x', 26, 'currentColor') ?></div>
+                <p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">No reservations for this date.</p>
+            </div>
+            <button onclick="closeDateModal()" style="margin-top:16px;width:100%;padding:12px;background:var(--input-bg);border-radius:var(--r-sm);font-family:var(--font);font-weight:600;color:var(--text-muted);border:1px solid var(--border);cursor:pointer;font-size:.82rem;touch-action:manipulation;">Close</button>
         </div>
-        <button onclick="closeDateModal()" style="margin-top:14px;width:100%;padding:11px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);font-family:var(--font);font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;">Close</button>
     </div>
-</div>
 
-<script>
-const NOTIF_KEY  = 'sk_notifs_<?= session()->get('user_id') ?? 0 ?>';
-const reservations = <?= json_encode($reservations ?? []) ?>;
-const allResData   = <?= json_encode($allReservations ?? []) ?>;
+    <!-- Login Toast -->
+    <div id="loginToast" class="login-toast">
+        <div class="toast-icon" id="toastIcon"></div>
+        <div style="flex:1;min-width:0;">
+            <p id="toastTitle"></p>
+            <p id="toastBody"></p>
+        </div>
+        <button class="toast-close" onclick="dismissToast()"><?= icon('x', 10, 'white') ?></button>
+    </div>
 
-function toggleDark() {
-    const isDark = document.body.classList.toggle('dark');
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    document.getElementById('themeIconLight').style.display = isDark ? 'none' : '';
-    document.getElementById('themeIconDark').style.display  = isDark ? '' : 'none';
-}
-(function() {
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('themeIconLight').style.display = 'none';
-        document.getElementById('themeIconDark').style.display  = '';
-    }
-})();
+    <script>
+        const NOTIF_KEY = 'notified_ids_<?= session()->get('user_id') ?>';
+        const reservations = <?= json_encode($reservations ?? []) ?>;
+        const allResData = <?= json_encode($allReservations ?? []) ?>;
+        const approvedRes = reservations.filter(r => r.status === 'approved' && !r.claimed);
+        let notifications = [];
 
-function checkWidth() {
-    document.getElementById('menuBtn').style.display = window.innerWidth <= 900 ? 'flex' : 'none';
-}
-checkWidth();
-window.addEventListener('resize', checkWidth);
-document.addEventListener('click', e => {
-    const sb = document.getElementById('skSidebar');
-    if (sb.classList.contains('open') && !sb.contains(e.target) && !document.getElementById('menuBtn').contains(e.target)) {
-        sb.classList.remove('open');
-    }
-});
-
-let notifications = [];
-const getSeenIds = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]'); } catch { return []; } };
-const saveSeenIds = ids => localStorage.setItem(NOTIF_KEY, JSON.stringify(ids));
-
-function loadNotifications() {
-    const seen = getSeenIds();
-    notifications = reservations.filter(r => r.status === 'approved').map(r => ({
-        id: +r.id,
-        title: 'Reservation Approved',
-        msg: `${r.resource_name || 'Resource'} · ${new Date(r.reservation_date + 'T00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'})}`,
-        time: r.updated_at || r.created_at || new Date().toISOString(),
-        read: seen.includes(+r.id)
-    }));
-    updateNotifDot();
-    renderNotifs();
-}
-
-function markAllRead() {
-    saveSeenIds([...new Set([...getSeenIds(), ...notifications.map(n => n.id)])]);
-    notifications.forEach(n => n.read = true);
-    updateNotifDot();
-    renderNotifs();
-}
-
-function updateNotifDot() {
-    const dot = document.getElementById('notifDot');
-    dot.style.display = notifications.some(n => !n.read) ? 'block' : 'none';
-}
-
-function renderNotifs() {
-    const list = document.getElementById('skNotifList');
-    if (!notifications.length) {
-        list.innerHTML = '<div style="text-align:center;padding:22px;"><p style="font-size:12px;color:var(--text-3);">All caught up!</p></div>';
-        return;
-    }
-    list.innerHTML = notifications.sort((a,b) => new Date(b.time)-new Date(a.time)).map(n => `
-        <div class="sk-notif-item ${!n.read?'unread':''}" onclick="markOneRead(${n.id})">
-            <div style="display:flex;align-items:center;gap:8px;">
-                <div style="width:28px;height:28px;background:var(--purple-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--purple);">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:12px;height:12px;"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0"/></svg>
-                </div>
-                <div style="flex:1;min-width:0;">
-                    <p style="font-size:12px;font-weight:700;color:var(--text);">${n.title}</p>
-                    <p style="font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${n.msg}</p>
-                </div>
-                ${!n.read?'<span style="width:6px;height:6px;background:var(--purple);border-radius:50%;flex-shrink:0;"></span>':''}
-            </div>
-        </div>`).join('');
-}
-
-function markOneRead(id) {
-    const ids = getSeenIds();
-    if (!ids.includes(id)) saveSeenIds([...ids, id]);
-    const n = notifications.find(n => n.id === id);
-    if (n) { n.read = true; updateNotifDot(); renderNotifs(); }
-}
-
-function toggleNotifications() {
-    document.getElementById('skNotifDD').classList.toggle('show');
-}
-document.addEventListener('click', e => {
-    const dd = document.getElementById('skNotifDD');
-    if (!dd.contains(e.target) && !e.target.closest('[onclick="toggleNotifications()"]')) dd.classList.remove('show');
-});
-
-function openDateModal(date, items) {
-    const d = new Date(date + 'T00:00');
-    document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'});
-    document.getElementById('modalDateSub').textContent = items.length ? `${items.length} reservation${items.length>1?'s':''}` : '';
-    const list = document.getElementById('modalList');
-    const empty = document.getElementById('modalEmpty');
-    list.innerHTML = '';
-    if (items.length) {
-        empty.style.display = 'none';
-        const cm = {approved:'#DCFCE7|#166534',pending:'#FEF3C7|#92400E',declined:'#FEE2E2|#991B1B',claimed:'#EDE9FE|#5B21B6'};
-        items.sort((a,b) => (a.start_time||'').localeCompare(b.start_time||'')).forEach(r => {
-            const isCl = r.claimed==1||r.status==='claimed'||!!r.claimed_at;
-            const s    = isCl?'claimed':(r.status||'pending').toLowerCase();
-            const [bg,fg] = (cm[s]||'#F1F5F9|#475569').split('|');
-            const t    = r.start_time ? r.start_time.substring(0,5) : 'All day';
-            const et   = r.end_time   ? r.end_time.substring(0,5)   : '';
-            const row  = document.createElement('div');
-            row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:.7rem;border-bottom:1px solid var(--border);border-radius:10px;';
-            row.innerHTML = `
-                <div style="flex:1;min-width:0;">
-                    <p style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name||'Reserved'}</p>
-                    <p style="font-family:var(--mono);font-size:11px;color:var(--purple);margin-top:2px;font-weight:600;">${t}${et?' – '+et:''}</p>
-                </div>
-                <span style="padding:2px 10px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;background:${bg};color:${fg};">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
-            list.appendChild(row);
-        });
-    } else { empty.style.display = 'block'; }
-    document.getElementById('dateModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeDateModal() {
-    document.getElementById('dateModal').classList.remove('show');
-    document.body.style.overflow = '';
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadNotifications();
-
-    const byDate = {};
-    allResData.forEach(r => {
-        if (!r.reservation_date) return;
-        if (!byDate[r.reservation_date]) byDate[r.reservation_date] = [];
-        byDate[r.reservation_date].push(r);
-    });
-
-    const colorMap = {approved:'#10b981',pending:'#fbbf24',declined:'#f87171',canceled:'#f87171',claimed:'#a855f7'};
-    const events = allResData.filter(r => r.reservation_date).map(r => {
-        const isCl = r.claimed==1||r.status==='claimed'||!!r.claimed_at;
-        const s    = isCl ? 'claimed' : (r.status||'pending').toLowerCase();
-        const d    = r.reservation_date.trim();
-        return {
-            title: r.resource_name || 'Reservation',
-            start: d + (r.start_time ? 'T' + r.start_time.substring(0,8) : ''),
-            end:   d + (r.end_time   ? 'T' + r.end_time.substring(0,8)   : ''),
-            allDay: !r.start_time,
-            backgroundColor: colorMap[s] || '#94a3b8',
-            borderColor: 'transparent',
-            textColor: '#fff',
+        const getSeenIds = () => {
+            try {
+                return JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]');
+            } catch (e) {
+                return [];
+            }
         };
-    });
+        const saveSeenIds = ids => localStorage.setItem(NOTIF_KEY, JSON.stringify(ids));
 
-    const w   = window.innerWidth;
-    const cal = new FullCalendar.Calendar(document.getElementById('dashboard-calendar'), {
-        initialView: w < 480 ? 'listWeek' : 'dayGridMonth',
-        headerToolbar: { left: 'prev,next', center: 'title', right: 'today' },
-        events,
-        height: w < 640 ? 'auto' : 310,
-        eventDisplay: 'block',
-        eventMaxStack: 2,
-        dateClick: info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
-        eventClick: info => {
-            const d = info.event.startStr.split('T')[0];
-            openDateModal(d, byDate[d] || []);
-        },
-        dayCellDidMount: info => {
-            const d = info.date.toISOString().split('T')[0];
-            const items = byDate[d];
-            if (items && items.length) {
-                const badge = document.createElement('div');
-                badge.style.cssText = 'font-family:var(--mono);font-size:8px;font-weight:700;color:white;background:#7C3AED;border-radius:999px;width:13px;height:13px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:2px;';
-                badge.textContent = items.length;
-                info.el.querySelector('.fc-daygrid-day-top')?.appendChild(badge);
+        function loadNotifications() {
+            const seen = getSeenIds();
+            notifications = reservations.filter(r => r.status === 'approved').map(r => ({
+                id: parseInt(r.id),
+                title: 'Reservation Approved',
+                msg: `${r.resource_name || 'Resource'} · ${new Date(r.reservation_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`,
+                time: r.updated_at || r.created_at || new Date().toISOString(),
+                read: seen.includes(parseInt(r.id))
+            }));
+            updateBadge();
+            renderNotifs();
+        }
+
+        function markAllRead() {
+            saveSeenIds([...new Set([...getSeenIds(), ...notifications.map(n => n.id)])]);
+            notifications.forEach(n => n.read = true);
+            updateBadge();
+            renderNotifs();
+        }
+
+        function markRead(id) {
+            const ids = getSeenIds();
+            if (!ids.includes(id)) saveSeenIds([...ids, id]);
+            const n = notifications.find(n => n.id === id);
+            if (n) {
+                n.read = true;
+                updateBadge();
+                renderNotifs();
             }
         }
-    });
-    cal.render();
-});
-</script>
 
-<?php if (function_exists('base_url') && defined('APPPATH')): ?>
+        function updateBadge() {
+            const badge = document.getElementById('notifBadge');
+            const unread = notifications.filter(n => !n.read).length;
+            badge.style.display = unread > 0 ? 'block' : 'none';
+            badge.textContent = unread > 9 ? '9+' : unread;
+        }
+
+        function renderNotifs() {
+            const list = document.getElementById('notifList');
+            if (!notifications.length) {
+                list.innerHTML = `<div style="text-align:center;padding:24px 16px;"><p style="font-family:var(--font);font-size:12px;color:var(--text-sub);">All caught up!</p></div>`;
+                return;
+            }
+            list.innerHTML = notifications
+                .sort((a, b) => new Date(b.time) - new Date(a.time))
+                .map(n => `
+        <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="markRead(${n.id})">
+            <div style="display:flex;align-items:flex-start;gap:9px;">
+                <div style="width:30px;height:30px;background:var(--indigo-light);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--indigo)" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <p style="font-family:var(--font);font-weight:700;font-size:12px;color:var(--text);">${n.title}</p>
+                    <p style="font-family:var(--font);font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.msg}</p>
+                    <p style="font-family:var(--font);font-size:9px;color:var(--text-sub);margin-top:2px;">${timeAgo(n.time)}</p>
+                </div>
+                ${!n.read ? '<span style="width:6px;height:6px;background:var(--indigo);border-radius:50%;flex-shrink:0;margin-top:3px;"></span>' : ''}
+            </div>
+        </div>`).join('');
+        }
+
+        function toggleNotifications() {
+            document.getElementById('notifDD').classList.toggle('show');
+        }
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('notifDD');
+            const bell = document.querySelector('.notif-bell');
+            if (!bell.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('show');
+        });
+
+        const timeAgo = t => {
+            const s = Math.floor((Date.now() - new Date(t)) / 1000);
+            if (s < 60) return 'Just now';
+            if (s < 3600) return `${Math.floor(s/60)}m ago`;
+            if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+            return `${Math.floor(s/86400)}d ago`;
+        };
+
+        function to12hPHT(ts) {
+            if (!ts) return '—';
+            const parts = ts.split(':');
+            let h = parseInt(parts[0], 10);
+            const m = parts[1] ? parts[1].padStart(2, '0') : '00';
+            if (isNaN(h)) return ts;
+            const ampm = h < 12 ? 'AM' : 'PM';
+            h = h % 12 || 12;
+            return `${h}:${m} ${ampm}`;
+        }
+
+        function openDateModal(date, items) {
+            const d = new Date(date + 'T00:00:00');
+            document.getElementById('modalDateTitle').textContent = d.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            document.getElementById('modalDateSub').textContent = items.length ?
+                `${items.length} reservation${items.length > 1 ? 's' : ''}` :
+                '';
+            const list = document.getElementById('modalList');
+            const empty = document.getElementById('modalEmpty');
+            list.innerHTML = '';
+
+            if (items.length) {
+                empty.classList.add('hidden');
+                const cmap = {
+                    approved: '#dcfce7|#166534',
+                    pending: '#fef3c7|#92400e',
+                    declined: '#fee2e2|#991b1b',
+                    canceled: '#fee2e2|#991b1b',
+                    claimed: '#ede9fe|#5b21b6'
+                };
+
+                items.sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')).forEach(r => {
+                    const isClaimed = r.claimed == 1 || r.status === 'claimed' || !!r.claimed_at;
+                    const s = isClaimed ? 'claimed' : (r.status || 'pending').toLowerCase();
+                    const [cbg, cfg] = (cmap[s] || '#f1f5f9|#475569').split('|');
+                    const tFmt = r.start_time ? to12hPHT(r.start_time) : 'All day';
+                    const etFmt = r.end_time ? to12hPHT(r.end_time) : '';
+                    const timeDisplay = etFmt ? `${tFmt} – ${etFmt} PHT` : tFmt;
+
+                    const row = document.createElement('div');
+                    row.className = 'date-row';
+                    row.innerHTML = `
+            <div style="width:32px;height:32px;background:var(--input-bg);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--border);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-sub)" stroke-width="1.5" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+                <p style="font-family:var(--font);font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.resource_name || 'Reserved'}</p>
+                <p style="font-family:var(--font);font-size:11px;color:#3730a3;margin-top:1px;font-weight:600;">${timeDisplay}</p>
+            </div>
+            <span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-family:var(--font);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${cbg};color:${cfg};flex-shrink:0;">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
+                    list.appendChild(row);
+                });
+            } else {
+                empty.classList.remove('hidden');
+            }
+
+            document.getElementById('dateModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDateModal() {
+            document.getElementById('dateModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function handleModalBack(e) {
+            if (e.target.classList.contains('modal-back')) closeDateModal();
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeDateModal();
+        });
+
+        function initTimer() {
+            const banner = document.getElementById('timerBanner'),
+                titleEl = document.getElementById('timerTitle'),
+                subEl = document.getElementById('timerSub'),
+                hEl = document.getElementById('tdH'),
+                mEl = document.getElementById('tdM'),
+                sEl = document.getElementById('tdS'),
+                iconW = document.getElementById('timerIconWrap'),
+                pw = document.getElementById('timerPW'),
+                pf = document.getElementById('timerPF');
+
+            const mkSvg = (path, sw) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" style="width:16px;height:16px;flex-shrink:0;">${path}</svg>`;
+            const icons = {
+                urgent: mkSvg('<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', '1.8'),
+                warning: mkSvg('<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12m5-10v4.172a2 2 0 01-.586 1.414L12 12m0 0L7.586 16.586A2 2 0 007 18v4m5-10L7.586 7.414A2 2 0 017 6V2" stroke-linecap="round"/>', '1.8'),
+                safe: mkSvg('<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>', '1.8'),
+            };
+
+            function findTarget() {
+                const now = Date.now();
+                let active = null,
+                    upcoming = null;
+                approvedRes.forEach(r => {
+                    if (!r.reservation_date || !r.start_time || !r.end_time) return;
+                    const start = new Date(r.reservation_date + 'T' + r.start_time).getTime();
+                    const end = new Date(r.reservation_date + 'T' + r.end_time).getTime();
+                    const minsToStart = (start - now) / 60000;
+                    const minsToEnd = (end - now) / 60000;
+                    if (now >= start && now < end && !active) active = {
+                        r,
+                        start,
+                        end,
+                        mode: 'active',
+                        minsLeft: minsToEnd
+                    };
+                    if (!upcoming && minsToStart > 0 && minsToStart <= 30) upcoming = {
+                        r,
+                        start,
+                        end,
+                        mode: 'upcoming',
+                        minsLeft: minsToStart
+                    };
+                });
+                return active || upcoming || null;
+            }
+
+            function tick() {
+                const target = findTarget();
+                if (!target) {
+                    banner.style.display = 'none';
+                    return;
+                }
+                const {
+                    r,
+                    start,
+                    end,
+                    mode,
+                    minsLeft
+                } = target;
+                const now = Date.now();
+                const diff = Math.max(0, (mode === 'active' ? end : start) - now);
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                hEl.textContent = String(h).padStart(2, '0');
+                mEl.textContent = String(m).padStart(2, '0');
+                sEl.textContent = String(s).padStart(2, '0');
+                banner.classList.remove('urgent', 'warning', 'safe');
+                if (mode === 'active') {
+                    if (minsLeft <= 10) {
+                        banner.classList.add('urgent');
+                        iconW.innerHTML = icons.urgent;
+                    } else if (minsLeft <= 20) {
+                        banner.classList.add('warning');
+                        iconW.innerHTML = icons.warning;
+                    } else {
+                        banner.classList.add('safe');
+                        iconW.innerHTML = icons.safe;
+                    }
+                    titleEl.textContent = minsLeft <= 10 ? '⚠ Reservation ends very soon!' : 'Your reservation is active';
+                    subEl.textContent = `${r.resource_name||'Resource'} · Ends at ${(r.end_time||'').substring(0,5)}`;
+                    const pct = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
+                    pw.style.display = 'block';
+                    pf.style.width = pct.toFixed(1) + '%';
+                } else {
+                    banner.classList.add('safe');
+                    iconW.innerHTML = icons.safe;
+                    titleEl.textContent = 'Your reservation starts soon';
+                    subEl.textContent = `${r.resource_name||'Resource'} · Starts at ${(r.start_time||'').substring(0,5)}`;
+                    pw.style.display = 'none';
+                }
+                banner.style.display = 'block';
+            }
+            tick();
+            setInterval(tick, 1000);
+        }
+
+        function showLoginToast() {
+            const key = 'toast_<?= session()->get('user_id') ?>_' + new Date().toDateString();
+            if (sessionStorage.getItem(key)) return;
+            sessionStorage.setItem(key, '1');
+            const now = Date.now();
+            let td = null;
+            approvedRes.forEach(r => {
+                if (!r.reservation_date || !r.start_time || !r.end_time) return;
+                const start = new Date(r.reservation_date + 'T' + r.start_time).getTime();
+                const end = new Date(r.reservation_date + 'T' + r.end_time).getTime();
+                const minsToStart = (start - now) / 60000;
+                const today = new Date().toDateString();
+                const resDay = new Date(r.reservation_date + 'T00:00:00').toDateString();
+                if (now >= start && now < end && !td)
+                    td = {
+                        icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+                        bg: 'rgba(37,99,235,.2)',
+                        title: 'Active reservation now!',
+                        body: `${r.resource_name||'Resource'} ends at ${(r.end_time||'').substring(0,5)}`
+                    };
+                if (!td && resDay === today && minsToStart > 0 && minsToStart <= 120)
+                    td = {
+                        icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+                        bg: 'rgba(217,119,6,.2)',
+                        title: `In ${Math.round(minsToStart)} min`,
+                        body: `${r.resource_name||'Resource'} · ${(r.start_time||'').substring(0,5)} – ${(r.end_time||'').substring(0,5)}`
+                    };
+                if (!td && resDay === today) {
+                    const fmt = t => {
+                        const [h, m] = t.split(':');
+                        const hr = +h;
+                        return `${hr%12||12}:${m} ${hr<12?'AM':'PM'}`;
+                    };
+                    td = {
+                        icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" style="width:13px;height:13px;flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>',
+                        bg: 'rgba(37,99,235,.2)',
+                        title: 'Reservation today',
+                        body: `${r.resource_name||'Resource'} · ${fmt(r.start_time)} – ${fmt(r.end_time)}`
+                    };
+                }
+            });
+            if (!td) return;
+            const toast = document.getElementById('loginToast');
+            document.getElementById('toastIcon').innerHTML = td.icon;
+            document.getElementById('toastIcon').style.background = td.bg;
+            document.getElementById('toastTitle').textContent = td.title;
+            document.getElementById('toastBody').textContent = td.body;
+            setTimeout(() => toast.classList.add('show'), 900);
+            setTimeout(() => toast.classList.remove('show'), 7500);
+        }
+
+        function dismissToast() {
+            document.getElementById('loginToast').classList.remove('show');
+        }
+
+        async function doRagSearch() {
+            const query = document.getElementById('ragInput').value.trim();
+            if (query.length < 2) return;
+            const skel = document.getElementById('ragSkel'),
+                res = document.getElementById('ragResult'),
+                err = document.getElementById('ragErr'),
+                btn = document.getElementById('ragBtn');
+            res.classList.remove('show');
+            err.style.display = 'none';
+            skel.style.display = 'block';
+            btn.disabled = true;
+            try {
+                const r = await fetch('/rag/suggest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        query
+                    })
+                });
+                const d = await r.json();
+                skel.style.display = 'none';
+                btn.disabled = false;
+                if (d.message && !d.suggestion) {
+                    err.textContent = d.message;
+                    err.style.display = 'block';
+                    return;
+                }
+                if (d.error && !d.books) {
+                    err.textContent = d.error;
+                    err.style.display = 'block';
+                    return;
+                }
+                document.getElementById('ragText').textContent = d.suggestion || '';
+                const booksRow = document.getElementById('ragBooks');
+                booksRow.innerHTML = '';
+                (d.books || []).slice(0, 4).forEach(b => {
+                    const avail = (b.available_copies || 0) > 0;
+                    const chip = document.createElement('a');
+                    chip.href = '/books';
+                    chip.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:8px;font-family:var(--font);font-size:10px;font-weight:600;border:1px solid;transition:all .15s;text-decoration:none;max-width:100%;overflow:hidden;${avail?'background:var(--card);border-color:var(--indigo-border);color:var(--indigo);':'background:var(--input-bg);border-color:var(--border);color:var(--text-sub);'}`;
+                    const titleSpan = document.createElement('span');
+                    titleSpan.style.cssText = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                    titleSpan.textContent = b.title + (!avail ? ' (out)' : '');
+                    chip.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:9px;height:9px;flex-shrink:0;"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round"/></svg>`;
+                    chip.appendChild(titleSpan);
+                    booksRow.appendChild(chip);
+                });
+                res.classList.add('show');
+            } catch (e) {
+                skel.style.display = 'none';
+                btn.disabled = false;
+                err.textContent = 'Network error. Try again.';
+                err.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.documentElement.classList.remove('dark-pre');
+            if ('Notification' in window) Notification.requestPermission();
+            loadNotifications();
+            initTimer();
+            showLoginToast();
+
+            const byDate = {};
+            allResData.forEach(r => {
+                if (!r.reservation_date) return;
+                if (!byDate[r.reservation_date]) byDate[r.reservation_date] = [];
+                byDate[r.reservation_date].push(r);
+            });
+
+            const colorMap = {
+                approved: '#10b981',
+                pending: '#fbbf24',
+                declined: '#f87171',
+                canceled: '#f87171',
+                claimed: '#a855f7'
+            };
+            const events = allResData.filter(r => r.reservation_date).map(r => {
+                const isClaimed = r.claimed == 1 || r.status === 'claimed' || !!r.claimed_at;
+                const s = isClaimed ? 'claimed' : (r.status || 'pending').toLowerCase();
+                const d = r.reservation_date.trim();
+                return {
+                    title: r.resource_name || 'Reservation',
+                    start: d + (r.start_time ? 'T' + r.start_time.substring(0, 8) : ''),
+                    end: d + (r.end_time ? 'T' + r.end_time.substring(0, 8) : ''),
+                    allDay: !r.start_time,
+                    backgroundColor: colorMap[s] || '#94a3b8',
+                    borderColor: 'transparent',
+                    textColor: '#fff',
+                    extendedProps: {
+                        status: s
+                    }
+                };
+            });
+
+            const w = window.innerWidth;
+            const calView = w < 480 ? 'listWeek' : 'dayGridMonth';
+            const calHeight = w < 640 ? 'auto' : 360;
+
+            const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                initialView: calView,
+                headerToolbar: {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'today'
+                },
+                events,
+                height: calHeight,
+                eventDisplay: 'block',
+                eventMaxStack: 2,
+                dateClick: info => openDateModal(info.dateStr, byDate[info.dateStr] || []),
+                eventClick: info => {
+                    const d = info.event.startStr.split('T')[0];
+                    openDateModal(d, byDate[d] || []);
+                },
+                dayCellDidMount: info => {
+                    const d = info.date.toISOString().split('T')[0];
+                    const items = byDate[d];
+                    if (items && items.length) {
+                        const badge = document.createElement('div');
+                        badge.style.cssText = 'font-family:var(--mono);font-size:8px;font-weight:700;color:white;background:#3730a3;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:3px;margin-bottom:1px;';
+                        badge.textContent = items.length;
+                        info.el.querySelector('.fc-daygrid-day-top')?.appendChild(badge);
+                    }
+                }
+            });
+            cal.render();
+        });
+    </script>
+
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
-<?php endif; ?>
+    <?php include(APPPATH . 'Views/partials/onboarding_help.php'); ?>
 </body>
+
 </html>
