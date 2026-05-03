@@ -44,17 +44,11 @@ function sk_icon(string $name, int $size = 20): string
     static $p = [
         'home'       => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
         'users'      => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0',
-        'teacher'    => 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222',
         'book'       => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-        'video'      => 'M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z',
-        'check'      => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
-        'cash'       => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
-        'chart'      => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
         'search'     => 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0',
         'bell'       => 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
         'plus'       => 'M12 5v14M5 12h14',
         'calendar'   => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-        'ticket'     => 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z',
         'arrow-r'    => 'M14 5l7 7m0 0l-7 7m7-7H3',
         'star'       => 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
         'clock'      => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0',
@@ -70,6 +64,10 @@ function sk_icon(string $name, int $size = 20): string
         'check-c'    => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0',
         'ban'        => 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636',
         'trending'   => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
+        'check'      => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+        'cash'       => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
+        'ticket'     => 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z',
+        'chart'      => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
     ];
     $d = $p[$name] ?? 'M12 12h.01';
     return sprintf(
@@ -177,7 +175,6 @@ SVG;
     --purple-dk:   #5B21B6;
 
     --bg:          #F4F4FB;
-    --sidebar-bg:  #FFFFFF;
     --card:        #FFFFFF;
     --border:      rgba(0,0,0,.07);
     --border-md:   rgba(0,0,0,.1);
@@ -185,6 +182,15 @@ SVG;
     --text:        #1A1A2E;
     --text-2:      #4A4A6A;
     --text-3:      #8888AA;
+
+    /* Sidebar-specific tokens */
+    --sb-bg1:      #1E1535;
+    --sb-bg2:      #160F2B;
+    --sb-link:     rgba(255,255,255,.55);
+    --sb-link-h:   rgba(255,255,255,.92);
+    --sb-active-bg:rgba(255,255,255,.1);
+    --sb-label:    rgba(255,255,255,.3);
+    --sb-border:   rgba(255,255,255,.07);
 
     --r-sm: 12px;
     --r-md: 16px;
@@ -198,7 +204,6 @@ SVG;
 
 body.dark {
     --bg:         #0F0E1A;
-    --sidebar-bg: #181726;
     --card:       #1E1D30;
     --border:     rgba(255,255,255,.07);
     --border-md:  rgba(255,255,255,.1);
@@ -213,56 +218,168 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
 /* ─────────── LAYOUT SHELL ─────────── */
 .sk-shell { display: flex; height: 100vh; overflow: hidden; }
 
-/* ─────────── SIDEBAR ─────────── */
+/* ═══════════════════════════════════
+   REDESIGNED SIDEBAR
+═══════════════════════════════════ */
 .sk-sidebar {
-    width: 220px;
+    width: 236px;
     flex-shrink: 0;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--border);
+    background: var(--sb-bg1);
     display: flex;
     flex-direction: column;
     height: 100%;
-    transition: transform var(--ease);
+    position: relative;
     z-index: 100;
+    transition: transform var(--ease);
+    overflow: hidden;
 }
 
+/* Subtle geometric background texture */
+.sk-sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,58,237,.35) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(67,56,202,.2) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Dot-grid texture overlay */
+.sk-sidebar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.sk-sidebar > * { position: relative; z-index: 1; }
+
+/* ── Logo area ── */
 .sk-logo {
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 24px 22px 20px;
-    border-bottom: 1px solid var(--border);
+    gap: 11px;
+    padding: 22px 18px 18px;
+    border-bottom: 1px solid var(--sb-border);
     flex-shrink: 0;
 }
+
 .sk-logo-mark {
-    width: 32px; height: 32px;
-    background: var(--purple);
-    border-radius: 10px;
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #9F7AEA 0%, #7C3AED 50%, #4338CA 100%);
+    border-radius: 11px;
     display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.15), 0 4px 14px rgba(124,58,237,.5);
+    flex-shrink: 0;
 }
 .sk-logo-mark svg { color: white; }
-.sk-logo-name { font-size: 16px; font-weight: 700; letter-spacing: -.3px; color: var(--text); }
 
-.sk-nav { flex: 1; overflow-y: auto; padding: 16px 12px; }
-.sk-nav-section { margin-bottom: 6px; }
+.sk-logo-text { display: flex; flex-direction: column; gap: 1px; }
+.sk-logo-name {
+    font-size: 15px; font-weight: 700;
+    color: white; letter-spacing: -.4px; line-height: 1.1;
+}
+.sk-logo-tag {
+    font-size: 9.5px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: rgba(255,255,255,.35);
+}
+
+/* ── Nav ── */
+.sk-nav { flex: 1; overflow-y: auto; padding: 14px 12px 10px; }
+.sk-nav::-webkit-scrollbar { width: 3px; }
+.sk-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 99px; }
+
+.sk-nav-section { margin-bottom: 4px; }
+
 .sk-nav-label {
-    font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--text-3); padding: 0 10px; margin-bottom: 4px; display: block;
+    font-size: 9px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--sb-label);
+    padding: 0 10px; margin-bottom: 3px; margin-top: 16px; display: block;
 }
+.sk-nav-label:first-child { margin-top: 4px; }
+
 .sk-nav-link {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 10px; border-radius: var(--r-sm);
-    color: var(--text-2); font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 9px;
+    padding: 8.5px 10px; border-radius: 10px;
+    color: var(--sb-link); font-size: 13.5px; font-weight: 500;
     text-decoration: none; cursor: pointer; border: none; background: none;
-    width: 100%; transition: all var(--ease);
+    width: 100%; transition: all .18s ease; position: relative;
 }
-.sk-nav-link:hover { background: var(--purple-lt); color: var(--purple); }
-.sk-nav-link.active { background: var(--purple-lt); color: var(--purple); font-weight: 600; }
+.sk-nav-link:hover {
+    background: rgba(255,255,255,.08);
+    color: var(--sb-link-h);
+}
+.sk-nav-link.active {
+    background: linear-gradient(90deg, rgba(124,58,237,.35) 0%, rgba(124,58,237,.12) 100%);
+    color: white; font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.1);
+}
+/* Active left bar */
+.sk-nav-link.active::before {
+    content: '';
+    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 55%; background: linear-gradient(180deg,#C4B5FD,#7C3AED);
+    border-radius: 0 3px 3px 0;
+}
+
+.sk-nav-link svg { opacity: .7; transition: opacity .15s ease; }
+.sk-nav-link:hover svg, .sk-nav-link.active svg { opacity: 1; }
+
 .sk-nav-link .nav-count {
     margin-left: auto;
-    background: var(--purple); color: white;
-    font-size: 10px; font-weight: 700;
-    padding: 1px 7px; border-radius: 999px; min-width: 20px; text-align: center;
+    background: linear-gradient(135deg,#9F7AEA,#7C3AED);
+    color: white; font-size: 9.5px; font-weight: 700;
+    padding: 2px 7px; border-radius: 999px; min-width: 20px; text-align: center;
+    box-shadow: 0 2px 6px rgba(124,58,237,.4);
+}
+
+/* Sign out link special color */
+.sk-nav-link.danger { color: rgba(252,165,165,.6); }
+.sk-nav-link.danger:hover { background: rgba(239,68,68,.12); color: #FCA5A5; }
+
+/* ── Divider ── */
+.sk-nav-divider {
+    height: 1px; background: var(--sb-border);
+    margin: 8px 10px;
+}
+
+/* ── User footer card ── */
+.sk-sidebar-footer {
+    margin: 10px 12px 14px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 14px;
+    padding: 12px 12px;
+    display: flex; align-items: center; gap: 9px;
+    backdrop-filter: blur(8px);
+    flex-shrink: 0;
+}
+
+.sk-footer-avatar {
+    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    background: linear-gradient(135deg, #C4B5FD 0%, #7C3AED 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 13px;
+    box-shadow: 0 0 0 2px rgba(255,255,255,.15);
+}
+.sk-footer-info { flex: 1; min-width: 0; }
+.sk-footer-name {
+    font-size: 12.5px; font-weight: 650; color: rgba(255,255,255,.9);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
+}
+.sk-footer-role {
+    font-size: 10px; font-weight: 500; color: rgba(255,255,255,.4);
+    margin-top: 2px; text-transform: uppercase; letter-spacing: .08em;
+}
+.sk-footer-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    background: #4ADE80;
+    box-shadow: 0 0 0 2px rgba(74,222,128,.25);
 }
 
 /* ─────────── MAIN AREA ─────────── */
@@ -511,47 +628,62 @@ $pendingStr = $pending ?? 0;
 <div class="sk-shell">
 
     <!-- ═══════════════ SIDEBAR ═══════════════ -->
-    <!-- ONLY ONE sidebar here. The layout.php partial include has been removed from the bottom of this file. -->
     <aside class="sk-sidebar" id="skSidebar">
+
+        <!-- Logo -->
         <div class="sk-logo">
             <div class="sk-logo-mark"><?= sk_icon('book', 17) ?></div>
-            <span class="sk-logo-name">SKReserve</span>
+            <div class="sk-logo-text">
+                <span class="sk-logo-name">eLibReserve</span>
+                <span class="sk-logo-tag">Community Library</span>
+            </div>
         </div>
 
+        <!-- Navigation -->
         <nav class="sk-nav">
-            <div class="sk-nav-section">
-                <span class="sk-nav-label">Main</span>
-                <a href="<?= function_exists('base_url') ? base_url('/dashboard') : '#' ?>" class="sk-nav-link active">
-                    <?= sk_icon('home', 17) ?> Dashboard
-                </a>
-                <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-nav-link">
-                    <?= sk_icon('plus', 17) ?> New Reservation
-                </a>
-                <a href="<?= function_exists('base_url') ? base_url('/reservation-list') : '#' ?>" class="sk-nav-link">
-                    <?= sk_icon('calendar', 17) ?> My Reservations
-                    <?php if ($pendingStr > 0): ?><span class="nav-count"><?= $pendingStr ?></span><?php endif; ?>
-                </a>
-            </div>
-            <div class="sk-nav-section">
-                <span class="sk-nav-label">Library</span>
-                <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>" class="sk-nav-link">
-                    <?= sk_icon('book', 17) ?> Browse Books
-                </a>
-                <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>#mine" class="sk-nav-link">
-                    <?= sk_icon('bookmark', 17) ?> My Borrows
-                </a>
-            </div>
-            <div class="sk-nav-section">
-                <span class="sk-nav-label">Account</span>
-                <a href="<?= function_exists('base_url') ? base_url('/profile') : '#' ?>" class="sk-nav-link">
-                    <?= sk_icon('user', 17) ?> Profile
-                </a>
-                <a href="<?= function_exists('base_url') ? base_url('/logout') : '#' ?>" class="sk-nav-link">
-                    <?= sk_icon('logout', 17) ?> Sign Out
-                </a>
-            </div>
+            <span class="sk-nav-label">Main</span>
+
+            <a href="<?= function_exists('base_url') ? base_url('/dashboard') : '#' ?>" class="sk-nav-link active">
+                <?= sk_icon('home', 16) ?> Dashboard
+            </a>
+            <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-nav-link">
+                <?= sk_icon('plus', 16) ?> New Reservation
+            </a>
+            <a href="<?= function_exists('base_url') ? base_url('/reservation-list') : '#' ?>" class="sk-nav-link">
+                <?= sk_icon('calendar', 16) ?> My Reservations
+                <?php if ($pendingStr > 0): ?><span class="nav-count"><?= $pendingStr ?></span><?php endif; ?>
+            </a>
+
+            <div class="sk-nav-divider"></div>
+            <span class="sk-nav-label">Library</span>
+
+            <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>" class="sk-nav-link">
+                <?= sk_icon('book', 16) ?> Browse Books
+            </a>
+            <a href="<?= function_exists('base_url') ? base_url('/books') : '#' ?>#mine" class="sk-nav-link">
+                <?= sk_icon('bookmark', 16) ?> My Borrows
+            </a>
+
+            <div class="sk-nav-divider"></div>
+            <span class="sk-nav-label">Account</span>
+
+            <a href="<?= function_exists('base_url') ? base_url('/profile') : '#' ?>" class="sk-nav-link">
+                <?= sk_icon('user', 16) ?> Profile
+            </a>
+            <a href="<?= function_exists('base_url') ? base_url('/logout') : '#' ?>" class="sk-nav-link danger">
+                <?= sk_icon('logout', 16) ?> Sign Out
+            </a>
         </nav>
-        <!-- Pro Features box REMOVED intentionally -->
+
+        <!-- User footer card -->
+        <div class="sk-sidebar-footer">
+            <div class="sk-footer-avatar"><?= esc($initials) ?></div>
+            <div class="sk-footer-info">
+                <div class="sk-footer-name"><?= esc($user_name ?? 'User') ?></div>
+                <div class="sk-footer-role">Resident</div>
+            </div>
+            <div class="sk-footer-dot" title="Online"></div>
+        </div>
     </aside>
 
     <!-- ═══════════════ MAIN ═══════════════ -->
@@ -637,7 +769,7 @@ $pendingStr = $pending ?? 0;
                             You have <strong style="color:white;"><?= count($reservations) ?> reservation<?= count($reservations)>1?'s':'' ?></strong>
                             and <?= $availableCount ?> books available to borrow today.
                         <?php else: ?>
-                            Welcome to SK Community Library. Book resources and browse <?= $totalBooks ?> titles anytime.
+                            Welcome to eLibReserve. Book resources and browse <?= $totalBooks ?> titles anytime.
                         <?php endif; ?>
                     </div>
                     <a href="<?= function_exists('base_url') ? base_url('/reservation') : '#' ?>" class="sk-hero-cta">
@@ -1125,7 +1257,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <?php if (function_exists('base_url') && defined('APPPATH')): ?>
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
-    <?php /* layout.php and onboarding_help.php intentionally removed — they inject a second sidebar */ ?>
 <?php endif; ?>
 </body>
 </html>
