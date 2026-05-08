@@ -262,44 +262,34 @@
 
         </section>
         <div class="divider">
-            <div class="divider-line"></div>
-            <span class="divider-text">What you can do</span>
-            <div class="divider-line"></div>
+    <div class="divider-line"></div>
+    <span class="divider-text">What you can do</span>
+    <div class="divider-line"></div>
+</div>
+<section class="features">
+    <div class="features-grid">
+        <div class="feat-card">
+            <div class="feat-icon" style="background:rgba(55,48,163,.18);"><i class="fa-solid fa-calendar-check" style="color:#818cf8;"></i></div>
+            <div class="feat-title">Reserve Resources</div>
+            <div class="feat-desc">Book computers, rooms, and barangay facilities with real-time availability and instant e-ticket generation.</div>
         </div>
-        <section class="features">
-            <div class="features-grid">
-                <div class="feat-card">
-                    <div class="feat-icon" style="background:rgba(55,48,163,.18);"><i class="fa-solid fa-calendar-check" style="color:#818cf8;"></i></div>
-                    <div class="feat-title">Reserve Resources</div>
-                    <div class="feat-desc">Book computers, rooms, and barangay facilities with real-time availability and instant e-ticket generation.</div>
-                </div>
-                <div class="feat-card">
-                    <div class="feat-icon" style="background:rgba(16,185,129,.12);"><i class="fa-solid fa-book-open" style="color:#34d399;"></i></div>
-                    <div class="feat-title">Library Access</div>
-                    <div class="feat-desc">Browse and borrow books from the SK community library. Track due dates and borrowing history easily.</div>
-                </div>
-                <div class="feat-card">
-                    <div class="feat-icon" style="background:rgba(212,160,23,.12);"><i class="fa-solid fa-qrcode" style="color:#fbbf24;"></i></div>
-                    <div class="feat-title">E-Ticket System</div>
-                    <div class="feat-desc">Get a scannable QR e-ticket for every approved reservation. Fast, paperless, and secure check-in.</div>
-                </div>
-                <div class="feat-card">
-                    <div class="feat-icon" style="background:rgba(192,57,43,.12);"><i class="fa-solid fa-shield-halved" style="color:#f87171;"></i></div>
-                    <div class="feat-title">SK Officer Portal</div>
-                    <div class="feat-desc">Officers can manage requests, approve reservations, scan tickets, and monitor live sessions in real time.</div>
-                </div>
-                <div class="feat-card">
-                    <div class="feat-icon" style="background:rgba(139,92,246,.12);"><i class="fa-solid fa-chart-line" style="color:#c084fc;"></i></div>
-                    <div class="feat-title">Admin Dashboard</div>
-                    <div class="feat-desc">Full analytics, insights heatmaps, resource demand rankings, and system-wide live session monitoring.</div>
-                </div>
-                <div class="feat-card">
-                    <div class="feat-icon" style="background:rgba(6,182,212,.1);"><i class="fa-solid fa-users" style="color:#22d3ee;"></i></div>
-                    <div class="feat-title">Community First</div>
-                    <div class="feat-desc">Designed to empower youth governance — transparent, efficient, and accessible to every resident.</div>
-                </div>
-            </div>
-        </section>
+        <div class="feat-card">
+            <div class="feat-icon" style="background:rgba(16,185,129,.12);"><i class="fa-solid fa-book-open" style="color:#34d399;"></i></div>
+            <div class="feat-title">Browse the Library</div>
+            <div class="feat-desc">Search and explore available books and learning materials in the e-learning center's collection before visiting.</div>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon" style="background:rgba(212,160,23,.12);"><i class="fa-solid fa-qrcode" style="color:#fbbf24;"></i></div>
+            <div class="feat-title">E-Ticket System</div>
+            <div class="feat-desc">Get a scannable QR e-ticket for every approved reservation. Fast, paperless, and secure check-in.</div>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon" style="background:rgba(192,57,43,.12);"><i class="fa-solid fa-shield-halved" style="color:#f87171;"></i></div>
+            <div class="feat-title">SK Officer Portal</div>
+            <div class="feat-desc">Review and approve reservation requests, scan QR e-tickets at check-in, and monitor active facility sessions.</div>
+        </div>
+    </div>
+</section>
         <footer>
             <div class="footer-left">&copy; 2026 <strong>mySpace · SK Brgy. F. De Jesus</strong> · All rights reserved.</div>
             <div class="footer-right">
