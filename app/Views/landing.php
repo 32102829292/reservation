@@ -262,32 +262,73 @@
 
         </section>
         <div class="divider">
-    <div class="divider-line"></div>
-    <span class="divider-text">What you can do</span>
-    <div class="divider-line"></div>
-</div>
-<section class="features">
+            <div class="divider-line"></div>
+            <span class="divider-text">What you can do</span>
+            <div class="divider-line"></div>
+        </div>
+        <section class="features">
     <div class="features-grid">
+
         <div class="feat-card">
-            <div class="feat-icon" style="background:rgba(55,48,163,.18);"><i class="fa-solid fa-calendar-check" style="color:#818cf8;"></i></div>
-            <div class="feat-title">Reserve Resources</div>
-            <div class="feat-desc">Book computers, rooms, and barangay facilities with real-time availability and instant e-ticket generation.</div>
+            <div class="feat-icon" style="background:rgba(55,48,163,.18);">
+                <i class="fa-solid fa-computer" style="color:#818cf8;"></i>
+            </div>
+            <div class="feat-title">Computer Reservation</div>
+            <div class="feat-desc">
+                Reserve available computer units for research, online classes, encoding, and printing activities.
+            </div>
         </div>
+
         <div class="feat-card">
-            <div class="feat-icon" style="background:rgba(16,185,129,.12);"><i class="fa-solid fa-book-open" style="color:#34d399;"></i></div>
-            <div class="feat-title">Browse the Library</div>
-            <div class="feat-desc">Search and explore available books and learning materials in the e-learning center's collection before visiting.</div>
+            <div class="feat-icon" style="background:rgba(16,185,129,.12);">
+                <i class="fa-solid fa-building" style="color:#34d399;"></i>
+            </div>
+            <div class="feat-title">E-Library Lobby Booking</div>
+            <div class="feat-desc">
+                Request access to the E-Library lobby for studying, meetings, and community activities with approval tracking.
+            </div>
         </div>
+
         <div class="feat-card">
-            <div class="feat-icon" style="background:rgba(212,160,23,.12);"><i class="fa-solid fa-qrcode" style="color:#fbbf24;"></i></div>
-            <div class="feat-title">E-Ticket System</div>
-            <div class="feat-desc">Get a scannable QR e-ticket for every approved reservation. Fast, paperless, and secure check-in.</div>
+            <div class="feat-icon" style="background:rgba(212,160,23,.12);">
+                <i class="fa-solid fa-book-open-reader" style="color:#fbbf24;"></i>
+            </div>
+            <div class="feat-title">Library Borrowing</div>
+            <div class="feat-desc">
+                Borrow books from the E-Library system and track borrowing records and due dates digitally.
+            </div>
         </div>
+
         <div class="feat-card">
-            <div class="feat-icon" style="background:rgba(192,57,43,.12);"><i class="fa-solid fa-shield-halved" style="color:#f87171;"></i></div>
-            <div class="feat-title">SK Officer Portal</div>
-            <div class="feat-desc">Review and approve reservation requests, scan QR e-tickets at check-in, and monitor active facility sessions.</div>
+            <div class="feat-icon" style="background:rgba(192,57,43,.12);">
+                <i class="fa-solid fa-ticket" style="color:#f87171;"></i>
+            </div>
+            <div class="feat-title">QR E-Ticket</div>
+            <div class="feat-desc">
+                Receive a QR-based e-ticket after reservation approval for faster and paperless entry verification.
+            </div>
         </div>
+
+        <div class="feat-card">
+            <div class="feat-icon" style="background:rgba(139,92,246,.12);">
+                <i class="fa-solid fa-user-shield" style="color:#c084fc;"></i>
+            </div>
+            <div class="feat-title">Reservation Approval</div>
+            <div class="feat-desc">
+                SK officers can review, approve, decline, and monitor reservation requests in real time.
+            </div>
+        </div>
+
+        <div class="feat-card">
+            <div class="feat-icon" style="background:rgba(6,182,212,.1);">
+                <i class="fa-solid fa-chart-pie" style="color:#22d3ee;"></i>
+            </div>
+            <div class="feat-title">Reservation Monitoring</div>
+            <div class="feat-desc">
+                Monitor daily reservations, facility usage, and booking activity through the admin dashboard.
+            </div>
+        </div>
+
     </div>
 </section>
         <footer>
