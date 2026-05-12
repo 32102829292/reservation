@@ -143,9 +143,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             --glow-indigo-lg: 0 0 0 1px rgba(99,102,241,.15), 0 8px 32px rgba(67,56,202,.2);
             --ease-spring: cubic-bezier(.34,1.56,.64,1);
             --ease-smooth: cubic-bezier(.4,0,.2,1);
-            --lib-amber:  #92400e;
-            --lib-amber2: #d97706;
-            --lib-paper:  #fef3c7;
         }
 
         /* ── Base Layout ── */
@@ -359,11 +356,62 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             border-radius:12px; flex-shrink:0; backdrop-filter: blur(4px);
         }
         .hero-date { font-family:var(--font); font-size:.75rem; color:rgba(255,255,255,.45); margin-top:6px; letter-spacing:.02em; }
-        .hero-quota-row { display:flex; align-items:center; gap:8px; margin-top:14px; }
-        .hero-quota-label { font-family:var(--font); font-size:.65rem; font-weight:600; color:rgba(165,180,252,.6); letter-spacing:.06em; text-transform:uppercase; }
-        .hero-quota-track { flex:1; max-width:100px; height:5px; background:rgba(255,255,255,.12); border-radius:999px; overflow:hidden; }
-        .hero-quota-fill { height:100%; border-radius:999px; background:linear-gradient(90deg, #a5b4fc, #818cf8); transition: width .6s var(--ease-smooth) .4s; }
-        .hero-quota-text { font-family:var(--mono); font-size:.65rem; font-weight:700; color:rgba(165,180,252,.8); }
+
+        /* ── FIXED: Monthly Quota Row ── */
+        .hero-quota-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .hero-quota-label {
+            font-family: var(--font);
+            font-size: .6rem;
+            font-weight: 700;
+            color: rgba(165,180,252,.6);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .hero-quota-track-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+            max-width: 110px;
+        }
+        .hero-quota-track {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,.12);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .hero-quota-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #a5b4fc, #818cf8);
+            transition: width .6s var(--ease-smooth) .4s;
+        }
+        .hero-quota-hint {
+            font-family: var(--font);
+            font-size: .54rem;
+            color: rgba(165,180,252,.45);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            white-space: nowrap;
+        }
+        .hero-quota-hint svg { flex-shrink: 0; }
+        .hero-quota-text {
+            font-family: var(--mono);
+            font-size: .65rem;
+            font-weight: 700;
+            color: rgba(165,180,252,.8);
+            white-space: nowrap;
+        }
+
         .hero-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
         @media(max-width:479px){ .hero-actions{ width:100%; } }
         .hero-btn {
@@ -634,7 +682,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .date-row:last-child { border-bottom:none; }
 
         /* ══════════════════════════════════════════════════════
-           LIBRARY SECTION — Redesigned
+           LIBRARY SECTION — FIXED (no brown/amber color)
         ══════════════════════════════════════════════════════ */
         .lib-section {
             display: flex;
@@ -644,53 +692,79 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         }
         @media(max-width:599px){ .lib-section{ margin: 0 14px 20px; gap: 10px; } }
 
-        /* ── Library Header Band ── */
+        /* ── Library Header Band — clean card, no color ── */
         .lib-header-band {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
             padding: 16px 20px;
-            background: linear-gradient(120deg, #1c0d00 0%, #78350f 60%, #92400e 100%);
+            background: var(--card);
+            border: 1px solid var(--border);
             border-radius: 18px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(120,53,15,.2);
+            box-shadow: var(--shadow-sm);
             flex-wrap: wrap;
         }
         @media(max-width:479px){ .lib-header-band{ padding: 14px 16px; gap: 10px; } }
-        .lib-header-band::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E") repeat;
-            pointer-events: none;
-        }
+
         .lib-header-left { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
         .lib-header-icon {
             width: 44px; height: 44px;
-            background: rgba(251,191,36,.15);
-            border: 1px solid rgba(251,191,36,.25);
+            background: #eef2ff;
+            border: 1px solid rgba(99,102,241,.15);
             border-radius: 14px;
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .lib-header-eyebrow { font-family: var(--font); font-size: .55rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: rgba(251,191,36,.55); margin-bottom: 3px; }
-        .lib-header-count { font-family: var(--mono); font-size: 1.5rem; font-weight: 900; color: #fef3c7; line-height: 1; letter-spacing: -.05em; }
-        .lib-header-sub { font-family: var(--font); font-size: .65rem; color: rgba(255,255,255,.35); margin-top: 2px; }
+        body.dark .lib-header-icon { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.2); }
+        .lib-header-eyebrow {
+            font-family: var(--font); font-size: .55rem; font-weight: 700;
+            letter-spacing: .2em; text-transform: uppercase;
+            color: var(--text-sub); margin-bottom: 3px;
+        }
+        .lib-header-count {
+            font-family: var(--mono); font-size: 1.5rem; font-weight: 900;
+            color: var(--text); line-height: 1; letter-spacing: -.05em;
+        }
+        .lib-header-count-faint { font-size: 1rem; font-weight: 600; color: var(--text-faint); }
+        .lib-header-sub { font-family: var(--font); font-size: .65rem; color: var(--text-faint); margin-top: 2px; }
         .lib-header-chips { display: flex; gap: 8px; position: relative; z-index: 1; flex-shrink: 0; }
         @media(max-width:479px){ .lib-header-chips{ display: none; } }
-        .lib-header-chip { background: rgba(0,0,0,.25); border: 1px solid rgba(251,191,36,.15); border-radius: 10px; padding: 7px 12px; text-align: center; backdrop-filter: blur(6px); }
-        .lib-header-chip-val { font-family: var(--mono); font-size: .9rem; font-weight: 800; color: #fef3c7; display: block; }
-        .lib-header-chip-lbl { font-family: var(--font); font-size: .48rem; font-weight: 700; color: rgba(251,191,36,.4); text-transform: uppercase; letter-spacing: .08em; display: block; margin-top: 1px; }
+        .lib-header-chip {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 7px 12px;
+            text-align: center;
+        }
+        .lib-header-chip-val {
+            font-family: var(--mono); font-size: .9rem; font-weight: 800;
+            color: var(--text); display: block;
+        }
+        .lib-header-chip-lbl {
+            font-family: var(--font); font-size: .48rem; font-weight: 700;
+            color: var(--text-sub); text-transform: uppercase;
+            letter-spacing: .08em; display: block; margin-top: 1px;
+        }
         .lib-browse-btn-inline {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 9px 16px;
-            background: rgba(251,191,36,.15); border: 1px solid rgba(251,191,36,.3);
-            border-radius: 11px; color: #fef3c7;
+            background: rgba(99,102,241,.08);
+            border: 1px solid rgba(99,102,241,.2);
+            border-radius: 11px;
+            color: var(--indigo-700);
             font-family: var(--font); font-size: .74rem; font-weight: 700;
             text-decoration: none; transition: all .2s; position: relative; z-index: 1;
             white-space: nowrap; flex-shrink: 0;
         }
-        .lib-browse-btn-inline:hover { background: rgba(251,191,36,.28); transform: translateY(-1px); }
+        body.dark .lib-browse-btn-inline { color: #a5b4fc; background: rgba(99,102,241,.1); border-color: rgba(99,102,241,.25); }
+        .lib-browse-btn-inline:hover {
+            background: var(--indigo-600);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(67,56,202,.25);
+        }
         @media(max-width:479px){ .lib-browse-btn-inline{ padding: 8px 12px; font-size: .68rem; } }
 
         /* ── Two-column card grid ── */
@@ -713,8 +787,8 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
         .lib-card-icon svg { width: 15px; height: 15px; flex-shrink: 0; }
-        .lib-card-icon-amber { background: linear-gradient(135deg, #92400e, #d97706); box-shadow: 0 3px 8px rgba(146,64,14,.22); }
-        .lib-card-icon-green { background: linear-gradient(135deg, #16a34a, #065f46); box-shadow: 0 3px 8px rgba(22,163,74,.2); }
+        .lib-card-icon-indigo { background: linear-gradient(135deg, #4f46e5, #3730a3); box-shadow: 0 3px 8px rgba(79,70,229,.22); }
+        .lib-card-icon-green  { background: linear-gradient(135deg, #16a34a, #065f46); box-shadow: 0 3px 8px rgba(22,163,74,.2); }
 
         /* Available Books */
         .book-list  { padding: 4px 8px 8px; }
@@ -722,8 +796,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             display: flex; align-items: center; gap: 10px; padding: 8px 8px;
             border-radius: 11px; text-decoration: none; color: inherit; transition: background .15s;
         }
-        .book-row:hover { background: rgba(251,191,36,.07); }
-        body.dark .book-row:hover { background: rgba(251,191,36,.05); }
+        .book-row:hover { background: rgba(99,102,241,.05); }
         .book-cover {
             width: 32px; height: 44px; border-radius: 4px 5px 5px 4px;
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
@@ -844,10 +917,24 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                         <span class="hero-name-badge"><?= icon('hand-wave', 20, 'rgba(255,255,255,.8)') ?></span>
                     </div>
                     <div class="hero-date"><?= date('l, F j, Y') ?></div>
+
+                    <!-- FIXED: Monthly Quota Row -->
                     <div class="hero-quota-row">
-                        <span class="hero-quota-label">Quota</span>
-                        <div class="hero-quota-track">
-                            <div class="hero-quota-fill" style="width:<?= min(100, ($usedSlots / $maxSlots) * 100) ?>%;"></div>
+                        <span class="hero-quota-label">Monthly Quota</span>
+                        <div class="hero-quota-track-wrap">
+                            <div class="hero-quota-track">
+                                <div class="hero-quota-fill" style="width:<?= min(100, ($usedSlots / $maxSlots) * 100) ?>%;"></div>
+                            </div>
+                            <?php if ($remaining > 0): ?>
+                                <span class="hero-quota-hint">
+                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:9px;height:9px;flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                    Only <?= $remaining ?> slot<?= $remaining > 1 ? 's' : '' ?> remaining
+                                </span>
+                            <?php elseif ($remaining === 0): ?>
+                                <span class="hero-quota-hint" style="color:rgba(248,113,113,.6);">
+                                    All slots used this month
+                                </span>
+                            <?php endif; ?>
                         </div>
                         <span class="hero-quota-text"><?= $usedSlots ?>/<?= $maxSlots ?></span>
                     </div>
@@ -1018,7 +1105,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                             <?php endif; ?>
                         </a>
                         <a href="<?= base_url('/books') ?>" class="qa-link">
-                            <div class="qa-icon" style="background:#fef3c7;"><?= icon('book-open', 14, '#d97706') ?></div>
+                            <div class="qa-icon" style="background:#eef2ff;"><?= icon('book-open', 14, 'var(--indigo)') ?></div>
                             Browse Library
                             <span class="qa-chev"><?= icon('chevron-right', 12, 'currentColor') ?></span>
                         </a>
@@ -1137,15 +1224,18 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
 
         <div class="lib-section fade-up-4">
 
-            <!-- Compact header band -->
+            <!-- Clean header band (no color) -->
             <div class="lib-header-band">
                 <div class="lib-header-left">
                     <div class="lib-header-icon">
-                        <?= icon('book-open', 22, 'rgba(251,191,36,.9)') ?>
+                        <?= icon('book-open', 22, 'var(--indigo-600)') ?>
                     </div>
                     <div>
                         <div class="lib-header-eyebrow">Collection</div>
-                        <div class="lib-header-count"><?= $availableCount ?> <span style="font-size:1rem;font-weight:600;color:rgba(254,243,199,.5);">/ <?= $totalBooks ?></span></div>
+                        <div class="lib-header-count">
+                            <?= $availableCount ?>
+                            <span class="lib-header-count-faint">/ <?= $totalBooks ?></span>
+                        </div>
                         <div class="lib-header-sub">books available · <?= $totalBooks ?> total</div>
                     </div>
                 </div>
@@ -1160,7 +1250,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     </div>
                 </div>
                 <a href="<?= base_url('/books') ?>" class="lib-browse-btn-inline">
-                    <?= icon('arrow-right', 13, '#fef3c7') ?> Browse
+                    <?= icon('arrow-right', 13, 'currentColor') ?> Browse
                 </a>
             </div>
 
@@ -1171,7 +1261,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 <div class="lib-card">
                     <div class="lib-card-header">
                         <div class="lib-card-header-left">
-                            <div class="lib-card-icon lib-card-icon-amber"><?= icon('book-open', 15, 'white') ?></div>
+                            <div class="lib-card-icon lib-card-icon-indigo"><?= icon('book-open', 15, 'white') ?></div>
                             <div>
                                 <div class="card-title">Available Now</div>
                                 <div class="card-sub">Borrow today</div>
@@ -1183,8 +1273,8 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                         <div class="book-list">
                             <?php foreach (array_slice($featuredBooks, 0, 5) as $book):
                                 $avail   = (int)($book['available_copies'] ?? 0);
-                                $pillBg  = $avail === 0 ? '#fecaca' : ($avail <= 1 ? '#fde68a' : '#bbf7d0');
-                                $pillFg  = $avail === 0 ? '#7f1d1d' : ($avail <= 1 ? '#78350f' : '#14532d');
+                                $pillBg  = $avail === 0 ? '#fecaca' : ($avail <= 1 ? '#ddd6fe' : '#bbf7d0');
+                                $pillFg  = $avail === 0 ? '#7f1d1d' : ($avail <= 1 ? '#4c1d95' : '#14532d');
                                 $pillTxt = $avail === 0 ? 'Out'     : ($avail <= 1 ? '1 left'  : $avail . ' left');
                             ?>
                                 <a href="<?= base_url('/books') ?>" class="book-row">
