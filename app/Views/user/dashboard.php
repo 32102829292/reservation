@@ -1,12 +1,4 @@
 <?php
-/*
- * ═══════════════════════════════════════════════════════════════
- *  RESIDENT DASHBOARD — redesigned layout
- *  Inspired by the clean library-style reference UI
- *  Retains all original PHP logic + indigo color palette
- * ═══════════════════════════════════════════════════════════════
- */
-
 $unclaimedCount = 0;
 $claimedCount   = 0;
 $processedRecent = [];
@@ -99,6 +91,11 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         'bar-chart'     => ['<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>','1.5'],
         'eye'           => ['<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>','1.8'],
         'trending-up'   => ['<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>','1.8'],
+        'hand-wave'     => ['<path d="M18 11V6a2 2 0 00-2-2 2 2 0 00-2 2"/><path d="M14 10V4a2 2 0 00-2-2 2 2 0 00-2 2v2"/><path d="M10 10.5V6a2 2 0 00-2-2 2 2 0 00-2 2v8"/><path d="M18 8a2 2 0 014 0v6a8 8 0 01-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 012.83-2.82L7 15" stroke-linecap="round" stroke-linejoin="round"/>','1.8'],
+        'glasses'       => ['<circle cx="5" cy="13" r="3"/><circle cx="19" cy="13" r="3"/><path d="M2 13l1-4h3M17 13l1-4h3M8 13h8" stroke-linecap="round" stroke-linejoin="round"/>','1.8'],
+        'feather'       => ['<path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/>','1.8'],
+        'sun'           => ['<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>','1.5'],
+        'star'          => ['<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>','1.5'],
     ];
     [$d, $sw] = $icons[$name] ?? ['<circle cx="12" cy="12" r="10"/>','1.8'];
     return sprintf(
@@ -125,11 +122,11 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         (function(){try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark-pre');}catch(e){}})();
     </script>
     <style>
-        /* ── Shell ── */
+        /* ─── Base ─────────────────────────────────────────── */
         body { display:flex; height:100vh; height:100dvh; overflow:hidden; }
         html.dark-pre body, html.dark-pre .l-sidebar__inner, html.dark-pre .l-mobile-nav { background:#060e1e; }
 
-        /* ── Topbar reserve btn ── */
+        /* ─── Reserve Button ────────────────────────────────── */
         .reserve-btn {
             display:none; align-items:center; gap:7px; padding:9px 18px;
             background:var(--indigo); color:#fff; border-radius:var(--r-sm);
@@ -140,7 +137,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         @media(min-width:480px){ .reserve-btn{display:flex;} }
         .reserve-btn:hover { background:#312e81; transform:translateY(-1px); box-shadow:0 6px 18px rgba(55,48,163,.35); }
 
-        /* ── Notification dropdown ── */
+        /* ─── Notifications ─────────────────────────────────── */
         .notif-bell { position:relative; }
         .notif-badge {
             position:absolute; top:-5px; right:-5px;
@@ -160,9 +157,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .notif-item:last-child { border-bottom:none; }
         @media(max-width:479px){ .notif-dd{left:12px;right:12px;width:auto;top:72px;} }
 
-        /* ════════════════════════════════════════════════
-           HERO WELCOME BANNER  (reference-inspired)
-           ════════════════════════════════════════════════ */
+        /* ─── Hero Banner ────────────────────────────────────── */
         .hero-banner {
             background: linear-gradient(120deg, #3730a3 0%, #4338ca 40%, #312e81 100%);
             border-radius: 20px;
@@ -172,27 +167,23 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             overflow: hidden;
             box-shadow: 0 12px 40px rgba(55,48,163,.3);
         }
+        @media(max-width:479px){ .hero-banner{padding:20px 18px;border-radius:16px;} }
         .hero-banner::before {
-            content:'';
-            position:absolute; top:-60px; right:-40px;
-            width:260px; height:260px;
-            background:rgba(255,255,255,.05);
-            border-radius:50%;
-            pointer-events:none;
+            content:''; position:absolute; top:-60px; right:-40px;
+            width:260px; height:260px; background:rgba(255,255,255,.05); border-radius:50%; pointer-events:none;
         }
         .hero-banner::after {
-            content:'';
-            position:absolute; bottom:-80px; right:100px;
-            width:200px; height:200px;
-            background:rgba(255,255,255,.04);
-            border-radius:50%;
-            pointer-events:none;
+            content:''; position:absolute; bottom:-80px; right:100px;
+            width:200px; height:200px; background:rgba(255,255,255,.04); border-radius:50%; pointer-events:none;
         }
         .hero-inner { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
         .hero-greeting { font-family:var(--font); font-size:.7rem; font-weight:600; color:rgba(255,255,255,.55); letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
-        .hero-name { font-family:var(--font); font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-.04em; line-height:1.1; }
+        .hero-name { font-family:var(--font); font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-.04em; line-height:1.1; display:flex; align-items:center; gap:10px; }
+        @media(max-width:479px){ .hero-name{font-size:1.4rem;} }
+        .hero-name-icon { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; background:rgba(255,255,255,.15); border-radius:10px; flex-shrink:0; }
         .hero-date { font-family:var(--font); font-size:.78rem; color:rgba(255,255,255,.5); margin-top:5px; }
-        .hero-actions { display:flex; align-items:center; gap:10px; }
+        .hero-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        @media(max-width:479px){ .hero-actions{width:100%;} }
         .hero-btn {
             display:inline-flex; align-items:center; gap:7px; padding:11px 20px;
             background:rgba(255,255,255,.15); color:#fff; border-radius:12px;
@@ -200,60 +191,48 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             border:1.5px solid rgba(255,255,255,.25); text-decoration:none;
             transition:all .2s; touch-action:manipulation;
         }
+        @media(max-width:479px){ .hero-btn{flex:1;justify-content:center;padding:10px 14px;font-size:.78rem;} }
         .hero-btn:hover { background:rgba(255,255,255,.25); transform:translateY(-1px); }
         .hero-btn.solid { background:#fff; color:#3730a3; border-color:transparent; }
         .hero-btn.solid:hover { background:#eef2ff; }
 
-        /* ════════════════════════════════════════════════
-           STAT PILL ROW  (like the reference's top row)
-           ════════════════════════════════════════════════ */
+        /* ─── Stat Pills ─────────────────────────────────────── */
         .stat-pill-row {
             display: grid;
             grid-template-columns: repeat(4, minmax(0,1fr));
             gap: 12px;
             margin-bottom: 20px;
         }
+        @media(max-width:700px){ .stat-pill-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;} }
         .stat-pill {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px 20px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            box-shadow: var(--shadow-sm);
-            transition: transform var(--ease), box-shadow var(--ease);
-            cursor: default;
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 18px 20px; display: flex; align-items: center; gap: 14px;
+            box-shadow: var(--shadow-sm); transition: transform var(--ease), box-shadow var(--ease); cursor: default;
         }
+        @media(max-width:400px){ .stat-pill{padding:14px 13px;gap:10px;} }
         .stat-pill:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
-        .sp-icon {
-            width: 44px; height: 44px; border-radius: 13px;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
+        .sp-icon { width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        @media(max-width:400px){ .sp-icon{width:36px;height:36px;border-radius:10px;} }
         .sp-icon svg { width:20px; height:20px; flex-shrink:0; }
         .sp-lbl { font-family:var(--font); font-size:.65rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-sub); margin-bottom:2px; }
         .sp-val { font-family:var(--mono); font-size:1.7rem; font-weight:800; color:var(--text); line-height:1; letter-spacing:-.04em; }
+        @media(max-width:400px){ .sp-val{font-size:1.4rem;} }
         .sp-hint { font-family:var(--font); font-size:.68rem; color:var(--text-sub); margin-top:3px; }
-        @media(max-width:700px){ .stat-pill-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;} }
-        @media(max-width:400px){ .stat-pill{padding:14px 15px;gap:10px;} .sp-val{font-size:1.4rem;} .sp-icon{width:36px;height:36px;} }
 
-        /* ════════════════════════════════════════════════
-           NEXT-ACTION BANNER
-           ════════════════════════════════════════════════ */
+        /* ─── Next Action ────────────────────────────────────── */
         .next-card {
             display:flex; align-items:flex-start; gap:14px;
             border-radius:14px; padding:16px 18px; border:1px solid;
             margin-bottom:18px; animation:l-slide-up .4s ease both;
         }
+        @media(max-width:479px){ .next-card{padding:14px 14px;gap:11px;border-radius:12px;} }
         .next-icon-wrap { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .next-eyebrow { font-family:var(--font); font-size:.6rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; margin-bottom:4px; }
         .next-msg { font-family:var(--font); font-size:.83rem; color:var(--text-muted); line-height:1.6; }
         .next-cta { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:9px 16px; border-radius:9px; font-family:var(--font); font-size:.75rem; font-weight:700; color:#fff; text-decoration:none; transition:opacity var(--ease); }
         .next-cta:hover { opacity:.85; }
 
-        /* ════════════════════════════════════════════════
-           MAIN TWO-COL GRID
-           ════════════════════════════════════════════════ */
+        /* ─── Dashboard Grid ─────────────────────────────────── */
         .dash-grid {
             display: grid;
             grid-template-columns: minmax(0,1.55fr) minmax(0,1fr);
@@ -261,21 +240,22 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             margin-bottom: 18px;
         }
         @media(max-width:860px){ .dash-grid{grid-template-columns:1fr;} }
-
         .side-col { display:flex; flex-direction:column; gap:14px; }
+        @media(max-width:860px){ .side-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));} }
+        @media(max-width:560px){ .side-col{grid-template-columns:1fr;} }
 
-        /* ── Card helpers ── */
-        .card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+        /* ─── Card Helpers ───────────────────────────────────── */
+        .card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
         .card-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .card-icon svg { width:16px; height:16px; flex-shrink:0; }
         .card-title { font-family:var(--font); font-size:.9rem; font-weight:700; color:var(--text); letter-spacing:-.01em; }
         .card-sub { font-family:var(--font); font-size:.7rem; color:var(--text-sub); margin-top:2px; }
         .section-lbl { font-family:var(--font); font-size:.62rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--text-sub); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
         .section-lbl::before { content:''; width:3px; height:13px; border-radius:2px; background:var(--indigo); flex-shrink:0; }
-        .link-sm { font-family:var(--font); font-size:.65rem; font-weight:700; color:var(--indigo); text-decoration:none; letter-spacing:.05em; text-transform:uppercase; transition:opacity .15s; }
+        .link-sm { font-family:var(--font); font-size:.65rem; font-weight:700; color:var(--indigo); text-decoration:none; letter-spacing:.05em; text-transform:uppercase; transition:opacity .15s; white-space:nowrap; }
         .link-sm:hover { opacity:.7; }
 
-        /* ── Quick actions ── */
+        /* ─── Quick Actions ──────────────────────────────────── */
         .qa-link {
             display:flex; align-items:center; gap:11px; padding:12px 14px;
             border-radius:12px; border:1px solid var(--border); background:var(--card);
@@ -286,11 +266,11 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         @media(pointer:fine){ .qa-link:hover{ transform:translateX(2px); } }
         .qa-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .qa-icon svg { width:15px; height:15px; flex-shrink:0; }
-        .qa-chev { margin-left:auto; color:var(--text-faint); }
+        .qa-chev { margin-left:auto; color:var(--text-faint); flex-shrink:0; }
         .qa-chev svg { width:13px; height:13px; flex-shrink:0; }
         .qa-link:hover .qa-chev { color:var(--indigo); }
 
-        /* ── Recent booking rows ── */
+        /* ─── Recent Bookings ────────────────────────────────── */
         .bk-row { display:flex; align-items:center; gap:11px; padding:9px 8px; border-radius:11px; text-decoration:none; color:inherit; transition:background var(--ease); }
         .bk-row:hover { background:var(--indigo-light); }
         .bk-date { width:38px; height:38px; background:var(--input-bg); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; border:1px solid var(--border-subtle); }
@@ -299,9 +279,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .bk-name { font-family:var(--font); font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .bk-time { font-family:var(--mono); font-size:.67rem; color:var(--text-sub); margin-top:1px; }
 
-        /* ════════════════════════════════════════════════
-           UPCOMING RESERVATION PILL
-           ════════════════════════════════════════════════ */
+        /* ─── Upcoming Pill ──────────────────────────────────── */
         .upcoming-pill {
             background:var(--indigo-light); border:1px solid var(--indigo-border);
             border-radius:14px; padding:14px 16px;
@@ -317,9 +295,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .up-btn:hover { background:var(--indigo); color:white; }
         @media(max-width:479px){ .up-name{max-width:100%;} .up-btn{margin-left:0;width:100%;text-align:center;display:block;} }
 
-        /* ════════════════════════════════════════════════
-           COUNTDOWN TIMER
-           ════════════════════════════════════════════════ */
+        /* ─── Timer Banner ───────────────────────────────────── */
         .timer-banner { display:none; border-radius:14px; padding:14px 18px; margin-bottom:16px; border:1px solid; animation:l-slide-up .35s cubic-bezier(.34,1.56,.64,1) both; }
         .timer-banner.urgent  { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
         .timer-banner.warning { background:#fefce8; border-color:#fde68a; color:#854d0e; }
@@ -337,9 +313,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .timer-progress-wrap { height:3px; border-radius:999px; background:rgba(0,0,0,.08); overflow:hidden; margin-top:10px; }
         .timer-progress-fill { height:100%; border-radius:999px; background:currentColor; opacity:.4; transition:width 1s linear; }
 
-        /* ════════════════════════════════════════════════
-           FULLCALENDAR OVERRIDES
-           ════════════════════════════════════════════════ */
+        /* ─── FullCalendar ───────────────────────────────────── */
         #calendar { font-family:var(--font) !important; font-size:.8rem; }
         .fc .fc-toolbar { flex-wrap:wrap; gap:.5rem; }
         .fc-toolbar-title { font-family:var(--font) !important; font-size:.95rem !important; font-weight:800 !important; color:var(--text) !important; letter-spacing:-.02em !important; }
@@ -369,102 +343,13 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             .fc .fc-daygrid-day-frame{min-height:32px !important;}
         }
 
-        /* ── Calendar legend ── */
         .cal-legend { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
         .leg-item { display:flex; align-items:center; gap:5px; }
         .leg-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
         .leg-lbl { font-family:var(--font); font-size:.68rem; font-weight:600; color:var(--text-sub); }
         @media(max-width:479px){ .cal-legend{gap:8px;} .leg-lbl{display:none;} .leg-dot{width:9px;height:9px;} }
 
-        /* ════════════════════════════════════════════════
-           LIBRARY SECTION
-           ════════════════════════════════════════════════ */
-        .lib-section {
-            display: grid;
-            grid-template-columns: minmax(0,1fr) minmax(0,1.4fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        @media(max-width:860px){ .lib-section{grid-template-columns:1fr;} }
-
-        /* Library banner card */
-        .lib-hero {
-            background: linear-gradient(140deg, #3730a3 0%, #4f46e5 50%, #7c3aed 100%);
-            border-radius: 18px;
-            padding: 24px 22px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 200px;
-            box-shadow: 0 10px 36px rgba(55,48,163,.28);
-        }
-        .lib-hero::before {
-            content:'📚';
-            position:absolute; right:20px; top:16px;
-            font-size:3.8rem; opacity:.85;
-            filter:drop-shadow(0 6px 16px rgba(0,0,0,.3));
-            animation:lib-float 3.2s ease-in-out infinite;
-        }
-        @keyframes lib-float { 0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-8px) rotate(4deg);} }
-        .lib-hero-inner { position:relative; z-index:1; }
-        .lib-eyebrow { font-family:var(--font); font-size:.6rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-bottom:4px; }
-        .lib-count { font-family:var(--mono); font-size:3rem; font-weight:900; color:#fff; line-height:1; letter-spacing:-.05em; }
-        .lib-count-sub { font-family:var(--font); font-size:.76rem; color:rgba(255,255,255,.55); margin-top:4px; font-style:italic; }
-        .lib-stats-row { display:flex; gap:8px; margin-top:18px; }
-        .lib-stat-chip {
-            flex:1; background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.16);
-            border-radius:10px; padding:8px 10px;
-        }
-        .lib-stat-chip-lbl { font-family:var(--font); font-size:.5rem; font-weight:700; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.06em; display:block; }
-        .lib-stat-chip-val { font-family:var(--mono); font-size:.95rem; font-weight:800; color:#fff; line-height:1.2; display:block; }
-        .lib-browse-btn {
-            display:inline-flex; align-items:center; gap:6px; margin-top:16px;
-            padding:10px 16px; background:rgba(255,255,255,.16);
-            border:1.5px solid rgba(255,255,255,.28); border-radius:11px;
-            color:#fff; font-family:var(--font); font-size:.78rem; font-weight:700;
-            text-decoration:none; transition:all .2s; align-self:flex-start;
-        }
-        .lib-browse-btn:hover { background:rgba(255,255,255,.28); transform:translateY(-1px); }
-
-        /* Available books card + borrows */
-        .lib-right { display:flex; flex-direction:column; gap:14px; }
-
-        /* Book rows */
-        .book-row {
-            display:flex; align-items:center; gap:10px; padding:8px 8px;
-            border-radius:11px; text-decoration:none; color:inherit; transition:background .15s;
-        }
-        .book-row:hover { background:var(--indigo-light); }
-        .book-letter {
-            width:36px; height:36px; border-radius:10px;
-            display:flex; align-items:center; justify-content:center; flex-shrink:0;
-            font-family:var(--font); font-weight:800; font-size:.82rem; color:#fff;
-        }
-        .book-title { font-family:var(--font); font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .book-author { font-family:var(--font); font-size:.68rem; color:var(--text-sub); margin-top:1px; }
-
-        /* Letter avatar gradient cycle */
-        .book-row:nth-child(6n+1) .book-letter { background:linear-gradient(135deg,#818cf8,#6366f1); }
-        .book-row:nth-child(6n+2) .book-letter { background:linear-gradient(135deg,#f472b6,#ec4899); }
-        .book-row:nth-child(6n+3) .book-letter { background:linear-gradient(135deg,#34d399,#10b981); }
-        .book-row:nth-child(6n+4) .book-letter { background:linear-gradient(135deg,#fb923c,#f97316); }
-        .book-row:nth-child(6n+5) .book-letter { background:linear-gradient(135deg,#60a5fa,#3b82f6); }
-        .book-row:nth-child(6n+6) .book-letter { background:linear-gradient(135deg,#a78bfa,#8b5cf6); }
-
-        /* Borrow row */
-        .borrow-row {
-            display:flex; align-items:center; gap:9px; padding:10px 13px;
-            background:var(--input-bg); border:1px solid var(--border-subtle);
-            border-radius:12px; transition:border-color .15s;
-        }
-        .borrow-row:hover { border-color:rgba(99,102,241,.3); }
-        .borrow-letter { width:32px; height:32px; border-radius:9px; background:linear-gradient(135deg,#a5b4fc,#818cf8); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:var(--font); font-weight:800; font-size:.76rem; color:#fff; }
-
-        /* ════════════════════════════════════════════════
-           HOW-TO + STATUS GUIDE
-           ════════════════════════════════════════════════ */
+        /* ─── Guide Grid ─────────────────────────────────────── */
         .guide-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-bottom:18px; }
         @media(max-width:700px){ .guide-grid{grid-template-columns:1fr;} }
         .how-step { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border-subtle); }
@@ -475,14 +360,248 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .status-guide-row:last-child { border-bottom:none; }
         .status-guide-row p { font-family:var(--font); font-size:.72rem; color:var(--text-muted); }
 
-        /* ════════════════════════════════════════════════
-           DATE MODAL
-           ════════════════════════════════════════════════ */
+        /* ─── Date Row (Modal) ───────────────────────────────── */
         .date-row { display:flex; align-items:center; gap:11px; padding:.75rem; border-bottom:1px solid var(--border-subtle); border-radius:10px; transition:background .15s; }
         .date-row:hover { background:var(--input-bg); }
         .date-row:last-child { border-bottom:none; }
 
-        /* ── Login toast ── */
+        /* ─────────────────────────────────────────────────────── */
+        /*  LIBRARY SECTION — Rich "reading room" aesthetic        */
+        /* ─────────────────────────────────────────────────────── */
+
+        /* CSS vars for library palette */
+        :root {
+            --lib-amber:   #92400e;
+            --lib-amber2:  #d97706;
+            --lib-cream:   #fffbf0;
+            --lib-wood:    #78350f;
+            --lib-paper:   #fef3c7;
+            --lib-leather: #b45309;
+        }
+
+        .lib-section {
+            display: grid;
+            grid-template-columns: minmax(0,1.1fr) minmax(0,1.5fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        @media(max-width:900px){ .lib-section{grid-template-columns:1fr;} }
+
+        /* ── Atmospheric Hero Card ─── */
+        .lib-hero {
+            position: relative;
+            border-radius: 22px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 280px;
+            box-shadow: 0 16px 48px rgba(120,53,15,.22), 0 4px 12px rgba(0,0,0,.12);
+            /* Rich warm library gradient */
+            background: linear-gradient(160deg, #1c0d00 0%, #3d1c00 30%, #5c2a00 55%, #78350f 80%, #92400e 100%);
+        }
+        @media(max-width:900px){ .lib-hero{min-height:220px;} }
+        /* Paper texture overlay */
+        .lib-hero::before {
+            content:'';
+            position:absolute; inset:0;
+            background:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.07'/%3E%3C/svg%3E")
+                repeat center center;
+            pointer-events:none; z-index:1;
+        }
+        /* Warm golden light bloom */
+        .lib-hero::after {
+            content:'';
+            position:absolute; top:-30px; right:-30px;
+            width:260px; height:260px;
+            background: radial-gradient(circle, rgba(251,191,36,.18) 0%, transparent 70%);
+            pointer-events:none; z-index:1;
+        }
+        .lib-hero-inner { position:relative; z-index:2; padding:26px 24px 0; }
+        @media(max-width:479px){ .lib-hero-inner{padding:20px 18px 0;} }
+
+        /* Floating lantern icon */
+        .lib-hero-lantern {
+            position: absolute;
+            top: 22px;
+            right: 22px;
+            z-index: 2;
+            width: 60px; height: 60px;
+            display: flex; align-items:center; justify-content:center;
+            background: rgba(251,191,36,.15);
+            border: 1.5px solid rgba(251,191,36,.3);
+            border-radius: 18px;
+            animation: lib-float 3.8s ease-in-out infinite;
+        }
+        @keyframes lib-float { 0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-9px) rotate(3deg);} }
+
+        .lib-eyebrow { font-family:var(--font); font-size:.6rem; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:rgba(251,191,36,.6); margin-bottom:6px; }
+        .lib-count { font-family:var(--mono); font-size:3.2rem; font-weight:900; color:#fef3c7; line-height:1; letter-spacing:-.06em; text-shadow:0 2px 20px rgba(251,191,36,.25); }
+        @media(max-width:479px){ .lib-count{font-size:2.4rem;} }
+        .lib-count-sub { font-family:var(--font); font-size:.76rem; color:rgba(251,191,36,.5); margin-top:5px; font-style:italic; }
+
+        /* Decorative shelf line */
+        .lib-shelf-line {
+            position:absolute; bottom:96px; left:0; right:0;
+            height:3px;
+            background: linear-gradient(90deg, transparent 0%, rgba(251,191,36,.12) 20%, rgba(251,191,36,.2) 50%, rgba(251,191,36,.12) 80%, transparent 100%);
+            z-index:2;
+        }
+
+        /* Mini book spines on shelf */
+        .lib-book-spines {
+            position:absolute; bottom:54px; left:24px;
+            display:flex; align-items:flex-end; gap:3px; z-index:2;
+        }
+        .lib-spine {
+            border-radius:2px 2px 0 0;
+            opacity:.55;
+            transition:opacity .2s, transform .2s;
+        }
+        .lib-spine:hover { opacity:.85; transform:translateY(-3px); }
+
+        /* Stats row at bottom */
+        .lib-stats-row { display:flex; gap:8px; padding:0 24px 22px; position:relative; z-index:2; }
+        @media(max-width:479px){ .lib-stats-row{padding:0 18px 18px;gap:6px;} }
+        .lib-stat-chip {
+            flex:1; background:rgba(0,0,0,.28); border:1px solid rgba(251,191,36,.18);
+            border-radius:11px; padding:9px 10px; backdrop-filter:blur(8px);
+        }
+        .lib-stat-chip-lbl { font-family:var(--font); font-size:.5rem; font-weight:700; color:rgba(251,191,36,.5); text-transform:uppercase; letter-spacing:.08em; display:block; }
+        .lib-stat-chip-val { font-family:var(--mono); font-size:.98rem; font-weight:800; color:#fef3c7; line-height:1.3; display:block; }
+        .lib-browse-btn {
+            display:inline-flex; align-items:center; gap:7px;
+            margin:0 24px 22px; padding:11px 18px;
+            background:rgba(251,191,36,.15);
+            border:1.5px solid rgba(251,191,36,.35); border-radius:12px;
+            color:#fef3c7; font-family:var(--font); font-size:.78rem; font-weight:700;
+            text-decoration:none; transition:all .2s; position:relative; z-index:2; width:fit-content;
+        }
+        @media(max-width:479px){ .lib-browse-btn{margin:0 18px 18px;} }
+        .lib-browse-btn:hover { background:rgba(251,191,36,.28); transform:translateY(-1px); }
+        .lib-browse-btn svg { width:14px; height:14px; flex-shrink:0; }
+
+        /* ── Library Right Column ─── */
+        .lib-right { display:flex; flex-direction:column; gap:14px; }
+
+        /* ── Featured Books Card — Shelf Style ─── */
+        .lib-books-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            flex: 1;
+        }
+        .lib-books-header {
+            padding: 16px 18px 14px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: space-between;
+            /* Subtle warm tint for the header */
+            background: linear-gradient(90deg, rgba(251,191,36,.04) 0%, transparent 60%);
+        }
+        .lib-books-header-left { display:flex; align-items:center; gap:10px; }
+        .lib-books-icon {
+            width:36px; height:36px; border-radius:11px;
+            background: linear-gradient(135deg, #92400e, #d97706);
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            box-shadow: 0 3px 10px rgba(146,64,14,.28);
+        }
+        .lib-books-icon svg { width:16px; height:16px; flex-shrink:0; }
+
+        /* Book rows */
+        .book-list { padding:6px 10px 8px; }
+        .book-row {
+            display:flex; align-items:center; gap:10px; padding:8px 8px;
+            border-radius:11px; text-decoration:none; color:inherit; transition:background .15s;
+            position:relative;
+        }
+        .book-row:hover { background:rgba(251,191,36,.07); }
+        body.dark .book-row:hover { background:rgba(251,191,36,.06); }
+
+        /* Book cover thumbnail */
+        .book-cover {
+            width:34px; height:46px; border-radius:4px 5px 5px 4px;
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            font-family:var(--font); font-weight:800; font-size:.78rem; color:#fff;
+            box-shadow: 2px 3px 8px rgba(0,0,0,.22), inset -2px 0 0 rgba(0,0,0,.18);
+            position:relative; overflow:hidden;
+        }
+        /* spine accent */
+        .book-cover::after {
+            content:''; position:absolute; left:0; top:0; bottom:0;
+            width:5px; background:rgba(0,0,0,.2); border-radius:3px 0 0 3px;
+        }
+        /* per-nth cover colors */
+        .book-row:nth-child(6n+1) .book-cover { background:linear-gradient(160deg,#6366f1,#4338ca); }
+        .book-row:nth-child(6n+2) .book-cover { background:linear-gradient(160deg,#ec4899,#be185d); }
+        .book-row:nth-child(6n+3) .book-cover { background:linear-gradient(160deg,#10b981,#065f46); }
+        .book-row:nth-child(6n+4) .book-cover { background:linear-gradient(160deg,#f97316,#c2410c); }
+        .book-row:nth-child(6n+5) .book-cover { background:linear-gradient(160deg,#3b82f6,#1d4ed8); }
+        .book-row:nth-child(6n+6) .book-cover { background:linear-gradient(160deg,#8b5cf6,#6d28d9); }
+
+        .book-title { font-family:var(--font); font-size:.82rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-.01em; }
+        .book-author { font-family:var(--font); font-size:.68rem; color:var(--text-sub); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+        /* Availability pill */
+        .avail-pill { font-family:var(--font); font-size:.6rem; font-weight:700; padding:3px 9px; border-radius:999px; flex-shrink:0; white-space:nowrap; }
+
+        /* ── Active Borrows Card ─── */
+        .lib-borrows-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .lib-borrows-header {
+            padding:16px 18px 14px;
+            border-bottom:1px solid var(--border-subtle);
+            display:flex; align-items:center; justify-content:space-between;
+            background: linear-gradient(90deg, rgba(22,163,74,.04) 0%, transparent 60%);
+        }
+        .lib-borrows-header-left { display:flex; align-items:center; gap:10px; }
+        .lib-borrows-icon {
+            width:36px; height:36px; border-radius:11px;
+            background:linear-gradient(135deg,#16a34a,#065f46);
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            box-shadow:0 3px 10px rgba(22,163,74,.25);
+        }
+        .lib-borrows-icon svg { width:16px; height:16px; flex-shrink:0; }
+
+        .borrow-list { padding:8px 10px; display:flex; flex-direction:column; gap:7px; }
+        .borrow-row {
+            display:flex; align-items:center; gap:9px; padding:10px 10px;
+            background:var(--input-bg); border:1px solid var(--border-subtle);
+            border-radius:12px; transition:border-color .15s;
+        }
+        .borrow-row:hover { border-color:rgba(22,163,74,.3); }
+        .borrow-cover {
+            width:28px; height:38px; border-radius:3px 4px 4px 3px;
+            background:linear-gradient(135deg,#a5b4fc,#818cf8);
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            font-family:var(--font); font-weight:800; font-size:.7rem; color:#fff;
+            box-shadow:1px 2px 5px rgba(0,0,0,.18), inset -2px 0 0 rgba(0,0,0,.15);
+            position:relative;
+        }
+        .borrow-cover::after { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:rgba(0,0,0,.18); border-radius:2px 0 0 2px; }
+
+        /* ─── "Reading Now" ambient strip ─── */
+        .lib-reading-strip {
+            display:flex; align-items:center; gap:12px;
+            padding:12px 18px;
+            background:linear-gradient(90deg, rgba(251,191,36,.06) 0%, rgba(251,191,36,.02) 100%);
+            border:1px solid rgba(251,191,36,.15);
+            border-radius:14px;
+            margin-bottom:14px;
+        }
+        body.dark .lib-reading-strip { background:rgba(251,191,36,.05); border-color:rgba(251,191,36,.12); }
+        .lib-reading-strip-icon { width:34px; height:34px; border-radius:9px; background:rgba(251,191,36,.12); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .lib-reading-strip p { font-family:var(--font); font-size:.78rem; color:var(--text-muted); line-height:1.5; }
+        .lib-reading-strip strong { color:var(--lib-amber); font-weight:700; }
+
+        /* ─── Login Toast ─────────────────────────────────────── */
         .login-toast {
             position:fixed; bottom:calc(var(--mob-nav-total) + 8px); right:16px; z-index:400;
             max-width:280px; background:#0f172a; border-radius:14px; padding:12px 14px;
@@ -504,9 +623,8 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
 
     <main class="main-area">
 
-        <!-- ── Topbar ── -->
         <div class="topbar fade-up" style="background:transparent;border:none;box-shadow:none;padding-bottom:0;">
-            <div style="opacity:0;pointer-events:none;"><!-- spacer --></div>
+            <div style="opacity:0;pointer-events:none;"></div>
             <div class="topbar-right">
                 <?= layout_dark_toggle() ?>
                 <a href="<?= base_url('/reservation') ?>" class="reserve-btn">
@@ -519,7 +637,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             </div>
         </div>
 
-        <!-- Notification dropdown -->
         <div id="notifDD" class="notif-dd">
             <div style="padding:11px 13px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;">
                 <span style="font-family:var(--font);font-weight:700;font-size:13px;color:var(--text);">Notifications</span>
@@ -528,7 +645,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             <div id="notifList" style="max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
         </div>
 
-        <!-- Flash -->
         <?php if (session()->getFlashdata('success')): ?>
             <div class="flash-ok fade-up">
                 <?= icon('check-circle', 14, 'var(--indigo)') ?>
@@ -536,16 +652,17 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             </div>
         <?php endif; ?>
 
-        <!-- ════════════════════════════════
-             HERO WELCOME BANNER
-             ════════════════════════════════ -->
+        <!-- Hero Banner -->
         <div class="hero-banner fade-up">
             <div class="hero-inner">
                 <div>
                     <div class="hero-greeting">
                         <?php $h=(int)date('H'); echo $h<12?'Good morning':($h<17?'Good afternoon':'Good evening'); ?>
                     </div>
-                    <div class="hero-name"><?= esc($user_name) ?> 👋</div>
+                    <div class="hero-name">
+                        <?= esc($user_name) ?>
+                        <span class="hero-name-icon"><?= icon('hand-wave', 20, 'rgba(255,255,255,.85)') ?></span>
+                    </div>
                     <div class="hero-date"><?= date('l, F j, Y') ?></div>
                 </div>
                 <div class="hero-actions">
@@ -559,11 +676,8 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             </div>
         </div>
 
-        <!-- ════════════════════════════════
-             STAT PILL ROW
-             ════════════════════════════════ -->
+        <!-- Stat Pills -->
         <div class="stat-pill-row fade-up-1">
-            <!-- Total -->
             <div class="stat-pill">
                 <div class="sp-icon" style="background:#eef2ff;">
                     <?= icon('layers', 20, '#3730a3') ?>
@@ -574,8 +688,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     <div class="sp-hint">All reservations</div>
                 </div>
             </div>
-
-            <!-- Pending -->
             <div class="stat-pill">
                 <div class="sp-icon" style="background:#fef3c7;">
                     <?= icon('clock', 20, '#d97706') ?>
@@ -586,8 +698,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     <div class="sp-hint">Awaiting review</div>
                 </div>
             </div>
-
-            <!-- Approved -->
             <div class="stat-pill">
                 <div class="sp-icon" style="background:#dcfce7;">
                     <?= icon('check-circle', 20, '#16a34a') ?>
@@ -598,8 +708,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     <div class="sp-hint">Ready to use</div>
                 </div>
             </div>
-
-            <!-- 4th pill: dynamic -->
             <?php if ($unclaimedCount > 0): ?>
                 <div class="stat-pill" style="border-color:rgba(251,146,60,.25);">
                     <div class="sp-icon" style="background:#fff7ed;"><?= icon('ticket', 20, '#ea580c') ?></div>
@@ -630,9 +738,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             <?php endif; ?>
         </div>
 
-        <!-- ════════════════════════════════
-             NEXT-ACTION CARD
-             ════════════════════════════════ -->
+        <!-- Next Action -->
         <?php if ($nextAction): $nc = $nextColors[$nextAction['color']]; ?>
             <div class="next-card fade-up-1" style="background:<?= $nc['bg'] ?>;border-color:<?= $nc['border'] ?>;">
                 <div class="next-icon-wrap" style="background:<?= $nc['icon_bg'] ?>;">
@@ -648,7 +754,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             </div>
         <?php endif; ?>
 
-        <!-- Countdown timer -->
+        <!-- Timer Banner -->
         <div id="timerBanner" class="timer-banner">
             <div class="timer-inner">
                 <div id="timerIconWrap" style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.07);flex-shrink:0;">
@@ -671,7 +777,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             </div>
         </div>
 
-        <!-- Upcoming pill -->
+        <!-- Upcoming Pill -->
         <?php if ($upcoming): ?>
             <div class="upcoming-pill fade-up-2">
                 <div class="up-icon"><?= icon('ticket', 16, 'white') ?></div>
@@ -684,14 +790,10 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             </div>
         <?php endif; ?>
 
-        <!-- ════════════════════════════════
-             MAIN GRID: Calendar + Sidebar
-             ════════════════════════════════ -->
+        <!-- Dashboard Grid -->
         <div class="dash-grid fade-up-2">
-
-            <!-- LEFT: Calendar card -->
             <div class="card card-p-lg">
-                <div class="card-head" style="flex-wrap:wrap;gap:10px;">
+                <div class="card-head">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <div class="card-icon" style="background:#eef2ff;"><?= icon('calendar-days', 16, 'var(--indigo)') ?></div>
                         <div>
@@ -711,10 +813,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 <div id="calendar"></div>
             </div>
 
-            <!-- RIGHT: Quick actions + Recent bookings -->
             <div class="side-col">
-
-                <!-- Quick actions -->
                 <div class="card card-p">
                     <div class="section-lbl">Quick Actions</div>
                     <div style="display:flex;flex-direction:column;gap:6px;">
@@ -745,7 +844,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     </div>
                 </div>
 
-                <!-- Recent bookings -->
                 <div class="card card-p" style="flex:1;">
                     <div class="card-head">
                         <div class="section-lbl" style="margin-bottom:0;">Recent Bookings</div>
@@ -780,14 +878,10 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                         </div>
                     <?php endif; ?>
                 </div>
+            </div>
+        </div>
 
-            </div><!-- /side-col -->
-        </div><!-- /dash-grid -->
-
-        <!-- ════════════════════════════════
-             HOW-TO + STATUS GUIDE
-             (shown only when relevant)
-             ════════════════════════════════ -->
+        <!-- Guide Grid -->
         <?php if (empty($reservations) || $unclaimedCount > 0 || $pending > 0): ?>
             <div class="guide-grid fade-up-3">
                 <div class="card card-p">
@@ -842,18 +936,53 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             </div>
         <?php endif; ?>
 
-        <!-- ════════════════════════════════
-             LIBRARY SECTION
-             ════════════════════════════════ -->
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!--  LIBRARY SECTION                                       -->
+        <!-- ══════════════════════════════════════════════════════ -->
         <div class="lib-section fade-up-4">
 
-            <!-- LEFT: Hero banner -->
+            <!-- Atmospheric Hero -->
             <div class="lib-hero">
+                <!-- Floating icon -->
+                <div class="lib-hero-lantern">
+                    <?= icon('book-open', 28, 'rgba(251,191,36,.9)') ?>
+                </div>
+
+                <!-- Top content -->
                 <div class="lib-hero-inner">
                     <div class="lib-eyebrow">Community Library</div>
                     <div class="lib-count"><?= $availableCount ?></div>
-                    <div class="lib-count-sub">available &middot; <?= $totalBooks ?> total titles</div>
+                    <div class="lib-count-sub">available &nbsp;·&nbsp; <?= $totalBooks ?> total titles</div>
+
+                    <!-- Decorative mini book spines -->
+                    <div style="display:flex;align-items:flex-end;gap:3px;margin-top:22px;margin-bottom:0;">
+                        <?php
+                        $spines = [
+                            ['h'=>52,'w'=>14,'c'=>'#6366f1'],['h'=>66,'w'=>11,'c'=>'#ec4899'],
+                            ['h'=>44,'w'=>16,'c'=>'#10b981'],['h'=>58,'w'=>12,'c'=>'#f97316'],
+                            ['h'=>70,'w'=>10,'c'=>'#3b82f6'],['h'=>48,'w'=>15,'c'=>'#8b5cf6'],
+                            ['h'=>62,'w'=>11,'c'=>'#14b8a6'],['h'=>55,'w'=>13,'c'=>'#f59e0b'],
+                            ['h'=>40,'w'=>14,'c'=>'#ef4444'],['h'=>68,'w'=>10,'c'=>'#a855f7'],
+                        ];
+                        foreach ($spines as $sp): ?>
+                            <div style="
+                                width:<?= $sp['w'] ?>px; height:<?= $sp['h'] ?>px;
+                                background:<?= $sp['c'] ?>;
+                                border-radius:2px 2px 0 0;
+                                opacity:.5;
+                                box-shadow: inset -2px 0 0 rgba(0,0,0,.25);
+                                transition: opacity .2s, transform .2s;
+                                cursor:default;
+                            " onmouseover="this.style.opacity='.8';this.style.transform='translateY(-4px)'"
+                               onmouseout="this.style.opacity='.5';this.style.transform=''">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <!-- shelf edge -->
+                    <div style="height:3px;background:linear-gradient(90deg,rgba(251,191,36,.08),rgba(251,191,36,.2),rgba(251,191,36,.08));margin-top:0;border-radius:0;"></div>
                 </div>
+
+                <!-- Bottom stats -->
                 <div>
                     <div class="lib-stats-row">
                         <div class="lib-stat-chip">
@@ -870,19 +999,32 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                         </div>
                     </div>
                     <a href="<?= base_url('/books') ?>" class="lib-browse-btn">
-                        <?= icon('book-open', 14, 'white') ?> Browse Library
+                        <?= icon('book-open', 14, '#fef3c7') ?> Browse Collection
                     </a>
                 </div>
             </div>
 
-            <!-- RIGHT: Available books + Active borrows -->
+            <!-- Right column: books + borrows -->
             <div class="lib-right">
 
-                <!-- Available Now -->
-                <div class="card card-p" style="flex:1;">
-                    <div class="card-head">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <div class="card-icon" style="background:#ede9fe;"><?= icon('book-open', 16, '#7c3aed') ?></div>
+                <!-- Reading strip ambient hint -->
+                <div class="lib-reading-strip">
+                    <div class="lib-reading-strip-icon">
+                        <?= icon('feather', 16, '#d97706') ?>
+                    </div>
+                    <p>
+                        <strong><?= $availableCount ?> books</strong> ready to borrow from the community collection.
+                        Browse titles, request a borrow, and return by the due date.
+                    </p>
+                </div>
+
+                <!-- Available Books Card -->
+                <div class="lib-books-card">
+                    <div class="lib-books-header">
+                        <div class="lib-books-header-left">
+                            <div class="lib-books-icon">
+                                <?= icon('book-open', 16, 'white') ?>
+                            </div>
                             <div>
                                 <div class="card-title">Available Now</div>
                                 <div class="card-sub">Books you can borrow today</div>
@@ -890,48 +1032,53 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                         </div>
                         <a href="<?= base_url('/books') ?>" class="link-sm">All →</a>
                     </div>
+
                     <?php if (!empty($featuredBooks)): ?>
-                        <div style="display:flex;flex-direction:column;gap:2px;">
+                        <div class="book-list">
                             <?php foreach (array_slice($featuredBooks, 0, 5) as $book):
                                 $avail = (int)($book['available_copies'] ?? 0);
-                                $pillBg = $avail === 0 ? '#fecaca' : ($avail <= 1 ? '#fde68a' : '#bbf7d0');
-                                $pillFg = $avail === 0 ? '#7f1d1d' : ($avail <= 1 ? '#78350f' : '#14532d');
+                                $pillBg  = $avail === 0 ? '#fecaca' : ($avail <= 1 ? '#fde68a' : '#bbf7d0');
+                                $pillFg  = $avail === 0 ? '#7f1d1d' : ($avail <= 1 ? '#78350f' : '#14532d');
                                 $pillTxt = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
                             ?>
                                 <a href="<?= base_url('/books') ?>" class="book-row">
-                                    <div class="book-letter"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
+                                    <div class="book-cover">
+                                        <?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?>
+                                    </div>
                                     <div style="flex:1;min-width:0;">
                                         <div class="book-title"><?= esc($book['title']) ?></div>
                                         <div class="book-author"><?= esc($book['author'] ?? 'Unknown') ?></div>
                                     </div>
-                                    <span style="font-family:var(--font);font-size:.6rem;font-weight:700;padding:3px 9px;border-radius:999px;flex-shrink:0;white-space:nowrap;background:<?= $pillBg ?>;color:<?= $pillFg ?>;"><?= $pillTxt ?></span>
+                                    <span class="avail-pill" style="background:<?= $pillBg ?>;color:<?= $pillFg ?>;"><?= $pillTxt ?></span>
                                 </a>
                             <?php endforeach; ?>
                         </div>
                         <?php if (count($featuredBooks) > 5): ?>
-                            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-subtle);text-align:center;">
-                                <a href="<?= base_url('/books') ?>" class="link-sm">+<?= count($featuredBooks) - 5 ?> more →</a>
+                            <div style="padding:8px 18px 14px;border-top:1px solid var(--border-subtle);text-align:center;">
+                                <a href="<?= base_url('/books') ?>" class="link-sm">+<?= count($featuredBooks) - 5 ?> more titles →</a>
                             </div>
                         <?php endif; ?>
                     <?php else: ?>
-                        <div style="text-align:center;padding:28px 12px;">
-                            <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('book-open', 28, 'currentColor') ?></div>
-                            <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);">No books available</p>
+                        <div style="text-align:center;padding:32px 16px;">
+                            <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('book-open', 30, 'currentColor') ?></div>
+                            <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);">No books available right now</p>
                         </div>
                     <?php endif; ?>
                 </div>
 
-                <!-- My Active Borrows -->
+                <!-- Active Borrows Card -->
                 <?php
                 $activeBorrows = array_slice(
                     array_values(array_filter($myBorrowings, fn($b) => in_array($b['status']??'', ['approved','pending']))),
                     0, 4
                 );
                 if (!empty($activeBorrows)): ?>
-                    <div class="card card-p">
-                        <div class="card-head">
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                <div class="card-icon" style="background:#d1fae5;"><?= icon('bookmark', 16, '#16a34a') ?></div>
+                    <div class="lib-borrows-card">
+                        <div class="lib-borrows-header">
+                            <div class="lib-borrows-header-left">
+                                <div class="lib-borrows-icon">
+                                    <?= icon('bookmark', 16, 'white') ?>
+                                </div>
                                 <div>
                                     <div class="card-title">My Active Borrows</div>
                                     <div class="card-sub">Currently checked out</div>
@@ -939,7 +1086,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                             </div>
                             <a href="<?= base_url('/books') ?>#mine" class="link-sm">All →</a>
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:7px;">
+                        <div class="borrow-list">
                             <?php foreach ($activeBorrows as $borrow):
                                 $bs  = strtolower($borrow['status'] ?? 'pending');
                                 $due = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
@@ -947,7 +1094,9 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                                 $dueSoon = $due && !$overdue && $due < time() + 3 * 86400;
                             ?>
                                 <div class="borrow-row">
-                                    <div class="borrow-letter"><?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?></div>
+                                    <div class="borrow-cover">
+                                        <?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?>
+                                    </div>
                                     <div style="flex:1;min-width:0;">
                                         <p style="font-family:var(--font);font-weight:700;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= esc($borrow['title'] ?? 'Unknown Book') ?></p>
                                         <?php if ($due && $bs === 'approved'): ?>
@@ -956,7 +1105,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                                             </p>
                                         <?php endif; ?>
                                     </div>
-                                    <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>" style="border-radius:8px;">
+                                    <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>" style="border-radius:8px;font-size:.62rem;">
                                         <?= $overdue ? 'Overdue' : ($dueSoon ? 'Due Soon' : ucfirst($bs)) ?>
                                     </span>
                                 </div>
@@ -964,7 +1113,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                         </div>
                     </div>
                 <?php else: ?>
-                    <div class="card card-p" style="text-align:center;padding:24px 20px;">
+                    <div class="lib-borrows-card" style="padding:28px 20px;text-align:center;">
                         <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('bookmark', 26, 'currentColor') ?></div>
                         <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
                         <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-family:var(--font);font-size:.72rem;font-weight:700;color:#7c3aed;text-decoration:none;">
@@ -974,9 +1123,10 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 <?php endif; ?>
 
             </div>
-        </div><!-- /lib-section -->
+        </div>
+        <!-- End Library Section -->
 
-    </main><!-- /main-area -->
+    </main>
 
     <!-- Date Modal -->
     <div id="dateModal" class="modal-back" onclick="handleModalBack(event)">
@@ -1010,7 +1160,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
     </div>
 
     <script>
-        /* ── All original JS preserved exactly ── */
         const NOTIF_KEY = 'notified_ids_<?= session()->get('user_id') ?>';
         const reservations = <?= json_encode($reservations ?? []) ?>;
         const allResData   = <?= json_encode($allReservations ?? []) ?>;
@@ -1172,7 +1321,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     if (minsLeft<=10){banner.classList.add('urgent');iconW.innerHTML=icons.urgent;}
                     else if(minsLeft<=20){banner.classList.add('warning');iconW.innerHTML=icons.warning;}
                     else{banner.classList.add('safe');iconW.innerHTML=icons.safe;}
-                    titleEl.textContent = minsLeft<=10 ? '⚠ Reservation ends very soon!' : 'Your reservation is active';
+                    titleEl.textContent = minsLeft<=10 ? 'Reservation ends very soon!' : 'Your reservation is active';
                     subEl.textContent = `${r.resource_name||'Resource'} · Ends at ${(r.end_time||'').substring(0,5)}`;
                     const pct=Math.min(100,Math.max(0,((now-start)/(end-start))*100));
                     pw.style.display='block'; pf.style.width=pct.toFixed(1)+'%';
