@@ -143,8 +143,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             --glow-indigo-lg: 0 0 0 1px rgba(99,102,241,.15), 0 8px 32px rgba(67,56,202,.2);
             --ease-spring: cubic-bezier(.34,1.56,.64,1);
             --ease-smooth: cubic-bezier(.4,0,.2,1);
-
-            /* Library palette */
             --lib-amber:  #92400e;
             --lib-amber2: #d97706;
             --lib-paper:  #fef3c7;
@@ -275,10 +273,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             from { opacity:0; transform:translateY(18px); }
             to   { opacity:1; transform:translateY(0); }
         }
-        @keyframes db-float {
-            0%,100% { transform:translateY(0)   rotate(-2deg); }
-            50%      { transform:translateY(-8px) rotate(2deg); }
-        }
         @keyframes db-pulse {
             0%,100% { opacity:1; }
             50%      { opacity:.3; }
@@ -294,7 +288,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .fade-up-4 { animation: db-fade-up .5s var(--ease-smooth) .36s both; }
 
         /* ══════════════════════════════════════════════════════
-           HERO BANNER — Enhanced glassmorphic depth
+           HERO BANNER
         ══════════════════════════════════════════════════════ */
         .hero-banner {
             margin: 14px 20px 18px;
@@ -315,15 +309,12 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                 0 1px 0 rgba(255,255,255,.12) inset;
         }
         @media(max-width:599px){ .hero-banner{ margin:12px 14px 14px; padding:20px 18px 20px; border-radius:18px; } }
-
-        /* Noise texture overlay */
         .hero-banner::before {
             content:'';
             position:absolute; inset:0;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E");
             pointer-events:none; z-index:1;
         }
-        /* Glow orb top-right */
         .hero-banner::after {
             content:'';
             position:absolute; top:-80px; right:-60px;
@@ -331,13 +322,11 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             background: radial-gradient(circle, rgba(165,180,252,.18) 0%, rgba(99,102,241,.06) 50%, transparent 70%);
             pointer-events:none; z-index:1;
         }
-        /* Bottom glow streak */
         .hero-streak {
             position:absolute; bottom:0; left:0; right:0; height:1px;
             background:linear-gradient(90deg,transparent,rgba(165,180,252,.3),transparent);
             z-index:2;
         }
-        /* Decorative dots grid */
         .hero-dots {
             position:absolute; bottom:-10px; right:160px;
             width:120px; height:80px;
@@ -346,112 +335,51 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             z-index:1; pointer-events:none;
         }
         @media(max-width:599px){ .hero-dots{ display:none; } }
-
         .hero-inner {
             position:relative; z-index:2;
             display:flex; align-items:center; justify-content:space-between;
             gap:16px; flex-wrap:wrap;
         }
         .hero-greeting {
-            font-family:var(--font);
-            font-size:.65rem;
-            font-weight:700;
-            color:rgba(165,180,252,.7);
-            letter-spacing:.14em;
-            text-transform:uppercase;
-            margin-bottom:6px;
-            display:flex; align-items:center; gap:6px;
+            font-family:var(--font); font-size:.65rem; font-weight:700;
+            color:rgba(165,180,252,.7); letter-spacing:.14em; text-transform:uppercase;
+            margin-bottom:6px; display:flex; align-items:center; gap:6px;
         }
-        .hero-greeting-dot {
-            width:5px; height:5px; border-radius:50%;
-            background:rgba(165,180,252,.5);
-            display:inline-block;
-        }
+        .hero-greeting-dot { width:5px; height:5px; border-radius:50%; background:rgba(165,180,252,.5); display:inline-block; }
         .hero-name {
-            font-family:var(--font);
-            font-size:1.9rem;
-            font-weight:800;
-            color:#fff;
-            letter-spacing:-.05em;
-            line-height:1.1;
+            font-family:var(--font); font-size:1.9rem; font-weight:800;
+            color:#fff; letter-spacing:-.05em; line-height:1.1;
             display:flex; align-items:center; gap:12px;
         }
         @media(max-width:479px){ .hero-name{ font-size:1.45rem; } }
         .hero-name-badge {
             display:inline-flex; align-items:center; justify-content:center;
             width:38px; height:38px;
-            background:rgba(255,255,255,.12);
-            border: 1px solid rgba(255,255,255,.2);
-            border-radius:12px;
-            flex-shrink:0;
-            backdrop-filter: blur(4px);
+            background:rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+            border-radius:12px; flex-shrink:0; backdrop-filter: blur(4px);
         }
-        .hero-date {
-            font-family:var(--font);
-            font-size:.75rem;
-            color:rgba(255,255,255,.45);
-            margin-top:6px;
-            letter-spacing:.02em;
-        }
-        .hero-quota-row {
-            display:flex; align-items:center; gap:8px;
-            margin-top:14px;
-        }
-        .hero-quota-label {
-            font-family:var(--font);
-            font-size:.65rem;
-            font-weight:600;
-            color:rgba(165,180,252,.6);
-            letter-spacing:.06em;
-            text-transform:uppercase;
-        }
-        .hero-quota-track {
-            flex:1; max-width:100px;
-            height:5px;
-            background:rgba(255,255,255,.12);
-            border-radius:999px; overflow:hidden;
-        }
-        .hero-quota-fill {
-            height:100%;
-            border-radius:999px;
-            background:linear-gradient(90deg, #a5b4fc, #818cf8);
-            transition: width .6s var(--ease-smooth) .4s;
-        }
-        .hero-quota-text {
-            font-family:var(--mono);
-            font-size:.65rem;
-            font-weight:700;
-            color:rgba(165,180,252,.8);
-        }
-        .hero-actions {
-            display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-        }
+        .hero-date { font-family:var(--font); font-size:.75rem; color:rgba(255,255,255,.45); margin-top:6px; letter-spacing:.02em; }
+        .hero-quota-row { display:flex; align-items:center; gap:8px; margin-top:14px; }
+        .hero-quota-label { font-family:var(--font); font-size:.65rem; font-weight:600; color:rgba(165,180,252,.6); letter-spacing:.06em; text-transform:uppercase; }
+        .hero-quota-track { flex:1; max-width:100px; height:5px; background:rgba(255,255,255,.12); border-radius:999px; overflow:hidden; }
+        .hero-quota-fill { height:100%; border-radius:999px; background:linear-gradient(90deg, #a5b4fc, #818cf8); transition: width .6s var(--ease-smooth) .4s; }
+        .hero-quota-text { font-family:var(--mono); font-size:.65rem; font-weight:700; color:rgba(165,180,252,.8); }
+        .hero-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
         @media(max-width:479px){ .hero-actions{ width:100%; } }
         .hero-btn {
-            display:inline-flex; align-items:center; gap:7px;
-            padding:11px 20px;
-            background:rgba(255,255,255,.1);
-            color:#fff;
-            border-radius:14px;
+            display:inline-flex; align-items:center; gap:7px; padding:11px 20px;
+            background:rgba(255,255,255,.1); color:#fff; border-radius:14px;
             font-family:var(--font); font-size:.82rem; font-weight:700;
-            border:1px solid rgba(255,255,255,.18);
-            text-decoration:none;
-            transition:all .2s;
-            backdrop-filter: blur(4px);
-            letter-spacing:-.01em;
+            border:1px solid rgba(255,255,255,.18); text-decoration:none;
+            transition:all .2s; backdrop-filter: blur(4px); letter-spacing:-.01em;
         }
         @media(max-width:479px){ .hero-btn{ flex:1; justify-content:center; padding:10px 14px; font-size:.78rem; } }
         .hero-btn:hover { background:rgba(255,255,255,.18); transform:translateY(-1px); border-color:rgba(255,255,255,.28); }
-        .hero-btn.solid {
-            background:rgba(255,255,255,.95);
-            color:#3730a3;
-            border-color:transparent;
-            box-shadow:0 4px 14px rgba(0,0,0,.2);
-        }
+        .hero-btn.solid { background:rgba(255,255,255,.95); color:#3730a3; border-color:transparent; box-shadow:0 4px 14px rgba(0,0,0,.2); }
         .hero-btn.solid:hover { background:#fff; box-shadow:0 6px 20px rgba(0,0,0,.25); }
 
         /* ══════════════════════════════════════════════════════
-           STAT PILLS — Refined card design
+           STAT PILLS
         ══════════════════════════════════════════════════════ */
         .stat-pill-row {
             display: grid;
@@ -463,22 +391,14 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         @media(max-width:599px){ .stat-pill-row{ margin:0 14px 14px; } }
 
         .stat-pill {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 18px 18px 16px;
-            display: flex; flex-direction:column; gap:0;
-            box-shadow: var(--shadow-sm);
-            transition: transform .2s var(--ease-smooth), box-shadow .2s var(--ease-smooth);
-            cursor: default;
-            position: relative;
-            overflow: hidden;
+            background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+            padding: 18px 18px 16px; display: flex; flex-direction:column; gap:0;
+            box-shadow: var(--shadow-sm); transition: transform .2s var(--ease-smooth), box-shadow .2s var(--ease-smooth);
+            cursor: default; position: relative; overflow: hidden;
         }
         .stat-pill::before {
             content:''; position:absolute; top:0; left:0; right:0; height:2px;
-            border-radius:18px 18px 0 0;
-            opacity: 0;
-            transition: opacity .2s;
+            border-radius:18px 18px 0 0; opacity: 0; transition: opacity .2s;
         }
         .stat-pill:hover { transform:translateY(-3px); box-shadow:var(--glow-indigo-lg); }
         .stat-pill:hover::before { opacity:1; }
@@ -488,76 +408,44 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .stat-pill-extra::before    { background:linear-gradient(90deg,#ea580c,#f97316); }
         .stat-pill-claimed::before  { background:linear-gradient(90deg,#7c3aed,#a78bfa); }
         .stat-pill-declined::before { background:linear-gradient(90deg,#dc2626,#f87171); }
-
         @media(max-width:400px){ .stat-pill{ padding:14px 14px 12px; border-radius:14px; } }
         .sp-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-        .sp-icon {
-            width:40px; height:40px; border-radius:12px;
-            display:flex; align-items:center; justify-content:center; flex-shrink:0;
-        }
+        .sp-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         @media(max-width:400px){ .sp-icon{ width:34px; height:34px; border-radius:10px; } }
         .sp-icon svg { width:18px; height:18px; flex-shrink:0; }
-        .sp-trend {
-            font-family:var(--font); font-size:.6rem; font-weight:700;
-            color:var(--text-sub); letter-spacing:.04em;
-        }
-        .sp-val {
-            font-family:var(--mono);
-            font-size:2rem; font-weight:800;
-            color:var(--text); line-height:1; letter-spacing:-.06em;
-            margin-bottom:4px;
-        }
+        .sp-val { font-family:var(--mono); font-size:2rem; font-weight:800; color:var(--text); line-height:1; letter-spacing:-.06em; margin-bottom:4px; }
         @media(max-width:400px){ .sp-val{ font-size:1.6rem; } }
-        .sp-lbl {
-            font-family:var(--font); font-size:.68rem; font-weight:600;
-            color:var(--text-sub); letter-spacing:.02em;
-        }
-        .sp-hint {
-            font-family:var(--font); font-size:.62rem;
-            color:var(--text-faint); margin-top:1px;
-        }
+        .sp-lbl { font-family:var(--font); font-size:.68rem; font-weight:600; color:var(--text-sub); letter-spacing:.02em; }
+        .sp-hint { font-family:var(--font); font-size:.62rem; color:var(--text-faint); margin-top:1px; }
 
         /* ══════════════════════════════════════════════════════
-           NEXT ACTION CARD — More polished
+           NEXT ACTION CARD
         ══════════════════════════════════════════════════════ */
         .next-card {
             display:flex; align-items:flex-start; gap:14px;
-            border-radius:16px; padding:16px 18px;
-            border:1px solid;
+            border-radius:16px; padding:16px 18px; border:1px solid;
             margin: 0 20px 16px;
             animation: db-fade-up .4s var(--ease-smooth) .1s both;
             position:relative; overflow:hidden;
         }
-        .next-card::before {
-            content:''; position:absolute; top:0; left:0; bottom:0; width:3px;
-            border-radius:3px 0 0 3px;
-        }
         @media(max-width:599px){ .next-card{ margin:0 14px 14px; padding:14px 14px; border-radius:14px; gap:11px; } }
-        .next-icon-wrap {
-            width:38px; height:38px; border-radius:11px;
-            display:flex; align-items:center; justify-content:center; flex-shrink:0;
-        }
-        .next-eyebrow {
-            font-family:var(--font); font-size:.58rem; font-weight:700;
-            letter-spacing:.18em; text-transform:uppercase; margin-bottom:4px;
-        }
+        .next-icon-wrap { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .next-eyebrow { font-family:var(--font); font-size:.58rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; margin-bottom:4px; }
         .next-msg { font-family:var(--font); font-size:.82rem; color:var(--text-muted); line-height:1.6; }
         .next-cta {
             display:inline-flex; align-items:center; gap:6px; margin-top:11px;
             padding:9px 16px; border-radius:10px;
             font-family:var(--font); font-size:.74rem; font-weight:700; color:#fff;
-            text-decoration:none; transition:all .2s;
-            box-shadow: 0 3px 10px rgba(0,0,0,.15);
+            text-decoration:none; transition:all .2s; box-shadow: 0 3px 10px rgba(0,0,0,.15);
         }
         .next-cta:hover { transform:translateY(-1px); opacity:.92; }
 
         /* ══════════════════════════════════════════════════════
-           TIMER BANNER — Refined
+           TIMER BANNER
         ══════════════════════════════════════════════════════ */
         .timer-banner {
             display:none; border-radius:16px; padding:14px 18px;
-            margin: 0 20px 16px;
-            border:1px solid; animation:db-fade-up .35s var(--ease-spring) both;
+            margin: 0 20px 16px; border:1px solid; animation:db-fade-up .35s var(--ease-spring) both;
         }
         @media(max-width:599px){ .timer-banner{ margin:0 14px 14px; } }
         .timer-banner.urgent  { background:rgba(239,68,68,.06); border-color:rgba(239,68,68,.25); color:#991b1b; }
@@ -581,23 +469,19 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .timer-progress-fill { height:100%; border-radius:999px; background:currentColor; opacity:.35; transition:width 1s linear; }
 
         /* ══════════════════════════════════════════════════════
-           UPCOMING PILL — Crisper
+           UPCOMING PILL
         ══════════════════════════════════════════════════════ */
         .upcoming-pill {
-            background:rgba(99,102,241,.06);
-            border:1px solid rgba(99,102,241,.18);
-            border-radius:16px; padding:14px 16px;
-            margin: 0 20px 16px;
+            background:rgba(99,102,241,.06); border:1px solid rgba(99,102,241,.18);
+            border-radius:16px; padding:14px 16px; margin: 0 20px 16px;
             display:flex; align-items:center; gap:14px; flex-wrap:wrap;
             animation: db-fade-up .4s var(--ease-smooth) .18s both;
             box-shadow: var(--glow-indigo);
         }
         @media(max-width:599px){ .upcoming-pill{ margin:0 14px 14px; } }
         .up-icon {
-            width:40px; height:40px;
-            background:linear-gradient(135deg, var(--indigo-600), var(--indigo-800));
-            border-radius:12px;
-            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            width:40px; height:40px; background:linear-gradient(135deg, var(--indigo-600), var(--indigo-800));
+            border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
             box-shadow:0 4px 12px rgba(67,56,202,.3);
         }
         .up-icon svg { width:16px; height:16px; flex-shrink:0; }
@@ -605,14 +489,10 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         .up-name { font-family:var(--font); font-size:.88rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px; }
         .up-time { font-family:var(--mono); font-size:.68rem; color:var(--indigo-600); margin-top:2px; font-weight:500; }
         .up-btn {
-            margin-left:auto;
-            font-family:var(--font); font-size:.72rem; font-weight:700;
-            color:var(--indigo-700);
-            background:var(--card);
-            border:1px solid rgba(99,102,241,.25);
-            border-radius:10px; padding:8px 14px;
-            text-decoration:none; white-space:nowrap;
-            transition:all .2s;
+            margin-left:auto; font-family:var(--font); font-size:.72rem; font-weight:700;
+            color:var(--indigo-700); background:var(--card);
+            border:1px solid rgba(99,102,241,.25); border-radius:10px; padding:8px 14px;
+            text-decoration:none; white-space:nowrap; transition:all .2s;
         }
         .up-btn:hover { background:var(--indigo-600); color:white; border-color:transparent; }
         @media(max-width:479px){ .up-name{max-width:100%;} .up-btn{margin-left:0;width:100%;text-align:center;display:block;} }
@@ -633,33 +513,21 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         @media(max-width:560px){ .side-col{ grid-template-columns:1fr; } }
 
         /* ── Shared Card Helpers ── */
-        .db-card {
-            background:var(--card);
-            border:1px solid var(--border);
-            border-radius:20px;
-            box-shadow:var(--shadow-sm);
-            transition:box-shadow .2s;
-        }
+        .db-card { background:var(--card); border:1px solid var(--border); border-radius:20px; box-shadow:var(--shadow-sm); transition:box-shadow .2s; }
         .db-card:hover { box-shadow:var(--shadow-md); }
         .db-card-p { padding:20px 20px 16px; }
         @media(max-width:479px){ .db-card-p{ padding:16px 14px 14px; } }
-
         .card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
         .card-icon { width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .card-icon svg { width:16px; height:16px; flex-shrink:0; }
         .card-title { font-family:var(--font); font-size:.9rem; font-weight:700; color:var(--text); letter-spacing:-.02em; }
         .card-sub   { font-family:var(--font); font-size:.7rem; color:var(--text-sub); margin-top:2px; }
-
         .section-lbl {
             font-family:var(--font); font-size:.6rem; font-weight:700;
             letter-spacing:.2em; text-transform:uppercase; color:var(--text-sub);
             margin-bottom:12px; display:flex; align-items:center; gap:7px;
         }
-        .section-lbl::before {
-            content:''; width:3px; height:13px; border-radius:2px;
-            background:linear-gradient(180deg, var(--indigo-500), var(--indigo-700));
-            flex-shrink:0;
-        }
+        .section-lbl::before { content:''; width:3px; height:13px; border-radius:2px; background:linear-gradient(180deg, var(--indigo-500), var(--indigo-700)); flex-shrink:0; }
         .link-sm {
             font-family:var(--font); font-size:.64rem; font-weight:700;
             color:var(--indigo); text-decoration:none; letter-spacing:.06em;
@@ -675,13 +543,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             font-family:var(--font); font-size:.82rem; font-weight:600;
             transition:all .2s var(--ease-smooth);
         }
-        .qa-link:hover {
-            border-color:rgba(99,102,241,.3);
-            background:rgba(99,102,241,.04);
-            color:var(--indigo-700);
-            transform:translateX(2px);
-            box-shadow:var(--glow-indigo);
-        }
+        .qa-link:hover { border-color:rgba(99,102,241,.3); background:rgba(99,102,241,.04); color:var(--indigo-700); transform:translateX(2px); box-shadow:var(--glow-indigo); }
         .qa-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .qa-icon svg { width:15px; height:15px; flex-shrink:0; }
         .qa-chev { margin-left:auto; color:var(--text-faint); flex-shrink:0; transition:transform .2s; }
@@ -696,8 +558,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         }
         .bk-row:hover { background:rgba(99,102,241,.05); }
         .bk-date {
-            width:40px; height:40px;
-            background:var(--input-bg); border-radius:11px;
+            width:40px; height:40px; background:var(--input-bg); border-radius:11px;
             display:flex; flex-direction:column; align-items:center; justify-content:center;
             flex-shrink:0; border:1px solid var(--border-subtle);
         }
@@ -718,24 +579,12 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         /* ── FullCalendar overrides ── */
         #calendar { font-family:var(--font) !important; font-size:.8rem; }
         .fc .fc-toolbar { flex-wrap:wrap; gap:.5rem; }
-        .fc-toolbar-title {
-            font-family:var(--font) !important; font-size:.92rem !important;
-            font-weight:800 !important; color:var(--text) !important; letter-spacing:-.03em !important;
-        }
-        .fc-button-primary {
-            background:var(--indigo) !important; border-color:var(--indigo) !important;
-            border-radius:10px !important; font-family:var(--font) !important;
-            font-weight:700 !important; font-size:.7rem !important;
-            padding:.28rem .6rem !important; box-shadow:none !important;
-        }
+        .fc-toolbar-title { font-family:var(--font) !important; font-size:.92rem !important; font-weight:800 !important; color:var(--text) !important; letter-spacing:-.03em !important; }
+        .fc-button-primary { background:var(--indigo) !important; border-color:var(--indigo) !important; border-radius:10px !important; font-family:var(--font) !important; font-weight:700 !important; font-size:.7rem !important; padding:.28rem .6rem !important; box-shadow:none !important; }
         .fc-button-primary:hover { background:var(--indigo-800) !important; }
         .fc-button-primary:not(:disabled):active,
         .fc-button-primary:not(:disabled).fc-button-active { background:var(--indigo-900) !important; }
-        .fc-daygrid-event {
-            border-radius:5px !important; font-family:var(--font) !important;
-            font-size:.62rem !important; font-weight:600 !important;
-            padding:2px 5px !important; border:none !important; cursor:pointer !important;
-        }
+        .fc-daygrid-event { border-radius:5px !important; font-family:var(--font) !important; font-size:.62rem !important; font-weight:600 !important; padding:2px 5px !important; border:none !important; cursor:pointer !important; }
         .fc-daygrid-day:hover { background-color:rgba(99,102,241,.05) !important; cursor:pointer; }
         .fc-day-today { background:rgba(99,102,241,.06) !important; }
         .fc-day-today .fc-daygrid-day-number { color:var(--indigo) !important; font-weight:800 !important; }
@@ -764,17 +613,10 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         /* ══════════════════════════════════════════════════════
            GUIDE GRID
         ══════════════════════════════════════════════════════ */
-        .guide-grid {
-            display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-            gap:16px; margin:0 20px 18px;
-        }
+        .guide-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin:0 20px 18px; }
         @media(max-width:700px){ .guide-grid{ grid-template-columns:1fr; } }
         @media(max-width:599px){ .guide-grid{ margin:0 14px 14px; gap:12px; } }
-
-        .how-step {
-            display:flex; align-items:flex-start; gap:12px; padding:10px 0;
-            border-bottom:1px solid var(--border-subtle);
-        }
+        .how-step { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border-subtle); }
         .how-step:last-child { border-bottom:none; }
         .step-num {
             width:26px; height:26px; border-radius:50%;
@@ -784,210 +626,139 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             margin-top:1px; box-shadow:0 2px 8px rgba(67,56,202,.25);
         }
         .how-step p { font-family:var(--font); }
-        .status-guide-row {
-            display:flex; align-items:center; gap:10px; padding:7px 0;
-            border-bottom:1px solid var(--border-subtle);
-        }
+        .status-guide-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border-subtle); }
         .status-guide-row:last-child { border-bottom:none; }
         .status-guide-row p { font-family:var(--font); font-size:.72rem; color:var(--text-muted); }
-
-        /* ── Date Modal Row ── */
-        .date-row {
-            display:flex; align-items:center; gap:11px; padding:.75rem;
-            border-bottom:1px solid var(--border-subtle); border-radius:10px;
-            transition:background .15s;
-        }
+        .date-row { display:flex; align-items:center; gap:11px; padding:.75rem; border-bottom:1px solid var(--border-subtle); border-radius:10px; transition:background .15s; }
         .date-row:hover { background:var(--input-bg); }
         .date-row:last-child { border-bottom:none; }
 
         /* ══════════════════════════════════════════════════════
-           LIBRARY SECTION — Enhanced atmosphere
+           LIBRARY SECTION — Redesigned
         ══════════════════════════════════════════════════════ */
         .lib-section {
-            display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.5fr);
-            gap:16px; margin:0 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 0 20px 24px;
         }
-        @media(max-width:900px){ .lib-section{ grid-template-columns:1fr; } }
-        @media(max-width:599px){ .lib-section{ margin:0 14px 20px; gap:12px; } }
+        @media(max-width:599px){ .lib-section{ margin: 0 14px 20px; gap: 10px; } }
 
-        /* ── Library Hero ── */
-        .lib-hero {
-            position:relative; border-radius:22px; overflow:hidden;
-            display:flex; flex-direction:column; justify-content:space-between;
-            min-height:290px;
-            background:linear-gradient(155deg, #1c0d00 0%, #3d1c00 28%, #5c2a00 52%, #78350f 76%, #92400e 100%);
-            box-shadow:0 20px 60px rgba(120,53,15,.25), 0 4px 12px rgba(0,0,0,.15);
+        /* ── Library Header Band ── */
+        .lib-header-band {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 20px;
+            background: linear-gradient(120deg, #1c0d00 0%, #78350f 60%, #92400e 100%);
+            border-radius: 18px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(120,53,15,.2);
+            flex-wrap: wrap;
         }
-        @media(max-width:900px){ .lib-hero{ min-height:220px; } }
-        .lib-hero::before {
-            content:'';
-            position:absolute; inset:0;
-            background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E") repeat;
-            pointer-events:none; z-index:1;
+        @media(max-width:479px){ .lib-header-band{ padding: 14px 16px; gap: 10px; } }
+        .lib-header-band::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E") repeat;
+            pointer-events: none;
         }
-        .lib-hero::after {
-            content:'';
-            position:absolute; top:-40px; right:-40px;
-            width:280px; height:280px;
-            background:radial-gradient(circle, rgba(251,191,36,.2) 0%, transparent 65%);
-            pointer-events:none; z-index:1;
+        .lib-header-left { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+        .lib-header-icon {
+            width: 44px; height: 44px;
+            background: rgba(251,191,36,.15);
+            border: 1px solid rgba(251,191,36,.25);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .lib-hero-lantern {
-            position:absolute; top:22px; right:22px; z-index:2;
-            width:56px; height:56px;
-            display:flex; align-items:center; justify-content:center;
-            background:rgba(251,191,36,.12);
-            border:1.5px solid rgba(251,191,36,.25);
-            border-radius:17px;
-            animation:db-float 3.8s ease-in-out infinite;
+        .lib-header-eyebrow { font-family: var(--font); font-size: .55rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: rgba(251,191,36,.55); margin-bottom: 3px; }
+        .lib-header-count { font-family: var(--mono); font-size: 1.5rem; font-weight: 900; color: #fef3c7; line-height: 1; letter-spacing: -.05em; }
+        .lib-header-sub { font-family: var(--font); font-size: .65rem; color: rgba(255,255,255,.35); margin-top: 2px; }
+        .lib-header-chips { display: flex; gap: 8px; position: relative; z-index: 1; flex-shrink: 0; }
+        @media(max-width:479px){ .lib-header-chips{ display: none; } }
+        .lib-header-chip { background: rgba(0,0,0,.25); border: 1px solid rgba(251,191,36,.15); border-radius: 10px; padding: 7px 12px; text-align: center; backdrop-filter: blur(6px); }
+        .lib-header-chip-val { font-family: var(--mono); font-size: .9rem; font-weight: 800; color: #fef3c7; display: block; }
+        .lib-header-chip-lbl { font-family: var(--font); font-size: .48rem; font-weight: 700; color: rgba(251,191,36,.4); text-transform: uppercase; letter-spacing: .08em; display: block; margin-top: 1px; }
+        .lib-browse-btn-inline {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 16px;
+            background: rgba(251,191,36,.15); border: 1px solid rgba(251,191,36,.3);
+            border-radius: 11px; color: #fef3c7;
+            font-family: var(--font); font-size: .74rem; font-weight: 700;
+            text-decoration: none; transition: all .2s; position: relative; z-index: 1;
+            white-space: nowrap; flex-shrink: 0;
         }
-        .lib-hero-inner { position:relative; z-index:2; padding:26px 24px 0; }
-        @media(max-width:479px){ .lib-hero-inner{ padding:20px 18px 0; } }
+        .lib-browse-btn-inline:hover { background: rgba(251,191,36,.28); transform: translateY(-1px); }
+        @media(max-width:479px){ .lib-browse-btn-inline{ padding: 8px 12px; font-size: .68rem; } }
 
-        .lib-eyebrow {
-            font-family:var(--font); font-size:.58rem; font-weight:700;
-            letter-spacing:.24em; text-transform:uppercase; color:rgba(251,191,36,.55); margin-bottom:7px;
+        /* ── Two-column card grid ── */
+        .lib-card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
-        .lib-count {
-            font-family:var(--mono); font-size:3.4rem; font-weight:900;
-            color:#fef3c7; line-height:1; letter-spacing:-.07em;
-            text-shadow:0 2px 24px rgba(251,191,36,.2);
-        }
-        @media(max-width:479px){ .lib-count{ font-size:2.6rem; } }
-        .lib-count-sub { font-family:var(--font); font-size:.74rem; color:rgba(251,191,36,.45); margin-top:6px; font-style:italic; }
+        @media(max-width:599px){ .lib-card-grid{ grid-template-columns: 1fr; gap: 10px; } }
 
-        /* Book spines */
-        .lib-book-spines { display:flex; align-items:flex-end; gap:3px; margin-top:22px; }
-        .lib-spine-item {
-            border-radius:2px 2px 0 0; opacity:.48;
-            box-shadow:inset -2px 0 0 rgba(0,0,0,.25);
-            transition:opacity .2s, transform .2s; cursor:default;
+        /* ── Shared lib card ── */
+        .lib-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-sm); }
+        .lib-card-header {
+            padding: 14px 16px 12px; border-bottom: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: space-between;
         }
-        .lib-spine-item:hover { opacity:.82; transform:translateY(-4px); }
-        .lib-shelf-edge {
-            height:3px; margin-top:0; border-radius:0;
-            background:linear-gradient(90deg, rgba(251,191,36,.06), rgba(251,191,36,.2), rgba(251,191,36,.06));
+        .lib-card-header-left { display: flex; align-items: center; gap: 9px; }
+        .lib-card-icon {
+            width: 34px; height: 34px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .lib-stats-row {
-            display:flex; gap:8px; padding:0 24px 20px; position:relative; z-index:2;
-        }
-        @media(max-width:479px){ .lib-stats-row{ padding:0 18px 16px; gap:6px; } }
-        .lib-stat-chip {
-            flex:1; background:rgba(0,0,0,.3); border:1px solid rgba(251,191,36,.16);
-            border-radius:12px; padding:9px 10px; backdrop-filter:blur(8px);
-        }
-        .lib-stat-chip-lbl { font-family:var(--font); font-size:.48rem; font-weight:700; color:rgba(251,191,36,.48); text-transform:uppercase; letter-spacing:.1em; display:block; }
-        .lib-stat-chip-val { font-family:var(--mono); font-size:1rem; font-weight:800; color:#fef3c7; line-height:1.3; display:block; }
-        .lib-browse-btn {
-            display:inline-flex; align-items:center; gap:7px;
-            margin:0 24px 22px; padding:11px 18px;
-            background:rgba(251,191,36,.12);
-            border:1.5px solid rgba(251,191,36,.3); border-radius:13px;
-            color:#fef3c7; font-family:var(--font); font-size:.78rem; font-weight:700;
-            text-decoration:none; transition:all .2s; position:relative; z-index:2; width:fit-content;
-        }
-        @media(max-width:479px){ .lib-browse-btn{ margin:0 18px 18px; } }
-        .lib-browse-btn:hover { background:rgba(251,191,36,.25); transform:translateY(-1px); }
-        .lib-browse-btn svg { width:14px; height:14px; flex-shrink:0; }
+        .lib-card-icon svg { width: 15px; height: 15px; flex-shrink: 0; }
+        .lib-card-icon-amber { background: linear-gradient(135deg, #92400e, #d97706); box-shadow: 0 3px 8px rgba(146,64,14,.22); }
+        .lib-card-icon-green { background: linear-gradient(135deg, #16a34a, #065f46); box-shadow: 0 3px 8px rgba(22,163,74,.2); }
 
-        /* ── Library Right Column ── */
-        .lib-right { display:flex; flex-direction:column; gap:14px; }
-
-        /* Reading strip */
-        .lib-reading-strip {
-            display:flex; align-items:center; gap:12px;
-            padding:12px 16px;
-            background:linear-gradient(90deg, rgba(251,191,36,.06) 0%, rgba(251,191,36,.02) 100%);
-            border:1px solid rgba(251,191,36,.14);
-            border-radius:14px;
-        }
-        body.dark .lib-reading-strip { background:rgba(251,191,36,.05); border-color:rgba(251,191,36,.11); }
-        .lib-reading-strip-icon {
-            width:34px; height:34px; border-radius:10px;
-            background:rgba(251,191,36,.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;
-        }
-        .lib-reading-strip p { font-family:var(--font); font-size:.78rem; color:var(--text-muted); line-height:1.5; }
-        .lib-reading-strip strong { color:var(--lib-amber); font-weight:700; }
-
-        /* Available Books Card */
-        .lib-books-card {
-            background:var(--card); border:1px solid var(--border);
-            border-radius:18px; overflow:hidden; box-shadow:var(--shadow-sm); flex:1;
-        }
-        .lib-books-header {
-            padding:15px 18px 13px; border-bottom:1px solid var(--border-subtle);
-            display:flex; align-items:center; justify-content:space-between;
-            background:linear-gradient(90deg, rgba(251,191,36,.03) 0%, transparent 60%);
-        }
-        .lib-books-header-left { display:flex; align-items:center; gap:10px; }
-        .lib-books-icon {
-            width:36px; height:36px; border-radius:11px;
-            background:linear-gradient(135deg,#92400e,#d97706);
-            display:flex; align-items:center; justify-content:center; flex-shrink:0;
-            box-shadow:0 3px 10px rgba(146,64,14,.25);
-        }
-        .lib-books-icon svg { width:16px; height:16px; flex-shrink:0; }
-
-        .book-list { padding:6px 10px 8px; }
+        /* Available Books */
+        .book-list  { padding: 4px 8px 8px; }
         .book-row {
-            display:flex; align-items:center; gap:10px; padding:8px 8px;
-            border-radius:11px; text-decoration:none; color:inherit; transition:background .15s;
+            display: flex; align-items: center; gap: 10px; padding: 8px 8px;
+            border-radius: 11px; text-decoration: none; color: inherit; transition: background .15s;
         }
-        .book-row:hover { background:rgba(251,191,36,.07); }
-        body.dark .book-row:hover { background:rgba(251,191,36,.05); }
+        .book-row:hover { background: rgba(251,191,36,.07); }
+        body.dark .book-row:hover { background: rgba(251,191,36,.05); }
         .book-cover {
-            width:34px; height:46px; border-radius:4px 5px 5px 4px;
-            display:flex; align-items:center; justify-content:center; flex-shrink:0;
-            font-family:var(--font); font-weight:800; font-size:.8rem; color:#fff;
-            box-shadow:2px 3px 8px rgba(0,0,0,.22), inset -2px 0 0 rgba(0,0,0,.18);
-            position:relative; overflow:hidden;
+            width: 32px; height: 44px; border-radius: 4px 5px 5px 4px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            font-family: var(--font); font-weight: 800; font-size: .78rem; color: #fff;
+            box-shadow: 2px 3px 8px rgba(0,0,0,.22), inset -2px 0 0 rgba(0,0,0,.18);
+            position: relative; overflow: hidden;
         }
-        .book-cover::after { content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:rgba(0,0,0,.2); border-radius:3px 0 0 3px; }
-        .book-row:nth-child(6n+1) .book-cover { background:linear-gradient(160deg,#6366f1,#4338ca); }
-        .book-row:nth-child(6n+2) .book-cover { background:linear-gradient(160deg,#ec4899,#be185d); }
-        .book-row:nth-child(6n+3) .book-cover { background:linear-gradient(160deg,#10b981,#065f46); }
-        .book-row:nth-child(6n+4) .book-cover { background:linear-gradient(160deg,#f97316,#c2410c); }
-        .book-row:nth-child(6n+5) .book-cover { background:linear-gradient(160deg,#3b82f6,#1d4ed8); }
-        .book-row:nth-child(6n+6) .book-cover { background:linear-gradient(160deg,#8b5cf6,#6d28d9); }
-        .book-title  { font-family:var(--font); font-size:.82rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-.01em; }
-        .book-author { font-family:var(--font); font-size:.67rem; color:var(--text-sub); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .avail-pill  { font-family:var(--font); font-size:.58rem; font-weight:700; padding:3px 9px; border-radius:999px; flex-shrink:0; white-space:nowrap; }
+        .book-cover::after { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:rgba(0,0,0,.2); border-radius:3px 0 0 3px; }
+        .book-row:nth-child(6n+1) .book-cover { background: linear-gradient(160deg,#6366f1,#4338ca); }
+        .book-row:nth-child(6n+2) .book-cover { background: linear-gradient(160deg,#ec4899,#be185d); }
+        .book-row:nth-child(6n+3) .book-cover { background: linear-gradient(160deg,#10b981,#065f46); }
+        .book-row:nth-child(6n+4) .book-cover { background: linear-gradient(160deg,#f97316,#c2410c); }
+        .book-row:nth-child(6n+5) .book-cover { background: linear-gradient(160deg,#3b82f6,#1d4ed8); }
+        .book-row:nth-child(6n+6) .book-cover { background: linear-gradient(160deg,#8b5cf6,#6d28d9); }
+        .book-title  { font-family: var(--font); font-size: .8rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.01em; }
+        .book-author { font-family: var(--font); font-size: .64rem; color: var(--text-sub); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .avail-pill  { font-family: var(--font); font-size: .56rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
 
-        /* Active Borrows Card */
-        .lib-borrows-card {
-            background:var(--card); border:1px solid var(--border);
-            border-radius:18px; overflow:hidden; box-shadow:var(--shadow-sm);
-        }
-        .lib-borrows-header {
-            padding:15px 18px 13px; border-bottom:1px solid var(--border-subtle);
-            display:flex; align-items:center; justify-content:space-between;
-            background:linear-gradient(90deg, rgba(22,163,74,.04) 0%, transparent 60%);
-        }
-        .lib-borrows-header-left { display:flex; align-items:center; gap:10px; }
-        .lib-borrows-icon {
-            width:36px; height:36px; border-radius:11px;
-            background:linear-gradient(135deg,#16a34a,#065f46);
-            display:flex; align-items:center; justify-content:center; flex-shrink:0;
-            box-shadow:0 3px 10px rgba(22,163,74,.22);
-        }
-        .lib-borrows-icon svg { width:16px; height:16px; flex-shrink:0; }
-
-        .borrow-list { padding:8px 10px; display:flex; flex-direction:column; gap:7px; }
+        /* Active Borrows */
+        .borrow-list { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
         .borrow-row {
-            display:flex; align-items:center; gap:9px; padding:10px 10px;
-            background:var(--input-bg); border:1px solid var(--border-subtle);
-            border-radius:12px; transition:border-color .2s;
+            display: flex; align-items: center; gap: 9px; padding: 9px 10px;
+            background: var(--input-bg); border: 1px solid var(--border-subtle);
+            border-radius: 11px; transition: border-color .2s;
         }
-        .borrow-row:hover { border-color:rgba(22,163,74,.28); }
+        .borrow-row:hover { border-color: rgba(22,163,74,.28); }
         .borrow-cover {
-            width:28px; height:38px; border-radius:3px 4px 4px 3px;
-            background:linear-gradient(135deg,#a5b4fc,#818cf8);
-            display:flex; align-items:center; justify-content:center; flex-shrink:0;
-            font-family:var(--font); font-weight:800; font-size:.68rem; color:#fff;
-            box-shadow:1px 2px 5px rgba(0,0,0,.18), inset -2px 0 0 rgba(0,0,0,.15);
-            position:relative;
+            width: 26px; height: 36px; border-radius: 3px 4px 4px 3px;
+            background: linear-gradient(135deg, #a5b4fc, #818cf8);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            font-family: var(--font); font-weight: 800; font-size: .64rem; color: #fff;
+            box-shadow: 1px 2px 5px rgba(0,0,0,.18), inset -2px 0 0 rgba(0,0,0,.15);
+            position: relative;
         }
-        .borrow-cover::after { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:rgba(0,0,0,.18); border-radius:2px 0 0 2px; }
+        .borrow-cover::after { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:rgba(0,0,0,.18); border-radius:2px 0 0 2px; }
 
         /* ══════════════════════════════════════════════════════
            LOGIN TOAST
@@ -996,8 +767,7 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
             position:fixed; bottom:calc(var(--mob-nav-total,0px) + 12px); right:16px; z-index:400;
             max-width:288px;
             background:linear-gradient(135deg,#0f172a,#1e293b);
-            border:1px solid rgba(255,255,255,.08);
-            border-radius:16px; padding:13px 14px;
+            border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:13px 14px;
             display:flex; align-items:flex-start; gap:10px;
             box-shadow:0 16px 48px rgba(0,0,0,.35), 0 0 0 1px rgba(99,102,241,.1);
             transform:translateY(12px); opacity:0; pointer-events:none;
@@ -1015,51 +785,10 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         /* ══════════════════════════════════════════════════════
            SECTION DIVIDER
         ══════════════════════════════════════════════════════ */
-        .section-divider {
-            display:flex; align-items:center; gap:12px;
-            margin:0 20px 16px; padding:0 4px;
-        }
+        .section-divider { display:flex; align-items:center; gap:12px; margin:0 20px 16px; padding:0 4px; }
         @media(max-width:599px){ .section-divider{ margin:0 14px 14px; } }
         .section-divider-line { flex:1; height:1px; background:var(--border-subtle); }
-        .section-divider-label {
-            font-family:var(--font); font-size:.6rem; font-weight:700;
-            letter-spacing:.18em; text-transform:uppercase; color:var(--text-faint);
-            white-space:nowrap;
-        }
-
-        /* ══════════════════════════════════════════════════════
-           QUOTA BAR CARD (new)
-        ══════════════════════════════════════════════════════ */
-        .quota-card {
-            margin:0 20px 16px;
-            background:var(--card); border:1px solid var(--border);
-            border-radius:16px; padding:14px 18px;
-            display:flex; align-items:center; gap:14px;
-            box-shadow:var(--shadow-sm);
-        }
-        @media(max-width:599px){ .quota-card{ margin:0 14px 14px; } }
-        .quota-icon { width:36px; height:36px; border-radius:11px; background:var(--indigo-50); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        body.dark .quota-icon { background:rgba(99,102,241,.1); }
-        .quota-body { flex:1; min-width:0; }
-        .quota-label { font-family:var(--font); font-size:.72rem; font-weight:700; color:var(--text); letter-spacing:-.01em; }
-        .quota-sub   { font-family:var(--font); font-size:.65rem; color:var(--text-sub); margin-top:1px; }
-        .quota-track {
-            margin-top:8px; height:5px; border-radius:999px;
-            background:var(--input-bg); overflow:hidden; position:relative;
-        }
-        .quota-fill {
-            height:100%; border-radius:999px;
-            background:linear-gradient(90deg, var(--indigo-500), var(--indigo-600));
-            transition:width .8s var(--ease-smooth) .3s;
-            position:relative; overflow:hidden;
-        }
-        .quota-fill::after {
-            content:'';
-            position:absolute; top:0; left:-100%; bottom:0; width:60%;
-            background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
-            animation:db-shimmer 2.5s ease-in-out infinite;
-        }
-        .quota-nums { font-family:var(--mono); font-size:.72rem; font-weight:700; color:var(--text-sub); flex-shrink:0; }
+        .section-divider-label { font-family:var(--font); font-size:.6rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--text-faint); white-space:nowrap; }
 
         /* ── Responsive padding at bottom ── */
         .main-area > *:last-child { padding-bottom: 32px; }
@@ -1407,71 +1136,45 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
         </div>
 
         <div class="lib-section fade-up-4">
-            <!-- Atmospheric Hero -->
-            <div class="lib-hero">
-                <div class="lib-hero-lantern">
-                    <?= icon('book-open', 26, 'rgba(251,191,36,.9)') ?>
-                </div>
-                <div class="lib-hero-inner">
-                    <div class="lib-eyebrow">Collection</div>
-                    <div class="lib-count"><?= $availableCount ?></div>
-                    <div class="lib-count-sub">available &nbsp;·&nbsp; <?= $totalBooks ?> total</div>
-                    <div class="lib-book-spines">
-                        <?php
-                        $spines = [
-                            ['h'=>52,'w'=>14,'c'=>'#6366f1'],['h'=>66,'w'=>11,'c'=>'#ec4899'],
-                            ['h'=>44,'w'=>16,'c'=>'#10b981'],['h'=>58,'w'=>12,'c'=>'#f97316'],
-                            ['h'=>70,'w'=>10,'c'=>'#3b82f6'],['h'=>48,'w'=>15,'c'=>'#8b5cf6'],
-                            ['h'=>62,'w'=>11,'c'=>'#14b8a6'],['h'=>55,'w'=>13,'c'=>'#f59e0b'],
-                            ['h'=>40,'w'=>14,'c'=>'#ef4444'],['h'=>68,'w'=>10,'c'=>'#a855f7'],
-                        ];
-                        foreach ($spines as $sp): ?>
-                            <div class="lib-spine-item" style="width:<?= $sp['w'] ?>px;height:<?= $sp['h'] ?>px;background:<?= $sp['c'] ?>;"></div>
-                        <?php endforeach; ?>
+
+            <!-- Compact header band -->
+            <div class="lib-header-band">
+                <div class="lib-header-left">
+                    <div class="lib-header-icon">
+                        <?= icon('book-open', 22, 'rgba(251,191,36,.9)') ?>
                     </div>
-                    <div class="lib-shelf-edge"></div>
-                </div>
-                <div>
-                    <div class="lib-stats-row">
-                        <div class="lib-stat-chip">
-                            <span class="lib-stat-chip-lbl">My Borrows</span>
-                            <span class="lib-stat-chip-val"><?= count($myBorrowings) ?></span>
-                        </div>
-                        <div class="lib-stat-chip">
-                            <span class="lib-stat-chip-lbl">Pending</span>
-                            <span class="lib-stat-chip-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status']??'') === 'pending')) ?></span>
-                        </div>
-                        <div class="lib-stat-chip">
-                            <span class="lib-stat-chip-lbl">Active</span>
-                            <span class="lib-stat-chip-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status']??'') === 'approved')) ?></span>
-                        </div>
+                    <div>
+                        <div class="lib-header-eyebrow">Collection</div>
+                        <div class="lib-header-count"><?= $availableCount ?> <span style="font-size:1rem;font-weight:600;color:rgba(254,243,199,.5);">/ <?= $totalBooks ?></span></div>
+                        <div class="lib-header-sub">books available · <?= $totalBooks ?> total</div>
                     </div>
-                    <a href="<?= base_url('/books') ?>" class="lib-browse-btn">
-                        <?= icon('book-open', 14, '#fef3c7') ?> Browse Collection
-                    </a>
                 </div>
+                <div class="lib-header-chips">
+                    <div class="lib-header-chip">
+                        <span class="lib-header-chip-val"><?= count($myBorrowings) ?></span>
+                        <span class="lib-header-chip-lbl">My Borrows</span>
+                    </div>
+                    <div class="lib-header-chip">
+                        <span class="lib-header-chip-val"><?= count(array_filter($myBorrowings, fn($b) => ($b['status']??'') === 'approved')) ?></span>
+                        <span class="lib-header-chip-lbl">Active</span>
+                    </div>
+                </div>
+                <a href="<?= base_url('/books') ?>" class="lib-browse-btn-inline">
+                    <?= icon('arrow-right', 13, '#fef3c7') ?> Browse
+                </a>
             </div>
 
-            <!-- Right column -->
-            <div class="lib-right">
-                <div class="lib-reading-strip">
-                    <div class="lib-reading-strip-icon">
-                        <?= icon('feather', 16, '#d97706') ?>
-                    </div>
-                    <p>
-                        <strong><?= $availableCount ?> books</strong> ready to borrow from the community collection.
-                        Browse, request a borrow, and return by the due date.
-                    </p>
-                </div>
+            <!-- Two-card grid -->
+            <div class="lib-card-grid">
 
                 <!-- Available Books -->
-                <div class="lib-books-card">
-                    <div class="lib-books-header">
-                        <div class="lib-books-header-left">
-                            <div class="lib-books-icon"><?= icon('book-open', 16, 'white') ?></div>
+                <div class="lib-card">
+                    <div class="lib-card-header">
+                        <div class="lib-card-header-left">
+                            <div class="lib-card-icon lib-card-icon-amber"><?= icon('book-open', 15, 'white') ?></div>
                             <div>
                                 <div class="card-title">Available Now</div>
-                                <div class="card-sub">Books you can borrow today</div>
+                                <div class="card-sub">Borrow today</div>
                             </div>
                         </div>
                         <a href="<?= base_url('/books') ?>" class="link-sm">All →</a>
@@ -1479,10 +1182,10 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     <?php if (!empty($featuredBooks)): ?>
                         <div class="book-list">
                             <?php foreach (array_slice($featuredBooks, 0, 5) as $book):
-                                $avail = (int)($book['available_copies'] ?? 0);
+                                $avail   = (int)($book['available_copies'] ?? 0);
                                 $pillBg  = $avail === 0 ? '#fecaca' : ($avail <= 1 ? '#fde68a' : '#bbf7d0');
                                 $pillFg  = $avail === 0 ? '#7f1d1d' : ($avail <= 1 ? '#78350f' : '#14532d');
-                                $pillTxt = $avail === 0 ? 'Out' : ($avail <= 1 ? '1 left' : $avail . ' left');
+                                $pillTxt = $avail === 0 ? 'Out'     : ($avail <= 1 ? '1 left'  : $avail . ' left');
                             ?>
                                 <a href="<?= base_url('/books') ?>" class="book-row">
                                     <div class="book-cover"><?= mb_strtoupper(mb_substr($book['title'], 0, 1)) ?></div>
@@ -1495,14 +1198,14 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                             <?php endforeach; ?>
                         </div>
                         <?php if (count($featuredBooks) > 5): ?>
-                            <div style="padding:8px 18px 14px;border-top:1px solid var(--border-subtle);text-align:center;">
-                                <a href="<?= base_url('/books') ?>" class="link-sm">+<?= count($featuredBooks) - 5 ?> more titles →</a>
+                            <div style="padding:6px 16px 12px;border-top:1px solid var(--border-subtle);text-align:center;">
+                                <a href="<?= base_url('/books') ?>" class="link-sm">+<?= count($featuredBooks) - 5 ?> more →</a>
                             </div>
                         <?php endif; ?>
                     <?php else: ?>
-                        <div style="text-align:center;padding:32px 16px;">
-                            <div style="display:flex;justify-content:center;margin-bottom:10px;color:var(--text-faint);"><?= icon('book-open', 30, 'currentColor') ?></div>
-                            <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);">No books available right now</p>
+                        <div style="text-align:center;padding:28px 16px;">
+                            <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('book-open', 26, 'currentColor') ?></div>
+                            <p style="font-family:var(--font);font-size:.75rem;color:var(--text-sub);">No books available</p>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -1513,52 +1216,54 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     array_values(array_filter($myBorrowings, fn($b) => in_array($b['status']??'', ['approved','pending']))),
                     0, 4
                 );
-                if (!empty($activeBorrows)): ?>
-                    <div class="lib-borrows-card">
-                        <div class="lib-borrows-header">
-                            <div class="lib-borrows-header-left">
-                                <div class="lib-borrows-icon"><?= icon('bookmark', 16, 'white') ?></div>
-                                <div>
-                                    <div class="card-title">My Active Borrows</div>
-                                    <div class="card-sub">Currently checked out</div>
-                                </div>
+                ?>
+                <div class="lib-card">
+                    <div class="lib-card-header">
+                        <div class="lib-card-header-left">
+                            <div class="lib-card-icon lib-card-icon-green"><?= icon('bookmark', 15, 'white') ?></div>
+                            <div>
+                                <div class="card-title">My Borrows</div>
+                                <div class="card-sub">Currently checked out</div>
                             </div>
-                            <a href="<?= base_url('/books') ?>#mine" class="link-sm">All →</a>
                         </div>
+                        <a href="<?= base_url('/books') ?>#mine" class="link-sm">All →</a>
+                    </div>
+                    <?php if (!empty($activeBorrows)): ?>
                         <div class="borrow-list">
                             <?php foreach ($activeBorrows as $borrow):
-                                $bs  = strtolower($borrow['status'] ?? 'pending');
-                                $due = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
+                                $bs      = strtolower($borrow['status'] ?? 'pending');
+                                $due     = !empty($borrow['due_date']) ? strtotime($borrow['due_date']) : null;
                                 $overdue = $due && $due < time();
                                 $dueSoon = $due && !$overdue && $due < time() + 3 * 86400;
                             ?>
                                 <div class="borrow-row">
                                     <div class="borrow-cover"><?= mb_strtoupper(mb_substr($borrow['title'] ?? 'B', 0, 1)) ?></div>
                                     <div style="flex:1;min-width:0;">
-                                        <p style="font-family:var(--font);font-weight:700;font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= esc($borrow['title'] ?? 'Unknown Book') ?></p>
+                                        <p style="font-family:var(--font);font-weight:700;font-size:.78rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= esc($borrow['title'] ?? 'Unknown Book') ?></p>
                                         <?php if ($due && $bs === 'approved'): ?>
-                                            <p style="font-family:var(--mono);font-size:.65rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : '#6366f1') ?>;">
-                                                <?= $overdue ? 'Overdue · ' : ($dueSoon ? 'Due soon · ' : '') ?><?= date('M j, Y', $due) ?>
+                                            <p style="font-family:var(--mono);font-size:.62rem;color:<?= $overdue ? '#ef4444' : ($dueSoon ? '#d97706' : '#6366f1') ?>;">
+                                                <?= $overdue ? 'Overdue · ' : ($dueSoon ? 'Due soon · ' : '') ?><?= date('M j', $due) ?>
                                             </p>
                                         <?php endif; ?>
                                     </div>
-                                    <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>" style="border-radius:8px;font-size:.6rem;">
+                                    <span class="tag tag-<?= $overdue ? 'declined' : ($dueSoon ? 'pending' : $bs) ?>" style="border-radius:8px;font-size:.58rem;">
                                         <?= $overdue ? 'Overdue' : ($dueSoon ? 'Due Soon' : ucfirst($bs)) ?>
                                     </span>
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                    </div>
-                <?php else: ?>
-                    <div class="lib-borrows-card" style="padding:28px 20px;text-align:center;">
-                        <div style="display:flex;justify-content:center;margin-bottom:10px;color:var(--text-faint);"><?= icon('bookmark', 26, 'currentColor') ?></div>
-                        <p style="font-family:var(--font);font-size:.78rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
-                        <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-family:var(--font);font-size:.72rem;font-weight:700;color:#7c3aed;text-decoration:none;">
-                            <?= icon('book-open', 12, '#7c3aed') ?> Borrow a book
-                        </a>
-                    </div>
-                <?php endif; ?>
-            </div>
+                    <?php else: ?>
+                        <div style="text-align:center;padding:28px 16px;">
+                            <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--text-faint);"><?= icon('bookmark', 26, 'currentColor') ?></div>
+                            <p style="font-family:var(--font);font-size:.75rem;color:var(--text-sub);font-weight:600;">No active borrows</p>
+                            <a href="<?= base_url('/books') ?>" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-family:var(--font);font-size:.7rem;font-weight:700;color:#7c3aed;text-decoration:none;">
+                                <?= icon('book-open', 11, '#7c3aed') ?> Borrow a book
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+            </div><!-- end .lib-card-grid -->
         </div>
         <!-- End Library Section -->
 
