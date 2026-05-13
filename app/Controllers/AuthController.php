@@ -9,6 +9,10 @@ use CodeIgniter\I18n\Time;
 
 class AuthController extends BaseController
 {
+    // ─────────────────────────────────────────────
+    //  LOGIN
+    // ─────────────────────────────────────────────
+
     public function login()
     {
         if (session()->get('isLoggedIn')) {
@@ -30,26 +34,39 @@ class AuthController extends BaseController
 
         $userModel = new UserModel();
 
+        // FIX: alias accounts.is_verified to avoid column-name collision
+        // with users.is_verified when both tables share the same column name.
         $user = $userModel
-            ->select('users.id, users.name, users.email, users.role, users.status, accounts.password, accounts.is_verified')
+            ->select('
+                users.id,
+                users.name,
+                users.email,
+                users.role,
+                users.status,
+                accounts.password,
+                accounts.is_verified AS account_verified
+            ')
             ->join('accounts', 'accounts.user_id = users.id')
             ->where('users.email', $email)
             ->first();
 
+        // Unknown email OR wrong password — same generic message (security best-practice)
         if (!$user || !password_verify($password, $user['password'])) {
             $session->setFlashdata('error', 'Invalid email or password.');
             return redirect()->to('/login');
         }
 
-        $isVerified = in_array($user['is_verified'], [true, 1, 't', 'true', '1']);
+        // FIX: use the aliased column 'account_verified'
+        $isVerified = in_array($user['account_verified'], [true, 1, 't', 'true', '1'], false);
 
         if (!$isVerified) {
-            $session->setFlashdata('error', 'Please verify your email address first. Check your inbox for the verification link.');
+            $session->setFlashdata('warning', 'Please verify your email address first. Check your inbox for the verification link.');
             return redirect()->to('/login');
         }
 
+        // SK-specific status gates
         if ($user['role'] === 'sk' && $user['status'] === 'pending') {
-            $session->setFlashdata('error', 'Your SK account is pending approval by the Barangay Chairman. You will be notified via email once a decision is made.');
+            $session->setFlashdata('warning', 'Your SK account is pending approval by the Barangay Chairman. You will be notified via email once a decision is made.');
             return redirect()->to('/login');
         }
 
@@ -58,6 +75,7 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
+        // All checks passed — create session
         $session->set([
             'user_id'    => $user['id'],
             'email'      => $user['email'],
@@ -82,17 +100,9 @@ class AuthController extends BaseController
         }
     }
 
-    private function closeStaleSessions(int $userId): void
-    {
-        $db     = db_connect();
-        $cutoff = Time::now('Asia/Manila')->subHours(4)->toDateTimeString();
-
-        $db->table('login_logs')
-            ->where('user_id', $userId)
-            ->where('logout_time IS NULL')
-            ->where('login_time <', $cutoff)
-            ->update(['logout_time' => $cutoff]);
-    }
+    // ─────────────────────────────────────────────
+    //  REGISTER
+    // ─────────────────────────────────────────────
 
     public function register()
     {
@@ -157,9 +167,9 @@ class AuthController extends BaseController
             return redirect()->to('/register');
         }
 
-        $dbRole   = (strtolower($role) === 'sk') ? 'sk' : 'user';
-        $isSK     = ($dbRole === 'sk');
-        $now      = Time::now('Asia/Manila')->toDateTimeString();
+        $dbRole = (strtolower($role) === 'sk') ? 'sk' : 'user';
+        $isSK   = ($dbRole === 'sk');
+        $now    = Time::now('Asia/Manila')->toDateTimeString();
 
         $userModel->insert([
             'name'        => $fullName,
@@ -209,6 +219,10 @@ class AuthController extends BaseController
         return redirect()->to('/login');
     }
 
+    // ─────────────────────────────────────────────
+    //  EMAIL VERIFICATION
+    // ─────────────────────────────────────────────
+
     public function verifyEmail($token)
     {
         if (!$token) {
@@ -224,7 +238,7 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        $alreadyVerified = in_array($account['is_verified'], [true, 1, 't', 'true', '1']);
+        $alreadyVerified = in_array($account['is_verified'], [true, 1, 't', 'true', '1'], false);
 
         if ($alreadyVerified) {
             session()->setFlashdata('info', 'Your email is already verified. You can log in.');
@@ -265,6 +279,10 @@ class AuthController extends BaseController
         return redirect()->to('/login');
     }
 
+    // ─────────────────────────────────────────────
+    //  LOGOUT
+    // ─────────────────────────────────────────────
+
     public function logout()
     {
         $session = session();
@@ -289,6 +307,10 @@ class AuthController extends BaseController
         return redirect()->to('/login');
     }
 
+    // ─────────────────────────────────────────────
+    //  HELPERS
+    // ─────────────────────────────────────────────
+
     public function redirectDashboard()
     {
         if (!session()->get('isLoggedIn')) {
@@ -300,6 +322,18 @@ class AuthController extends BaseController
             case 'sk':       return redirect()->to('/sk/dashboard');
             default:         return redirect()->to('/dashboard');
         }
+    }
+
+    private function closeStaleSessions(int $userId): void
+    {
+        $db     = db_connect();
+        $cutoff = Time::now('Asia/Manila')->subHours(4)->toDateTimeString();
+
+        $db->table('login_logs')
+            ->where('user_id', $userId)
+            ->where('logout_time IS NULL')
+            ->where('login_time <', $cutoff)
+            ->update(['logout_time' => $cutoff]);
     }
 
     private function sendVerificationEmail(string $to, string $name, string $token): bool
