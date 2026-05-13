@@ -10,6 +10,18 @@ use CodeIgniter\I18n\Time;
 class AuthController extends BaseController
 {
     // ─────────────────────────────────────────────
+    //  HELPER — PostgreSQL returns booleans as 't'/'f' strings.
+    //  This normalises any possible value to a real PHP bool.
+    // ─────────────────────────────────────────────
+
+    private function isTrue($value): bool
+    {
+        if ($value === true || $value === 1) return true;
+        if (is_string($value)) return in_array(strtolower(trim($value)), ['t', 'true', '1', 'yes'], true);
+        return false;
+    }
+
+    // ─────────────────────────────────────────────
     //  LOGIN
     // ─────────────────────────────────────────────
 
@@ -34,8 +46,8 @@ class AuthController extends BaseController
 
         $userModel = new UserModel();
 
-        // FIX: alias accounts.is_verified to avoid column-name collision
-        // with users.is_verified when both tables share the same column name.
+        // Alias accounts.is_verified to avoid column-name collision
+        // with users.is_verified — both tables share the same column name.
         $user = $userModel
             ->select('
                 users.id,
@@ -56,10 +68,8 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        // FIX: use the aliased column 'account_verified'
-        $isVerified = in_array($user['account_verified'], [true, 1, 't', 'true', '1'], false);
-
-        if (!$isVerified) {
+        // PostgreSQL returns native booleans as 't'/'f' — use the helper
+        if (!$this->isTrue($user['account_verified'])) {
             $session->setFlashdata('warning', 'Please verify your email address first. Check your inbox for the verification link.');
             return redirect()->to('/login');
         }
@@ -171,14 +181,15 @@ class AuthController extends BaseController
         $isSK   = ($dbRole === 'sk');
         $now    = Time::now('Asia/Manila')->toDateTimeString();
 
+        // Use native PHP false/true so PostgreSQL stores proper boolean values
         $userModel->insert([
             'name'        => $fullName,
             'full_name'   => $fullName,
             'email'       => $email,
             'role'        => $dbRole,
             'status'      => 'pending',
-            'is_approved' => $isSK ? 'false' : 'true',
-            'is_verified' => 'false',
+            'is_approved' => $isSK ? false : true,
+            'is_verified' => false,
             'created_at'  => $now,
             'updated_at'  => $now,
         ]);
@@ -193,11 +204,12 @@ class AuthController extends BaseController
         $accountModel      = new AccountModel();
         $verificationToken = bin2hex(random_bytes(32));
 
+        // Use native PHP false so PostgreSQL stores a proper boolean FALSE
         $accountModel->insert([
             'user_id'            => $userId,
             'password'           => password_hash($password, PASSWORD_DEFAULT),
             'verification_token' => $verificationToken,
-            'is_verified'        => 'false',
+            'is_verified'        => false,
             'created_at'         => $now,
             'updated_at'         => $now,
         ]);
@@ -238,17 +250,17 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        $alreadyVerified = in_array($account['is_verified'], [true, 1, 't', 'true', '1'], false);
-
-        if ($alreadyVerified) {
+        // Use the helper for consistent PostgreSQL boolean handling
+        if ($this->isTrue($account['is_verified'])) {
             session()->setFlashdata('info', 'Your email is already verified. You can log in.');
             return redirect()->to('/login');
         }
 
         $now = Time::now('Asia/Manila')->toDateTimeString();
 
+        // Use native true so PostgreSQL stores a proper boolean TRUE
         $accountModel->update($account['id'], [
-            'is_verified'        => 'true',
+            'is_verified'        => true,
             'verification_token' => null,
             'updated_at'         => $now,
         ]);
@@ -263,8 +275,9 @@ class AuthController extends BaseController
 
         $isSK = ($user['role'] === 'sk');
 
+        // Use native true so PostgreSQL stores a proper boolean TRUE
         $userModel->update($account['user_id'], [
-            'is_verified' => 'true',
+            'is_verified' => true,
             'status'      => $isSK ? 'pending' : 'approved',
             'updated_at'  => $now,
         ]);
