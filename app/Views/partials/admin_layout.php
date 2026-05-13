@@ -92,7 +92,7 @@ $getBadge = function(string $key) use ($pendingCount, $pendingSkCount, $pendingB
 
         <div class="l-sidebar__top">
             <div class="l-brand-tag">Admin Control Room</div>
-            <div class="l-brand-name">my<em>Space.</em></div>
+            <div class="l-brand-name">eLib<em>Reserve.</em></div>
             <div class="l-brand-sub">Administration Panel</div>
         </div>
 

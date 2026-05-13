@@ -1338,7 +1338,7 @@
 
     <div class="brand-bar">
       <span class="brand-tag">E-Learning Resource System</span>
-      <div class="brand-name">my<em>Space.</em></div>
+      <div class="brand-name">eLib<em>Reserve.</em></div>
     </div>
 
     <div class="register-card">

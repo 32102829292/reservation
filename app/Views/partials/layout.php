@@ -105,7 +105,7 @@ function _layout_icon(string $name, int $size, string $stroke): string {
 
         <div class="l-sidebar__top">
             <div class="l-brand-tag">Resident Portal</div>
-            <div class="l-brand-name">my<em>Space.</em></div>
+            <div class="l-brand-name">eLib<em>Reserve.</em></div>
             <div class="l-brand-sub">Community Management</div>
         </div>
 

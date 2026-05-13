@@ -1377,7 +1377,7 @@
 
     <div class="brand-bar">
       <span class="brand-tag">E-Learning Resource System</span>
-      <div class="brand-name">my<em>Space.</em></div>
+      <div class="brand-name">eLib<em>Reserve.</em></div>
     </div>
 
     <div class="login-card">
@@ -1473,7 +1473,7 @@
 
         <button type="submit" class="btn-submit" id="loginBtn">
           <i class="fa-solid fa-arrow-right-to-bracket" style="font-size:14px"></i>
-          Sign In to mySpace
+          Sign In to eLibReserve
         </button>
 
         <div class="divider"><span>or</span></div>
