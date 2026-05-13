@@ -1768,7 +1768,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     <span class="stat-lbl">Total</span>
                 </div>
                 <div class="stat-num"><?= $total ?></div>
-                <div class="stat-hint">All time</div>
             </div>
             <div class="stat-card">
                 <div class="stat-card-top">
@@ -1776,7 +1775,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     <span class="stat-lbl">Pending</span>
                 </div>
                 <div class="stat-num" style="color:#d97706;"><?= $pending ?></div>
-                <div class="stat-hint">Awaiting review</div>
             </div>
             <div class="stat-card">
                 <div class="stat-card-top">
@@ -1784,7 +1782,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                     <span class="stat-lbl">Approved</span>
                 </div>
                 <div class="stat-num" style="color:#16a34a;"><?= $approved ?></div>
-                <div class="stat-hint">Ready to use</div>
             </div>
             <?php if ($unclaimedCount > 0): ?>
                 <div class="stat-card" style="border-color:rgba(251,146,60,.25);">
@@ -1811,7 +1808,6 @@ function icon(string $name, int $size = 16, string $stroke = 'currentColor', str
                         <span class="stat-lbl">Declined</span>
                     </div>
                     <div class="stat-num" style="color:#dc2626;"><?= $declined ?></div>
-                    <div class="stat-hint">Not approved</div>
                 </div>
             <?php endif; ?>
         </div>
