@@ -609,10 +609,62 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                             <p style="font-size:.65rem;color:#94a3b8;margin-top:4px">Fills automatically when a user is selected</p>
                         </div>
                     </div>
-                    <div id="visitorFields" style="display:none" class="grid-2">
-                        <div><label class="field-label">Full Name</label><input type="text" id="visitorNameInput" class="field-input" placeholder="Enter visitor's full name"></div>
-                        <div><label class="field-label">Email Address</label><input type="email" id="visitorEmailInput" class="field-input" placeholder="Enter email (optional)"></div>
+
+                    <!-- ── PATCHED visitorFields with guest limit indicator ── -->
+                    <div id="visitorFields" style="display:none">
+                        <div class="grid-2" style="margin-bottom:12px">
+                            <div>
+                                <label class="field-label">Full Name</label>
+                                <input type="text" id="visitorNameInput" class="field-input"
+                                       placeholder="Enter visitor's full name"
+                                       oninput="schedGuestCheck()" onblur="runGuestCheck()">
+                            </div>
+                            <div>
+                                <label class="field-label">Email Address</label>
+                                <input type="email" id="visitorEmailInput" class="field-input"
+                                       placeholder="Enter email (optional)"
+                                       oninput="schedGuestCheck()" onblur="runGuestCheck()">
+                            </div>
+                        </div>
+
+                        <!-- Guest limit indicator -->
+                        <div id="guestLimitBox" style="display:none;margin-top:4px">
+                            <div id="guestLimitInner" style="
+                                display:flex;align-items:center;gap:12px;
+                                padding:11px 15px;border-radius:10px;
+                                border:1px solid;font-size:.8rem;font-weight:600;
+                                transition:all .2s">
+
+                                <!-- icon -->
+                                <div id="guestLimitIcon" style="
+                                    width:32px;height:32px;border-radius:9px;
+                                    display:flex;align-items:center;justify-content:center;
+                                    flex-shrink:0;font-size:.85rem"></div>
+
+                                <!-- text -->
+                                <div style="flex:1;min-width:0">
+                                    <div id="guestLimitTitle" style="font-weight:700;font-size:.82rem"></div>
+                                    <div id="guestLimitSub"   style="font-size:.7rem;margin-top:1px;opacity:.8"></div>
+                                </div>
+
+                                <!-- pill -->
+                                <div id="guestLimitPill" style="
+                                    padding:4px 10px;border-radius:20px;
+                                    font-size:.72rem;font-weight:800;
+                                    letter-spacing:.04em;white-space:nowrap"></div>
+                            </div>
+
+                            <!-- progress bar -->
+                            <div style="margin-top:8px;height:5px;background:#e2e8f0;border-radius:999px;overflow:hidden">
+                                <div id="guestLimitBar" style="height:100%;border-radius:999px;transition:width .4s ease,background .3s"></div>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;margin-top:4px">
+                                <span style="font-size:.6rem;color:#94a3b8;font-weight:600">Reservations (last 3 days)</span>
+                                <span id="guestLimitCount" style="font-size:.6rem;color:#94a3b8;font-weight:700"></span>
+                            </div>
+                        </div>
                     </div>
+                    <!-- ── END PATCHED visitorFields ── -->
                 </div>
                 <hr class="divider">
 
@@ -763,7 +815,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             document.getElementById('btnUser').classList.toggle('active', isUser);
             document.getElementById('btnVisitor').classList.toggle('active', !isUser);
             document.getElementById('userFields').style.display = isUser ? 'grid' : 'none';
-            document.getElementById('visitorFields').style.display = isUser ? 'none' : 'grid';
+            document.getElementById('visitorFields').style.display = isUser ? 'none' : 'block';
             selectedUser = null;
             ['userNameInput','userEmailDisplay','visitorNameInput','visitorEmailInput'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = '';
@@ -884,6 +936,12 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         });
 
         function previewReservation() {
+            if (currentType === 'Visitor' && _guestBlocked) {
+                const name = document.getElementById('visitorNameInput')?.value?.trim() || 'This guest';
+                alert(`⛔ ${name} has reached the 3-reservation limit within the last 3 days and cannot make a new reservation.`);
+                return;
+            }
+
             const isUser       = currentType === 'User';
             const name         = isUser ? userNameInput.value.trim() : document.getElementById('visitorNameInput').value.trim();
             const email        = isUser ? document.getElementById('userEmailDisplay').value.trim() : document.getElementById('visitorEmailInput').value.trim();
@@ -1095,6 +1153,141 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             selDate={d:t.getDate(),m:t.getMonth(),y:t.getFullYear()};
         })();
 
+    })();
+    </script>
+
+    <!-- ══════════════════════════════════════════
+         GUEST LIMIT CHECKER  (3 reservations / 3 days)
+    ══════════════════════════════════════════ -->
+    <script>
+    (function () {
+        const LIMIT   = 3;   // max reservations
+        const DAYS    = 3;   // rolling window (days)
+
+        /* SK portal endpoint */
+        const CHECK_URL = '/sk/check-guest-limit';
+
+        let _guestTimer  = null;
+        let _guestBlocked = false;
+
+        window.schedGuestCheck = function () {
+            clearTimeout(_guestTimer);
+            _guestTimer = setTimeout(runGuestCheck, 600);
+        };
+
+        window.runGuestCheck = function () {
+            clearTimeout(_guestTimer);
+            const name  = (document.getElementById('visitorNameInput')?.value  || '').trim();
+            const email = (document.getElementById('visitorEmailInput')?.value || '').trim();
+            if (!name && !email) { hideGuestBox(); return; }
+
+            const params = new URLSearchParams();
+            if (name)  params.append('name',  name);
+            if (email) params.append('email', email);
+
+            fetch(`${CHECK_URL}?${params}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => renderGuestBox(data))
+            .catch(() => hideGuestBox());
+        };
+
+        function renderGuestBox(data) {
+            /* data = { count: N, limit: 3, blocked: bool } */
+            const count    = data.count   ?? 0;
+            const limit    = data.limit   ?? LIMIT;
+            const blocked  = data.blocked ?? (count >= limit);
+            const pct      = Math.min(count / limit * 100, 100);
+
+            _guestBlocked = blocked;
+
+            const box   = document.getElementById('guestLimitBox');
+            const inner = document.getElementById('guestLimitInner');
+            const icon  = document.getElementById('guestLimitIcon');
+            const title = document.getElementById('guestLimitTitle');
+            const sub   = document.getElementById('guestLimitSub');
+            const pill  = document.getElementById('guestLimitPill');
+            const bar   = document.getElementById('guestLimitBar');
+            const cnt   = document.getElementById('guestLimitCount');
+
+            box.style.display = 'block';
+            cnt.textContent   = `${count} / ${limit} used`;
+            bar.style.width   = pct + '%';
+
+            if (blocked) {
+                inner.style.background   = '#fef2f2';
+                inner.style.borderColor  = '#fecaca';
+                icon.style.background    = '#fee2e2';
+                icon.innerHTML           = '<i class="fa-solid fa-ban" style="color:#dc2626"></i>';
+                title.style.color        = '#dc2626';
+                title.textContent        = 'Reservation limit reached';
+                sub.style.color          = '#dc2626';
+                sub.textContent          = `This guest has used all ${limit} slots within the last ${DAYS} days.`;
+                pill.style.background    = '#dc2626';
+                pill.style.color         = '#fff';
+                pill.textContent         = 'BLOCKED';
+                bar.style.background     = '#ef4444';
+            } else if (count === limit - 1) {
+                inner.style.background   = '#fffbeb';
+                inner.style.borderColor  = '#fde68a';
+                icon.style.background    = '#fef3c7';
+                icon.innerHTML           = '<i class="fa-solid fa-triangle-exclamation" style="color:#d97706"></i>';
+                title.style.color        = '#92400e';
+                title.textContent        = 'Last reservation slot';
+                sub.style.color          = '#92400e';
+                sub.textContent          = `${limit - count} slot remaining in the ${DAYS}-day window.`;
+                pill.style.background    = '#f59e0b';
+                pill.style.color         = '#fff';
+                pill.textContent         = 'LAST SLOT';
+                bar.style.background     = '#f59e0b';
+            } else if (count > 0) {
+                inner.style.background   = 'rgba(99,102,241,.05)';
+                inner.style.borderColor  = 'rgba(99,102,241,.2)';
+                icon.style.background    = 'rgba(99,102,241,.1)';
+                icon.innerHTML           = '<i class="fa-solid fa-circle-check" style="color:#6366f1"></i>';
+                title.style.color        = '#3730a3';
+                title.textContent        = 'Guest found';
+                sub.style.color          = '#4f46e5';
+                sub.textContent          = `${limit - count} slot(s) remaining in the ${DAYS}-day window.`;
+                pill.style.background    = '#ede9fe';
+                pill.style.color         = '#4f46e5';
+                pill.textContent         = `${count}/${limit} USED`;
+                bar.style.background     = '#6366f1';
+            } else {
+                inner.style.background   = '#f0fdf4';
+                inner.style.borderColor  = '#bbf7d0';
+                icon.style.background    = '#dcfce7';
+                icon.innerHTML           = '<i class="fa-solid fa-user-plus" style="color:#16a34a"></i>';
+                title.style.color        = '#15803d';
+                title.textContent        = 'New guest';
+                sub.style.color          = '#16a34a';
+                sub.textContent          = `No recent reservations found. ${limit} slots available.`;
+                pill.style.background    = '#22c55e';
+                pill.style.color         = '#fff';
+                pill.textContent         = 'NEW';
+                bar.style.background     = '#22c55e';
+            }
+        }
+
+        function hideGuestBox() {
+            _guestBlocked = false;
+            const box = document.getElementById('guestLimitBox');
+            if (box) box.style.display = 'none';
+        }
+
+        /* Expose _guestBlocked so previewReservation() can read it */
+        Object.defineProperty(window, '_guestBlocked', {
+            get: function() { return _guestBlocked; },
+            configurable: true
+        });
+
+        /* Reset when switching back to registered-user tab */
+        const _origSetType = window.setType;
+        window.setType = function (type) {
+            _origSetType(type);
+            if (type !== 'Visitor') hideGuestBox();
+        };
     })();
     </script>
 </body>
