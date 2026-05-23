@@ -145,10 +145,10 @@ class SkController extends BaseController
 
         $pendingBorrowings = count(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending'));
 
-        $startOfMonth     = date('Y-m-01');
-        $endOfMonth       = date('Y-m-t');
-        $maxMonthlySlots  = 3;
-        $usedThisMonth    = $model
+        $startOfMonth    = date('Y-m-01');
+        $endOfMonth      = date('Y-m-t');
+        $maxMonthlySlots = 3;
+        $usedThisMonth   = $model
             ->where('user_id', $skUserId)
             ->where('status', 'approved')
             ->where('reservation_date >=', $startOfMonth)
@@ -643,7 +643,11 @@ class SkController extends BaseController
 
     // ═══════════════════════════════════════════════════════════════════════
     //  GUEST LIMIT CHECK  — AJAX endpoint for the live indicator
-    //  GET /sk/check-guest-limit?name=...&email=...
+    //  GET /sk/check-guest-limit?name=...&email=...&visitor_type=...
+    //
+    //  visitor_type is now required for correct routing:
+    //  - 'user'  → skip walk-in quota entirely (they have their own system)
+    //  - anything else → run checkWalkInFairness by name
     // ═══════════════════════════════════════════════════════════════════════
     public function checkGuestLimit()
     {
@@ -657,10 +661,22 @@ class SkController extends BaseController
                 ->setJSON(['error' => 'Unauthorized']);
         }
 
-        $name  = trim($this->request->getGet('name')  ?? '');
-        $email = trim($this->request->getGet('email') ?? '');
+        $name        = trim($this->request->getGet('name')         ?? '');
+        $email       = trim($this->request->getGet('email')        ?? '');
+        $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
 
-        // Need at least a name to run the check
+        // Registered users have their own fairness system — no walk-in quota
+        if ($visitorType === 'user') {
+            return $this->response->setJSON([
+                'count'      => 0,
+                'limit'      => 3,
+                'blocked'    => false,
+                'reset'      => null,
+                'skip_quota' => true,
+            ]);
+        }
+
+        // Need at least a name to run the walk-in check
         if (empty($name)) {
             return $this->response->setJSON([
                 'count'   => 0,
@@ -699,7 +715,7 @@ class SkController extends BaseController
 
     public function deleteProfile()
     {
-        $userId = session()->get('user_id');
+        $userId    = session()->get('user_id');
         $userModel = new \App\Models\UserModel();
         $userModel->delete($userId);
         session()->destroy();

@@ -1144,11 +1144,10 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
     ══════════════════════════════════════════ -->
     <script>
     (function () {
-        const LIMIT   = 3;
-        const DAYS    = 14;
+        const LIMIT     = 3;
+        const DAYS      = 14;
         const CHECK_URL = '/sk/check-guest-limit';
 
-        // Expose on window so previewReservation() and setType() can access
         window._guestBlocked = false;
         window._guestTimer   = null;
 
@@ -1159,19 +1158,30 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 
         window.runGuestCheck = function () {
             clearTimeout(window._guestTimer);
+
+            // Walk-in quota only applies to non-User visitor types
+            if (currentType === 'User') { hideGuestBox(); return; }
+
             const name  = (document.getElementById('visitorNameInput')?.value  || '').trim();
             const email = (document.getElementById('visitorEmailInput')?.value || '').trim();
+
             if (!name && !email) { hideGuestBox(); return; }
 
             const params = new URLSearchParams();
             if (name)  params.append('name',  name);
             if (email) params.append('email', email);
+            // Send visitor_type so the backend can skip quota for registered users
+            params.append('visitor_type', currentType);
 
             fetch(`${CHECK_URL}?${params}`, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(r => r.json())
-            .then(data => renderGuestBox(data))
+            .then(data => {
+                // Backend signals this visitor type doesn't use walk-in quota
+                if (data.skip_quota) { hideGuestBox(); return; }
+                renderGuestBox(data);
+            })
             .catch(() => hideGuestBox());
         };
 
@@ -1181,7 +1191,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             const blocked = data.blocked ?? (count >= limit);
             const pct     = Math.min(count / limit * 100, 100);
 
-            // Write to window so previewReservation() sees it
             window._guestBlocked = blocked;
 
             const box   = document.getElementById('guestLimitBox');
@@ -1205,7 +1214,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 title.style.color       = '#dc2626';
                 title.textContent       = 'Reservation limit reached';
                 sub.style.color         = '#dc2626';
-                sub.textContent         = `This guest has used all ${limit} slots within the last ${DAYS} days.`
+                sub.textContent         = `This visitor has used all ${limit} slots within the last ${DAYS} days.`
                                         + (data.reset ? ` Resets on ${data.reset}.` : '');
                 pill.style.background   = '#dc2626';
                 pill.style.color        = '#fff';
@@ -1230,7 +1239,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 icon.style.background   = 'rgba(99,102,241,.1)';
                 icon.innerHTML          = '<i class="fa-solid fa-circle-check" style="color:#6366f1"></i>';
                 title.style.color       = '#3730a3';
-                title.textContent       = 'Guest found';
+                title.textContent       = 'Visitor found';
                 sub.style.color         = '#4f46e5';
                 sub.textContent         = `${limit - count} slot(s) remaining in the ${DAYS}-day window.`;
                 pill.style.background   = '#ede9fe';
@@ -1243,7 +1252,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 icon.style.background   = '#dcfce7';
                 icon.innerHTML          = '<i class="fa-solid fa-user-plus" style="color:#16a34a"></i>';
                 title.style.color       = '#15803d';
-                title.textContent       = 'New guest';
+                title.textContent       = 'New visitor';
                 sub.style.color         = '#16a34a';
                 sub.textContent         = `No recent reservations found. ${limit} slots available.`;
                 pill.style.background   = '#22c55e';
@@ -1259,7 +1268,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             if (box) box.style.display = 'none';
         }
 
-        // Expose so setType() can call it when switching tabs
         window.hideGuestBox = hideGuestBox;
 
     })();

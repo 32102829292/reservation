@@ -210,19 +210,15 @@ class ReservationModel extends Model
     //  WALK-IN FAIRNESS  — 3 reservations per rolling 2-week window
     //  Keyed on normalised visitor_name (case-insensitive, trimmed).
     //  Declined / canceled reservations do NOT count toward the quota.
+    //  Only rows where visitor_type != 'user' are counted, so a registered
+    //  user who shares a name with a walk-in cannot inflate the quota.
     // ═══════════════════════════════════════════════════════════════════════
 
     /**
      * Check the 3-per-2-week fairness quota for a walk-in visitor by name.
-     * Mirrors checkFairness() but uses visitor_name instead of user_id.
      *
      * @param  string $visitorName  The walk-in's full name as entered.
-     * @return array{
-     *   fair: bool,
-     *   remaining: int,
-     *   used: int,
-     *   reset: string|null   Human-readable reset date, e.g. "June 7, 2025"
-     * }
+     * @return array{fair:bool, remaining:int, used:int, reset:string|null}
      */
     public function checkWalkInFairness(string $visitorName): array
     {
@@ -233,21 +229,25 @@ class ReservationModel extends Model
             return ['fair' => true, 'remaining' => 3, 'used' => 0, 'reset' => null];
         }
 
-        // Count non-declined / non-canceled reservations for this name in the last 14 days
+        // Count non-declined / non-canceled WALK-IN reservations for this name
+        // in the last 14 days. The visitor_type filter ensures registered-user
+        // rows with the same name are never counted against the walk-in quota.
         $used = $this->db->table('reservations')
             ->where('LOWER(TRIM(visitor_name))', $name)
             ->whereNotIn('status', ['declined', 'canceled'])
+            ->where('LOWER(visitor_type) !=', 'user')
             ->where('created_at >=', $twoWeeksAgo)
             ->countAllResults();
 
         $remaining = max(0, 3 - $used);
 
         if ($used >= 3) {
-            // Find the oldest qualifying reservation so we can compute the reset date
+            // Find the oldest qualifying reservation to compute the reset date
             $oldest = $this->db->table('reservations')
                 ->select('created_at')
                 ->where('LOWER(TRIM(visitor_name))', $name)
                 ->whereNotIn('status', ['declined', 'canceled'])
+                ->where('LOWER(visitor_type) !=', 'user')
                 ->where('created_at >=', $twoWeeksAgo)
                 ->orderBy('created_at', 'ASC')
                 ->limit(1)
