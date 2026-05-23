@@ -108,11 +108,9 @@ class ReservationModel extends Model
     /**
      * Check fairness quota for a registered user.
      * Accepts either an integer user_id OR an email string.
-     * Email is resolved to an integer ID before any WHERE user_id query.
      */
     public function checkFairness($userIdOrEmail): array
     {
-        // ── Resolve to integer user_id ────────────────────────────────────
         if (is_string($userIdOrEmail) && !is_numeric($userIdOrEmail)) {
             $userRow = $this->db->table('users')
                 ->select('id')
@@ -131,7 +129,6 @@ class ReservationModel extends Model
         if ($userId <= 0) {
             return ['fair' => true, 'remaining' => 3];
         }
-        // ─────────────────────────────────────────────────────────────────
 
         $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
 
@@ -208,10 +205,8 @@ class ReservationModel extends Model
 
     // ═══════════════════════════════════════════════════════════════════════
     //  WALK-IN FAIRNESS  — 3 reservations per rolling 2-week window
-    //  Keyed on normalised visitor_name (case-insensitive, trimmed).
-    //  Declined / canceled reservations do NOT count toward the quota.
-    //  Only rows where visitor_type != 'user' are counted, so a registered
-    //  user who shares a name with a walk-in cannot inflate the quota.
+    //  Uses raw SQL via $this->db->query() to avoid CI4 query builder
+    //  quoting function expressions as column names on PostgreSQL.
     // ═══════════════════════════════════════════════════════════════════════
 
     /**
@@ -229,28 +224,32 @@ class ReservationModel extends Model
             return ['fair' => true, 'remaining' => 3, 'used' => 0, 'reset' => null];
         }
 
-        // Use raw SQL expression to avoid CI4 quoting the function call as a column name
-        $used = $this->db->table('reservations')
-            ->where("LOWER(TRIM(visitor_name)) = '{$name}'")
-            ->whereNotIn('status', ['declined', 'canceled'])
-            ->where("LOWER(visitor_type) != 'user'")
-            ->where('created_at >=', $twoWeeksAgo)
-            ->countAllResults();
+        // Use raw parameterised query to avoid CI4 quoting LOWER/TRIM as a column
+        $usedQuery = $this->db->query("
+            SELECT COUNT(*) AS total
+            FROM reservations
+            WHERE LOWER(TRIM(visitor_name)) = ?
+              AND status NOT IN ('declined', 'canceled')
+              AND LOWER(visitor_type) != 'user'
+              AND created_at >= ?
+        ", [$name, $twoWeeksAgo]);
 
+        $used      = (int) ($usedQuery->getRowArray()['total'] ?? 0);
         $remaining = max(0, 3 - $used);
 
         if ($used >= 3) {
-            $oldest = $this->db->table('reservations')
-                ->select('created_at')
-                ->where("LOWER(TRIM(visitor_name)) = '{$name}'")
-                ->whereNotIn('status', ['declined', 'canceled'])
-                ->where("LOWER(visitor_type) != 'user'")
-                ->where('created_at >=', $twoWeeksAgo)
-                ->orderBy('created_at', 'ASC')
-                ->limit(1)
-                ->get()
-                ->getRowArray();
+            $oldestQuery = $this->db->query("
+                SELECT created_at
+                FROM reservations
+                WHERE LOWER(TRIM(visitor_name)) = ?
+                  AND status NOT IN ('declined', 'canceled')
+                  AND LOWER(visitor_type) != 'user'
+                  AND created_at >= ?
+                ORDER BY created_at ASC
+                LIMIT 1
+            ", [$name, $twoWeeksAgo]);
 
+            $oldest    = $oldestQuery->getRowArray();
             $resetDate = $oldest
                 ? date('F j, Y', strtotime($oldest['created_at'] . ' +14 days'))
                 : date('F j, Y', strtotime('+14 days'));
