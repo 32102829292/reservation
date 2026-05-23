@@ -128,6 +128,7 @@ $routes->group('admin', ['filter' => 'role:chairman'], function($routes) {
     $routes->post('update-pc-status',     'AdminController::updatePCStatus');
     $routes->get('delete-pc/(:num)',      'AdminController::deletePC/$1');
     $routes->get('fix-missing-claims',    'AdminController::fixMissingClaims');
+    $routes->get('check-guest-limit', 'AdminController::checkGuestLimit');
     $routes->get('clean-empty-actions',   'AdminController::cleanEmptyActions');
     $routes->post('update-empty-actions', 'AdminController::updateEmptyActions');
     $routes->post('delete-empty-actions', 'AdminController::deleteEmptyActions');
