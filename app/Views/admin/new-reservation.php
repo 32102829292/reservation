@@ -843,7 +843,7 @@
                             <div class="cs-drop" id="resourceDrop">
                                 <div class="cs-opt cs-placeholder" data-value=""><span class="cs-opt-label">— Choose a resource —</span></div>
                                 <div class="cs-divider"></div>
-                                <?php foreach ($resources as $res):
+                                <?php foreach ($resources ?? [] as $res):
                                     $rname  = htmlspecialchars($res['name']);
                                     $lower  = strtolower($res['name']);
                                     $hasPcs = (strpos($lower,'computer')!==false||strpos($lower,'pc')!==false||strpos($lower,'lab')!==false)?'1':'0';
@@ -864,7 +864,7 @@
                     <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block">Assign Workstation(s)</label>
                         <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
-                            <?php foreach ($pcs as $pc): ?>
+                            <?php foreach ($pcs ?? [] as $pc): ?>
                                 <button type="button" onclick="togglePc('<?= htmlspecialchars($pc['pc_number']) ?>',this)" data-pc="<?= htmlspecialchars($pc['pc_number']) ?>" class="pc-btn"><?= htmlspecialchars($pc['pc_number']) ?></button>
                             <?php endforeach; ?>
                         </div>
