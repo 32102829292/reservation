@@ -43,6 +43,28 @@ $statusIcons = [
     'expired'   => 'fa-hourglass-end',
     'unclaimed' => 'fa-ticket',
 ];
+
+/**
+ * Helper: resolve the display name for a reservation row.
+ * Walk-in visitors are stored in visitor_name.
+ * Registered users may be in visitor_name OR full_name.
+ * Falls back to 'Unknown' — never 'Guest'.
+ */
+function resolveResName(array $res): string {
+    $vn = trim($res['visitor_name'] ?? '');
+    if ($vn !== '') return $vn;
+    $fn = trim($res['full_name'] ?? '');
+    if ($fn !== '') return $fn;
+    return 'Unknown';
+}
+
+/**
+ * Helper: is this a walk-in (non-registered) visitor?
+ */
+function isWalkIn(array $res): bool {
+    $vt = strtolower(trim($res['visitor_type'] ?? ''));
+    return $vt !== '' && $vt !== 'user';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,6 +108,20 @@ $statusIcons = [
         .wq-icon { width:34px; height:34px; background:#e0e7ff; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#4338ca; font-size:13px; flex-shrink:0; }
         .wq-icon.exceeded { background:#fee2e2; color:#dc2626; }
         .wq-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; transition:background .2s; }
+
+        /* ── Visitor role badge (Guest / User) ── */
+        .visitor-role-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 999px;
+            font-size: 10px; font-weight: 800; letter-spacing: .04em;
+            margin-top: 3px;
+        }
+        .visitor-role-badge.walkin {
+            background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;
+        }
+        .visitor-role-badge.registered {
+            background: #ede9fe; color: #4f46e5; border: 1px solid #c4b5fd;
+        }
 
         /* ── Overlay / modals ── */
         .overlay { display:none; position:fixed; inset:0; z-index:300; align-items:center; justify-content:center; }
@@ -179,6 +215,8 @@ $statusIcons = [
         body.dark .walkin-quota-strip { background:#060e1e!important; border-color:rgba(99,102,241,.15)!important; }
         body.dark .walkin-quota-strip .wq-icon { background:rgba(99,102,241,.2)!important; }
         body.dark .walkin-quota-strip .wq-icon.exceeded { background:rgba(220,38,38,.15)!important; }
+        body.dark .visitor-role-badge.walkin { background:rgba(194,65,12,.15)!important; border-color:rgba(251,146,60,.3)!important; }
+        body.dark .visitor-role-badge.registered { background:rgba(99,102,241,.15)!important; border-color:rgba(196,181,253,.3)!important; }
     </style>
 </head>
 <body>
@@ -229,7 +267,17 @@ $statusIcons = [
         </div>
 
         <div style="padding:0 24px 8px">
-            <div class="drow"><div class="dicon"><i class="fa-solid fa-user"></i></div><div><p class="dlabel">Requestor</p><p id="dName" class="dvalue"></p><p id="dEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
+            <!-- REQUESTOR row — shows actual name + role badge -->
+            <div class="drow">
+                <div class="dicon"><i class="fa-solid fa-user"></i></div>
+                <div style="flex:1;min-width:0">
+                    <p class="dlabel">Requestor</p>
+                    <p id="dName" class="dvalue"></p>
+                    <p id="dEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
+                    <!-- Role badge: shown below name -->
+                    <span id="dRoleBadge" class="visitor-role-badge" style="display:none"></span>
+                </div>
+            </div>
             <div class="drow"><div class="dicon"><i class="fa-solid fa-desktop"></i></div><div><p class="dlabel">Resource</p><p id="dResource" class="dvalue"></p><p id="dPc" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
             <div class="drow"><div class="dicon"><i class="fa-solid fa-calendar-day"></i></div><div><p class="dlabel">Schedule</p><p id="dDate" class="dvalue"></p><p id="dTime" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
             <div class="drow"><div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div><div><p class="dlabel">Purpose</p><p id="dPurpose" class="dvalue"></p></div></div>
@@ -410,8 +458,10 @@ $statusIcons = [
                     <?php foreach ($processed as $res):
                         $s           = $res['_status'];
                         $isUnclaimed = $res['_unclaimed'];
-                        $name        = htmlspecialchars($res['visitor_name']  ?? $res['full_name']    ?? 'Guest');
-                        $email       = htmlspecialchars($res['visitor_email'] ?? $res['user_email']   ?? '');
+
+                        // ── FIX: use resolveResName() — never falls back to 'Guest' ──
+                        $name        = htmlspecialchars(resolveResName($res));
+                        $email       = htmlspecialchars(trim($res['visitor_email'] ?? $res['user_email'] ?? ''));
                         $resource    = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
                         $pc          = htmlspecialchars($res['pc_number']     ?? $res['pc_numbers']   ?? '');
                         $rawDate     = $res['reservation_date'] ?? '';
@@ -433,10 +483,15 @@ $statusIcons = [
                         $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
                         $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
 
-                        // Walk-in quota: only for non-user visitor types
-                        $isWalkIn  = !empty($res['visitor_type']) && strtolower($res['visitor_type']) !== 'user';
-                        $nameKey   = mb_strtolower(trim($res['visitor_name'] ?? ''));
-                        $walkInQ   = ($isWalkIn && $nameKey) ? ($walkInQuotaMap[$nameKey] ?? null) : null;
+                        // ── Walk-in quota: keyed by visitor_name (lowercased) ──
+                        $resIsWalkIn = isWalkIn($res);
+                        $nameKey     = mb_strtolower(trim($res['visitor_name'] ?? ''));
+                        $walkInQ     = ($resIsWalkIn && $nameKey !== '') ? ($walkInQuotaMap[$nameKey] ?? null) : null;
+
+                        // Role label for badge
+                        $roleLabel   = $resIsWalkIn ? 'Guest (Walk-in)' : 'Registered User';
+                        $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
+                        $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
 
                         $mdata = json_encode([
                             'id'           => $res['id'],
@@ -451,6 +506,10 @@ $statusIcons = [
                             'end'          => $end,
                             'purpose'      => $purpose,
                             'type'         => $type,
+                            'roleLabel'    => $roleLabel,
+                            'roleClass'    => $roleClass,
+                            'roleIcon'     => $roleIcon,
+                            'isWalkIn'     => $resIsWalkIn,
                             'created'      => $created,
                             'code'         => $code,
                             'claimed'      => $isClaimed,
@@ -468,7 +527,7 @@ $statusIcons = [
                             data-id="<?= $res['id'] ?>"
                             data-status="<?= $s ?>"
                             data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
-                            data-search="<?= strtolower("$name $resource $purpose $email $approverName") ?>"
+                            data-search="<?= strtolower("$name $resource $purpose $email $approverName $roleLabel") ?>"
                             data-date="<?= $rawDate ?>"
                             data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
                             data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
@@ -478,6 +537,11 @@ $statusIcons = [
                             <td>
                                 <p style="font-weight:700;font-size:13px;"><?= $name ?></p>
                                 <?php if ($email): ?><p style="font-size:11px;color:var(--text-sub);margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
+                                <!-- Role badge inline in table -->
+                                <span class="visitor-role-badge <?= $roleClass ?>" style="margin-top:3px">
+                                    <i class="fa-solid <?= $roleIcon ?>" style="font-size:8px"></i>
+                                    <?= $resIsWalkIn ? 'Guest' : 'User' ?>
+                                </span>
                             </td>
                             <td>
                                 <p style="font-weight:700;font-size:13px;"><?= $resource ?></p>
@@ -535,8 +599,8 @@ $statusIcons = [
             <?php foreach ($processed as $res):
                 $s           = $res['_status'];
                 $isUnclaimed = $res['_unclaimed'];
-                $name        = htmlspecialchars($res['visitor_name']  ?? $res['full_name']    ?? 'Guest');
-                $email       = htmlspecialchars($res['visitor_email'] ?? $res['user_email']   ?? '');
+                $name        = htmlspecialchars(resolveResName($res));
+                $email       = htmlspecialchars(trim($res['visitor_email'] ?? $res['user_email'] ?? ''));
                 $resource    = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
                 $pc          = htmlspecialchars($res['pc_number']     ?? $res['pc_numbers']   ?? '');
                 $rawDate     = $res['reservation_date'] ?? '';
@@ -557,9 +621,13 @@ $statusIcons = [
                 $plPages     = $pl ? (int)($pl['pages'] ?? 0) : 0;
                 $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
                 $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
-                $isWalkIn    = !empty($res['visitor_type']) && strtolower($res['visitor_type']) !== 'user';
+                $resIsWalkIn = isWalkIn($res);
                 $nameKey     = mb_strtolower(trim($res['visitor_name'] ?? ''));
-                $walkInQ     = ($isWalkIn && $nameKey) ? ($walkInQuotaMap[$nameKey] ?? null) : null;
+                $walkInQ     = ($resIsWalkIn && $nameKey !== '') ? ($walkInQuotaMap[$nameKey] ?? null) : null;
+                $roleLabel   = $resIsWalkIn ? 'Guest (Walk-in)' : 'Registered User';
+                $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
+                $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
+
                 $mdata = json_encode([
                     'id'           => $res['id'],
                     'status'       => $s,
@@ -573,6 +641,10 @@ $statusIcons = [
                     'end'          => $end,
                     'purpose'      => $purpose,
                     'type'         => $type,
+                    'roleLabel'    => $roleLabel,
+                    'roleClass'    => $roleClass,
+                    'roleIcon'     => $roleIcon,
+                    'isWalkIn'     => $resIsWalkIn,
                     'created'      => $created,
                     'code'         => $code,
                     'claimed'      => $isClaimed,
@@ -591,7 +663,7 @@ $statusIcons = [
                     data-id="<?= $res['id'] ?>"
                     data-status="<?= $s ?>"
                     data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
-                    data-search="<?= strtolower("$name $resource $purpose $email $approverName") ?>"
+                    data-search="<?= strtolower("$name $resource $purpose $email $approverName $roleLabel") ?>"
                     data-date="<?= $rawDate ?>"
                     data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
                     data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
@@ -602,6 +674,10 @@ $statusIcons = [
                         <div style="flex:1;min-width:0">
                             <p style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $name ?></p>
                             <?php if ($email): ?><p style="font-size:11px;color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
+                            <span class="visitor-role-badge <?= $roleClass ?>">
+                                <i class="fa-solid <?= $roleIcon ?>" style="font-size:8px"></i>
+                                <?= $resIsWalkIn ? 'Guest' : 'User' ?>
+                            </span>
                         </div>
                         <span class="badge badge-<?= $s ?>" style="flex-shrink:0"><i class="fa-solid <?= $icon ?>" style="font-size:9px"></i><?= ucfirst($s) ?></span>
                     </div>
@@ -714,10 +790,10 @@ function refreshBothPrintCells(rid,pages){
 
 function exportCSV(){
     const visibleRows=allTableRows.filter(r=>r.style.display!=='none');
-    const headers=['ID','User Name','Email','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
+    const headers=['ID','User Name','Email','Role','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
     const escape=v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
     const lines=[headers.map(escape).join(',')];
-    visibleRows.forEach(row=>{try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));lines.push([d.id??'',d.name??'',d.email??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));}catch(e){}});
+    visibleRows.forEach(row=>{try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));lines.push([d.id??'',d.name??'',d.email??'',d.roleLabel??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));}catch(e){}});
     const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`sk-reservations-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
 }
@@ -769,8 +845,17 @@ function openDetail(d){
     /* ── Status bar ── */
     const m = STATUS_META[d.status] || STATUS_META.pending;
     document.getElementById('dId').textContent      = 'Reservation #' + d.id;
+
+    /* ── Requestor: actual name (never "Guest") ── */
     document.getElementById('dName').textContent    = d.name;
     document.getElementById('dEmail').textContent   = d.email;
+
+    /* ── Role badge below name ── */
+    const badge = document.getElementById('dRoleBadge');
+    badge.style.display = 'inline-flex';
+    badge.className = 'visitor-role-badge ' + (d.roleClass || 'registered');
+    badge.innerHTML = `<i class="fa-solid ${d.roleIcon || 'fa-user'}" style="font-size:8px"></i> ${d.roleLabel || d.type}`;
+
     document.getElementById('dResource').textContent= d.resource;
     document.getElementById('dPc').textContent      = d.pc ? 'PC: ' + d.pc : '';
     document.getElementById('dDate').textContent    = d.date;
@@ -804,19 +889,18 @@ function openDetail(d){
     /* ── Unclaimed banner ── */
     document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
 
-    /* ── Walk-in quota strip ── */
+    /* ── Walk-in quota strip ──
+         Show only for walk-in visitors, keyed by the visitor's actual name ── */
     const quotaEl = document.getElementById('dWalkInQuota');
     const dotsEl  = document.getElementById('wqDots');
     const labelEl = document.getElementById('wqLabel');
     const badgeEl = document.getElementById('wqBadge');
     const iconEl2 = document.getElementById('wqIcon');
     const q       = d.walkInQuota ?? null;
-    const isWalkIn = d.type && d.type.toLowerCase() !== 'user';
 
-    if (q && isWalkIn) {
+    if (q && d.isWalkIn) {
         quotaEl.classList.add('show');
 
-        // Dot indicators
         dotsEl.innerHTML = '';
         for (let i = 0; i < 3; i++) {
             const dot = document.createElement('span');
@@ -828,7 +912,6 @@ function openDetail(d){
             dotsEl.appendChild(dot);
         }
 
-        // Label
         if (!q.fair) {
             labelEl.textContent    = `Limit reached — can book again on ${q.reset}`;
             labelEl.style.color    = '#dc2626';

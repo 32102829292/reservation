@@ -561,12 +561,12 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         <div class="form-card fade-up-1">
             <form id="reservationForm" method="POST" action="<?= base_url('sk/create-reservation') ?>">
                 <?= csrf_field() ?>
-                <input type="hidden" name="visitor_name" id="finalVisitorName">
-                <input type="hidden" name="user_email"   id="finalUserEmail">
-                <input type="hidden" name="user_id"      id="finalUserId">
-                <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
-                <input type="hidden" name="purpose"      id="finalPurpose">
-                <input type="hidden" name="pcs"          id="finalPcs" value="[]">
+                <input type="hidden" name="visitor_name"  id="finalVisitorName">
+                <input type="hidden" name="user_email"    id="finalUserEmail">
+                <input type="hidden" name="user_id"       id="finalUserId">
+                <input type="hidden" name="visitor_type"  id="finalVisitorType" value="User">
+                <input type="hidden" name="purpose"       id="finalPurpose">
+                <input type="hidden" name="pcs"           id="finalPcs" value="[]">
                 <select name="resource_id" id="nativeResource" style="display:none" required></select>
                 <select name="purpose_select" id="nativePurpose" style="display:none"></select>
 
@@ -950,6 +950,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             if (isUser && !selectedUser && !document.getElementById('finalUserId').value)
                 return alert('Please select a registered user from the dropdown.');
 
+            // ── FIX: always set visitor_name from the actual input ──
             document.getElementById('finalVisitorName').value = name;
             document.getElementById('finalUserEmail').value   = email;
             document.getElementById('finalPurpose').value     = purposeFinal;
@@ -957,9 +958,14 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             document.getElementById('nativeResource').innerHTML = `<option value="${resourceId}" selected></option>`;
             document.getElementById('nativePurpose').innerHTML  = `<option value="${purposeVal}" selected></option>`;
 
+            // Determine role label for modal
+            const roleLabel = isUser ? 'Registered User' : 'Walk-in Visitor';
+
             const rows = [
-                ['Type',         isUser ? 'Registered User' : 'Walk-in Visitor'],
+                ['Type',         roleLabel],
                 ['Name',         name || '—'],
+                // For walk-in, show "(Guest)" as their role note, not as their name
+                ...(isUser ? [] : [['Role', 'Guest (Walk-in)']]),
                 ['Email',        email || '—'],
                 ['Resource',     resourceName],
                 ['Workstations', selectedPcs.length ? selectedPcs.join(', ') : '—'],
@@ -1140,7 +1146,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 
     <!-- ══════════════════════════════════════════
          GUEST LIMIT CHECKER  (3 reservations / 14 days)
-         Uses window.* so previewReservation() can read _guestBlocked
     ══════════════════════════════════════════ -->
     <script>
     (function () {
@@ -1159,7 +1164,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         window.runGuestCheck = function () {
             clearTimeout(window._guestTimer);
 
-            // Walk-in quota only applies to non-User visitor types
             if (currentType === 'User') { hideGuestBox(); return; }
 
             const name  = (document.getElementById('visitorNameInput')?.value  || '').trim();
@@ -1170,7 +1174,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             const params = new URLSearchParams();
             if (name)  params.append('name',  name);
             if (email) params.append('email', email);
-            // Send visitor_type so the backend can skip quota for registered users
             params.append('visitor_type', currentType);
 
             fetch(`${CHECK_URL}?${params}`, {
@@ -1178,7 +1181,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             })
             .then(r => r.json())
             .then(data => {
-                // Backend signals this visitor type doesn't use walk-in quota
                 if (data.skip_quota) { hideGuestBox(); return; }
                 renderGuestBox(data);
             })
