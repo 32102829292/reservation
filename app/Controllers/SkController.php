@@ -11,6 +11,7 @@ class SkController extends BaseController
 {
     public function dashboard()
     {
+        date_default_timezone_set('Asia/Manila');
         $model = new ReservationModel();
         $db    = db_connect();
 
@@ -196,6 +197,7 @@ class SkController extends BaseController
 
     public function reservations()
     {
+        date_default_timezone_set('Asia/Manila');
         $model = new ReservationModel();
         $db    = db_connect();
 
@@ -452,6 +454,7 @@ class SkController extends BaseController
 
     public function createReservation()
     {
+        date_default_timezone_set('Asia/Manila');
         $request          = $this->request;
         $reservationModel = new ReservationModel();
         $db               = db_connect();
@@ -632,80 +635,99 @@ class SkController extends BaseController
         return redirect()->to('/sk/reservations')->with('success', 'Reservation created successfully!');
     }
 
+    /**
+     * FIXED: checkGuestLimit
+     * - Added timezone set at top
+     * - Uses reservation_date >= (14 days ago) instead of created_at to avoid timezone edge cases
+     * - Uses user_id IS NULL to detect walk-ins reliably instead of LOWER(visitor_type) string comparison
+     * - Returns is_new flag so frontend can show confirmation code for first-time visitors
+     */
     public function checkGuestLimit()
-{
-    if (!$this->request->isAJAX()) {
-        return $this->response->setStatusCode(403)->setJSON(['error' => 'Forbidden']);
-    }
+    {
+        date_default_timezone_set('Asia/Manila');
 
-    if (!session()->has('user_id')) {
-        return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
-    }
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Forbidden']);
+        }
 
-    $name        = trim($this->request->getGet('name') ?? '');
-    $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
+        if (!session()->has('user_id')) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
+        }
 
-    if ($visitorType === 'user') {
-        return $this->response->setJSON([
-            'count'      => 0,
-            'limit'      => 3,
-            'blocked'    => false,
-            'reset'      => null,
-            'skip_quota' => true,
-        ]);
-    }
+        $name        = trim($this->request->getGet('name') ?? '');
+        $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
 
-    if (empty($name)) {
-        return $this->response->setJSON([
-            'count'   => 0,
-            'limit'   => 3,
-            'blocked' => false,
-            'reset'   => null,
-        ]);
-    }
+        // Registered users are never subject to walk-in quota
+        if ($visitorType === 'user') {
+            return $this->response->setJSON([
+                'count'      => 0,
+                'limit'      => 3,
+                'blocked'    => false,
+                'reset'      => null,
+                'is_new'     => false,
+                'skip_quota' => true,
+            ]);
+        }
 
-    $db          = db_connect();
-    $nameLower   = mb_strtolower(trim($name));
-    $twoWeeksAgo = date('Y-m-d H:i:s', strtotime('-14 days'));
+        if (empty($name)) {
+            return $this->response->setJSON([
+                'count'   => 0,
+                'limit'   => 3,
+                'blocked' => false,
+                'reset'   => null,
+                'is_new'  => true,
+            ]);
+        }
 
-    // Use raw parameterised query — same approach as reservations detail modal
-    $usedQuery = $db->query("
-        SELECT COUNT(*) AS total
-        FROM reservations
-        WHERE LOWER(TRIM(visitor_name)) = ?
-          AND status NOT IN ('declined', 'canceled')
-          AND LOWER(visitor_type) != 'user'
-          AND created_at >= ?
-    ", [$nameLower, $twoWeeksAgo]);
+        $db = db_connect();
 
-    $used = (int) ($usedQuery->getRowArray()['total'] ?? 0);
+        // FIX: use reservation_date for the 14-day window (date-only, no timezone issue)
+        // FIX: use user_id IS NULL to identify walk-ins — reliable regardless of how visitor_type was stored
+        $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
 
-    $reset = null;
-    if ($used >= 3) {
-        $oldestQuery = $db->query("
-            SELECT created_at
+        $usedQuery = $db->query("
+            SELECT COUNT(*) AS total
             FROM reservations
-            WHERE LOWER(TRIM(visitor_name)) = ?
+            WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
               AND status NOT IN ('declined', 'canceled')
-              AND LOWER(visitor_type) != 'user'
-              AND created_at >= ?
-            ORDER BY created_at ASC
-            LIMIT 1
-        ", [$nameLower, $twoWeeksAgo]);
+              AND user_id IS NULL
+              AND reservation_date >= ?
+        ", [$name, $twoWeeksAgo]);
 
-        $oldest = $oldestQuery->getRowArray();
-        $reset  = $oldest
-            ? date('F j, Y', strtotime($oldest['created_at'] . ' +14 days'))
-            : date('F j, Y', strtotime('+14 days'));
+        $used = (int) ($usedQuery->getRowArray()['total'] ?? 0);
+
+        $reset = null;
+        if ($used >= 3) {
+            // Find the oldest qualifying reservation so we can tell when the slot resets
+            $oldestQuery = $db->query("
+                SELECT reservation_date
+                FROM reservations
+                WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
+                  AND status NOT IN ('declined', 'canceled')
+                  AND user_id IS NULL
+                  AND reservation_date >= ?
+                ORDER BY reservation_date ASC
+                LIMIT 1
+            ", [$name, $twoWeeksAgo]);
+
+            $oldest = $oldestQuery->getRowArray();
+            $reset  = $oldest
+                ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +15 days'))
+                : date('F j, Y', strtotime('+14 days'));
+        }
+
+        // is_new = true means this visitor has zero reservations in the last 14 days
+        // The frontend uses this to decide whether to show the confirmation code widget
+        $isNew = ($used === 0);
+
+        return $this->response->setJSON([
+            'count'   => $used,
+            'limit'   => 3,
+            'blocked' => $used >= 3,
+            'reset'   => $reset,
+            'is_new'  => $isNew,
+        ]);
     }
-
-    return $this->response->setJSON([
-        'count'   => $used,
-        'limit'   => 3,
-        'blocked' => $used >= 3,
-        'reset'   => $reset,
-    ]);
-}
 
     private function generateETicket($length = 8)
     {
