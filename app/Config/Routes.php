@@ -85,6 +85,7 @@ $routes->group('sk', ['filter' => 'role:sk'], function($routes) {
     $routes->post('log-print',           'SkController::logPrint');
     $routes->get('user-requests',            'SkController::userRequests');
     $routes->post('check-new-user-requests', 'SkController::checkNewUserRequests');
+    $routes->get('sk/check-guest-limit', 'SkController::checkGuestLimit');
     $routes->get('get-pending-count',        'SkController::getPendingCount');
     $routes->post('check-new-reservations',  'SkController::checkNewReservations');
     $routes->get('books',                        'BookController::manage');

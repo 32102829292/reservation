@@ -7,7 +7,6 @@ class ReservationModel extends Model
     protected $table      = 'reservations';
     protected $primaryKey = 'id';
 
-    // Exactly matches the real DB columns
     protected $allowedFields = [
         'user_id',
         'resource_id',
@@ -15,7 +14,7 @@ class ReservationModel extends Model
         'start_time',
         'end_time',
         'purpose',
-        'pc_number',           // varchar, singular — matches DB
+        'pc_number',
         'visitor_type',
         'visitor_name',
         'user_email',
@@ -107,7 +106,7 @@ class ReservationModel extends Model
     }
 
     /**
-     * Check fairness quota for a user.
+     * Check fairness quota for a registered user.
      * Accepts either an integer user_id OR an email string.
      * Email is resolved to an integer ID before any WHERE user_id query.
      */
@@ -205,5 +204,82 @@ class ReservationModel extends Model
         }
 
         return max(0, 3 - $recentReservations);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  WALK-IN FAIRNESS  — 3 reservations per rolling 2-week window
+    //  Keyed on normalised visitor_name (case-insensitive, trimmed).
+    //  Declined / canceled reservations do NOT count toward the quota.
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Check the 3-per-2-week fairness quota for a walk-in visitor by name.
+     * Mirrors checkFairness() but uses visitor_name instead of user_id.
+     *
+     * @param  string $visitorName  The walk-in's full name as entered.
+     * @return array{
+     *   fair: bool,
+     *   remaining: int,
+     *   used: int,
+     *   reset: string|null   Human-readable reset date, e.g. "June 7, 2025"
+     * }
+     */
+    public function checkWalkInFairness(string $visitorName): array
+    {
+        $name        = mb_strtolower(trim($visitorName));
+        $twoWeeksAgo = date('Y-m-d H:i:s', strtotime('-14 days'));
+
+        if (empty($name)) {
+            return ['fair' => true, 'remaining' => 3, 'used' => 0, 'reset' => null];
+        }
+
+        // Count non-declined / non-canceled reservations for this name in the last 14 days
+        $used = $this->db->table('reservations')
+            ->where('LOWER(TRIM(visitor_name))', $name)
+            ->whereNotIn('status', ['declined', 'canceled'])
+            ->where('created_at >=', $twoWeeksAgo)
+            ->countAllResults();
+
+        $remaining = max(0, 3 - $used);
+
+        if ($used >= 3) {
+            // Find the oldest qualifying reservation so we can compute the reset date
+            $oldest = $this->db->table('reservations')
+                ->select('created_at')
+                ->where('LOWER(TRIM(visitor_name))', $name)
+                ->whereNotIn('status', ['declined', 'canceled'])
+                ->where('created_at >=', $twoWeeksAgo)
+                ->orderBy('created_at', 'ASC')
+                ->limit(1)
+                ->get()
+                ->getRowArray();
+
+            // Window resets 14 days after the earliest counted reservation
+            $resetDate = $oldest
+                ? date('F j, Y', strtotime($oldest['created_at'] . ' +14 days'))
+                : date('F j, Y', strtotime('+14 days'));
+
+            return [
+                'fair'      => false,
+                'remaining' => 0,
+                'used'      => $used,
+                'reset'     => $resetDate,
+            ];
+        }
+
+        return [
+            'fair'      => true,
+            'remaining' => $remaining,
+            'used'      => $used,
+            'reset'     => null,
+        ];
+    }
+
+    /**
+     * Convenience wrapper — returns only the number of remaining slots.
+     */
+    public function getWalkInRemaining(string $visitorName): int
+    {
+        return $this->checkWalkInFairness($visitorName)['remaining'];
     }
 }

@@ -121,7 +121,6 @@ class SkController extends BaseController
         $approvalRate    = $total > 0    ? round(($approved / $total) * 100)   : 0;
         $utilizationRate = $approved > 0 ? round(($claimed  / $approved) * 100) : 0;
 
-        // ── Books ──
         $allBooks = $db->table('books')
             ->where('status', 'active')
             ->orderBy('title', 'ASC')
@@ -130,7 +129,6 @@ class SkController extends BaseController
         $totalBooks     = count($allBooks);
         $availableCount = count(array_filter($allBooks, fn($b) => (int)($b['available_copies'] ?? 0) > 0));
 
-        // ── My Borrowings ──
         $myBorrowings = $db->table('book_borrowings bb')
             ->select('bb.*, b.title as book_title, b.author, b.genre, bb.due_date')
             ->join('books b', 'b.id = bb.book_id', 'left')
@@ -138,7 +136,6 @@ class SkController extends BaseController
             ->orderBy('bb.created_at', 'DESC')
             ->get()->getResultArray();
 
-        // ── All borrow requests ──
         $dashBorrowReqs = $db->table('book_borrowings bb')
             ->select('bb.id, bb.status, bb.created_at, b.title as book_title, u.name as resident_name')
             ->join('books b', 'b.id = bb.book_id', 'left')
@@ -148,7 +145,6 @@ class SkController extends BaseController
 
         $pendingBorrowings = count(array_filter($dashBorrowReqs, fn($b) => ($b['status'] ?? '') === 'pending'));
 
-        // ── Fairness quota ──
         $startOfMonth     = date('Y-m-01');
         $endOfMonth       = date('Y-m-t');
         $maxMonthlySlots  = 3;
@@ -245,21 +241,33 @@ class SkController extends BaseController
             $printLogMap[(int)$pl['reservation_id']] = $pl;
         }
 
+        $walkInQuotaMap = [];
+        foreach ($reservations as $res) {
+            $type = strtolower(trim($res['visitor_type'] ?? ''));
+            if ($type !== 'user' && !empty($res['visitor_name'])) {
+                $nameKey = mb_strtolower(trim($res['visitor_name']));
+                if ($nameKey && !isset($walkInQuotaMap[$nameKey])) {
+                    $walkInQuotaMap[$nameKey] = $model->checkWalkInFairness($nameKey);
+                }
+            }
+        }
+
         return view('sk/reservations', [
-            'page'          => 'reservations',
-            'reservations'  => $reservations,
-            'printLogMap'   => $printLogMap,
-            'total'         => $total,
-            'pending'       => $pendingCount,
-            'approved'      => $approvedCount,
-            'claimed'       => $claimedCount,
-            'declined'      => $declinedCount,
-            'pendingCount'  => $pendingCount,
-            'approvedCount' => $approvedCount,
-            'claimedCount'  => $claimedCount,
-            'declinedCount' => $declinedCount,
-            'currentStatus' => $status,
-            'currentDate'   => $date,
+            'page'           => 'reservations',
+            'reservations'   => $reservations,
+            'printLogMap'    => $printLogMap,
+            'walkInQuotaMap' => $walkInQuotaMap,
+            'total'          => $total,
+            'pending'        => $pendingCount,
+            'approved'       => $approvedCount,
+            'claimed'        => $claimedCount,
+            'declined'       => $declinedCount,
+            'pendingCount'   => $pendingCount,
+            'approvedCount'  => $approvedCount,
+            'claimedCount'   => $claimedCount,
+            'declinedCount'  => $declinedCount,
+            'currentStatus'  => $status,
+            'currentDate'    => $date,
         ]);
     }
 
@@ -279,7 +287,6 @@ class SkController extends BaseController
                 return redirect()->back()->with('error', 'Reservation not found');
             }
 
-            // ── Use transStart/transComplete to match UserController pattern ──
             $db->transStart();
             $reservationModel->update($id, [
                 'status'      => 'approved',
@@ -327,7 +334,6 @@ class SkController extends BaseController
                 return redirect()->back()->with('error', 'Reservation not found');
             }
 
-            // ── Use transStart/transComplete to match UserController pattern ──
             $db->transStart();
             $reservationModel->update($id, [
                 'status'      => 'declined',
@@ -448,7 +454,7 @@ class SkController extends BaseController
 
         $visitorType     = $request->getPost('visitor_type');
         $userId          = (int) $request->getPost('user_id');
-        $visitorName     = $request->getPost('visitor_name');
+        $visitorName     = trim($request->getPost('visitor_name') ?? '');
         $reservationDate = $request->getPost('reservation_date');
         $startTime       = $request->getPost('start_time');
         $endTime         = $request->getPost('end_time');
@@ -459,6 +465,7 @@ class SkController extends BaseController
         $pcsArr  = json_decode($pcsJson, true) ?? [];
         $pcValue = !empty($pcsArr) ? implode(', ', $pcsArr) : null;
 
+        // ── Registered user: must have a user_id selected ─────────────────
         if ($visitorType === 'User' && empty($userId)) {
             if ($request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Please select a registered user.']);
@@ -466,7 +473,7 @@ class SkController extends BaseController
             return redirect()->back()->with('error', 'Please select a registered user.');
         }
 
-        // ── Resolve user details from DB using integer user_id ───────────────
+        // ── Resolve user details from DB ──────────────────────────────────
         $resolvedEmail = null;
         if ($visitorType === 'User' && $userId > 0) {
             $userRow       = $db->table('users')->select('email, name')->where('id', $userId)->get()->getRowArray();
@@ -476,11 +483,12 @@ class SkController extends BaseController
             }
         }
 
-        // ── Block check (mirrors UserController) ─────────────────────────────
+        // ── Registered user: block check ──────────────────────────────────
         if ($visitorType === 'User' && $userId > 0) {
             $isBlocked = $reservationModel->isBlocked($userId);
             if ($isBlocked) {
-                $msg = 'This user is currently blocked from making reservations until ' . date('F j, Y', strtotime($isBlocked['blocked_until']));
+                $msg = 'This user is currently blocked from making reservations until '
+                     . date('F j, Y', strtotime($isBlocked['blocked_until']));
                 if ($request->isAJAX()) {
                     return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
                 }
@@ -488,7 +496,7 @@ class SkController extends BaseController
             }
         }
 
-        // ── Fairness / quota check — pass $userId (int), not email ───────────
+        // ── Registered user: fairness / quota check ───────────────────────
         if ($visitorType === 'User' && $userId > 0) {
             $fairness = $reservationModel->checkFairness($userId);
             if (!$fairness['fair']) {
@@ -502,7 +510,30 @@ class SkController extends BaseController
             }
         }
 
-        // ── Field validation (mirrors UserController) ─────────────────────────
+        // ── Walk-in: name required + 3-per-2-week quota ───────────────────
+        if (strtolower($visitorType) !== 'user') {
+
+            if (empty($visitorName)) {
+                $msg = 'Walk-in visitor name is required.';
+                if ($request->isAJAX()) {
+                    return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
+                }
+                return redirect()->back()->withInput()->with('error', $msg);
+            }
+
+            $walkInCheck = $reservationModel->checkWalkInFairness($visitorName);
+
+            if (!$walkInCheck['fair']) {
+                $msg = "Walk-in visitor \"{$visitorName}\" has already used all 3 reservation slots "
+                     . "in the last 2 weeks. They may book again on or after {$walkInCheck['reset']}.";
+                if ($request->isAJAX()) {
+                    return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
+                }
+                return redirect()->back()->withInput()->with('error', $msg);
+            }
+        }
+
+        // ── Field validation ──────────────────────────────────────────────
         $rules = [
             'resource_id'      => 'required|numeric',
             'reservation_date' => 'required|valid_date[Y-m-d]',
@@ -518,7 +549,7 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Please fill all required fields.');
         }
 
-        // ── Reject past dates (mirrors UserController) ────────────────────────
+        // ── Reject past dates ─────────────────────────────────────────────
         if ($reservationDate < date('Y-m-d')) {
             if ($request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'You cannot make a reservation for a past date.']);
@@ -526,7 +557,7 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', 'You cannot make a reservation for a past date.');
         }
 
-        // ── Validate end time is after start time (mirrors UserController) ────
+        // ── Validate end time is after start time ─────────────────────────
         if ($startTime >= $endTime) {
             if ($request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'End time must be after start time.']);
@@ -534,8 +565,7 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', 'End time must be after start time.');
         }
 
-        // ── One reservation per day (mirrors UserController) ──────────────────
-        // Only enforce for registered users; walk-in visitors may have multiple
+        // ── One reservation per day (registered users only) ───────────────
         if ($visitorType === 'User' && $userId > 0) {
             $sameDayReservations = $reservationModel->getUserSameDayReservations($userId, $reservationDate);
             if (!empty($sameDayReservations)) {
@@ -547,7 +577,7 @@ class SkController extends BaseController
             }
         }
 
-        // ── Double-booking guard with DB lock via transaction (mirrors UserController) ──
+        // ── Double-booking guard ──────────────────────────────────────────
         $db->transStart();
 
         $conflict = $reservationModel
@@ -569,7 +599,7 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', $msg);
         }
 
-        // ── Insert ────────────────────────────────────────────────────────────
+        // ── Insert ────────────────────────────────────────────────────────
         $eTicket = $this->generateETicket();
 
         $data = [
@@ -611,6 +641,46 @@ class SkController extends BaseController
         return redirect()->to('/sk/reservations')->with('success', 'Reservation created successfully!');
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  GUEST LIMIT CHECK  — AJAX endpoint for the live indicator
+    //  GET /sk/check-guest-limit?name=...&email=...
+    // ═══════════════════════════════════════════════════════════════════════
+    public function checkGuestLimit()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)
+                ->setJSON(['error' => 'Forbidden']);
+        }
+
+        if (!session()->has('user_id')) {
+            return $this->response->setStatusCode(401)
+                ->setJSON(['error' => 'Unauthorized']);
+        }
+
+        $name  = trim($this->request->getGet('name')  ?? '');
+        $email = trim($this->request->getGet('email') ?? '');
+
+        // Need at least a name to run the check
+        if (empty($name)) {
+            return $this->response->setJSON([
+                'count'   => 0,
+                'limit'   => 3,
+                'blocked' => false,
+                'reset'   => null,
+            ]);
+        }
+
+        $reservationModel = new ReservationModel();
+        $result           = $reservationModel->checkWalkInFairness($name);
+
+        return $this->response->setJSON([
+            'count'   => $result['used'],
+            'limit'   => 3,
+            'blocked' => !$result['fair'],
+            'reset'   => $result['reset'],
+        ]);
+    }
+
     private function generateETicket($length = 8)
     {
         $chars  = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -630,12 +700,9 @@ class SkController extends BaseController
     public function deleteProfile()
     {
         $userId = session()->get('user_id');
-
         $userModel = new \App\Models\UserModel();
         $userModel->delete($userId);
-
         session()->destroy();
-
         return redirect()->to('/login')->with('success', 'Account deleted successfully.');
     }
 

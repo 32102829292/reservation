@@ -314,7 +314,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .dt-trigger svg { flex-shrink: 0; opacity: .45; }
         .dt-trigger.open svg { opacity: .8; }
 
-        /* opens ABOVE the trigger */
         .dt-drop { position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 9999; border-radius: 14px; animation: dtDrop .15s cubic-bezier(.4,0,.2,1); }
         @keyframes dtDrop { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
         body:not(.dark) .dt-drop { background:#fff; border:1px solid rgba(99,102,241,.18); box-shadow:0 20px 50px rgba(15,23,42,.18); }
@@ -349,7 +348,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .cal-day.cal-other { pointer-events:none; }
         body:not(.dark) .cal-day.cal-other { color:#cbd5e1; }
         body.dark .cal-day.cal-other { color:#2e3850; }
-        /* ── PAST DAY ── */
         .cal-day.cal-past { pointer-events:none; opacity:.35; cursor:default; }
         body:not(.dark) .cal-day.cal-today { color:var(--indigo); font-weight:700; }
         body.dark .cal-day.cal-today { color:#818cf8; font-weight:700; }
@@ -398,7 +396,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .picker-wrap { position: relative; }
 
         /* ══════════════════════════════
-           CUSTOM SELECT (CS) — opens ABOVE
+           CUSTOM SELECT (CS)
         ══════════════════════════════ */
         .cs-wrap { position: relative; }
         .cs-trigger {
@@ -491,8 +489,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         body.dark .modal-cancel-btn { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #7fb3e8 !important; }
         body.dark .modal-cancel-btn:hover { background: rgba(99,102,241,.12) !important; color: #a5b4fc !important; }
         body.dark .submit-btn { box-shadow: 0 4px 12px rgba(55,48,163,.4); }
-
-        /* custom select dark */
         body.dark .cs-trigger { background: #101e35; border-color: rgba(99,102,241,.18); color: #4a6fa5; }
         body.dark .cs-trigger.has-value { color: #e2eaf8; }
         body.dark .cs-trigger.open { background: #0b1628; border-color: var(--indigo); }
@@ -571,7 +567,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
                 <input type="hidden" name="purpose"      id="finalPurpose">
                 <input type="hidden" name="pcs"          id="finalPcs" value="[]">
-                <!-- hidden native selects for form submission -->
                 <select name="resource_id" id="nativeResource" style="display:none" required></select>
                 <select name="purpose_select" id="nativePurpose" style="display:none"></select>
 
@@ -610,7 +605,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         </div>
                     </div>
 
-                    <!-- ── PATCHED visitorFields with guest limit indicator ── -->
+                    <!-- Walk-in visitor fields -->
                     <div id="visitorFields" style="display:none">
                         <div class="grid-2" style="margin-bottom:12px">
                             <div>
@@ -634,37 +629,28 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                                 padding:11px 15px;border-radius:10px;
                                 border:1px solid;font-size:.8rem;font-weight:600;
                                 transition:all .2s">
-
-                                <!-- icon -->
                                 <div id="guestLimitIcon" style="
                                     width:32px;height:32px;border-radius:9px;
                                     display:flex;align-items:center;justify-content:center;
                                     flex-shrink:0;font-size:.85rem"></div>
-
-                                <!-- text -->
                                 <div style="flex:1;min-width:0">
                                     <div id="guestLimitTitle" style="font-weight:700;font-size:.82rem"></div>
                                     <div id="guestLimitSub"   style="font-size:.7rem;margin-top:1px;opacity:.8"></div>
                                 </div>
-
-                                <!-- pill -->
                                 <div id="guestLimitPill" style="
                                     padding:4px 10px;border-radius:20px;
                                     font-size:.72rem;font-weight:800;
                                     letter-spacing:.04em;white-space:nowrap"></div>
                             </div>
-
-                            <!-- progress bar -->
                             <div style="margin-top:8px;height:5px;background:#e2e8f0;border-radius:999px;overflow:hidden">
                                 <div id="guestLimitBar" style="height:100%;border-radius:999px;transition:width .4s ease,background .3s"></div>
                             </div>
                             <div style="display:flex;justify-content:space-between;margin-top:4px">
-                                <span style="font-size:.6rem;color:#94a3b8;font-weight:600">Reservations (last 3 days)</span>
+                                <span style="font-size:.6rem;color:#94a3b8;font-weight:600">Reservations (last 14 days)</span>
                                 <span id="guestLimitCount" style="font-size:.6rem;color:#94a3b8;font-weight:700"></span>
                             </div>
                         </div>
                     </div>
-                    <!-- ── END PATCHED visitorFields ── -->
                 </div>
                 <hr class="divider">
 
@@ -675,7 +661,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         <div><div class="section-title">Resource & Schedule</div></div>
                     </div>
 
-                    <!-- ── STYLED RESOURCE SELECT ── -->
+                    <!-- Resource select -->
                     <div style="margin-bottom:14px">
                         <label class="field-label">Select Asset / Resource</label>
                         <div class="cs-wrap" id="resourceWrap">
@@ -714,7 +700,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         <p style="font-size:.72rem;color:var(--indigo);font-weight:600;margin-top:10px">Selected: <span id="pcSelectedLabel">None</span></p>
                     </div>
 
-                    <!-- Date / time — custom pickers -->
+                    <!-- Date / time pickers -->
                     <div class="grid-3" style="margin-bottom:14px">
                         <div>
                             <label class="field-label">Date</label>
@@ -751,7 +737,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         </div>
                     </div>
 
-                    <!-- ── STYLED PURPOSE SELECT ── -->
+                    <!-- Purpose select -->
                     <div style="margin-bottom:14px">
                         <label class="field-label">Purpose of Visit</label>
                         <div class="cs-wrap" id="purposeWrap">
@@ -821,6 +807,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 const el = document.getElementById(id); if (el) el.value = '';
             });
             document.getElementById('finalUserId').value = '';
+            if (type !== 'Visitor') hideGuestBox();
         }
 
         const userNameInput    = document.getElementById('userNameInput');
@@ -913,12 +900,10 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             });
         }
 
-        /* helper getters */
         function getSelectedResourceVal()  { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
         function getSelectedResourceName() { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.querySelector('.cs-opt-label')?.textContent.trim() : '—'; }
         function getSelectedPurpose()      { const o = document.querySelector('#purposeDrop  .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
 
-        /* init resource */
         initCS('resourceWrap', 'resourceDrop', 'resourceLabel', function(val, opt) {
             document.getElementById('nativeResource').innerHTML = `<option value="${val}" selected></option>`;
             const hasPcs = opt.dataset.hasPcs === '1';
@@ -928,7 +913,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
         });
 
-        /* init purpose */
         initCS('purposeWrap', 'purposeDrop', 'purposeLabel', function(val) {
             document.getElementById('nativePurpose').innerHTML = `<option value="${val}" selected></option>`;
             document.getElementById('purposeOtherWrap').style.display = val === 'Others' ? 'block' : 'none';
@@ -936,9 +920,10 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         });
 
         function previewReservation() {
-            if (currentType === 'Visitor' && _guestBlocked) {
+            // Block if walk-in is over the limit
+            if (currentType === 'Visitor' && window._guestBlocked) {
                 const name = document.getElementById('visitorNameInput')?.value?.trim() || 'This guest';
-                alert(`⛔ ${name} has reached the 3-reservation limit within the last 3 days and cannot make a new reservation.`);
+                alert(`⛔ ${name} has reached the 3-reservation limit within the last 14 days and cannot make a new reservation.`);
                 return;
             }
 
@@ -969,7 +954,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             document.getElementById('finalUserEmail').value   = email;
             document.getElementById('finalPurpose').value     = purposeFinal;
 
-            /* also sync hidden selects for form POST */
             document.getElementById('nativeResource').innerHTML = `<option value="${resourceId}" selected></option>`;
             document.getElementById('nativePurpose').innerHTML  = `<option value="${purposeVal}" selected></option>`;
 
@@ -985,8 +969,8 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             ];
             document.getElementById('modalSummaryBox').innerHTML =
                 rows.map(([l,v]) => `<div class="mrow"><span class="mrow-label">${l}</span><span class="mrow-value">${v}</span></div>`).join('');
-            document.getElementById('qrWrap').style.display     = 'none';
-            document.getElementById('confirmBtn').style.display  = 'flex';
+            document.getElementById('qrWrap').style.display    = 'none';
+            document.getElementById('confirmBtn').style.display = 'flex';
             openModal();
         }
 
@@ -1127,7 +1111,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         $('startTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('startDrop','startTrigger');if(activeDrop==='startDrop')renderTime('start');});
         $('endTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('endDrop','endTrigger');if(activeDrop==='endDrop')renderTime('end');});
 
-        /* Write default tState values into hidden inputs and labels on load */
         (function initDefaultTimes() {
             ['start', 'end'].forEach(function(which) {
                 var st = tState[which];
@@ -1145,7 +1128,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             });
         })();
 
-        /* Auto-select today's date on load */
         (function(){
             const t=new Date();
             $('dateLabel').textContent=t.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
@@ -1157,26 +1139,26 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
     </script>
 
     <!-- ══════════════════════════════════════════
-         GUEST LIMIT CHECKER  (3 reservations / 3 days)
+         GUEST LIMIT CHECKER  (3 reservations / 14 days)
+         Uses window.* so previewReservation() can read _guestBlocked
     ══════════════════════════════════════════ -->
     <script>
     (function () {
-        const LIMIT   = 3;   // max reservations
-        const DAYS    = 3;   // rolling window (days)
-
-        /* SK portal endpoint */
+        const LIMIT   = 3;
+        const DAYS    = 14;
         const CHECK_URL = '/sk/check-guest-limit';
 
-        let _guestTimer  = null;
-        let _guestBlocked = false;
+        // Expose on window so previewReservation() and setType() can access
+        window._guestBlocked = false;
+        window._guestTimer   = null;
 
         window.schedGuestCheck = function () {
-            clearTimeout(_guestTimer);
-            _guestTimer = setTimeout(runGuestCheck, 600);
+            clearTimeout(window._guestTimer);
+            window._guestTimer = setTimeout(window.runGuestCheck, 600);
         };
 
         window.runGuestCheck = function () {
-            clearTimeout(_guestTimer);
+            clearTimeout(window._guestTimer);
             const name  = (document.getElementById('visitorNameInput')?.value  || '').trim();
             const email = (document.getElementById('visitorEmailInput')?.value || '').trim();
             if (!name && !email) { hideGuestBox(); return; }
@@ -1194,13 +1176,13 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         };
 
         function renderGuestBox(data) {
-            /* data = { count: N, limit: 3, blocked: bool } */
-            const count    = data.count   ?? 0;
-            const limit    = data.limit   ?? LIMIT;
-            const blocked  = data.blocked ?? (count >= limit);
-            const pct      = Math.min(count / limit * 100, 100);
+            const count   = data.count   ?? 0;
+            const limit   = data.limit   ?? LIMIT;
+            const blocked = data.blocked ?? (count >= limit);
+            const pct     = Math.min(count / limit * 100, 100);
 
-            _guestBlocked = blocked;
+            // Write to window so previewReservation() sees it
+            window._guestBlocked = blocked;
 
             const box   = document.getElementById('guestLimitBox');
             const inner = document.getElementById('guestLimitInner');
@@ -1216,78 +1198,70 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             bar.style.width   = pct + '%';
 
             if (blocked) {
-                inner.style.background   = '#fef2f2';
-                inner.style.borderColor  = '#fecaca';
-                icon.style.background    = '#fee2e2';
-                icon.innerHTML           = '<i class="fa-solid fa-ban" style="color:#dc2626"></i>';
-                title.style.color        = '#dc2626';
-                title.textContent        = 'Reservation limit reached';
-                sub.style.color          = '#dc2626';
-                sub.textContent          = `This guest has used all ${limit} slots within the last ${DAYS} days.`;
-                pill.style.background    = '#dc2626';
-                pill.style.color         = '#fff';
-                pill.textContent         = 'BLOCKED';
-                bar.style.background     = '#ef4444';
+                inner.style.background  = '#fef2f2';
+                inner.style.borderColor = '#fecaca';
+                icon.style.background   = '#fee2e2';
+                icon.innerHTML          = '<i class="fa-solid fa-ban" style="color:#dc2626"></i>';
+                title.style.color       = '#dc2626';
+                title.textContent       = 'Reservation limit reached';
+                sub.style.color         = '#dc2626';
+                sub.textContent         = `This guest has used all ${limit} slots within the last ${DAYS} days.`
+                                        + (data.reset ? ` Resets on ${data.reset}.` : '');
+                pill.style.background   = '#dc2626';
+                pill.style.color        = '#fff';
+                pill.textContent        = 'BLOCKED';
+                bar.style.background    = '#ef4444';
             } else if (count === limit - 1) {
-                inner.style.background   = '#fffbeb';
-                inner.style.borderColor  = '#fde68a';
-                icon.style.background    = '#fef3c7';
-                icon.innerHTML           = '<i class="fa-solid fa-triangle-exclamation" style="color:#d97706"></i>';
-                title.style.color        = '#92400e';
-                title.textContent        = 'Last reservation slot';
-                sub.style.color          = '#92400e';
-                sub.textContent          = `${limit - count} slot remaining in the ${DAYS}-day window.`;
-                pill.style.background    = '#f59e0b';
-                pill.style.color         = '#fff';
-                pill.textContent         = 'LAST SLOT';
-                bar.style.background     = '#f59e0b';
+                inner.style.background  = '#fffbeb';
+                inner.style.borderColor = '#fde68a';
+                icon.style.background   = '#fef3c7';
+                icon.innerHTML          = '<i class="fa-solid fa-triangle-exclamation" style="color:#d97706"></i>';
+                title.style.color       = '#92400e';
+                title.textContent       = 'Last reservation slot';
+                sub.style.color         = '#92400e';
+                sub.textContent         = `${limit - count} slot remaining in the ${DAYS}-day window.`;
+                pill.style.background   = '#f59e0b';
+                pill.style.color        = '#fff';
+                pill.textContent        = 'LAST SLOT';
+                bar.style.background    = '#f59e0b';
             } else if (count > 0) {
-                inner.style.background   = 'rgba(99,102,241,.05)';
-                inner.style.borderColor  = 'rgba(99,102,241,.2)';
-                icon.style.background    = 'rgba(99,102,241,.1)';
-                icon.innerHTML           = '<i class="fa-solid fa-circle-check" style="color:#6366f1"></i>';
-                title.style.color        = '#3730a3';
-                title.textContent        = 'Guest found';
-                sub.style.color          = '#4f46e5';
-                sub.textContent          = `${limit - count} slot(s) remaining in the ${DAYS}-day window.`;
-                pill.style.background    = '#ede9fe';
-                pill.style.color         = '#4f46e5';
-                pill.textContent         = `${count}/${limit} USED`;
-                bar.style.background     = '#6366f1';
+                inner.style.background  = 'rgba(99,102,241,.05)';
+                inner.style.borderColor = 'rgba(99,102,241,.2)';
+                icon.style.background   = 'rgba(99,102,241,.1)';
+                icon.innerHTML          = '<i class="fa-solid fa-circle-check" style="color:#6366f1"></i>';
+                title.style.color       = '#3730a3';
+                title.textContent       = 'Guest found';
+                sub.style.color         = '#4f46e5';
+                sub.textContent         = `${limit - count} slot(s) remaining in the ${DAYS}-day window.`;
+                pill.style.background   = '#ede9fe';
+                pill.style.color        = '#4f46e5';
+                pill.textContent        = `${count}/${limit} USED`;
+                bar.style.background    = '#6366f1';
             } else {
-                inner.style.background   = '#f0fdf4';
-                inner.style.borderColor  = '#bbf7d0';
-                icon.style.background    = '#dcfce7';
-                icon.innerHTML           = '<i class="fa-solid fa-user-plus" style="color:#16a34a"></i>';
-                title.style.color        = '#15803d';
-                title.textContent        = 'New guest';
-                sub.style.color          = '#16a34a';
-                sub.textContent          = `No recent reservations found. ${limit} slots available.`;
-                pill.style.background    = '#22c55e';
-                pill.style.color         = '#fff';
-                pill.textContent         = 'NEW';
-                bar.style.background     = '#22c55e';
+                inner.style.background  = '#f0fdf4';
+                inner.style.borderColor = '#bbf7d0';
+                icon.style.background   = '#dcfce7';
+                icon.innerHTML          = '<i class="fa-solid fa-user-plus" style="color:#16a34a"></i>';
+                title.style.color       = '#15803d';
+                title.textContent       = 'New guest';
+                sub.style.color         = '#16a34a';
+                sub.textContent         = `No recent reservations found. ${limit} slots available.`;
+                pill.style.background   = '#22c55e';
+                pill.style.color        = '#fff';
+                pill.textContent        = 'NEW';
+                bar.style.background    = '#22c55e';
             }
         }
 
         function hideGuestBox() {
-            _guestBlocked = false;
+            window._guestBlocked = false;
             const box = document.getElementById('guestLimitBox');
             if (box) box.style.display = 'none';
         }
 
-        /* Expose _guestBlocked so previewReservation() can read it */
-        Object.defineProperty(window, '_guestBlocked', {
-            get: function() { return _guestBlocked; },
-            configurable: true
-        });
+        // Expose so setType() can call it when switching tabs
+        window.hideGuestBox = hideGuestBox;
 
-        /* Reset when switching back to registered-user tab */
-        const _origSetType = window.setType;
-        window.setType = function (type) {
-            _origSetType(type);
-            if (type !== 'Visitor') hideGuestBox();
-        };
     })();
     </script>
 </body>
