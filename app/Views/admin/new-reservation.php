@@ -248,6 +248,28 @@
         .back-btn:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-light); }
 
         /* ══════════════════════════════
+           REGISTERED-USER WARNING BOX
+        ══════════════════════════════ */
+        .reg-warn-box {
+            display: none;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 13px 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            color: #9a3412;
+            font-size: .82rem;
+            font-weight: 600;
+        }
+        body.dark .reg-warn-box {
+            background: rgba(234,88,12,.1);
+            border-color: rgba(251,146,60,.3);
+            color: #fb923c;
+        }
+
+        /* ══════════════════════════════
            CONFIRM MODAL
         ══════════════════════════════ */
         .modal-back {
@@ -285,13 +307,90 @@
         }
 
         /* ══════════════════════════════
+           CONFIRMATION CODE WIDGET
+        ══════════════════════════════ */
+        .confirm-code-box {
+            background: rgba(99,102,241,.06);
+            border: 1px solid rgba(99,102,241,.22);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-top: 4px;
+        }
+        .confirm-code-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .confirm-code-icon {
+            width: 34px; height: 34px;
+            background: var(--indigo-light);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .gen-code-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 9px 18px;
+            background: var(--indigo); color: white;
+            border-radius: 9px; font-size: .78rem; font-weight: 700;
+            border: none; cursor: pointer; font-family: var(--font);
+            transition: background .15s;
+        }
+        .gen-code-btn:hover { background: #4338ca; }
+        .code-display-pill {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: white;
+            border: 2px solid var(--indigo);
+            border-radius: 12px;
+            padding: 8px 20px;
+            margin-left: 10px;
+        }
+        .code-digits {
+            font-family: var(--mono);
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--indigo);
+            letter-spacing: .22em;
+        }
+        .pin-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+        .pin-box {
+            width: 52px; height: 56px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 800;
+            font-family: var(--mono);
+            border: 2px solid rgba(99,102,241,.25);
+            border-radius: 12px;
+            background: white;
+            color: #0f172a;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+            caret-color: var(--indigo);
+        }
+        .pin-box:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+        .pin-box.pin-ok  { border-color: #16a34a; background: #f0fdf4; }
+        .pin-box.pin-err { border-color: #dc2626; background: #fef2f2; }
+        .pin-feedback {
+            font-size: .78rem; font-weight: 700;
+            min-height: 20px; margin-top: 2px;
+        }
+
+        /* ══════════════════════════════
            ANIMATIONS
         ══════════════════════════════ */
         @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
         @keyframes sheetUp { from { opacity:0; transform:translateY(60px); } to { opacity:1; transform:none; } }
         @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+        @keyframes shake   { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
         .fade-up   { animation: slideUp .4s ease both; }
         .fade-up-1 { animation: slideUp .45s .05s ease both; }
+        .shake     { animation: shake .35s ease; }
 
         /* ══════════════════════════════
            CUSTOM DATE / TIME PICKERS
@@ -495,6 +594,13 @@
         body.dark .cs-opt.cs-selected { background: rgba(99,102,241,.15); color: #a5b4fc; }
         body.dark .cs-opt.cs-placeholder { color: #4a6fa5; }
         body.dark .cs-divider { background: rgba(99,102,241,.1); }
+        /* confirm code dark */
+        body.dark .confirm-code-box { background: rgba(55,48,163,.12); border-color: rgba(99,102,241,.25); }
+        body.dark .confirm-code-icon { background: rgba(55,48,163,.3); }
+        body.dark .code-display-pill { background: #060e1e; }
+        body.dark .pin-box { background: #101e35; border-color: rgba(99,102,241,.25); color: #e2eaf8; }
+        body.dark .pin-box.pin-ok  { background: rgba(22,163,74,.1);  border-color: #16a34a; }
+        body.dark .pin-box.pin-err { background: rgba(220,38,38,.1);  border-color: #dc2626; }
     </style>
 </head>
 
@@ -558,12 +664,13 @@
         <div class="form-card fade-up-1">
             <form id="reservationForm" method="POST" action="<?= base_url('admin/create-reservation') ?>">
                 <?= csrf_field() ?>
-                <input type="hidden" name="visitor_name" id="finalVisitorName">
-                <input type="hidden" name="user_email"   id="finalUserEmail">
-                <input type="hidden" name="user_id"      id="finalUserId">
-                <input type="hidden" name="visitor_type" id="finalVisitorType" value="User">
-                <input type="hidden" name="purpose"      id="finalPurpose">
-                <input type="hidden" name="pcs"          id="finalPcs" value="[]">
+                <input type="hidden" name="visitor_name"  id="finalVisitorName">
+                <input type="hidden" name="user_email"    id="finalUserEmail">
+                <input type="hidden" name="user_id"       id="finalUserId">
+                <input type="hidden" name="visitor_type"  id="finalVisitorType" value="User">
+                <input type="hidden" name="purpose"       id="finalPurpose">
+                <input type="hidden" name="pcs"           id="finalPcs" value="[]">
+                <input type="hidden" name="confirm_code"  id="confirmCodeValue" value="">
                 <!-- hidden native selects for form submission -->
                 <select name="resource_id" id="nativeResource" style="display:none" required></select>
                 <select name="purpose_select" id="nativePurpose" style="display:none"></select>
@@ -607,21 +714,35 @@
                     <div id="visitorFields" style="display:none">
                         <div class="grid-2" style="margin-bottom:12px">
                             <div>
-                                <label class="field-label">Full Name</label>
+                                <label class="field-label">Full Name <span style="color:#ef4444;font-size:.75rem">*</span></label>
                                 <input type="text" id="visitorNameInput" class="field-input"
                                        placeholder="Enter visitor's full name"
                                        oninput="schedGuestCheck()" onblur="runGuestCheck()">
                             </div>
                             <div>
-                                <label class="field-label">Email Address</label>
+                                <label class="field-label">
+                                    Email Address
+                                    <span style="font-size:.68rem;color:#94a3b8;font-weight:400;margin-left:4px">(optional)</span>
+                                </label>
                                 <input type="email" id="visitorEmailInput" class="field-input"
-                                       placeholder="Enter email (optional)"
-                                       oninput="schedGuestCheck()" onblur="runGuestCheck()">
+                                       placeholder="Enter email if available">
+                            </div>
+                        </div>
+
+                        <!-- Registered-user warning box -->
+                        <div id="registeredWarnBox" class="reg-warn-box">
+                            <i class="fa-solid fa-triangle-exclamation" style="margin-top:1px;flex-shrink:0;color:#ea580c"></i>
+                            <div>
+                                <div id="regWarnTitle" style="font-weight:800;margin-bottom:2px"></div>
+                                <div style="font-weight:500;opacity:.85">
+                                    Please switch to <strong>Registered User</strong> and select them from the dropdown
+                                    so the reservation is counted under their account, not as a walk-in guest slot.
+                                </div>
                             </div>
                         </div>
 
                         <!-- Guest limit indicator -->
-                        <div id="guestLimitBox" style="display:none;margin-top:4px">
+                        <div id="guestLimitBox" style="display:none;margin-bottom:12px">
                             <div id="guestLimitInner" style="
                                 display:flex;align-items:center;gap:12px;
                                 padding:11px 15px;border-radius:10px;
@@ -646,6 +767,58 @@
                             <div style="display:flex;justify-content:space-between;margin-top:4px">
                                 <span style="font-size:.6rem;color:#94a3b8;font-weight:600">Reservations (last 3 days)</span>
                                 <span id="guestLimitCount" style="font-size:.6rem;color:#94a3b8;font-weight:700"></span>
+                            </div>
+                        </div>
+
+                        <!-- CONFIRMATION CODE WIDGET — shown only for brand-new walk-in visitors -->
+                        <div id="confirmCodeSection" style="display:none">
+                            <div class="confirm-code-box">
+                                <div class="confirm-code-header">
+                                    <div class="confirm-code-icon">
+                                        <i class="fa-solid fa-shield-halved" style="color:var(--indigo);font-size:.9rem"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:.83rem;font-weight:800;color:#3730a3">New visitor — identity confirmation</div>
+                                        <div style="font-size:.7rem;color:#6366f1;margin-top:2px;font-weight:500">
+                                            Generate a 4-digit code → read it to the visitor → they repeat it back
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 1: Generate -->
+                                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+                                    <button type="button" onclick="generateConfirmCode()" id="genCodeBtn" class="gen-code-btn">
+                                        <i class="fa-solid fa-arrows-rotate" style="font-size:.75rem"></i>
+                                        Generate Code
+                                    </button>
+                                    <div id="codeDisplayWrap" style="display:none">
+                                        <div class="code-display-pill">
+                                            <span class="code-digits" id="codeDigits"></span>
+                                        </div>
+                                        <span style="font-size:.68rem;color:#94a3b8;font-weight:600;margin-left:8px;display:inline-block;margin-top:4px">← Read aloud to visitor</span>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Visitor types code -->
+                                <div id="pinInputArea" style="display:none">
+                                    <label class="field-label" style="color:#3730a3;margin-bottom:8px;display:block;font-size:.75rem">
+                                        <i class="fa-solid fa-keyboard" style="margin-right:5px;font-size:.7rem"></i>
+                                        Visitor enters the code:
+                                    </label>
+                                    <div class="pin-row">
+                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin0"
+                                               oninput="pinAdvance(this,1)" onkeydown="pinBack(event,this,null)">
+                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin1"
+                                               oninput="pinAdvance(this,2)" onkeydown="pinBack(event,this,0)">
+                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin2"
+                                               oninput="pinAdvance(this,3)" onkeydown="pinBack(event,this,1)">
+                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin3"
+                                               oninput="pinFinish(this)" onkeydown="pinBack(event,this,2)">
+                                    </div>
+                                    <div id="pinFeedback" class="pin-feedback"></div>
+                                </div>
+
+                                <input type="hidden" id="confirmCodeVerified" value="0">
                             </div>
                         </div>
                     </div>
@@ -687,7 +860,7 @@
                         </div>
                     </div>
 
-                    <!-- PC Section — multi-select toggle buttons (same as SK) -->
+                    <!-- PC Section -->
                     <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block">Assign Workstation(s)</label>
                         <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
@@ -805,7 +978,11 @@
                 const el = document.getElementById(id); if (el) el.value = '';
             });
             document.getElementById('finalUserId').value = '';
-            if (type !== 'Visitor') hideGuestBox();
+            if (type !== 'Visitor') {
+                hideGuestBox();
+                hideCodeSection();
+                hideRegisteredWarning();
+            }
         }
 
         const userNameInput    = document.getElementById('userNameInput');
@@ -918,10 +1095,30 @@
         });
 
         function previewReservation() {
-            if (currentType === 'Visitor' && _guestBlocked) {
+            // Block if walk-in name matches a registered resident
+            if (currentType === 'Visitor' && window._guestIsRegistered) {
+                alert('⛔ This person is a registered resident. Please use the Registered User toggle and select them from the dropdown.');
+                return;
+            }
+
+            // Block if walk-in quota exceeded
+            if (currentType === 'Visitor' && window._guestBlocked) {
                 const name = document.getElementById('visitorNameInput')?.value?.trim() || 'This guest';
                 alert(`⛔ ${name} has reached the 3-reservation limit within the last 3 days and cannot make a new reservation.`);
                 return;
+            }
+
+            // For new walk-in visitors: require identity confirmation code
+            if (currentType === 'Visitor') {
+                const codeSection = document.getElementById('confirmCodeSection');
+                if (codeSection && codeSection.style.display !== 'none') {
+                    const verified = document.getElementById('confirmCodeVerified')?.value;
+                    if (verified !== '1') {
+                        alert('⚠️ Please generate a confirmation code and have the visitor verify it before proceeding.');
+                        document.getElementById('genCodeBtn')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+                }
             }
 
             const isUser       = currentType === 'User';
@@ -963,6 +1160,9 @@
                 ['Time',         `${document.getElementById('startLabel').textContent} – ${document.getElementById('endLabel').textContent}`],
                 ['Purpose',      purposeFinal || '—']
             ];
+            if (!isUser) {
+                rows.splice(2, 0, ['Identity', 'Confirmed ✓']);
+            }
             document.getElementById('modalSummaryBox').innerHTML =
                 rows.map(([l,v]) => `<div class="mrow"><span class="mrow-label">${l}</span><span class="mrow-value">${v}</span></div>`).join('');
             document.getElementById('qrWrap').style.display     = 'none';
@@ -1114,7 +1314,6 @@
         $('startTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('startDrop','startTrigger');if(activeDrop==='startDrop')renderTime('start');});
         $('endTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('endDrop','endTrigger');if(activeDrop==='endDrop')renderTime('end');});
 
-        /* Auto-init default times into hidden inputs and labels on load */
         (function initDefaultTimes() {
             ['start', 'end'].forEach(function(which) {
                 var st = tState[which];
@@ -1132,7 +1331,6 @@
             });
         })();
 
-        /* Auto-select today's date on load */
         (function(){
             const t=new Date();
             $('dateLabel').textContent=t.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
@@ -1143,47 +1341,186 @@
     </script>
 
     <!-- ══════════════════════════════════════════
-         GUEST LIMIT CHECKER  (3 reservations / 3 days)
+         GUEST LIMIT CHECKER + REGISTERED WARNING + CONFIRMATION CODE
     ══════════════════════════════════════════ -->
     <script>
     (function () {
-        const LIMIT   = 3;
-        const DAYS    = 3;
+        const LIMIT     = 3;
         const CHECK_URL = '/admin/check-guest-limit';
 
-        let _guestTimer   = null;
-        let _guestBlocked = false;
+        // Module state
+        window._guestBlocked      = false;
+        window._guestIsRegistered = false;
+        window._guestTimer        = null;
+        window._generatedCode     = null;
 
+        /* ─── Debounced trigger ─── */
         window.schedGuestCheck = function () {
-            clearTimeout(_guestTimer);
-            _guestTimer = setTimeout(runGuestCheck, 600);
+            clearTimeout(window._guestTimer);
+            window._guestTimer = setTimeout(window.runGuestCheck, 600);
         };
 
+        /* ─── Main check ─── */
         window.runGuestCheck = function () {
-            clearTimeout(_guestTimer);
+            clearTimeout(window._guestTimer);
+
+            if (currentType === 'User') { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); return; }
+
             const name  = (document.getElementById('visitorNameInput')?.value  || '').trim();
             const email = (document.getElementById('visitorEmailInput')?.value || '').trim();
-            if (!name && !email) { hideGuestBox(); return; }
+            if (!name && !email) { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); return; }
 
             const params = new URLSearchParams();
             if (name)  params.append('name',  name);
             if (email) params.append('email', email);
+            params.append('visitor_type', currentType);
 
             fetch(`${CHECK_URL}?${params}`, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(r => r.json())
-            .then(data => renderGuestBox(data))
-            .catch(() => hideGuestBox());
+            .then(data => {
+                // If the typed name matches a registered resident, warn and block
+                if (data.is_registered) {
+                    window._guestIsRegistered = true;
+                    window._guestBlocked      = true;
+                    hideGuestBox();
+                    hideCodeSection();
+                    showRegisteredWarning(data.registered_name || name);
+                    return;
+                }
+
+                window._guestIsRegistered = false;
+                hideRegisteredWarning();
+
+                if (data.skip_quota) { hideGuestBox(); hideCodeSection(); return; }
+
+                renderGuestBox(data);
+
+                // Show confirmation code only for brand-new, non-blocked visitors
+                if (data.is_new && !data.blocked) {
+                    showCodeSection();
+                } else {
+                    hideCodeSection();
+                }
+            })
+            .catch(() => {
+                window._guestIsRegistered = false;
+                hideGuestBox();
+                hideCodeSection();
+                hideRegisteredWarning();
+            });
         };
 
+        /* ─── Registered-resident warning ─── */
+        window.showRegisteredWarning = function (name) {
+            const box   = document.getElementById('registeredWarnBox');
+            const title = document.getElementById('regWarnTitle');
+            if (!box) return;
+            if (title) title.textContent = `"${name}" is a registered resident`;
+            box.style.display = 'flex';
+        };
+
+        window.hideRegisteredWarning = function () {
+            window._guestIsRegistered = false;
+            const box = document.getElementById('registeredWarnBox');
+            if (box) box.style.display = 'none';
+        };
+
+        /* ─── Generate 4-digit code ─── */
+        window.generateConfirmCode = function () {
+            const code = String(Math.floor(1000 + Math.random() * 9000));
+            window._generatedCode = code;
+
+            document.getElementById('confirmCodeValue').value    = code;
+            document.getElementById('confirmCodeVerified').value = '0';
+
+            document.getElementById('codeDigits').textContent = code;
+            document.getElementById('codeDisplayWrap').style.display = 'flex';
+            document.getElementById('pinInputArea').style.display    = 'block';
+
+            ['pin0','pin1','pin2','pin3'].forEach(id => {
+                const el = document.getElementById(id);
+                el.value = '';
+                el.classList.remove('pin-ok','pin-err');
+            });
+            document.getElementById('pinFeedback').textContent = '';
+            document.getElementById('pinFeedback').style.color  = '';
+
+            setTimeout(() => document.getElementById('pin0')?.focus(), 50);
+        };
+
+        /* ─── PIN navigation helpers ─── */
+        window.pinAdvance = function (el, nextIdx) {
+            el.value = el.value.replace(/\D/g, '').slice(-1);
+            if (el.value && nextIdx <= 3) {
+                document.getElementById('pin' + nextIdx)?.focus();
+            }
+        };
+
+        window.pinBack = function (e, el, prevIdx) {
+            if (e.key === 'Backspace' && !el.value && prevIdx !== null) {
+                document.getElementById('pin' + prevIdx)?.focus();
+            }
+        };
+
+        /* ─── Final digit entered — check match ─── */
+        window.pinFinish = function (el) {
+            el.value = el.value.replace(/\D/g, '').slice(-1);
+            const entered = ['pin0','pin1','pin2','pin3']
+                .map(id => document.getElementById(id).value)
+                .join('');
+            if (entered.length < 4) return;
+
+            const fb   = document.getElementById('pinFeedback');
+            const pins = document.querySelectorAll('.pin-box');
+
+            if (entered === window._generatedCode) {
+                pins.forEach(p => { p.classList.remove('pin-err'); p.classList.add('pin-ok'); });
+                fb.textContent = '✓ Code verified — visitor identity confirmed';
+                fb.style.color  = '#16a34a';
+                document.getElementById('confirmCodeVerified').value = '1';
+            } else {
+                pins.forEach(p => { p.classList.remove('pin-ok'); p.classList.add('pin-err'); });
+                fb.textContent = '✗ Code mismatch — ask visitor to repeat or click Generate again';
+                fb.style.color  = '#dc2626';
+                document.getElementById('confirmCodeVerified').value = '0';
+                document.querySelector('.pin-row')?.classList.add('shake');
+                setTimeout(() => document.querySelector('.pin-row')?.classList.remove('shake'), 400);
+            }
+        };
+
+        /* ─── Show / hide helpers ─── */
+        function showCodeSection() {
+            const s = document.getElementById('confirmCodeSection');
+            if (s) s.style.display = 'block';
+        }
+
+        function hideCodeSection() {
+            const s = document.getElementById('confirmCodeSection');
+            if (s) s.style.display = 'none';
+            window._generatedCode = null;
+            const cv  = document.getElementById('confirmCodeVerified');  if (cv)  cv.value = '0';
+            const cdv = document.getElementById('confirmCodeValue');      if (cdv) cdv.value = '';
+            const wrap = document.getElementById('codeDisplayWrap');     if (wrap) wrap.style.display = 'none';
+            const pin  = document.getElementById('pinInputArea');         if (pin)  pin.style.display  = 'none';
+            ['pin0','pin1','pin2','pin3'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.value = ''; el.classList.remove('pin-ok','pin-err'); }
+            });
+            const fb = document.getElementById('pinFeedback');
+            if (fb) { fb.textContent = ''; }
+        }
+        window.hideCodeSection = hideCodeSection;
+
+        /* ─── Guest quota box renderer ─── */
         function renderGuestBox(data) {
             const count   = data.count   ?? 0;
             const limit   = data.limit   ?? LIMIT;
             const blocked = data.blocked ?? (count >= limit);
             const pct     = Math.min(count / limit * 100, 100);
 
-            _guestBlocked = blocked;
+            window._guestBlocked = blocked;
 
             const box   = document.getElementById('guestLimitBox');
             const inner = document.getElementById('guestLimitInner');
@@ -1206,7 +1543,7 @@
                 title.style.color       = '#dc2626';
                 title.textContent       = 'Reservation limit reached';
                 sub.style.color         = '#dc2626';
-                sub.textContent         = `This guest has used all ${limit} slots within the last ${DAYS} days.`;
+                sub.textContent         = `This guest has used all ${limit} slots within the last 3 days.`;
                 pill.style.background   = '#dc2626';
                 pill.style.color        = '#fff';
                 pill.textContent        = 'BLOCKED';
@@ -1219,7 +1556,7 @@
                 title.style.color       = '#92400e';
                 title.textContent       = 'Last reservation slot';
                 sub.style.color         = '#92400e';
-                sub.textContent         = `${limit - count} slot remaining in the ${DAYS}-day window.`;
+                sub.textContent         = `${limit - count} slot remaining in the 3-day window.`;
                 pill.style.background   = '#f59e0b';
                 pill.style.color        = '#fff';
                 pill.textContent        = 'LAST SLOT';
@@ -1230,9 +1567,9 @@
                 icon.style.background   = 'rgba(99,102,241,.1)';
                 icon.innerHTML          = '<i class="fa-solid fa-circle-check" style="color:#6366f1"></i>';
                 title.style.color       = '#3730a3';
-                title.textContent       = 'Guest found';
+                title.textContent       = 'Returning visitor';
                 sub.style.color         = '#4f46e5';
-                sub.textContent         = `${limit - count} slot(s) remaining in the ${DAYS}-day window.`;
+                sub.textContent         = `${limit - count} slot(s) remaining in the 3-day window.`;
                 pill.style.background   = '#ede9fe';
                 pill.style.color        = '#4f46e5';
                 pill.textContent        = `${count}/${limit} USED`;
@@ -1243,7 +1580,7 @@
                 icon.style.background   = '#dcfce7';
                 icon.innerHTML          = '<i class="fa-solid fa-user-plus" style="color:#16a34a"></i>';
                 title.style.color       = '#15803d';
-                title.textContent       = 'New guest';
+                title.textContent       = 'New visitor';
                 sub.style.color         = '#16a34a';
                 sub.textContent         = `No recent reservations found. ${limit} slots available.`;
                 pill.style.background   = '#22c55e';
@@ -1254,17 +1591,12 @@
         }
 
         function hideGuestBox() {
-            _guestBlocked = false;
+            window._guestBlocked = false;
             const box = document.getElementById('guestLimitBox');
             if (box) box.style.display = 'none';
         }
-
         window.hideGuestBox = hideGuestBox;
 
-        Object.defineProperty(window, '_guestBlocked', {
-            get: function() { return _guestBlocked; },
-            configurable: true
-        });
     })();
     </script>
 </body>

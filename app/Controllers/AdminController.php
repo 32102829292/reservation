@@ -562,6 +562,13 @@ class AdminController extends Controller
         }
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CREATE RESERVATION
+    //  Fixed:
+    //  1. Walk-in path now checks the users table by name to prevent a
+    //     registered resident from being saved as a guest (user_id = NULL).
+    //  2. Walk-in quota check uses 3-day rolling window (admin policy).
+    // ═══════════════════════════════════════════════════════════════════════
     public function createReservation()
     {
         if (!session()->has('user_id')) {
@@ -574,10 +581,10 @@ class AdminController extends Controller
         $endTime         = $this->request->getPost('end_time');
         $resourceId      = $this->request->getPost('resource_id');
 
-        // ── Resolve user_id for registered-user bookings ──────────────────────
+        // ── Resolve user_id for registered-user bookings ──────────────────
         $userId        = null;
         $resolvedEmail = null;
-        $visitorName   = $this->request->getPost('visitor_name');
+        $visitorName   = trim($this->request->getPost('visitor_name') ?? '');
 
         if ($userType === 'User') {
             $userId = (int) $this->request->getPost('user_id');
@@ -594,7 +601,7 @@ class AdminController extends Controller
             $resolvedEmail = $this->request->getPost('user_email') ?: null;
         }
 
-        // ── Block check — mirrors UserController ──────────────────────────────
+        // ── Block check ───────────────────────────────────────────────────
         if ($userType === 'User' && $userId > 0) {
             $isBlocked = $this->reservationModel->isBlocked($userId);
             if ($isBlocked) {
@@ -605,7 +612,7 @@ class AdminController extends Controller
             }
         }
 
-        // ── Fairness / quota check — pass $userId (int), not email ────────────
+        // ── Fairness / quota check ────────────────────────────────────────
         if ($userType === 'User' && $userId > 0) {
             $fairness = $this->reservationModel->checkFairness($userId);
             if (!$fairness['fair']) {
@@ -616,7 +623,66 @@ class AdminController extends Controller
             }
         }
 
-        // ── Field validation — mirrors UserController ─────────────────────────
+        // ── Walk-in path: block if name matches a registered resident ─────
+        if ($userType !== 'User') {
+            if (empty($visitorName)) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Walk-in visitor name is required.');
+            }
+
+            // FIX: check whether the typed name belongs to a registered resident.
+            $nameMatch = $this->db->query("
+                SELECT id, name
+                FROM users
+                WHERE LOWER(TRIM(name))      = LOWER(TRIM(?))
+                   OR LOWER(TRIM(full_name)) = LOWER(TRIM(?))
+                LIMIT 1
+            ", [$visitorName, $visitorName])->getRowArray();
+
+            if ($nameMatch) {
+                return redirect()->back()->withInput()->with('error',
+                    "\"{$visitorName}\" is a registered resident. " .
+                    'Please use the Registered User toggle and select them from the dropdown ' .
+                    'so the reservation is recorded under their account.'
+                );
+            }
+
+            // Walk-in quota check (3 reservations per 3 days — admin policy)
+            $threeDaysAgo = date('Y-m-d', strtotime('-3 days'));
+
+            $walkInCount = (int) $this->db->query("
+                SELECT COUNT(*) AS total
+                FROM reservations
+                WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
+                  AND status NOT IN ('declined', 'canceled')
+                  AND user_id IS NULL
+                  AND reservation_date >= ?
+            ", [$visitorName, $threeDaysAgo])->getRowArray()['total'] ?? 0;
+
+            if ($walkInCount >= 3) {
+                $oldest = $this->db->query("
+                    SELECT reservation_date
+                    FROM reservations
+                    WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
+                      AND status NOT IN ('declined', 'canceled')
+                      AND user_id IS NULL
+                      AND reservation_date >= ?
+                    ORDER BY reservation_date ASC
+                    LIMIT 1
+                ", [$visitorName, $threeDaysAgo])->getRowArray();
+
+                $resetDate = $oldest
+                    ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +4 days'))
+                    : date('F j, Y', strtotime('+3 days'));
+
+                return redirect()->back()->withInput()->with('error',
+                    "Walk-in visitor \"{$visitorName}\" has already used all 3 reservation slots " .
+                    "in the last 3 days. They may book again on or after {$resetDate}."
+                );
+            }
+        }
+
+        // ── Field validation ──────────────────────────────────────────────
         if (!$this->validate([
             'resource_id'      => 'required|numeric',
             'reservation_date' => 'required|valid_date[Y-m-d]',
@@ -627,19 +693,19 @@ class AdminController extends Controller
             return redirect()->back()->withInput()->with('error', 'Please fill all required fields.');
         }
 
-        // ── Reject past dates — mirrors UserController ────────────────────────
+        // ── Reject past dates ─────────────────────────────────────────────
         if ($reservationDate < date('Y-m-d')) {
             return redirect()->back()->withInput()
                 ->with('error', 'You cannot make a reservation for a past date.');
         }
 
-        // ── End time must be after start time — mirrors UserController ─────────
+        // ── End time must be after start time ─────────────────────────────
         if ($startTime >= $endTime) {
             return redirect()->back()->withInput()
                 ->with('error', 'End time must be after start time.');
         }
 
-        // ── One reservation per day for registered users — mirrors UserController
+        // ── One reservation per day for registered users ──────────────────
         if ($userType === 'User' && $userId > 0) {
             $sameDayReservations = $this->reservationModel->getUserSameDayReservations($userId, $reservationDate);
             if (!empty($sameDayReservations)) {
@@ -648,7 +714,7 @@ class AdminController extends Controller
             }
         }
 
-        // ── Double-booking guard with DB lock via transaction ─────────────────
+        // ── Double-booking guard with DB transaction ──────────────────────
         $this->db->transStart();
 
         $conflict = $this->reservationModel
@@ -667,20 +733,27 @@ class AdminController extends Controller
                 ->with('error', 'This time slot is already booked. Please choose another time.');
         }
 
-        // ── Insert ────────────────────────────────────────────────────────────
+        // ── PC number from multi-select ───────────────────────────────────
+        $pcsJson = $this->request->getPost('pcs');
+        $pcsArr  = json_decode($pcsJson, true) ?? [];
+        $pcValue = !empty($pcsArr) ? implode(', ', $pcsArr) : ($this->request->getPost('pc_number') ?: null);
+
+        // ── Insert ────────────────────────────────────────────────────────
         $eTicketCode = 'ADMIN' . strtoupper(uniqid());
 
         $data = [
             'resource_id'      => $resourceId,
             'visitor_name'     => $visitorName,
             'visitor_type'     => $userType,
-            'user_id'          => $userId,
+            // FIX: user_id is explicitly NULL for walk-ins so checkGuestLimit
+            // can reliably identify true guests via user_id IS NULL.
+            'user_id'          => ($userType === 'User' && $userId > 0) ? $userId : null,
             'user_email'       => $resolvedEmail,
             'reservation_date' => $reservationDate,
             'start_time'       => $startTime,
             'end_time'         => $endTime,
             'purpose'          => $this->request->getPost('purpose'),
-            'pc_number'        => $this->request->getPost('pc_number') ?: null,
+            'pc_number'        => $pcValue,
             'status'           => 'approved',
             'claimed'          => false,
             'approved_by'      => session()->get('user_id'),
@@ -707,6 +780,139 @@ class AdminController extends Controller
             ->with('success', 'Reservation created successfully. E-Ticket: ' . $eTicketCode);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CHECK GUEST LIMIT  (AJAX — called by admin new-reservation page)
+    //
+    //  Policy: 3 reservations per 3-day rolling window for walk-in guests.
+    //  Also detects registered residents by name and flags them so the
+    //  frontend can show the orange warning box.
+    // ═══════════════════════════════════════════════════════════════════════
+    public function checkGuestLimit()
+    {
+        date_default_timezone_set('Asia/Manila');
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Forbidden']);
+        }
+
+        if (!session()->has('user_id')) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
+        }
+
+        $name        = trim($this->request->getGet('name')          ?? '');
+        $email       = trim($this->request->getGet('email')         ?? '');
+        $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
+
+        // Registered-user toggle — no quota applies
+        if ($visitorType === 'user') {
+            return $this->response->setJSON([
+                'count'         => 0,
+                'limit'         => 3,
+                'blocked'       => false,
+                'reset'         => null,
+                'is_new'        => false,
+                'is_registered' => false,
+                'skip_quota'    => true,
+            ]);
+        }
+
+        // Nothing to check yet
+        if (empty($name) && empty($email)) {
+            return $this->response->setJSON([
+                'count'         => 0,
+                'limit'         => 3,
+                'blocked'       => false,
+                'reset'         => null,
+                'is_new'        => true,
+                'is_registered' => false,
+            ]);
+        }
+
+        // ── Check whether the entered name belongs to a registered user ───
+        // If it does, the admin must switch to the Registered User toggle.
+        if (!empty($name)) {
+            $registeredUser = $this->db->query("
+                SELECT id, name, email
+                FROM users
+                WHERE LOWER(TRIM(name))      = LOWER(TRIM(?))
+                   OR LOWER(TRIM(full_name)) = LOWER(TRIM(?))
+                LIMIT 1
+            ", [$name, $name])->getRowArray();
+
+            if ($registeredUser) {
+                return $this->response->setJSON([
+                    'count'           => 0,
+                    'limit'           => 3,
+                    'blocked'         => false,
+                    'reset'           => null,
+                    'is_new'          => false,
+                    'is_registered'   => true,
+                    'registered_id'   => $registeredUser['id'],
+                    'registered_name' => $registeredUser['name'],
+                    'skip_quota'      => true,
+                ]);
+            }
+        }
+
+        // ── Walk-in quota check: 3 reservations per 3-day window ─────────
+        // Uses reservation_date (not created_at) to avoid timezone drift.
+        // Filters user_id IS NULL to identify true walk-ins consistently.
+        $threeDaysAgo = date('Y-m-d', strtotime('-3 days'));
+
+        $conditions = [];
+        $params     = [];
+
+        if (!empty($name)) {
+            $conditions[] = "LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))";
+            $params[]     = $name;
+        }
+
+        if (!empty($email)) {
+            $conditions[] = "LOWER(TRIM(user_email)) = LOWER(TRIM(?))";
+            $params[]     = $email;
+        }
+
+        $whereClause = implode(' OR ', $conditions);
+
+        $usedRow = $this->db->query("
+            SELECT COUNT(*) AS total
+            FROM reservations
+            WHERE ({$whereClause})
+              AND status NOT IN ('declined', 'canceled')
+              AND user_id IS NULL
+              AND reservation_date >= ?
+        ", array_merge($params, [$threeDaysAgo]))->getRowArray();
+
+        $used = (int) ($usedRow['total'] ?? 0);
+
+        $reset = null;
+        if ($used >= 3) {
+            $oldest = $this->db->query("
+                SELECT reservation_date
+                FROM reservations
+                WHERE ({$whereClause})
+                  AND status NOT IN ('declined', 'canceled')
+                  AND user_id IS NULL
+                  AND reservation_date >= ?
+                ORDER BY reservation_date ASC
+                LIMIT 1
+            ", array_merge($params, [$threeDaysAgo]))->getRowArray();
+
+            $reset = $oldest
+                ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +4 days'))
+                : date('F j, Y', strtotime('+3 days'));
+        }
+
+        return $this->response->setJSON([
+            'count'         => $used,
+            'limit'         => 3,
+            'blocked'       => $used >= 3,
+            'reset'         => $reset,
+            'is_new'        => $used === 0,
+            'is_registered' => false,
+        ]);
+    }
+
     public function approve()
     {
         if (!session()->has('user_id')) {
@@ -723,7 +929,6 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Reservation not found');
         }
 
-        // ── Use transStart/transComplete to match UserController pattern ──────
         $this->db->transStart();
         $this->reservationModel->update($id, [
             'status'      => 'approved',
@@ -761,7 +966,6 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Reservation not found');
         }
 
-        // ── Use transStart/transComplete to match UserController pattern ──────
         $this->db->transStart();
         $this->reservationModel->update($id, [
             'status'      => 'declined',
@@ -970,12 +1174,9 @@ class AdminController extends Controller
     public function deleteProfile()
     {
         $userId = session()->get('user_id');
-
         $userModel = new \App\Models\UserModel();
         $userModel->delete($userId);
-
         session()->destroy();
-
         return redirect()->to('/login')->with('success', 'Account deleted successfully.');
     }
 
