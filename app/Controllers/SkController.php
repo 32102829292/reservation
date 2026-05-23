@@ -633,50 +633,79 @@ class SkController extends BaseController
     }
 
     public function checkGuestLimit()
-    {
-        if (!$this->request->isAJAX()) {
-            return $this->response->setStatusCode(403)
-                ->setJSON(['error' => 'Forbidden']);
-        }
+{
+    if (!$this->request->isAJAX()) {
+        return $this->response->setStatusCode(403)->setJSON(['error' => 'Forbidden']);
+    }
 
-        if (!session()->has('user_id')) {
-            return $this->response->setStatusCode(401)
-                ->setJSON(['error' => 'Unauthorized']);
-        }
+    if (!session()->has('user_id')) {
+        return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
+    }
 
-        $name        = trim($this->request->getGet('name')         ?? '');
-        $email       = trim($this->request->getGet('email')        ?? '');
-        $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
+    $name        = trim($this->request->getGet('name') ?? '');
+    $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
 
-        if ($visitorType === 'user') {
-            return $this->response->setJSON([
-                'count'      => 0,
-                'limit'      => 3,
-                'blocked'    => false,
-                'reset'      => null,
-                'skip_quota' => true,
-            ]);
-        }
-
-        if (empty($name)) {
-            return $this->response->setJSON([
-                'count'   => 0,
-                'limit'   => 3,
-                'blocked' => false,
-                'reset'   => null,
-            ]);
-        }
-
-        $reservationModel = new ReservationModel();
-        $result           = $reservationModel->checkWalkInFairness($name);
-
+    if ($visitorType === 'user') {
         return $this->response->setJSON([
-            'count'   => $result['used'],
-            'limit'   => 3,
-            'blocked' => !$result['fair'],
-            'reset'   => $result['reset'],
+            'count'      => 0,
+            'limit'      => 3,
+            'blocked'    => false,
+            'reset'      => null,
+            'skip_quota' => true,
         ]);
     }
+
+    if (empty($name)) {
+        return $this->response->setJSON([
+            'count'   => 0,
+            'limit'   => 3,
+            'blocked' => false,
+            'reset'   => null,
+        ]);
+    }
+
+    $db          = db_connect();
+    $nameLower   = mb_strtolower(trim($name));
+    $twoWeeksAgo = date('Y-m-d H:i:s', strtotime('-14 days'));
+
+    // Use raw parameterised query — same approach as reservations detail modal
+    $usedQuery = $db->query("
+        SELECT COUNT(*) AS total
+        FROM reservations
+        WHERE LOWER(TRIM(visitor_name)) = ?
+          AND status NOT IN ('declined', 'canceled')
+          AND LOWER(visitor_type) != 'user'
+          AND created_at >= ?
+    ", [$nameLower, $twoWeeksAgo]);
+
+    $used = (int) ($usedQuery->getRowArray()['total'] ?? 0);
+
+    $reset = null;
+    if ($used >= 3) {
+        $oldestQuery = $db->query("
+            SELECT created_at
+            FROM reservations
+            WHERE LOWER(TRIM(visitor_name)) = ?
+              AND status NOT IN ('declined', 'canceled')
+              AND LOWER(visitor_type) != 'user'
+              AND created_at >= ?
+            ORDER BY created_at ASC
+            LIMIT 1
+        ", [$nameLower, $twoWeeksAgo]);
+
+        $oldest = $oldestQuery->getRowArray();
+        $reset  = $oldest
+            ? date('F j, Y', strtotime($oldest['created_at'] . ' +14 days'))
+            : date('F j, Y', strtotime('+14 days'));
+    }
+
+    return $this->response->setJSON([
+        'count'   => $used,
+        'limit'   => 3,
+        'blocked' => $used >= 3,
+        'reset'   => $reset,
+    ]);
+}
 
     private function generateETicket($length = 8)
     {
