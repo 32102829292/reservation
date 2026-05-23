@@ -249,6 +249,29 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .back-btn:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-light); }
 
         /* ══════════════════════════════
+           REGISTERED-USER WARNING BOX
+           Appears when a walk-in name matches a user in the DB
+        ══════════════════════════════ */
+        .reg-warn-box {
+            display: none;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 13px 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            color: #9a3412;
+            font-size: .82rem;
+            font-weight: 600;
+        }
+        body.dark .reg-warn-box {
+            background: rgba(234,88,12,.1);
+            border-color: rgba(251,146,60,.3);
+            color: #fb923c;
+        }
+
+        /* ══════════════════════════════
            CONFIRM MODAL
         ══════════════════════════════ */
         .modal-back {
@@ -714,6 +737,18 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                             </div>
                         </div>
 
+                        <!-- FIX: Registered-user warning box — shown when typed name matches a resident -->
+                        <div id="registeredWarnBox" class="reg-warn-box">
+                            <i class="fa-solid fa-triangle-exclamation" style="margin-top:1px;flex-shrink:0;color:#ea580c"></i>
+                            <div>
+                                <div id="regWarnTitle" style="font-weight:800;margin-bottom:2px"></div>
+                                <div style="font-weight:500;opacity:.85">
+                                    Please switch to <strong>Registered User</strong> and select them from the dropdown
+                                    so the reservation is counted under their account, not as a walk-in guest slot.
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Guest quota indicator -->
                         <div id="guestLimitBox" style="display:none;margin-bottom:12px">
                             <div id="guestLimitInner" style="display:flex;align-items:center;gap:12px;padding:11px 15px;border-radius:10px;border:1px solid;font-size:.8rem;font-weight:600;transition:all .2s">
@@ -733,10 +768,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                             </div>
                         </div>
 
-                        <!-- ════════════════════════════
-                             CONFIRMATION CODE WIDGET
-                             Shown only for brand-new visitors (is_new: true)
-                        ════════════════════════════ -->
+                        <!-- CONFIRMATION CODE WIDGET — shown only for brand-new walk-in visitors -->
                         <div id="confirmCodeSection" style="display:none">
                             <div class="confirm-code-box">
                                 <div class="confirm-code-header">
@@ -784,11 +816,9 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                                     <div id="pinFeedback" class="pin-feedback"></div>
                                 </div>
 
-                                <!-- Hidden: verified flag -->
                                 <input type="hidden" id="confirmCodeVerified" value="0">
                             </div>
                         </div>
-                        <!-- END confirmation code widget -->
                     </div>
                 </div>
                 <hr class="divider">
@@ -954,6 +984,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             document.getElementById('finalUserId').value = '';
             hideGuestBox();
             hideCodeSection();
+            hideRegisteredWarning();
         }
 
         /* ─── Registered user autocomplete ─── */
@@ -1067,6 +1098,12 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 
         /* ─── Preview / confirm ─── */
         function previewReservation() {
+            // Block if walk-in name matches a registered resident
+            if (currentType === 'Visitor' && window._guestIsRegistered) {
+                alert('⛔ This person is a registered resident. Please use the Registered User toggle and select them from the dropdown.');
+                return;
+            }
+
             // Block if walk-in quota exceeded
             if (currentType === 'Visitor' && window._guestBlocked) {
                 const name = document.getElementById('visitorNameInput')?.value?.trim() || 'This visitor';
@@ -1304,19 +1341,21 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 
     <!-- ══════════════════════════════════════════
          GUEST LIMIT CHECKER + CONFIRMATION CODE
-         Fixed: uses reservation_date + user_id IS NULL
-         New:   shows 4-digit code widget for first-time visitors
+         Fixed:
+         - Returns is_registered:true when typed name matches a resident
+         - Uses reservation_date (date column) for 14-day window
+         - Uses user_id IS NULL to count only true walk-ins
     ══════════════════════════════════════════ -->
     <script>
     (function () {
         const LIMIT     = 3;
-        const DAYS      = 14;
         const CHECK_URL = '/sk/check-guest-limit';
 
         // Module state
-        window._guestBlocked   = false;
-        window._guestTimer     = null;
-        window._generatedCode  = null;
+        window._guestBlocked      = false;
+        window._guestIsRegistered = false;  // FIX: new flag for registered-resident detection
+        window._guestTimer        = null;
+        window._generatedCode     = null;
 
         /* ─── Debounced trigger ─── */
         window.schedGuestCheck = function () {
@@ -1328,17 +1367,32 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         window.runGuestCheck = function () {
             clearTimeout(window._guestTimer);
 
-            if (currentType === 'User') { hideGuestBox(); hideCodeSection(); return; }
+            if (currentType === 'User') { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); return; }
 
             const name = (document.getElementById('visitorNameInput')?.value || '').trim();
-            if (!name)  { hideGuestBox(); hideCodeSection(); return; }
+            if (!name) { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); return; }
 
             fetch(`${CHECK_URL}?name=${encodeURIComponent(name)}&visitor_type=${encodeURIComponent(currentType)}`, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(r => r.json())
             .then(data => {
+                // FIX: if the name belongs to a registered resident, warn and block
+                if (data.is_registered) {
+                    window._guestIsRegistered = true;
+                    window._guestBlocked      = true;
+                    hideGuestBox();
+                    hideCodeSection();
+                    showRegisteredWarning(data.registered_name || name);
+                    return;
+                }
+
+                // Name is not a registered resident — clear the warning
+                window._guestIsRegistered = false;
+                hideRegisteredWarning();
+
                 if (data.skip_quota) { hideGuestBox(); hideCodeSection(); return; }
+
                 renderGuestBox(data);
 
                 // Show confirmation code only for brand-new, non-blocked visitors
@@ -1348,7 +1402,27 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                     hideCodeSection();
                 }
             })
-            .catch(() => { hideGuestBox(); hideCodeSection(); });
+            .catch(() => {
+                window._guestIsRegistered = false;
+                hideGuestBox();
+                hideCodeSection();
+                hideRegisteredWarning();
+            });
+        };
+
+        /* ─── Registered-resident warning ─── */
+        window.showRegisteredWarning = function (name) {
+            const box   = document.getElementById('registeredWarnBox');
+            const title = document.getElementById('regWarnTitle');
+            if (!box) return;
+            if (title) title.textContent = `"${name}" is a registered resident`;
+            box.style.display = 'flex';
+        };
+
+        window.hideRegisteredWarning = function () {
+            window._guestIsRegistered = false;
+            const box = document.getElementById('registeredWarnBox');
+            if (box) box.style.display = 'none';
         };
 
         /* ─── Generate 4-digit code ─── */
@@ -1356,20 +1430,13 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             const code = String(Math.floor(1000 + Math.random() * 9000));
             window._generatedCode = code;
 
-            // Store in hidden field (sent with form for audit trail if needed)
             document.getElementById('confirmCodeValue').value = code;
-
-            // Reset verified state
             document.getElementById('confirmCodeVerified').value = '0';
 
-            // Show the code
             document.getElementById('codeDigits').textContent = code;
             document.getElementById('codeDisplayWrap').style.display = 'flex';
-
-            // Show PIN input
             document.getElementById('pinInputArea').style.display = 'block';
 
-            // Clear any previous input
             ['pin0','pin1','pin2','pin3'].forEach(id => {
                 const el = document.getElementById(id);
                 el.value = '';
@@ -1378,13 +1445,11 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             document.getElementById('pinFeedback').textContent = '';
             document.getElementById('pinFeedback').style.color = '';
 
-            // Focus first pin
             setTimeout(() => document.getElementById('pin0')?.focus(), 50);
         };
 
         /* ─── PIN navigation helpers ─── */
         window.pinAdvance = function (el, nextIdx) {
-            // Allow digits only
             el.value = el.value.replace(/\D/g, '').slice(-1);
             if (el.value && nextIdx <= 3) {
                 document.getElementById('pin' + nextIdx)?.focus();
@@ -1409,18 +1474,15 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             const pins = document.querySelectorAll('.pin-box');
 
             if (entered === window._generatedCode) {
-                // ✓ Match
                 pins.forEach(p => { p.classList.remove('pin-err'); p.classList.add('pin-ok'); });
                 fb.textContent = '✓ Code verified — visitor identity confirmed';
                 fb.style.color  = '#16a34a';
                 document.getElementById('confirmCodeVerified').value = '1';
             } else {
-                // ✗ Mismatch
                 pins.forEach(p => { p.classList.remove('pin-ok'); p.classList.add('pin-err'); });
                 fb.textContent = '✗ Code mismatch — ask visitor to repeat or click Generate again';
                 fb.style.color  = '#dc2626';
                 document.getElementById('confirmCodeVerified').value = '0';
-                // Shake animation
                 document.querySelector('.pin-row')?.classList.add('shake');
                 setTimeout(() => document.querySelector('.pin-row')?.classList.remove('shake'), 400);
             }
@@ -1440,7 +1502,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             if (cv) cv.value = '0';
             const cdv = document.getElementById('confirmCodeValue');
             if (cdv) cdv.value = '';
-            // Reset code display
             const wrap = document.getElementById('codeDisplayWrap');
             if (wrap) wrap.style.display = 'none';
             const pin = document.getElementById('pinInputArea');
@@ -1484,7 +1545,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 title.style.color       = '#dc2626';
                 title.textContent       = 'Reservation limit reached';
                 sub.style.color         = '#dc2626';
-                sub.textContent         = `All ${limit} slots used in the last ${DAYS} days.`
+                sub.textContent         = `All ${limit} slots used in the last 14 days.`
                                         + (data.reset ? ` Resets on ${data.reset}.` : '');
                 pill.style.background   = '#dc2626';
                 pill.style.color        = '#fff';
@@ -1499,7 +1560,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 title.style.color       = '#92400e';
                 title.textContent       = 'Last reservation slot';
                 sub.style.color         = '#92400e';
-                sub.textContent         = `${limit - count} slot remaining in the ${DAYS}-day window.`;
+                sub.textContent         = `${limit - count} slot remaining in the 14-day window.`;
                 pill.style.background   = '#f59e0b';
                 pill.style.color        = '#fff';
                 pill.textContent        = 'LAST SLOT';
@@ -1513,7 +1574,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 title.style.color       = '#3730a3';
                 title.textContent       = 'Returning visitor';
                 sub.style.color         = '#4f46e5';
-                sub.textContent         = `${limit - count} slot(s) remaining in the ${DAYS}-day window.`;
+                sub.textContent         = `${limit - count} slot(s) remaining in the 14-day window.`;
                 pill.style.background   = '#ede9fe';
                 pill.style.color        = '#4f46e5';
                 pill.textContent        = `${count}/${limit} USED`;

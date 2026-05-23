@@ -30,6 +30,10 @@ class ReservationModel extends Model
 
     protected $useTimestamps = false;
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  BASIC HELPERS
+    // ═══════════════════════════════════════════════════════════════════════
+
     public function countActiveReservations($userId)
     {
         return $this->where('user_id', (int) $userId)
@@ -105,12 +109,15 @@ class ReservationModel extends Model
         return $this->insert($data);
     }
 
-    /**
-     * Check fairness quota for a registered user.
-     * Accepts either an integer user_id OR an email string.
-     */
+    // ═══════════════════════════════════════════════════════════════════════
+    //  REGISTERED USER FAIRNESS
+    //  3 reservations per rolling 2-week window, enforced via user_blocks.
+    //  Accepts an integer user_id OR an email string.
+    // ═══════════════════════════════════════════════════════════════════════
+
     public function checkFairness($userIdOrEmail): array
     {
+        // Resolve email → user_id if a string was passed
         if (is_string($userIdOrEmail) && !is_numeric($userIdOrEmail)) {
             $userRow = $this->db->table('users')
                 ->select('id')
@@ -130,8 +137,10 @@ class ReservationModel extends Model
             return ['fair' => true, 'remaining' => 3];
         }
 
-        $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
+        // FIX: use reservation_date (date-only) to avoid timezone skew on created_at
+        $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
 
+        // Check existing block first
         $block = $this->db->table('user_blocks')
             ->where('user_id', $userId)
             ->where('blocked_until >=', date('Y-m-d'))
@@ -139,15 +148,17 @@ class ReservationModel extends Model
             ->getRowArray();
 
         if ($block) {
-            $recentReservations = $this->where('user_id', $userId)
-                ->where('created_at >=', $twoWeeksAgo)
+            // Re-count in case old records have aged out of the window
+            $recentCount = $this->where('user_id', $userId)
+                ->where('reservation_date >=', $twoWeeksAgo)
                 ->countAllResults();
 
-            if ($recentReservations < 3) {
+            if ($recentCount < 3) {
+                // Block is stale — lift it
                 $this->db->table('user_blocks')
                     ->where('user_id', $userId)
                     ->delete();
-                return ['fair' => true, 'remaining' => 3 - $recentReservations];
+                return ['fair' => true, 'remaining' => 3 - $recentCount];
             }
 
             return [
@@ -158,11 +169,12 @@ class ReservationModel extends Model
             ];
         }
 
-        $recentReservations = $this->where('user_id', $userId)
-            ->where('created_at >=', $twoWeeksAgo)
+        // No active block — count recent reservations
+        $recentCount = $this->where('user_id', $userId)
+            ->where('reservation_date >=', $twoWeeksAgo)
             ->countAllResults();
 
-        if ($recentReservations >= 3) {
+        if ($recentCount >= 3) {
             $this->blockUser($userId, 14);
             return [
                 'fair'      => false,
@@ -172,13 +184,13 @@ class ReservationModel extends Model
             ];
         }
 
-        return ['fair' => true, 'remaining' => 3 - $recentReservations];
+        return ['fair' => true, 'remaining' => 3 - $recentCount];
     }
 
-    public function getRemainingReservations($userId)
+    public function getRemainingReservations($userId): int
     {
         $userId      = (int) $userId;
-        $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
+        $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
 
         $block = $this->db->table('user_blocks')
             ->where('user_id', $userId)
@@ -186,72 +198,100 @@ class ReservationModel extends Model
             ->get()
             ->getRowArray();
 
-        $recentReservations = $this->where('user_id', $userId)
-            ->where('created_at >=', $twoWeeksAgo)
+        $recentCount = $this->where('user_id', $userId)
+            ->where('reservation_date >=', $twoWeeksAgo)
             ->countAllResults();
 
         if ($block) {
-            if ($recentReservations < 3) {
+            if ($recentCount < 3) {
                 $this->db->table('user_blocks')
                     ->where('user_id', $userId)
                     ->delete();
-                return 3 - $recentReservations;
+                return 3 - $recentCount;
             }
             return 0;
         }
 
-        return max(0, 3 - $recentReservations);
+        return max(0, 3 - $recentCount);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  WALK-IN FAIRNESS  — 3 reservations per rolling 2-week window
-    //  Uses raw SQL via $this->db->query() to avoid CI4 query builder
-    //  quoting function expressions as column names on PostgreSQL.
+    //  WALK-IN FAIRNESS  — 3 reservations per rolling 14-day window
+    //
+    //  KEY FIXES vs the old version:
+    //  1. Filter changed from:
+    //       AND LOWER(visitor_type) != 'user'
+    //     to:
+    //       AND user_id IS NULL
+    //     Reason: visitor_type is a free-text field that can be stored as
+    //     "Visitor", "visitor", "Walk-in", "Guest", etc., causing missed or
+    //     double-counted rows.  user_id IS NULL is the only reliable signal
+    //     that a row is a true walk-in — it is always NULL for guests and
+    //     always set for registered users.
+    //
+    //  2. Date window changed from:
+    //       AND created_at >= ? (datetime)
+    //     to:
+    //       AND reservation_date >= ? (date only)
+    //     Reason: created_at is a datetime stored in server time; comparing
+    //     it to a 14-days-ago timestamp drifts with timezone offsets and can
+    //     silently exclude same-day records.  reservation_date is a plain
+    //     DATE column and is timezone-agnostic.
+    //
+    //  3. Walk-in name lookup is now case-insensitive TRIM on both sides so
+    //     "Juan dela Cruz", "juan dela cruz", and "  Juan Dela Cruz  " all
+    //     resolve to the same person.
     // ═══════════════════════════════════════════════════════════════════════
 
     /**
-     * Check the 3-per-2-week fairness quota for a walk-in visitor by name.
+     * Check the 3-per-14-day fairness quota for a walk-in visitor by name.
      *
      * @param  string $visitorName  The walk-in's full name as entered.
      * @return array{fair:bool, remaining:int, used:int, reset:string|null}
      */
     public function checkWalkInFairness(string $visitorName): array
     {
-        $name        = mb_strtolower(trim($visitorName));
-        $twoWeeksAgo = date('Y-m-d H:i:s', strtotime('-14 days'));
+        $name = trim($visitorName);
 
         if (empty($name)) {
             return ['fair' => true, 'remaining' => 3, 'used' => 0, 'reset' => null];
         }
 
-        // Use raw parameterised query to avoid CI4 quoting LOWER/TRIM as a column
+        // FIX: use reservation_date (date column) for the window —
+        // no timezone drift, consistent with checkGuestLimit() in the controller.
+        $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
+
+        // FIX: filter by user_id IS NULL (true walk-ins only) instead of
+        // LOWER(visitor_type) != 'user', which breaks on inconsistent stored values.
         $usedQuery = $this->db->query("
             SELECT COUNT(*) AS total
             FROM reservations
-            WHERE LOWER(TRIM(visitor_name)) = ?
+            WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
               AND status NOT IN ('declined', 'canceled')
-              AND LOWER(visitor_type) != 'user'
-              AND created_at >= ?
+              AND user_id IS NULL
+              AND reservation_date >= ?
         ", [$name, $twoWeeksAgo]);
 
         $used      = (int) ($usedQuery->getRowArray()['total'] ?? 0);
         $remaining = max(0, 3 - $used);
 
         if ($used >= 3) {
+            // Find the oldest qualifying reservation to tell the visitor
+            // exactly when their earliest slot rolls off the 14-day window.
             $oldestQuery = $this->db->query("
-                SELECT created_at
+                SELECT reservation_date
                 FROM reservations
-                WHERE LOWER(TRIM(visitor_name)) = ?
+                WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
                   AND status NOT IN ('declined', 'canceled')
-                  AND LOWER(visitor_type) != 'user'
-                  AND created_at >= ?
-                ORDER BY created_at ASC
+                  AND user_id IS NULL
+                  AND reservation_date >= ?
+                ORDER BY reservation_date ASC
                 LIMIT 1
             ", [$name, $twoWeeksAgo]);
 
             $oldest    = $oldestQuery->getRowArray();
             $resetDate = $oldest
-                ? date('F j, Y', strtotime($oldest['created_at'] . ' +14 days'))
+                ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +15 days'))
                 : date('F j, Y', strtotime('+14 days'));
 
             return [

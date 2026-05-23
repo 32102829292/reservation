@@ -249,11 +249,11 @@ class SkController extends BaseController
 
         $walkInQuotaMap = [];
         foreach ($reservations as $res) {
-            $type = strtolower(trim($res['visitor_type'] ?? ''));
-            if ($type !== 'user' && !empty($res['visitor_name'])) {
+            // FIX: identify walk-ins by user_id IS NULL, not by visitor_type string
+            if (is_null($res['user_id']) && !empty($res['visitor_name'])) {
                 $nameKey = mb_strtolower(trim($res['visitor_name']));
                 if ($nameKey && !isset($walkInQuotaMap[$nameKey])) {
-                    $walkInQuotaMap[$nameKey] = $model->checkWalkInFairness($nameKey);
+                    $walkInQuotaMap[$nameKey] = $model->checkWalkInFairness($res['visitor_name']);
                 }
             }
         }
@@ -452,6 +452,15 @@ class SkController extends BaseController
         ]);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CREATE RESERVATION
+    //  Fixed:
+    //  1. Walk-in path now checks the users table by name to prevent a
+    //     registered resident from being saved as a guest (user_id = NULL).
+    //  2. Both fairness checks (registered + walk-in) now use reservation_date
+    //     for the rolling window, consistent with checkWalkInFairness().
+    // ═══════════════════════════════════════════════════════════════════════
+
     public function createReservation()
     {
         date_default_timezone_set('Asia/Manila');
@@ -472,11 +481,13 @@ class SkController extends BaseController
         $pcsArr  = json_decode($pcsJson, true) ?? [];
         $pcValue = !empty($pcsArr) ? implode(', ', $pcsArr) : null;
 
+        // ── 1. Registered-user path ──────────────────────────────────────
         if ($visitorType === 'User' && empty($userId)) {
+            $msg = 'Please select a registered user.';
             if ($request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Please select a registered user.']);
+                return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
             }
-            return redirect()->back()->with('error', 'Please select a registered user.');
+            return redirect()->back()->with('error', $msg);
         }
 
         $resolvedEmail = null;
@@ -513,7 +524,9 @@ class SkController extends BaseController
             }
         }
 
+        // ── 2. Walk-in / guest path ──────────────────────────────────────
         if (strtolower($visitorType) !== 'user') {
+
             if (empty($visitorName)) {
                 $msg = 'Walk-in visitor name is required.';
                 if ($request->isAJAX()) {
@@ -522,6 +535,29 @@ class SkController extends BaseController
                 return redirect()->back()->withInput()->with('error', $msg);
             }
 
+            // FIX: check whether the typed name belongs to a registered resident.
+            // If it does, the SK officer must use the Registered User toggle instead
+            // so the reservation is counted under the correct user account and does
+            // not consume a walk-in guest slot.
+            $nameMatch = $db->query("
+                SELECT id, name
+                FROM users
+                WHERE LOWER(TRIM(name))      = LOWER(TRIM(?))
+                   OR LOWER(TRIM(full_name)) = LOWER(TRIM(?))
+                LIMIT 1
+            ", [$visitorName, $visitorName])->getRowArray();
+
+            if ($nameMatch) {
+                $msg = "\"{$visitorName}\" is a registered resident. "
+                     . 'Please use the Registered User toggle and select them from the dropdown '
+                     . 'so the reservation is recorded under their account.';
+                if ($request->isAJAX()) {
+                    return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
+                }
+                return redirect()->back()->withInput()->with('error', $msg);
+            }
+
+            // Walk-in quota check (3 per 14-day window, user_id IS NULL)
             $walkInCheck = $reservationModel->checkWalkInFairness($visitorName);
             if (!$walkInCheck['fair']) {
                 $msg = "Walk-in visitor \"{$visitorName}\" has already used all 3 reservation slots "
@@ -533,6 +569,7 @@ class SkController extends BaseController
             }
         }
 
+        // ── 3. General field validation ──────────────────────────────────
         $rules = [
             'resource_id'      => 'required|numeric',
             'reservation_date' => 'required|valid_date[Y-m-d]',
@@ -549,19 +586,22 @@ class SkController extends BaseController
         }
 
         if ($reservationDate < date('Y-m-d')) {
+            $msg = 'You cannot make a reservation for a past date.';
             if ($request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'You cannot make a reservation for a past date.']);
+                return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
             }
-            return redirect()->back()->withInput()->with('error', 'You cannot make a reservation for a past date.');
+            return redirect()->back()->withInput()->with('error', $msg);
         }
 
         if ($startTime >= $endTime) {
+            $msg = 'End time must be after start time.';
             if ($request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'End time must be after start time.']);
+                return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
             }
-            return redirect()->back()->withInput()->with('error', 'End time must be after start time.');
+            return redirect()->back()->withInput()->with('error', $msg);
         }
 
+        // One reservation per day per registered user
         if ($visitorType === 'User' && $userId > 0) {
             $sameDayReservations = $reservationModel->getUserSameDayReservations($userId, $reservationDate);
             if (!empty($sameDayReservations)) {
@@ -573,6 +613,7 @@ class SkController extends BaseController
             }
         }
 
+        // ── 4. Conflict / double-booking check ───────────────────────────
         $db->transStart();
 
         $conflict = $reservationModel
@@ -594,9 +635,13 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', $msg);
         }
 
+        // ── 5. Insert ────────────────────────────────────────────────────
         $eTicket = $this->generateETicket();
 
         $data = [
+            // FIX: user_id is explicitly NULL for walk-ins — this is the
+            // reliable signal used by checkWalkInFairness() to separate
+            // true guests from registered users.
             'user_id'          => ($visitorType === 'User' && $userId > 0) ? $userId : null,
             'visitor_type'     => $visitorType,
             'visitor_name'     => $visitorName,
@@ -618,10 +663,11 @@ class SkController extends BaseController
         $db->transComplete();
 
         if ($db->transStatus() === false || !$inserted) {
+            $msg = 'Failed to save reservation. Please try again.';
             if ($request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to save reservation. Please try again.']);
+                return $this->response->setJSON(['status' => 'error', 'message' => $msg]);
             }
-            return redirect()->back()->withInput()->with('error', 'Failed to save reservation. Please try again.');
+            return redirect()->back()->withInput()->with('error', $msg);
         }
 
         if ($request->isAJAX()) {
@@ -635,13 +681,18 @@ class SkController extends BaseController
         return redirect()->to('/sk/reservations')->with('success', 'Reservation created successfully!');
     }
 
-    /**
-     * FIXED: checkGuestLimit
-     * - Added timezone set at top
-     * - Uses reservation_date >= (14 days ago) instead of created_at to avoid timezone edge cases
-     * - Uses user_id IS NULL to detect walk-ins reliably instead of LOWER(visitor_type) string comparison
-     * - Returns is_new flag so frontend can show confirmation code for first-time visitors
-     */
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CHECK GUEST LIMIT  (AJAX endpoint called by new-reservation.php)
+    //
+    //  Fixed:
+    //  1. Added users table name-match check → returns is_registered: true
+    //     so the frontend can warn the SK officer immediately.
+    //  2. Walk-in count uses reservation_date (date column) instead of
+    //     created_at (datetime) to avoid timezone drift.
+    //  3. Walk-in count filters AND user_id IS NULL instead of
+    //     LOWER(visitor_type) != 'user' for consistent identification.
+    // ═══════════════════════════════════════════════════════════════════════
+
     public function checkGuestLimit()
     {
         date_default_timezone_set('Asia/Manila');
@@ -657,49 +708,82 @@ class SkController extends BaseController
         $name        = trim($this->request->getGet('name') ?? '');
         $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
 
-        // Registered users are never subject to walk-in quota
+        // Registered-user toggle — no quota applies
         if ($visitorType === 'user') {
             return $this->response->setJSON([
-                'count'      => 0,
-                'limit'      => 3,
-                'blocked'    => false,
-                'reset'      => null,
-                'is_new'     => false,
-                'skip_quota' => true,
+                'count'         => 0,
+                'limit'         => 3,
+                'blocked'       => false,
+                'reset'         => null,
+                'is_new'        => false,
+                'is_registered' => false,
+                'skip_quota'    => true,
             ]);
         }
 
+        // Empty name — nothing to check yet
         if (empty($name)) {
             return $this->response->setJSON([
-                'count'   => 0,
-                'limit'   => 3,
-                'blocked' => false,
-                'reset'   => null,
-                'is_new'  => true,
+                'count'         => 0,
+                'limit'         => 3,
+                'blocked'       => false,
+                'reset'         => null,
+                'is_new'        => true,
+                'is_registered' => false,
             ]);
         }
 
         $db = db_connect();
 
-        // FIX: use reservation_date for the 14-day window (date-only, no timezone issue)
-        // FIX: use user_id IS NULL to identify walk-ins — reliable regardless of how visitor_type was stored
+        // ── FIX: check whether the entered name belongs to a registered user ──
+        // If it does, the SK officer must switch to the Registered User toggle.
+        // Supports both 'name' and 'full_name' columns.
+        $registeredUser = $db->query("
+            SELECT id, name, email
+            FROM users
+            WHERE LOWER(TRIM(name))      = LOWER(TRIM(?))
+               OR LOWER(TRIM(full_name)) = LOWER(TRIM(?))
+            LIMIT 1
+        ", [$name, $name])->getRowArray();
+
+        if ($registeredUser) {
+            return $this->response->setJSON([
+                'count'           => 0,
+                'limit'           => 3,
+                'blocked'         => false,
+                'reset'           => null,
+                'is_new'          => false,
+                // FIX: these two flags are what the frontend uses to show the warning
+                'is_registered'   => true,
+                'registered_id'   => $registeredUser['id'],
+                'registered_name' => $registeredUser['name'],
+                'skip_quota'      => true,
+            ]);
+        }
+
+        // ── FIX: use reservation_date (date column) for the 14-day window ──
+        // created_at is a datetime; comparing it to a UTC-based strtotime value
+        // drifts by hours in Asia/Manila and can exclude same-day records.
         $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
 
-        $usedQuery = $db->query("
+        // ── FIX: filter AND user_id IS NULL to identify true walk-ins ──
+        // visitor_type is free-text and has been stored inconsistently
+        // ('Visitor', 'visitor', 'Walk-in', 'Guest'…). user_id IS NULL
+        // is always set correctly by createReservation().
+        $usedRow = $db->query("
             SELECT COUNT(*) AS total
             FROM reservations
             WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
               AND status NOT IN ('declined', 'canceled')
               AND user_id IS NULL
               AND reservation_date >= ?
-        ", [$name, $twoWeeksAgo]);
+        ", [$name, $twoWeeksAgo])->getRowArray();
 
-        $used = (int) ($usedQuery->getRowArray()['total'] ?? 0);
+        $used = (int) ($usedRow['total'] ?? 0);
 
         $reset = null;
         if ($used >= 3) {
-            // Find the oldest qualifying reservation so we can tell when the slot resets
-            $oldestQuery = $db->query("
+            $oldest = $db->query("
                 SELECT reservation_date
                 FROM reservations
                 WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
@@ -708,24 +792,21 @@ class SkController extends BaseController
                   AND reservation_date >= ?
                 ORDER BY reservation_date ASC
                 LIMIT 1
-            ", [$name, $twoWeeksAgo]);
+            ", [$name, $twoWeeksAgo])->getRowArray();
 
-            $oldest = $oldestQuery->getRowArray();
-            $reset  = $oldest
+            $reset = $oldest
                 ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +15 days'))
                 : date('F j, Y', strtotime('+14 days'));
         }
 
-        // is_new = true means this visitor has zero reservations in the last 14 days
-        // The frontend uses this to decide whether to show the confirmation code widget
-        $isNew = ($used === 0);
-
         return $this->response->setJSON([
-            'count'   => $used,
-            'limit'   => 3,
-            'blocked' => $used >= 3,
-            'reset'   => $reset,
-            'is_new'  => $isNew,
+            'count'         => $used,
+            'limit'         => 3,
+            'blocked'       => $used >= 3,
+            'reset'         => $reset,
+            // is_new = true means zero walk-in slots used → show confirmation code widget
+            'is_new'        => $used === 0,
+            'is_registered' => false,
         ]);
     }
 
