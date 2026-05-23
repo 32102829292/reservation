@@ -229,32 +229,28 @@ class ReservationModel extends Model
             return ['fair' => true, 'remaining' => 3, 'used' => 0, 'reset' => null];
         }
 
-        // Count non-declined / non-canceled WALK-IN reservations for this name
-        // in the last 14 days. The visitor_type filter ensures registered-user
-        // rows with the same name are never counted against the walk-in quota.
+        // Use raw SQL expression to avoid CI4 quoting the function call as a column name
         $used = $this->db->table('reservations')
-            ->where('LOWER(TRIM(visitor_name))', $name)
+            ->where("LOWER(TRIM(visitor_name)) = '{$name}'")
             ->whereNotIn('status', ['declined', 'canceled'])
-            ->where('LOWER(visitor_type) !=', 'user')
+            ->where("LOWER(visitor_type) != 'user'")
             ->where('created_at >=', $twoWeeksAgo)
             ->countAllResults();
 
         $remaining = max(0, 3 - $used);
 
         if ($used >= 3) {
-            // Find the oldest qualifying reservation to compute the reset date
             $oldest = $this->db->table('reservations')
                 ->select('created_at')
-                ->where('LOWER(TRIM(visitor_name))', $name)
+                ->where("LOWER(TRIM(visitor_name)) = '{$name}'")
                 ->whereNotIn('status', ['declined', 'canceled'])
-                ->where('LOWER(visitor_type) !=', 'user')
+                ->where("LOWER(visitor_type) != 'user'")
                 ->where('created_at >=', $twoWeeksAgo)
                 ->orderBy('created_at', 'ASC')
                 ->limit(1)
                 ->get()
                 ->getRowArray();
 
-            // Window resets 14 days after the earliest counted reservation
             $resetDate = $oldest
                 ? date('F j, Y', strtotime($oldest['created_at'] . ' +14 days'))
                 : date('F j, Y', strtotime('+14 days'));
