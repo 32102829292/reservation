@@ -203,11 +203,15 @@ class SkController extends BaseController
         $date   = $this->request->getGet('date');
 
         $query = $model->db->table('reservations r')
-            ->select('r.*, resources.name as resource_name, users.name as visitor_name, users.email as user_email,
-                approver.name AS approver_name, approver.email AS approver_email')
-            ->join('resources', 'resources.id = r.resource_id',     'left')
-            ->join('users',     'users.id = r.user_id',             'left')
-            ->join('users approver', 'approver.id = r.approved_by', 'left')
+            ->select('r.*,
+                resources.name as resource_name,
+                COALESCE(r.visitor_name, users.name) AS visitor_name,
+                users.email as user_email,
+                approver.name  AS approver_name,
+                approver.email AS approver_email')
+            ->join('resources',      'resources.id = r.resource_id',  'left')
+            ->join('users',          'users.id = r.user_id',          'left')
+            ->join('users approver', 'approver.id = r.approved_by',   'left')
             ->orderBy('r.reservation_date', 'DESC');
 
         if ($status) {
@@ -465,7 +469,6 @@ class SkController extends BaseController
         $pcsArr  = json_decode($pcsJson, true) ?? [];
         $pcValue = !empty($pcsArr) ? implode(', ', $pcsArr) : null;
 
-        // ── Registered user: must have a user_id selected ─────────────────
         if ($visitorType === 'User' && empty($userId)) {
             if ($request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Please select a registered user.']);
@@ -473,7 +476,6 @@ class SkController extends BaseController
             return redirect()->back()->with('error', 'Please select a registered user.');
         }
 
-        // ── Resolve user details from DB ──────────────────────────────────
         $resolvedEmail = null;
         if ($visitorType === 'User' && $userId > 0) {
             $userRow       = $db->table('users')->select('email, name')->where('id', $userId)->get()->getRowArray();
@@ -483,7 +485,6 @@ class SkController extends BaseController
             }
         }
 
-        // ── Registered user: block check ──────────────────────────────────
         if ($visitorType === 'User' && $userId > 0) {
             $isBlocked = $reservationModel->isBlocked($userId);
             if ($isBlocked) {
@@ -496,7 +497,6 @@ class SkController extends BaseController
             }
         }
 
-        // ── Registered user: fairness / quota check ───────────────────────
         if ($visitorType === 'User' && $userId > 0) {
             $fairness = $reservationModel->checkFairness($userId);
             if (!$fairness['fair']) {
@@ -510,9 +510,7 @@ class SkController extends BaseController
             }
         }
 
-        // ── Walk-in: name required + 3-per-2-week quota ───────────────────
         if (strtolower($visitorType) !== 'user') {
-
             if (empty($visitorName)) {
                 $msg = 'Walk-in visitor name is required.';
                 if ($request->isAJAX()) {
@@ -522,7 +520,6 @@ class SkController extends BaseController
             }
 
             $walkInCheck = $reservationModel->checkWalkInFairness($visitorName);
-
             if (!$walkInCheck['fair']) {
                 $msg = "Walk-in visitor \"{$visitorName}\" has already used all 3 reservation slots "
                      . "in the last 2 weeks. They may book again on or after {$walkInCheck['reset']}.";
@@ -533,7 +530,6 @@ class SkController extends BaseController
             }
         }
 
-        // ── Field validation ──────────────────────────────────────────────
         $rules = [
             'resource_id'      => 'required|numeric',
             'reservation_date' => 'required|valid_date[Y-m-d]',
@@ -549,7 +545,6 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Please fill all required fields.');
         }
 
-        // ── Reject past dates ─────────────────────────────────────────────
         if ($reservationDate < date('Y-m-d')) {
             if ($request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'You cannot make a reservation for a past date.']);
@@ -557,7 +552,6 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', 'You cannot make a reservation for a past date.');
         }
 
-        // ── Validate end time is after start time ─────────────────────────
         if ($startTime >= $endTime) {
             if ($request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'End time must be after start time.']);
@@ -565,7 +559,6 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', 'End time must be after start time.');
         }
 
-        // ── One reservation per day (registered users only) ───────────────
         if ($visitorType === 'User' && $userId > 0) {
             $sameDayReservations = $reservationModel->getUserSameDayReservations($userId, $reservationDate);
             if (!empty($sameDayReservations)) {
@@ -577,7 +570,6 @@ class SkController extends BaseController
             }
         }
 
-        // ── Double-booking guard ──────────────────────────────────────────
         $db->transStart();
 
         $conflict = $reservationModel
@@ -599,7 +591,6 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', $msg);
         }
 
-        // ── Insert ────────────────────────────────────────────────────────
         $eTicket = $this->generateETicket();
 
         $data = [
@@ -641,14 +632,6 @@ class SkController extends BaseController
         return redirect()->to('/sk/reservations')->with('success', 'Reservation created successfully!');
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  GUEST LIMIT CHECK  — AJAX endpoint for the live indicator
-    //  GET /sk/check-guest-limit?name=...&email=...&visitor_type=...
-    //
-    //  visitor_type is now required for correct routing:
-    //  - 'user'  → skip walk-in quota entirely (they have their own system)
-    //  - anything else → run checkWalkInFairness by name
-    // ═══════════════════════════════════════════════════════════════════════
     public function checkGuestLimit()
     {
         if (!$this->request->isAJAX()) {
@@ -665,7 +648,6 @@ class SkController extends BaseController
         $email       = trim($this->request->getGet('email')        ?? '');
         $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
 
-        // Registered users have their own fairness system — no walk-in quota
         if ($visitorType === 'user') {
             return $this->response->setJSON([
                 'count'      => 0,
@@ -676,7 +658,6 @@ class SkController extends BaseController
             ]);
         }
 
-        // Need at least a name to run the walk-in check
         if (empty($name)) {
             return $this->response->setJSON([
                 'count'   => 0,
