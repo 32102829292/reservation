@@ -12,6 +12,8 @@ use CodeIgniter\Controller;
 
 class AdminController extends Controller
 {
+    use \App\Controllers\Traits\StopSessionTrait;
+
     protected $reservationModel;
     protected $db;
 
@@ -216,7 +218,7 @@ class AdminController extends Controller
             $topResources   = [];
         }
 
-        $approvalRate    = $total > 0    ? round(($approved / $total) * 100)   : 0;
+        $approvalRate    = $total    > 0 ? round(($approved / $total)    * 100) : 0;
         $utilizationRate = $approved > 0 ? round(($claimed / $approved) * 100) : 0;
 
         $totalUsers     = $db->table('users')->where('role', 'user')->countAllResults();
@@ -564,10 +566,6 @@ class AdminController extends Controller
 
     // ═══════════════════════════════════════════════════════════════════════
     //  CREATE RESERVATION
-    //  Fixed:
-    //  1. Walk-in path now checks the users table by name to prevent a
-    //     registered resident from being saved as a guest (user_id = NULL).
-    //  2. Walk-in quota check uses 3-day rolling window (admin policy).
     // ═══════════════════════════════════════════════════════════════════════
     public function createReservation()
     {
@@ -575,35 +573,38 @@ class AdminController extends Controller
             return redirect()->to('/login')->with('error', 'Please login first');
         }
 
-        $userType        = $this->request->getPost('visitor_type');
-        $reservationDate = $this->request->getPost('reservation_date');
-        $startTime       = $this->request->getPost('start_time');
-        $endTime         = $this->request->getPost('end_time');
-        $resourceId      = $this->request->getPost('resource_id');
+        $request          = $this->request;
+        $reservationModel = $this->reservationModel;
+        $db               = $this->db;
 
-        // ── Resolve user_id for registered-user bookings ──────────────────
-        $userId        = null;
+        $visitorType     = $request->getPost('visitor_type');
+        $userId          = (int) $request->getPost('user_id');
+        $visitorName     = trim($request->getPost('visitor_name') ?? '');
+        $reservationDate = $request->getPost('reservation_date');
+        $startTime       = $request->getPost('start_time');
+        $endTime         = $request->getPost('end_time');
+        $resourceId      = $request->getPost('resource_id');
+
+        $pcsJson = $request->getPost('pcs');
+        $pcsArr  = json_decode($pcsJson, true) ?? [];
+        $pcValue = !empty($pcsArr) ? implode(', ', $pcsArr) : ($request->getPost('pc_number') ?: null);
+
+        // ── 1. Registered-user path ──────────────────────────────────────
+        if ($visitorType === 'User' && empty($userId)) {
+            return redirect()->back()->with('error', 'Please select a registered user from the list.');
+        }
+
         $resolvedEmail = null;
-        $visitorName   = trim($this->request->getPost('visitor_name') ?? '');
-
-        if ($userType === 'User') {
-            $userId = (int) $this->request->getPost('user_id');
-            if (!$userId) {
-                return redirect()->back()->with('error', 'Please select a registered user from the list.');
-            }
-
-            $userRow       = $this->db->table('users')->select('email, name')->where('id', $userId)->get()->getRowArray();
+        if ($visitorType === 'User' && $userId > 0) {
+            $userRow       = $db->table('users')->select('email, name')->where('id', $userId)->get()->getRowArray();
             $resolvedEmail = $userRow['email'] ?? null;
             if (empty($visitorName) && !empty($userRow['name'])) {
                 $visitorName = $userRow['name'];
             }
-        } else {
-            $resolvedEmail = $this->request->getPost('user_email') ?: null;
         }
 
-        // ── Block check ───────────────────────────────────────────────────
-        if ($userType === 'User' && $userId > 0) {
-            $isBlocked = $this->reservationModel->isBlocked($userId);
+        if ($visitorType === 'User' && $userId > 0) {
+            $isBlocked = $reservationModel->isBlocked($userId);
             if ($isBlocked) {
                 return redirect()->back()->with('error',
                     'This user is currently blocked from making reservations until ' .
@@ -612,9 +613,8 @@ class AdminController extends Controller
             }
         }
 
-        // ── Fairness / quota check ────────────────────────────────────────
-        if ($userType === 'User' && $userId > 0) {
-            $fairness = $this->reservationModel->checkFairness($userId);
+        if ($visitorType === 'User' && $userId > 0) {
+            $fairness = $reservationModel->checkFairness($userId);
             if (!$fairness['fair']) {
                 $message = isset($fairness['blocked'])
                     ? 'Fairness Check: User has exceeded their reservation limit. Blocked until ' . $fairness['until']
@@ -623,15 +623,15 @@ class AdminController extends Controller
             }
         }
 
-        // ── Walk-in path: block if name matches a registered resident ─────
-        if ($userType !== 'User') {
+        // ── 2. Walk-in / guest path ──────────────────────────────────────
+        if (strtolower($visitorType) !== 'user') {
+
             if (empty($visitorName)) {
                 return redirect()->back()->withInput()
                     ->with('error', 'Walk-in visitor name is required.');
             }
 
-            // FIX: check whether the typed name belongs to a registered resident.
-            $nameMatch = $this->db->query("
+            $nameMatch = $db->query("
                 SELECT id, name
                 FROM users
                 WHERE LOWER(TRIM(name))      = LOWER(TRIM(?))
@@ -647,42 +647,16 @@ class AdminController extends Controller
                 );
             }
 
-            // Walk-in quota check (3 reservations per 3 days — admin policy)
-            $threeDaysAgo = date('Y-m-d', strtotime('-3 days'));
-
-            $walkInCount = (int) $this->db->query("
-                SELECT COUNT(*) AS total
-                FROM reservations
-                WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
-                  AND status NOT IN ('declined', 'canceled')
-                  AND user_id IS NULL
-                  AND reservation_date >= ?
-            ", [$visitorName, $threeDaysAgo])->getRowArray()['total'] ?? 0;
-
-            if ($walkInCount >= 3) {
-                $oldest = $this->db->query("
-                    SELECT reservation_date
-                    FROM reservations
-                    WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
-                      AND status NOT IN ('declined', 'canceled')
-                      AND user_id IS NULL
-                      AND reservation_date >= ?
-                    ORDER BY reservation_date ASC
-                    LIMIT 1
-                ", [$visitorName, $threeDaysAgo])->getRowArray();
-
-                $resetDate = $oldest
-                    ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +4 days'))
-                    : date('F j, Y', strtotime('+3 days'));
-
+            $walkInCheck = $reservationModel->checkWalkInFairness($visitorName);
+            if (!$walkInCheck['fair']) {
                 return redirect()->back()->withInput()->with('error',
                     "Walk-in visitor \"{$visitorName}\" has already used all 3 reservation slots " .
-                    "in the last 3 days. They may book again on or after {$resetDate}."
+                    "in the last 2 weeks. They may book again on or after {$walkInCheck['reset']}."
                 );
             }
         }
 
-        // ── Field validation ──────────────────────────────────────────────
+        // ── 3. General field validation ──────────────────────────────────
         if (!$this->validate([
             'resource_id'      => 'required|numeric',
             'reservation_date' => 'required|valid_date[Y-m-d]',
@@ -693,31 +667,28 @@ class AdminController extends Controller
             return redirect()->back()->withInput()->with('error', 'Please fill all required fields.');
         }
 
-        // ── Reject past dates ─────────────────────────────────────────────
         if ($reservationDate < date('Y-m-d')) {
             return redirect()->back()->withInput()
                 ->with('error', 'You cannot make a reservation for a past date.');
         }
 
-        // ── End time must be after start time ─────────────────────────────
         if ($startTime >= $endTime) {
             return redirect()->back()->withInput()
                 ->with('error', 'End time must be after start time.');
         }
 
-        // ── One reservation per day for registered users ──────────────────
-        if ($userType === 'User' && $userId > 0) {
-            $sameDayReservations = $this->reservationModel->getUserSameDayReservations($userId, $reservationDate);
+        if ($visitorType === 'User' && $userId > 0) {
+            $sameDayReservations = $reservationModel->getUserSameDayReservations($userId, $reservationDate);
             if (!empty($sameDayReservations)) {
                 return redirect()->back()->withInput()
                     ->with('error', 'This user already has a reservation on this date. Only one reservation per day is allowed.');
             }
         }
 
-        // ── Double-booking guard with DB transaction ──────────────────────
-        $this->db->transStart();
+        // ── 4. Conflict / double-booking check ───────────────────────────
+        $db->transStart();
 
-        $conflict = $this->reservationModel
+        $conflict = $reservationModel
             ->where('resource_id', $resourceId)
             ->where('reservation_date', $reservationDate)
             ->whereIn('status', ['pending', 'approved'])
@@ -728,31 +699,24 @@ class AdminController extends Controller
             ->first();
 
         if ($conflict) {
-            $this->db->transRollback();
+            $db->transRollback();
             return redirect()->back()->withInput()
                 ->with('error', 'This time slot is already booked. Please choose another time.');
         }
 
-        // ── PC number from multi-select ───────────────────────────────────
-        $pcsJson = $this->request->getPost('pcs');
-        $pcsArr  = json_decode($pcsJson, true) ?? [];
-        $pcValue = !empty($pcsArr) ? implode(', ', $pcsArr) : ($this->request->getPost('pc_number') ?: null);
-
-        // ── Insert ────────────────────────────────────────────────────────
+        // ── 5. Insert ────────────────────────────────────────────────────
         $eTicketCode = 'ADMIN' . strtoupper(uniqid());
 
         $data = [
-            'resource_id'      => $resourceId,
+            'resource_id'      => !empty($resourceId) ? (int)$resourceId : null,
             'visitor_name'     => $visitorName,
-            'visitor_type'     => $userType,
-            // FIX: user_id is explicitly NULL for walk-ins so checkGuestLimit
-            // can reliably identify true guests via user_id IS NULL.
-            'user_id'          => ($userType === 'User' && $userId > 0) ? $userId : null,
+            'visitor_type'     => $visitorType,
+            'user_id'          => ($visitorType === 'User' && $userId > 0) ? $userId : null,
             'user_email'       => $resolvedEmail,
             'reservation_date' => $reservationDate,
             'start_time'       => $startTime,
             'end_time'         => $endTime,
-            'purpose'          => $this->request->getPost('purpose'),
+            'purpose'          => $request->getPost('purpose'),
             'pc_number'        => $pcValue,
             'status'           => 'approved',
             'claimed'          => false,
@@ -762,10 +726,10 @@ class AdminController extends Controller
             'updated_at'       => date('Y-m-d H:i:s'),
         ];
 
-        $newId = $this->reservationModel->insert($data, true);
-        $this->db->transComplete();
+        $newId = $reservationModel->insert($data, true);
+        $db->transComplete();
 
-        if ($this->db->transStatus() === false || !$newId) {
+        if ($db->transStatus() === false || !$newId) {
             return redirect()->back()->withInput()
                 ->with('error', 'Failed to create reservation. Please try again.');
         }
@@ -781,11 +745,7 @@ class AdminController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  CHECK GUEST LIMIT  (AJAX — called by admin new-reservation page)
-    //
-    //  Policy: 3 reservations per 3-day rolling window for walk-in guests.
-    //  Also detects registered residents by name and flags them so the
-    //  frontend can show the orange warning box.
+    //  CHECK GUEST LIMIT
     // ═══════════════════════════════════════════════════════════════════════
     public function checkGuestLimit()
     {
@@ -800,10 +760,8 @@ class AdminController extends Controller
         }
 
         $name        = trim($this->request->getGet('name')          ?? '');
-        $email       = trim($this->request->getGet('email')         ?? '');
         $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
 
-        // Registered-user toggle — no quota applies
         if ($visitorType === 'user') {
             return $this->response->setJSON([
                 'count'         => 0,
@@ -816,8 +774,7 @@ class AdminController extends Controller
             ]);
         }
 
-        // Nothing to check yet
-        if (empty($name) && empty($email)) {
+        if (empty($name)) {
             return $this->response->setJSON([
                 'count'         => 0,
                 'limit'         => 3,
@@ -828,79 +785,59 @@ class AdminController extends Controller
             ]);
         }
 
-        // ── Check whether the entered name belongs to a registered user ───
-        // If it does, the admin must switch to the Registered User toggle.
-        if (!empty($name)) {
-            $registeredUser = $this->db->query("
-                SELECT id, name, email
-                FROM users
-                WHERE LOWER(TRIM(name))      = LOWER(TRIM(?))
-                   OR LOWER(TRIM(full_name)) = LOWER(TRIM(?))
-                LIMIT 1
-            ", [$name, $name])->getRowArray();
+        $db = $this->db;
 
-            if ($registeredUser) {
-                return $this->response->setJSON([
-                    'count'           => 0,
-                    'limit'           => 3,
-                    'blocked'         => false,
-                    'reset'           => null,
-                    'is_new'          => false,
-                    'is_registered'   => true,
-                    'registered_id'   => $registeredUser['id'],
-                    'registered_name' => $registeredUser['name'],
-                    'skip_quota'      => true,
-                ]);
-            }
+        $registeredUser = $db->query("
+            SELECT id, name, email
+            FROM users
+            WHERE LOWER(TRIM(name))      = LOWER(TRIM(?))
+               OR LOWER(TRIM(full_name)) = LOWER(TRIM(?))
+            LIMIT 1
+        ", [$name, $name])->getRowArray();
+
+        if ($registeredUser) {
+            return $this->response->setJSON([
+                'count'           => 0,
+                'limit'           => 3,
+                'blocked'         => false,
+                'reset'           => null,
+                'is_new'          => false,
+                'is_registered'   => true,
+                'registered_id'   => $registeredUser['id'],
+                'registered_name' => $registeredUser['name'],
+                'skip_quota'      => true,
+            ]);
         }
 
-        // ── Walk-in quota check: 3 reservations per 3-day window ─────────
-        // Uses reservation_date (not created_at) to avoid timezone drift.
-        // Filters user_id IS NULL to identify true walk-ins consistently.
-        $threeDaysAgo = date('Y-m-d', strtotime('-3 days'));
+        $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
 
-        $conditions = [];
-        $params     = [];
-
-        if (!empty($name)) {
-            $conditions[] = "LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))";
-            $params[]     = $name;
-        }
-
-        if (!empty($email)) {
-            $conditions[] = "LOWER(TRIM(user_email)) = LOWER(TRIM(?))";
-            $params[]     = $email;
-        }
-
-        $whereClause = implode(' OR ', $conditions);
-
-        $usedRow = $this->db->query("
+        $usedRow = $db->query("
             SELECT COUNT(*) AS total
             FROM reservations
-            WHERE ({$whereClause})
+            WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
               AND status NOT IN ('declined', 'canceled')
               AND user_id IS NULL
               AND reservation_date >= ?
-        ", array_merge($params, [$threeDaysAgo]))->getRowArray();
+        ", [$name, $twoWeeksAgo])->getRowArray();
 
         $used = (int) ($usedRow['total'] ?? 0);
 
         $reset = null;
         if ($used >= 3) {
-            $oldest = $this->db->query("
+            $oldest = $db->query("
                 SELECT reservation_date
                 FROM reservations
-                WHERE ({$whereClause})
+                WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
                   AND status NOT IN ('declined', 'canceled')
                   AND user_id IS NULL
                   AND reservation_date >= ?
                 ORDER BY reservation_date ASC
                 LIMIT 1
-            ", array_merge($params, [$threeDaysAgo]))->getRowArray();
+            ", [$name, $twoWeeksAgo])->getRowArray();
 
             $reset = $oldest
-                ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +4 days'))
-                : date('F j, Y', strtotime('+3 days'));
+                ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +15 days'))
+                : date('F j, Y', strtotime('+14 days'));
         }
 
         return $this->response->setJSON([
@@ -1514,21 +1451,13 @@ class AdminController extends Controller
 
         $pdfText = mb_substr(trim($pdfText), 0, 8000);
 
-        $prompt = <<<'PROMPT'
-You are a book cataloging assistant. Your ONLY job is to return a single JSON object.
+        $prompt = 'You are a book cataloging assistant. Extract bibliographic information from this PDF text.
 
-CRITICAL RULES — you must follow these without exception:
-1. Output ONLY the raw JSON object. No prose, no markdown, no backticks, no explanation before or after.
-2. Never write sentences as field values (except "preface"). Never say "unknown" or "not found".
-3. For "title" and "author" you MUST provide your best guess — even if uncertain.
-
-Return exactly this structure:
+Return ONLY a raw JSON object — no markdown, no backticks, no explanation before or after. Exactly these keys:
 {"title":"","author":"","genre":"","published_year":"","isbn":"","preface":""}
 
 PDF TEXT:
-PROMPT;
-
-        $prompt .= $pdfText;
+' . $pdfText;
 
         $payload = json_encode([
             'model'       => 'llama-3.3-70b-versatile',
@@ -1586,19 +1515,6 @@ PROMPT;
         $extracted = json_decode($clean, true);
 
         if (!is_array($extracted)) {
-            $lowerRaw = strtolower($rawText);
-            if (str_contains($lowerRaw, 'collection of images')
-                || str_contains($lowerRaw, 'does not contain')
-                || str_contains($lowerRaw, 'no readable text')
-                || str_contains($lowerRaw, 'impossible to')
-                || str_contains($lowerRaw, 'cannot determine')
-            ) {
-                return $this->response->setJSON([
-                    'ok'    => false,
-                    'error' => 'This PDF does not contain enough readable text for AI extraction. Please fill in the book details manually.',
-                ]);
-            }
-
             return $this->response->setJSON([
                 'ok'    => false,
                 'error' => 'AI response was not valid JSON. Got: ' . mb_substr($rawText, 0, 150),
@@ -1607,21 +1523,6 @@ PROMPT;
 
         foreach (['title', 'author', 'genre', 'published_year', 'isbn', 'preface'] as $key) {
             if (!isset($extracted[$key])) $extracted[$key] = '';
-        }
-
-        $missingFields = [];
-        if (empty(trim($extracted['title'])))  $missingFields[] = 'title';
-        if (empty(trim($extracted['author']))) $missingFields[] = 'author';
-
-        if (!empty($missingFields)) {
-            $fieldList = implode(' and ', $missingFields);
-            return $this->response->setJSON([
-                'ok'      => true,
-                'warning' => true,
-                'message' => ucfirst($fieldList) . ' wasn\'t detected — please fill ' .
-                             (count($missingFields) === 1 ? 'that in' : 'those in') . ', then hit Save.',
-                'data'    => $extracted,
-            ]);
         }
 
         return $this->response->setJSON(['ok' => true, 'data' => $extracted]);

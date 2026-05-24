@@ -31,7 +31,9 @@ $counts = [
     'unclaimed' => count(array_filter($processed, fn($r) => $r['_status'] === 'unclaimed')),
 ];
 
-$printLogMap = $printLogMap ?? [];
+$printLogMap    = $printLogMap    ?? [];
+$walkInQuotaMap = $walkInQuotaMap ?? [];
+
 $statusIcons = [
     'pending'   => 'fa-clock',
     'approved'  => 'fa-circle-check',
@@ -41,6 +43,25 @@ $statusIcons = [
     'expired'   => 'fa-hourglass-end',
     'unclaimed' => 'fa-ticket',
 ];
+
+/**
+ * Resolve the display name — never falls back to "Guest".
+ */
+function resolveResName(array $res): string {
+    $vn = trim($res['visitor_name'] ?? '');
+    if ($vn !== '') return $vn;
+    $fn = trim($res['full_name'] ?? '');
+    if ($fn !== '') return $fn;
+    return 'Unknown';
+}
+
+/**
+ * Is this a walk-in (non-registered) visitor?
+ */
+function isWalkIn(array $res): bool {
+    $vt = strtolower(trim($res['visitor_type'] ?? ''));
+    return $vt !== '' && $vt !== 'user';
+}
 
 $pendingCount = $counts['pending'];
 ?>
@@ -148,6 +169,40 @@ $pendingCount = $counts['pending'];
             color: #c2410c; font-size: 13px; flex-shrink: 0;
         }
 
+        /* ── Walk-in quota strip ── */
+        .walkin-quota-strip {
+            display: none;
+            margin: 0 24px 12px;
+            border-radius: 14px;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            background: var(--input-bg);
+            align-items: center;
+            gap: 12px;
+        }
+        .walkin-quota-strip.show { display: flex; }
+        .wq-icon {
+            width: 34px; height: 34px; background: #e0e7ff; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #4338ca; font-size: 13px; flex-shrink: 0;
+        }
+        .wq-icon.exceeded { background: #fee2e2; color: #dc2626; }
+        .wq-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; transition: background .2s; }
+
+        /* ── Visitor role badge ── */
+        .visitor-role-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 999px;
+            font-size: 10px; font-weight: 800; letter-spacing: .04em;
+            margin-top: 3px;
+        }
+        .visitor-role-badge.walkin {
+            background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;
+        }
+        .visitor-role-badge.registered {
+            background: #ede9fe; color: #4f46e5; border: 1px solid #c4b5fd;
+        }
+
         /* ── Print log strip ── */
         #dPrintLog {
             display: none; margin: 0 24px 12px; border-radius: 18px; padding: 12px 14px;
@@ -201,10 +256,7 @@ $pendingCount = $counts['pending'];
         }
         @media(max-width:767px) { .hidden-on-mobile { display: none !important; } }
 
-        /* ══════════════════════════════════════════════
-           PATCH: STAT GRID — 6 columns responsive
-           Desktop: 3×2 | Mobile: 2×3
-        ══════════════════════════════════════════════ */
+        /* ── Stat grid responsive ── */
         .stats-grid[style*="repeat(6"] {
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         }
@@ -218,9 +270,6 @@ $pendingCount = $counts['pending'];
             .stat-lbl   { font-size: .56rem !important; }
         }
 
-        /* ══════════════════════════════════════════════
-           PATCH: PAGE HEADER — wrap on mobile
-        ══════════════════════════════════════════════ */
         .topbar-right { flex-wrap: wrap; }
         @media(max-width:480px) {
             .page-title { font-size: 1.3rem !important; }
@@ -228,21 +277,19 @@ $pendingCount = $counts['pending'];
             .btn-export span.hide-xs { display: none; }
         }
 
-        /* ══════════════════════════════════════════════
-           FIX: FILTER TABS — prevent text clipping
-        ══════════════════════════════════════════════ */
         .qtab { white-space: nowrap; flex-shrink: 0; }
 
-        /* ══════════════════════════════════════════════
-           PATCH: RES CARDS — better mobile spacing
-        ══════════════════════════════════════════════ */
         @media(max-width:639px) {
             .res-card { padding: 12px 14px !important; border-radius: 14px !important; }
         }
 
-        /* ══════════════════════════════════════════════
-           PATCH: DARK MODE — unified palette
-        ══════════════════════════════════════════════ */
+        /* ── Animations ── */
+        @keyframes popIn   { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:none} }
+        @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+        @keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+        .fade-up { animation: slideUp .4s ease both; }
+
+        /* ── Dark mode ── */
         body.dark .stat-card          { background: #0b1628 !important; border-color: rgba(99,102,241,.15) !important; }
         body.dark .card               { background: #0b1628 !important; border-color: rgba(99,102,241,.1) !important; }
         body.dark .search-input       { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #e2eaf8 !important; }
@@ -270,6 +317,11 @@ $pendingCount = $counts['pending'];
         body.dark #autoRefreshIndicator { background: rgba(11,22,40,.95) !important; }
         body.dark #resultCount,
         body.dark #tableFooter        { color: #4a6fa5 !important; }
+        body.dark .walkin-quota-strip { background: #060e1e !important; border-color: rgba(99,102,241,.15) !important; }
+        body.dark .walkin-quota-strip .wq-icon { background: rgba(99,102,241,.2) !important; }
+        body.dark .walkin-quota-strip .wq-icon.exceeded { background: rgba(220,38,38,.15) !important; }
+        body.dark .visitor-role-badge.walkin { background: rgba(194,65,12,.15) !important; border-color: rgba(251,146,60,.3) !important; }
+        body.dark .visitor-role-badge.registered { background: rgba(99,102,241,.15) !important; border-color: rgba(196,181,253,.3) !important; }
     </style>
 </head>
 
@@ -306,8 +358,30 @@ $pendingCount = $counts['pending'];
                 </div>
             </div>
 
+            <!-- Walk-in quota strip -->
+            <div id="dWalkInQuota" class="walkin-quota-strip">
+                <div id="wqIcon" class="wq-icon"><i class="fa-solid fa-person-walking"></i></div>
+                <div style="flex:1;min-width:0">
+                    <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:4px">Walk-in 3-Day Quota</p>
+                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                        <div id="wqDots" style="display:flex;gap:4px"></div>
+                        <p id="wqLabel" style="font-size:12px;font-weight:700;color:var(--text)"></p>
+                    </div>
+                </div>
+                <span id="wqBadge" style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:999px;flex-shrink:0"></span>
+            </div>
+
             <div style="padding:0 24px 8px">
-                <div class="drow"><div class="dicon"><i class="fa-solid fa-user"></i></div><div><p class="dlabel">Requestor</p><p id="dName" class="dvalue"></p><p id="dEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
+                <!-- Requestor row with role badge -->
+                <div class="drow">
+                    <div class="dicon"><i class="fa-solid fa-user"></i></div>
+                    <div style="flex:1;min-width:0">
+                        <p class="dlabel">Requestor</p>
+                        <p id="dName" class="dvalue"></p>
+                        <p id="dEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
+                        <span id="dRoleBadge" class="visitor-role-badge" style="display:none"></span>
+                    </div>
+                </div>
                 <div class="drow"><div class="dicon"><i class="fa-solid fa-desktop"></i></div><div><p class="dlabel">Resource</p><p id="dResource" class="dvalue"></p><p id="dPc" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
                 <div class="drow"><div class="dicon"><i class="fa-solid fa-calendar-day"></i></div><div><p class="dlabel">Schedule</p><p id="dDate" class="dvalue"></p><p id="dTime" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
                 <div class="drow"><div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div><div><p class="dlabel">Purpose</p><p id="dPurpose" class="dvalue"></p></div></div>
@@ -398,7 +472,7 @@ $pendingCount = $counts['pending'];
                         <?php endif; ?>
                     </div>
                 </div>
-                <div class="topbar-right">
+                <div class="topbar-right" style="display:flex;align-items:center;gap:8px;">
                     <div class="icon-btn" onclick="adminToggleDark()"><span id="darkIcon"><i class="fa-regular fa-sun"></i></span></div>
                     <button onclick="exportCSV()" class="btn-export">
                         <i class="fa-solid fa-file-csv"></i>
@@ -435,10 +509,9 @@ $pendingCount = $counts['pending'];
             <div class="flash-err fade-up"><i class="fa-solid fa-circle-exclamation"></i><?= session()->getFlashdata('error') ?></div>
         <?php endif; ?>
 
-        <!-- Filter bar — Reset button removed; X icons inside inputs -->
+        <!-- Filter bar -->
         <div class="card fade-up" style="padding:16px 18px;margin-bottom:14px;">
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
-                <!-- Search with inline clear X -->
                 <div style="flex:1;min-width:180px;position:relative;">
                     <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.75rem;pointer-events:none;z-index:1;"></i>
                     <input id="searchInput" type="text" placeholder="Search name, resource, purpose…" class="search-input" style="padding-left:32px;padding-right:30px;width:100%;" oninput="applyFilters();toggleClear('searchInput','searchClear')">
@@ -448,7 +521,6 @@ $pendingCount = $counts['pending'];
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <!-- Date with inline clear X -->
                 <div style="position:relative;width:160px;">
                     <i class="fa-regular fa-calendar" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-sub);font-size:11px;pointer-events:none;z-index:1;"></i>
                     <input id="dateInput" type="date" class="search-input" style="padding-left:36px;padding-right:30px;width:100%;" onchange="applyFilters();toggleClear('dateInput','dateClear')">
@@ -495,8 +567,8 @@ $pendingCount = $counts['pending'];
                         <?php foreach ($processed as $res):
                             $s           = $res['_status'];
                             $isUnclaimed = $res['_unclaimed'];
-                            $name        = htmlspecialchars($res['visitor_name']  ?? $res['full_name']    ?? 'Guest');
-                            $email       = htmlspecialchars($res['visitor_email'] ?? $res['user_email']   ?? '');
+                            $name        = htmlspecialchars(resolveResName($res));
+                            $email       = htmlspecialchars(trim($res['visitor_email'] ?? $res['user_email'] ?? ''));
                             $resource    = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
                             $pc          = htmlspecialchars($res['pc_number']     ?? $res['pc_numbers']   ?? '');
                             $rawDate     = $res['reservation_date'] ?? '';
@@ -517,13 +589,19 @@ $pendingCount = $counts['pending'];
                             $plPages     = $pl ? (int)($pl['pages'] ?? 0) : 0;
                             $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
                             $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
-                            $mdata       = json_encode(['id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,'created'=>$created,'code'=>$code,'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt]);
+                            $resIsWalkIn = isWalkIn($res);
+                            $nameKey     = mb_strtolower(trim($res['visitor_name'] ?? ''));
+                            $walkInQ     = ($resIsWalkIn && $nameKey !== '') ? ($walkInQuotaMap[$nameKey] ?? null) : null;
+                            $roleLabel   = $resIsWalkIn ? 'Guest (Walk-in)' : 'Registered User';
+                            $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
+                            $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
+                            $mdata       = json_encode(['id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,'roleLabel'=>$roleLabel,'roleClass'=>$roleClass,'roleIcon'=>$roleIcon,'isWalkIn'=>$resIsWalkIn,'created'=>$created,'code'=>$code,'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt,'walkInQuota'=>$walkInQ]);
                         ?>
                             <tr class="res-row"
                                 data-id="<?= $res['id'] ?>"
                                 data-status="<?= $s ?>"
                                 data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
-                                data-search="<?= strtolower("$name $resource $purpose $email $approverName") ?>"
+                                data-search="<?= strtolower("$name $resource $purpose $email $approverName $roleLabel") ?>"
                                 data-date="<?= $rawDate ?>"
                                 data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
                                 data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
@@ -533,6 +611,10 @@ $pendingCount = $counts['pending'];
                                 <td>
                                     <p style="font-weight:700;font-size:13px;"><?= $name ?></p>
                                     <?php if ($email): ?><p style="font-size:11px;color:var(--text-sub);margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
+                                    <span class="visitor-role-badge <?= $roleClass ?>">
+                                        <i class="fa-solid <?= $roleIcon ?>" style="font-size:8px"></i>
+                                        <?= $resIsWalkIn ? 'Guest' : 'User' ?>
+                                    </span>
                                 </td>
                                 <td>
                                     <p style="font-weight:700;font-size:13px;"><?= $resource ?></p>
@@ -590,8 +672,8 @@ $pendingCount = $counts['pending'];
                 <?php foreach ($processed as $res):
                     $s           = $res['_status'];
                     $isUnclaimed = $res['_unclaimed'];
-                    $name        = htmlspecialchars($res['visitor_name']  ?? $res['full_name']    ?? 'Guest');
-                    $email       = htmlspecialchars($res['visitor_email'] ?? $res['user_email']   ?? '');
+                    $name        = htmlspecialchars(resolveResName($res));
+                    $email       = htmlspecialchars(trim($res['visitor_email'] ?? $res['user_email'] ?? ''));
                     $resource    = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
                     $pc          = htmlspecialchars($res['pc_number']     ?? $res['pc_numbers']   ?? '');
                     $rawDate     = $res['reservation_date'] ?? '';
@@ -612,14 +694,20 @@ $pendingCount = $counts['pending'];
                     $plPages     = $pl ? (int)($pl['pages'] ?? 0) : 0;
                     $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
                     $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
-                    $mdata       = json_encode(['id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,'created'=>$created,'code'=>$code,'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt]);
+                    $resIsWalkIn = isWalkIn($res);
+                    $nameKey     = mb_strtolower(trim($res['visitor_name'] ?? ''));
+                    $walkInQ     = ($resIsWalkIn && $nameKey !== '') ? ($walkInQuotaMap[$nameKey] ?? null) : null;
+                    $roleLabel   = $resIsWalkIn ? 'Guest (Walk-in)' : 'Registered User';
+                    $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
+                    $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
+                    $mdata       = json_encode(['id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,'roleLabel'=>$roleLabel,'roleClass'=>$roleClass,'roleIcon'=>$roleIcon,'isWalkIn'=>$resIsWalkIn,'created'=>$created,'code'=>$code,'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt,'walkInQuota'=>$walkInQ]);
                     $avatarBg = ['pending'=>'background:#fef3c7;color:#92400e','approved'=>'background:#dcfce7;color:#166534','claimed'=>'background:#ede9fe;color:#6b21a8','declined'=>'background:#fee2e2;color:#991b1b','canceled'=>'background:#fee2e2;color:#991b1b','expired'=>'background:#f1f5f9;color:#64748b','unclaimed'=>'background:#fff7ed;color:#c2410c'][$s] ?? 'background:#f1f5f9;color:#64748b';
                 ?>
                     <div class="res-card"
                         data-id="<?= $res['id'] ?>"
                         data-status="<?= $s ?>"
                         data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
-                        data-search="<?= strtolower("$name $resource $purpose $email $approverName") ?>"
+                        data-search="<?= strtolower("$name $resource $purpose $email $approverName $roleLabel") ?>"
                         data-date="<?= $rawDate ?>"
                         data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
                         data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
@@ -630,6 +718,10 @@ $pendingCount = $counts['pending'];
                             <div style="flex:1;min-width:0">
                                 <p style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $name ?></p>
                                 <?php if ($email): ?><p style="font-size:11px;color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
+                                <span class="visitor-role-badge <?= $roleClass ?>">
+                                    <i class="fa-solid <?= $roleIcon ?>" style="font-size:8px"></i>
+                                    <?= $resIsWalkIn ? 'Guest' : 'User' ?>
+                                </span>
                             </div>
                             <span class="badge badge-<?= $s ?>" style="flex-shrink:0"><i class="fa-solid <?= $icon ?>" style="font-size:9px"></i><?= ucfirst($s) ?></span>
                         </div>
@@ -696,7 +788,6 @@ $pendingCount = $counts['pending'];
 
         let _currentReservationId = null;
 
-        /* ── Inline clear X helpers ── */
         function toggleClear(inputId, btnId) {
             const val = document.getElementById(inputId).value;
             document.getElementById(btnId).style.display = val ? 'block' : 'none';
@@ -743,10 +834,10 @@ $pendingCount = $counts['pending'];
 
         function exportCSV(){
             const visibleRows=allTableRows.filter(r=>r.style.display!=='none');
-            const headers=['ID','User Name','Email','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
+            const headers=['ID','User Name','Email','Role','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
             const escape=v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
             const lines=[headers.map(escape).join(',')];
-            visibleRows.forEach(row=>{try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));lines.push([d.id??'',d.name??'',d.email??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));}catch(e){}});
+            visibleRows.forEach(row=>{try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));lines.push([d.id??'',d.name??'',d.email??'',d.roleLabel??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));}catch(e){}});
             const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
             const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`admin-reservations-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
         }
@@ -764,17 +855,6 @@ $pendingCount = $counts['pending'];
             const total=allTableRows.length;
             document.getElementById('resultCount').textContent=`Showing ${n} of ${total} reservation${total!==1?'s':''}`;
             document.getElementById('tableFooter').textContent=`${n} result${n!==1?'s':''} displayed`;
-        }
-
-        function clearFilters(){
-            document.getElementById('searchInput').value='';
-            document.getElementById('dateInput').value='';
-            document.getElementById('searchClear').style.display='none';
-            document.getElementById('dateClear').style.display='none';
-            curTab='all';
-            document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='all'));
-            syncCards('all');
-            applyFilters();
         }
 
         let sortDir={};
@@ -796,45 +876,114 @@ $pendingCount = $counts['pending'];
         };
 
         function openDetail(d){
-            _currentReservationId=d.id;
-            const plog=printLogMap[d.id];
-            document.getElementById('printPagesInput').value=plog?(plog.printed?plog.pages:0):0;
-            document.getElementById('printSaveMsg').textContent='';
-            const saveBtn=document.getElementById('savePrintBtn');saveBtn.disabled=false;saveBtn.innerHTML='<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
-            const m=STATUS_META[d.status]||STATUS_META.pending;
-            document.getElementById('dId').textContent='Reservation #'+d.id;
-            document.getElementById('dName').textContent=d.name;
-            document.getElementById('dEmail').textContent=d.email;
-            document.getElementById('dResource').textContent=d.resource;
-            document.getElementById('dPc').textContent=d.pc?'PC: '+d.pc:'';
-            document.getElementById('dDate').textContent=d.date;
-            document.getElementById('dTime').textContent=d.start+' – '+d.end;
-            document.getElementById('dPurpose').textContent=d.purpose;
-            document.getElementById('dType').textContent=d.type;
-            document.getElementById('dCreated').textContent=d.created;
-            const approverRow=document.getElementById('dApprovedByRow');
-            if(d.approverName&&['approved','claimed','declined','expired','unclaimed'].includes(d.status)){
-                approverRow.style.display='flex';const isDeclined=d.status==='declined';
-                document.getElementById('dApprovedByLabel').textContent=isDeclined?'Declined By':'Approved By';
-                const iconEl=document.getElementById('dApprovedByIcon');iconEl.className='dicon';
-                iconEl.style.background=isDeclined?'#fee2e2':'#dcfce7';iconEl.style.color=isDeclined?'#dc2626':'#16a34a';
-                iconEl.innerHTML=`<i class="fa-solid ${isDeclined?'fa-user-xmark':'fa-user-check'}"></i>`;
-                document.getElementById('dApprovedByName').textContent=d.approverName;
-                document.getElementById('dApprovedByEmail').textContent=d.approverEmail||'';
-                document.getElementById('dApprovedAt').textContent=d.approvedAt?`on ${d.approvedAt}`:'';
-            }else{approverRow.style.display='none';}
-            const bar=document.getElementById('dStatusBar');bar.style.background=m.bg;bar.style.color=m.color;
-            bar.innerHTML=`<i class="fa-solid ${m.icon}"></i> <span style="font-weight:700">${m.label}</span>`;
-            document.getElementById('dUnclaimedBanner').style.display=d.unclaimed?'flex':'none';
-            const qrSec=document.getElementById('dQr'),clSec=document.getElementById('dClaimed');
-            if(d.claimed||d.status==='claimed'){qrSec.style.display='none';clSec.style.display='block';}
-            else if(d.status==='approved'||d.status==='unclaimed'){clSec.style.display='none';qrSec.style.display='flex';QRCode.toCanvas(document.getElementById('qrCanvas'),d.code,{width:150,margin:1,color:{dark:'#1e293b',light:'#ffffff'}});document.getElementById('dTicketCode').textContent=d.code;}
-            else{qrSec.style.display='none';clSec.style.display='none';}
+            _currentReservationId = d.id;
+            const plog = printLogMap[d.id];
+            document.getElementById('printPagesInput').value = plog ? (plog.printed ? plog.pages : 0) : 0;
+            document.getElementById('printSaveMsg').textContent = '';
+            const saveBtn = document.getElementById('savePrintBtn');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
+
+            const m = STATUS_META[d.status] || STATUS_META.pending;
+            document.getElementById('dId').textContent       = 'Reservation #' + d.id;
+            document.getElementById('dName').textContent     = d.name;
+            document.getElementById('dEmail').textContent    = d.email;
+
+            // Role badge
+            const badge = document.getElementById('dRoleBadge');
+            badge.style.display = 'inline-flex';
+            badge.className = 'visitor-role-badge ' + (d.roleClass || 'registered');
+            badge.innerHTML = `<i class="fa-solid ${d.roleIcon || 'fa-user'}" style="font-size:8px"></i> ${d.roleLabel || d.type}`;
+
+            document.getElementById('dResource').textContent = d.resource;
+            document.getElementById('dPc').textContent       = d.pc ? 'PC: ' + d.pc : '';
+            document.getElementById('dDate').textContent     = d.date;
+            document.getElementById('dTime').textContent     = d.start + ' – ' + d.end;
+            document.getElementById('dPurpose').textContent  = d.purpose;
+            document.getElementById('dType').textContent     = d.type;
+            document.getElementById('dCreated').textContent  = d.created;
+
+            const bar = document.getElementById('dStatusBar');
+            bar.style.background = m.bg; bar.style.color = m.color;
+            bar.innerHTML = `<i class="fa-solid ${m.icon}"></i> <span style="font-weight:700">${m.label}</span>`;
+
+            // Approver row
+            const approverRow = document.getElementById('dApprovedByRow');
+            if (d.approverName && ['approved','claimed','declined','expired','unclaimed'].includes(d.status)) {
+                approverRow.style.display = 'flex';
+                const isDeclined = d.status === 'declined';
+                document.getElementById('dApprovedByLabel').textContent = isDeclined ? 'Declined By' : 'Approved By';
+                const iconEl = document.getElementById('dApprovedByIcon');
+                iconEl.className = 'dicon';
+                iconEl.style.background = isDeclined ? '#fee2e2' : '#dcfce7';
+                iconEl.style.color = isDeclined ? '#dc2626' : '#16a34a';
+                iconEl.innerHTML = `<i class="fa-solid ${isDeclined ? 'fa-user-xmark' : 'fa-user-check'}"></i>`;
+                document.getElementById('dApprovedByName').textContent  = d.approverName;
+                document.getElementById('dApprovedByEmail').textContent = d.approverEmail || '';
+                document.getElementById('dApprovedAt').textContent      = d.approvedAt ? `on ${d.approvedAt}` : '';
+            } else { approverRow.style.display = 'none'; }
+
+            document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
+
+            // Walk-in quota strip
+            const quotaEl = document.getElementById('dWalkInQuota');
+            const dotsEl  = document.getElementById('wqDots');
+            const labelEl = document.getElementById('wqLabel');
+            const badgeEl = document.getElementById('wqBadge');
+            const wqIconEl = document.getElementById('wqIcon');
+            const q = d.walkInQuota ?? null;
+
+            if (q && d.isWalkIn) {
+                quotaEl.classList.add('show');
+                dotsEl.innerHTML = '';
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'wq-dot';
+                    dot.style.background = i < q.used
+                        ? (!q.fair ? '#dc2626' : '#4338ca')
+                        : 'var(--border)';
+                    dotsEl.appendChild(dot);
+                }
+                if (!q.fair) {
+                    labelEl.textContent   = `Limit reached — can book again on ${q.reset}`;
+                    labelEl.style.color   = '#dc2626';
+                    wqIconEl.classList.add('exceeded');
+                    wqIconEl.innerHTML    = '<i class="fa-solid fa-person-walking-arrow-right"></i>';
+                    badgeEl.textContent   = `${q.used}/3`;
+                    badgeEl.style.cssText = 'background:#fee2e2;color:#dc2626';
+                } else {
+                    labelEl.textContent   = `${q.remaining} slot${q.remaining !== 1 ? 's' : ''} left this 3-day window`;
+                    labelEl.style.color   = 'var(--text)';
+                    wqIconEl.classList.remove('exceeded');
+                    wqIconEl.innerHTML    = '<i class="fa-solid fa-person-walking"></i>';
+                    badgeEl.textContent   = `${q.used}/3`;
+                    badgeEl.style.cssText = q.used > 0 ? 'background:#e0e7ff;color:#3730a3' : 'background:var(--input-bg);color:var(--text-sub)';
+                }
+            } else {
+                quotaEl.classList.remove('show');
+            }
+
+            // QR / claimed
+            const qrSec = document.getElementById('dQr'), clSec = document.getElementById('dClaimed');
+            if (d.claimed || d.status === 'claimed') {
+                qrSec.style.display = 'none'; clSec.style.display = 'block';
+            } else if (d.status === 'approved' || d.status === 'unclaimed') {
+                clSec.style.display = 'none'; qrSec.style.display = 'flex';
+                QRCode.toCanvas(document.getElementById('qrCanvas'), d.code, {width:150,margin:1,color:{dark:'#1e293b',light:'#ffffff'}});
+                document.getElementById('dTicketCode').textContent = d.code;
+            } else { qrSec.style.display = 'none'; clSec.style.display = 'none'; }
+
             refreshPrintLogStrip(d.id);
-            const acts=document.getElementById('dActions');
-            if(d.status==='pending'){acts.innerHTML=`<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>`;}
-            else{acts.innerHTML=`<button onclick="closeModal('detail')" class="btn-cancel" style="width:100%"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Close</button>`;}
-            document.getElementById('detailModal').classList.add('open');document.body.style.overflow='hidden';
+
+            const acts = document.getElementById('dActions');
+            if (d.status === 'pending') {
+                acts.innerHTML = `<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>`;
+            } else {
+                acts.innerHTML = `<button onclick="closeModal('detail')" class="btn-cancel" style="width:100%"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Close</button>`;
+            }
+
+            document.getElementById('detailModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
         }
 
         function downloadTicket(){const canvas=document.getElementById('qrCanvas'),code=document.getElementById('dTicketCode').textContent;const link=document.createElement('a');link.download=`E-Ticket-${code}.png`;link.href=canvas.toDataURL('image/png');link.click();}
@@ -847,7 +996,9 @@ $pendingCount = $counts['pending'];
         const modalIds={detail:'detailModal',approve:'approveModal',decline:'declineModal'};
         function openModal(key){const el=document.getElementById(modalIds[key]);if(el){el.classList.add('open');document.body.style.overflow='hidden';}}
         function closeModal(key){
-            const el=document.getElementById(modalIds[key]);if(el){el.classList.remove('open');document.body.style.overflow='';}
+            const el=document.getElementById(modalIds[key]);if(el){el.classList.remove('open');}
+            const anyOpen=Object.values(modalIds).some(id=>document.getElementById(id)?.classList.contains('open'));
+            if(!anyOpen)document.body.style.overflow='';
             if(key==='detail')_currentReservationId=null;
             if(key==='approve'){const b=document.getElementById('confirmApproveBtn');b.disabled=false;b.innerHTML='<i class="fa-solid fa-check"></i> Approve';}
             if(key==='decline'){const b=document.getElementById('confirmDeclineBtn');b.disabled=false;b.innerHTML='<i class="fa-solid fa-xmark"></i> Decline';}

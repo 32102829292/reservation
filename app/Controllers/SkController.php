@@ -9,6 +9,8 @@ use App\Models\UserModel;
 
 class SkController extends BaseController
 {
+    use \App\Controllers\Traits\StopSessionTrait;
+
     public function dashboard()
     {
         date_default_timezone_set('Asia/Manila');
@@ -249,7 +251,6 @@ class SkController extends BaseController
 
         $walkInQuotaMap = [];
         foreach ($reservations as $res) {
-            // FIX: identify walk-ins by user_id IS NULL, not by visitor_type string
             if (is_null($res['user_id']) && !empty($res['visitor_name'])) {
                 $nameKey = mb_strtolower(trim($res['visitor_name']));
                 if ($nameKey && !isset($walkInQuotaMap[$nameKey])) {
@@ -452,15 +453,6 @@ class SkController extends BaseController
         ]);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  CREATE RESERVATION
-    //  Fixed:
-    //  1. Walk-in path now checks the users table by name to prevent a
-    //     registered resident from being saved as a guest (user_id = NULL).
-    //  2. Both fairness checks (registered + walk-in) now use reservation_date
-    //     for the rolling window, consistent with checkWalkInFairness().
-    // ═══════════════════════════════════════════════════════════════════════
-
     public function createReservation()
     {
         date_default_timezone_set('Asia/Manila');
@@ -535,10 +527,6 @@ class SkController extends BaseController
                 return redirect()->back()->withInput()->with('error', $msg);
             }
 
-            // FIX: check whether the typed name belongs to a registered resident.
-            // If it does, the SK officer must use the Registered User toggle instead
-            // so the reservation is counted under the correct user account and does
-            // not consume a walk-in guest slot.
             $nameMatch = $db->query("
                 SELECT id, name
                 FROM users
@@ -557,7 +545,6 @@ class SkController extends BaseController
                 return redirect()->back()->withInput()->with('error', $msg);
             }
 
-            // Walk-in quota check (3 per 14-day window, user_id IS NULL)
             $walkInCheck = $reservationModel->checkWalkInFairness($visitorName);
             if (!$walkInCheck['fair']) {
                 $msg = "Walk-in visitor \"{$visitorName}\" has already used all 3 reservation slots "
@@ -601,7 +588,6 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', $msg);
         }
 
-        // One reservation per day per registered user
         if ($visitorType === 'User' && $userId > 0) {
             $sameDayReservations = $reservationModel->getUserSameDayReservations($userId, $reservationDate);
             if (!empty($sameDayReservations)) {
@@ -639,9 +625,6 @@ class SkController extends BaseController
         $eTicket = $this->generateETicket();
 
         $data = [
-            // FIX: user_id is explicitly NULL for walk-ins — this is the
-            // reliable signal used by checkWalkInFairness() to separate
-            // true guests from registered users.
             'user_id'          => ($visitorType === 'User' && $userId > 0) ? $userId : null,
             'visitor_type'     => $visitorType,
             'visitor_name'     => $visitorName,
@@ -681,18 +664,6 @@ class SkController extends BaseController
         return redirect()->to('/sk/reservations')->with('success', 'Reservation created successfully!');
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  CHECK GUEST LIMIT  (AJAX endpoint called by new-reservation.php)
-    //
-    //  Fixed:
-    //  1. Added users table name-match check → returns is_registered: true
-    //     so the frontend can warn the SK officer immediately.
-    //  2. Walk-in count uses reservation_date (date column) instead of
-    //     created_at (datetime) to avoid timezone drift.
-    //  3. Walk-in count filters AND user_id IS NULL instead of
-    //     LOWER(visitor_type) != 'user' for consistent identification.
-    // ═══════════════════════════════════════════════════════════════════════
-
     public function checkGuestLimit()
     {
         date_default_timezone_set('Asia/Manila');
@@ -708,7 +679,6 @@ class SkController extends BaseController
         $name        = trim($this->request->getGet('name') ?? '');
         $visitorType = strtolower(trim($this->request->getGet('visitor_type') ?? 'visitor'));
 
-        // Registered-user toggle — no quota applies
         if ($visitorType === 'user') {
             return $this->response->setJSON([
                 'count'         => 0,
@@ -721,7 +691,6 @@ class SkController extends BaseController
             ]);
         }
 
-        // Empty name — nothing to check yet
         if (empty($name)) {
             return $this->response->setJSON([
                 'count'         => 0,
@@ -735,9 +704,6 @@ class SkController extends BaseController
 
         $db = db_connect();
 
-        // ── FIX: check whether the entered name belongs to a registered user ──
-        // If it does, the SK officer must switch to the Registered User toggle.
-        // Supports both 'name' and 'full_name' columns.
         $registeredUser = $db->query("
             SELECT id, name, email
             FROM users
@@ -753,7 +719,6 @@ class SkController extends BaseController
                 'blocked'         => false,
                 'reset'           => null,
                 'is_new'          => false,
-                // FIX: these two flags are what the frontend uses to show the warning
                 'is_registered'   => true,
                 'registered_id'   => $registeredUser['id'],
                 'registered_name' => $registeredUser['name'],
@@ -761,15 +726,8 @@ class SkController extends BaseController
             ]);
         }
 
-        // ── FIX: use reservation_date (date column) for the 14-day window ──
-        // created_at is a datetime; comparing it to a UTC-based strtotime value
-        // drifts by hours in Asia/Manila and can exclude same-day records.
         $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
 
-        // ── FIX: filter AND user_id IS NULL to identify true walk-ins ──
-        // visitor_type is free-text and has been stored inconsistently
-        // ('Visitor', 'visitor', 'Walk-in', 'Guest'…). user_id IS NULL
-        // is always set correctly by createReservation().
         $usedRow = $db->query("
             SELECT COUNT(*) AS total
             FROM reservations
@@ -804,7 +762,6 @@ class SkController extends BaseController
             'limit'         => 3,
             'blocked'       => $used >= 3,
             'reset'         => $reset,
-            // is_new = true means zero walk-in slots used → show confirmation code widget
             'is_new'        => $used === 0,
             'is_registered' => false,
         ]);
@@ -1093,6 +1050,7 @@ class SkController extends BaseController
             'ID', 'Reservation Code', 'Visitor Name', 'Email', 'Resource',
             'Workstation', 'Reservation Date', 'Start Time', 'End Time',
             'Purpose', 'Status', 'Claimed At', 'Claimed Date', 'Claimed Time',
+            'Session Ended At', 'Actual Duration (min)',
         ]);
 
         foreach ($claimedReservations as $res) {
@@ -1112,19 +1070,21 @@ class SkController extends BaseController
 
             fputcsv($output, [
                 $res['id'],
-                $res['e_ticket_code']    ?? '—',
-                $res['visitor_name']     ?? $res['full_name'] ?? 'Guest',
-                $res['visitor_email']    ?? $res['user_email'] ?? '—',
-                $res['resource_name']    ?? ('Resource #' . $res['resource_id']),
-                $pcNumbers               ?: '—',
-                $res['reservation_date'] ?? '—',
-                $res['start_time']       ?? '—',
-                $res['end_time']         ?? '—',
-                $res['purpose']          ?? '—',
-                ucfirst($res['status']   ?? 'pending'),
-                $res['claimed_at']       ?? '—',
+                $res['e_ticket_code']             ?? '—',
+                $res['visitor_name']              ?? $res['full_name'] ?? 'Guest',
+                $res['visitor_email']             ?? $res['user_email'] ?? '—',
+                $res['resource_name']             ?? ('Resource #' . $res['resource_id']),
+                $pcNumbers                        ?: '—',
+                $res['reservation_date']          ?? '—',
+                $res['start_time']                ?? '—',
+                $res['end_time']                  ?? '—',
+                $res['purpose']                   ?? '—',
+                ucfirst($res['status']            ?? 'pending'),
+                $res['claimed_at']                ?? '—',
                 $claimedDate,
                 $claimedTime,
+                $res['session_ended_at']          ?? '—',
+                $res['actual_duration_minutes']   ?? '—',
             ]);
         }
 
