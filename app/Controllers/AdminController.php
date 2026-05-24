@@ -292,6 +292,52 @@ class AdminController extends Controller
         ]);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  STOP SESSION — ends an active session immediately
+    // ═══════════════════════════════════════════════════════════════════════
+    public function stopSession()
+    {
+        if (!session()->has('user_id')) {
+            return $this->response->setStatusCode(401)
+                ->setJSON(['ok' => false, 'error' => 'Unauthorized']);
+        }
+
+        $json = $this->request->getJSON(true) ?? [];
+        $id   = (int)($json['reservation_id'] ?? 0);
+
+        if (!$id) {
+            return $this->response->setJSON(['ok' => false, 'error' => 'Missing reservation_id']);
+        }
+
+        $reservation = $this->reservationModel->find($id);
+        if (!$reservation) {
+            return $this->response->setJSON(['ok' => false, 'error' => 'Reservation not found']);
+        }
+
+        $now = date('H:i:s');
+
+        try {
+            $this->reservationModel->update($id, [
+                'end_time'   => $now,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            $visitorName  = $reservation['visitor_name'] ?? 'Guest';
+            $resourceName = $reservation['resource_name'] ?? ('Resource #' . $reservation['resource_id']);
+
+            $this->logActivity(
+                'stop_session',
+                $id,
+                "Manually ended session #$id for {$visitorName} ({$resourceName}) at $now"
+            );
+
+            return $this->response->setJSON(['ok' => true, 'ended_at' => $now]);
+        } catch (\Exception $e) {
+            log_message('error', 'stopSession failed: ' . $e->getMessage());
+            return $this->response->setJSON(['ok' => false, 'error' => 'DB error: ' . $e->getMessage()]);
+        }
+    }
+
     public function newReservation()
     {
         if (!session()->has('user_id')) {
@@ -589,7 +635,6 @@ class AdminController extends Controller
         $pcsArr  = json_decode($pcsJson, true) ?? [];
         $pcValue = !empty($pcsArr) ? implode(', ', $pcsArr) : ($request->getPost('pc_number') ?: null);
 
-        // ── 1. Registered-user path ──────────────────────────────────────
         if ($visitorType === 'User' && empty($userId)) {
             return redirect()->back()->with('error', 'Please select a registered user from the list.');
         }
@@ -623,18 +668,15 @@ class AdminController extends Controller
             }
         }
 
-        // ── 2. Walk-in / guest path ──────────────────────────────────────
         if (strtolower($visitorType) !== 'user') {
-
             if (empty($visitorName)) {
                 return redirect()->back()->withInput()
                     ->with('error', 'Walk-in visitor name is required.');
             }
 
             $nameMatch = $db->query("
-                SELECT id, name
-                FROM users
-                WHERE LOWER(TRIM(name))      = LOWER(TRIM(?))
+                SELECT id, name FROM users
+                WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))
                    OR LOWER(TRIM(full_name)) = LOWER(TRIM(?))
                 LIMIT 1
             ", [$visitorName, $visitorName])->getRowArray();
@@ -656,7 +698,6 @@ class AdminController extends Controller
             }
         }
 
-        // ── 3. General field validation ──────────────────────────────────
         if (!$this->validate([
             'resource_id'      => 'required|numeric',
             'reservation_date' => 'required|valid_date[Y-m-d]',
@@ -685,7 +726,6 @@ class AdminController extends Controller
             }
         }
 
-        // ── 4. Conflict / double-booking check ───────────────────────────
         $db->transStart();
 
         $conflict = $reservationModel
@@ -704,7 +744,6 @@ class AdminController extends Controller
                 ->with('error', 'This time slot is already booked. Please choose another time.');
         }
 
-        // ── 5. Insert ────────────────────────────────────────────────────
         $eTicketCode = 'ADMIN' . strtoupper(uniqid());
 
         $data = [
@@ -788,9 +827,8 @@ class AdminController extends Controller
         $db = $this->db;
 
         $registeredUser = $db->query("
-            SELECT id, name, email
-            FROM users
-            WHERE LOWER(TRIM(name))      = LOWER(TRIM(?))
+            SELECT id, name, email FROM users
+            WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))
                OR LOWER(TRIM(full_name)) = LOWER(TRIM(?))
             LIMIT 1
         ", [$name, $name])->getRowArray();
@@ -812,8 +850,7 @@ class AdminController extends Controller
         $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
 
         $usedRow = $db->query("
-            SELECT COUNT(*) AS total
-            FROM reservations
+            SELECT COUNT(*) AS total FROM reservations
             WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
               AND status NOT IN ('declined', 'canceled')
               AND user_id IS NULL
@@ -825,8 +862,7 @@ class AdminController extends Controller
         $reset = null;
         if ($used >= 3) {
             $oldest = $db->query("
-                SELECT reservation_date
-                FROM reservations
+                SELECT reservation_date FROM reservations
                 WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
                   AND status NOT IN ('declined', 'canceled')
                   AND user_id IS NULL
