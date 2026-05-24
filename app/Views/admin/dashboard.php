@@ -240,8 +240,12 @@
 
     /* ── Safe defaults ── */
     $reservations      = $reservations      ?? [];
-    $dashBooks         = is_array($dashBooks         ?? null) ? $dashBooks         : [];
-    $dashBorrowReqs    = is_array($dashBorrowReqs    ?? null) ? $dashBorrowReqs    : [];
+    if (!isset($dashBooks) || !is_array($dashBooks)) {
+        $dashBooks = [];
+    }
+    if (!isset($dashBorrowReqs) || !is_array($dashBorrowReqs)) {
+        $dashBorrowReqs = [];
+    }
     $bookTotalCount    = (int)($bookTotalCount    ?? 0);
     $bookAvailCount    = (int)($bookAvailCount    ?? 0);
     $pendingBorrowings = (int)($pendingBorrowings ?? 0);
