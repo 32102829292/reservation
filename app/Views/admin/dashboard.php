@@ -4,7 +4,7 @@
  * FIX: modal time now shows 12h PHT format in readable font (not mono)
  * FIX: Calendar UI — taller cells, proper event pills, styled nav buttons
  * FIX: Chart mobile layout — grid-two responsive, doughnut fixed size
- * ADD: Stop Session button on each live session card
+ * FIX: Stop Session button — z-index, pointer-events, safe onclick (no JSON.stringify in HTML attr)
  *
  * BACKEND REQUIRED:
  *   POST /admin/sessions/stop
@@ -161,7 +161,6 @@
         /* ══════════════════════════════════════════
            CHART MOBILE PATCH
         ══════════════════════════════════════════ */
-
         .grid-two {
             display: grid;
             grid-template-columns: 1fr;
@@ -232,8 +231,44 @@
         }
 
         /* ══════════════════════════════════════════
-           STOP SESSION BUTTON
+           STOP SESSION BUTTON — FIXED
         ══════════════════════════════════════════ */
+
+        /* Session card must be relative + isolated so the overlay positions correctly
+           and nothing bleeds pointer-events into the button */
+        .tl-session-card {
+            position: relative;
+            isolation: isolate; /* NEW: prevents z-index bleed from children */
+        }
+
+        /* The stop button itself */
+        .tl-stop-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 9px;
+            background: rgba(239,68,68,.12);
+            color: #ef4444;
+            border: 1px solid rgba(239,68,68,.25);
+            border-radius: 7px;
+            font-family: var(--font);
+            font-size: .65rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, transform .1s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            position: relative; /* NEW */
+            z-index: 5;         /* NEW: sit above progress bar / other layers */
+            pointer-events: all; /* NEW: explicit */
+            -webkit-tap-highlight-color: transparent; /* NEW: mobile tap fix */
+            touch-action: manipulation; /* NEW: mobile tap fix */
+        }
+        .tl-stop-btn:hover {
+            background: rgba(239,68,68,.22);
+            border-color: rgba(239,68,68,.4);
+        }
+        .tl-stop-btn:active { transform: scale(.96); }
 
         /* Confirm overlay that appears inside the card */
         .tl-stop-confirm {
@@ -280,6 +315,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: background .15s, transform .1s;
+            touch-action: manipulation;
         }
         .tl-stop-confirm-yes:hover   { background: #dc2626; }
         .tl-stop-confirm-yes:active  { transform: scale(.97); }
@@ -298,35 +334,9 @@
             font-weight: 700;
             cursor: pointer;
             transition: background .15s;
+            touch-action: manipulation;
         }
         .tl-stop-confirm-no:hover { background: rgba(255,255,255,.16); }
-
-        /* The stop button itself on each card */
-        .tl-stop-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 9px;
-            background: rgba(239,68,68,.12);
-            color: #ef4444;
-            border: 1px solid rgba(239,68,68,.25);
-            border-radius: 7px;
-            font-family: var(--font);
-            font-size: .65rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background .15s, border-color .15s, transform .1s;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .tl-stop-btn:hover  {
-            background: rgba(239,68,68,.22);
-            border-color: rgba(239,68,68,.4);
-        }
-        .tl-stop-btn:active { transform: scale(.96); }
-
-        /* Session card must be relative so the overlay positions correctly */
-        .tl-session-card { position: relative; }
     </style>
 </head>
 
@@ -1176,10 +1186,6 @@
          * POST /admin/sessions/stop
          * Body: { reservation_id: <int> }
          * Expected response: { success: true } | { success: false, message: "..." }
-         *
-         * In your CodeIgniter controller, you need to:
-         *   1. Set end_time = NOW() for the reservation
-         *   2. Optionally set a `force_ended` flag to distinguish from natural expiry
          * ══════════════════════════════════════════════════
          */
         const STOP_EP = '/admin/sessions/stop';
@@ -1455,17 +1461,52 @@
         function tlNextPrintModal()  { if (tlPrintQueue.length>0) setTimeout(()=>tlOpenPrintModal(tlPrintQueue.shift()),400); }
 
         /* ══════════════════════════════════════════
-           STOP SESSION
+           STOP SESSION — FIXED
+           Key changes:
+           1. Stop button onclick uses a data attribute + event delegation
+              instead of inline JSON.stringify (avoids HTML attr quote-breaking)
+           2. Button has z-index:5 + pointer-events:all in CSS
+           3. Card has isolation:isolate in CSS
         ══════════════════════════════════════════ */
 
         /**
-         * Show the inline stop-confirm overlay on a session card.
-         * id       — reservation id
-         * name     — user's display name (for the confirm message)
-         * resource — resource name
+         * Global delegated click handler for stop buttons.
+         * Because the card HTML is built dynamically, event delegation is safer
+         * than relying on inline onclick attributes with JSON-serialized strings.
          */
+        document.addEventListener('click', function(e) {
+            // ── Stop button clicked ──────────────────────────
+            const stopBtn = e.target.closest('.tl-stop-btn');
+            if (stopBtn) {
+                e.stopPropagation();
+                const id       = parseInt(stopBtn.dataset.id,  10);
+                const name     = stopBtn.dataset.name     || 'User';
+                const resource = stopBtn.dataset.resource || 'Resource';
+                tlShowStopConfirm(id, name, resource);
+                return;
+            }
+
+            // ── Confirm-Yes clicked ──────────────────────────
+            const yesBtn = e.target.closest('.tl-stop-confirm-yes');
+            if (yesBtn) {
+                e.stopPropagation();
+                const id = parseInt(yesBtn.dataset.id, 10);
+                tlConfirmStop(id);
+                return;
+            }
+
+            // ── Confirm-No clicked ───────────────────────────
+            const noBtn = e.target.closest('.tl-stop-confirm-no');
+            if (noBtn) {
+                e.stopPropagation();
+                const id = parseInt(noBtn.dataset.id, 10);
+                tlCancelStop(id);
+                return;
+            }
+        });
+
         function tlShowStopConfirm(id, name, resource) {
-            // Remove any existing overlays first (safety)
+            // Remove any stale overlays first
             document.querySelectorAll('.tl-stop-confirm').forEach(el => el.remove());
 
             const card = document.getElementById(`tl-card-${id}`);
@@ -1481,31 +1522,27 @@
                 <p>Stop <strong>${escHtml(name)}</strong>'s session on <strong>${escHtml(resource)}</strong>?<br>
                 <span style="font-weight:400;font-size:.68rem;opacity:.7;">This cannot be undone.</span></p>
                 <div class="tl-stop-confirm-btns">
-                    <button class="tl-stop-confirm-yes" id="tl-stop-yes-${id}"
-                            onclick="tlConfirmStop(${id})"
-                            aria-label="Confirm stop session">
+                    <button class="tl-stop-confirm-yes" data-id="${id}" aria-label="Confirm stop session">
                         <i class="fa-solid fa-stop" style="font-size:.65rem;margin-right:4px;" aria-hidden="true"></i>
                         Stop Session
                     </button>
-                    <button class="tl-stop-confirm-no"
-                            onclick="tlCancelStop(${id})"
-                            aria-label="Cancel">
+                    <button class="tl-stop-confirm-no" data-id="${id}" aria-label="Cancel">
                         Cancel
                     </button>
                 </div>`;
             card.appendChild(overlay);
 
-            // Trap focus onto the confirm button
-            setTimeout(() => document.getElementById(`tl-stop-yes-${id}`)?.focus(), 50);
+            // Focus the confirm button for keyboard accessibility
+            setTimeout(() => overlay.querySelector('.tl-stop-confirm-yes')?.focus(), 50);
         }
 
         function tlCancelStop(id) {
-            const card = document.getElementById(`tl-card-${id}`);
-            card?.querySelector('.tl-stop-confirm')?.remove();
+            document.getElementById(`tl-card-${id}`)?.querySelector('.tl-stop-confirm')?.remove();
         }
 
         async function tlConfirmStop(id) {
-            const yesBtn = document.getElementById(`tl-stop-yes-${id}`);
+            const overlay = document.getElementById(`tl-card-${id}`)?.querySelector('.tl-stop-confirm');
+            const yesBtn  = overlay?.querySelector('.tl-stop-confirm-yes');
             if (yesBtn) {
                 yesBtn.disabled = true;
                 yesBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:.65rem;margin-right:4px;"></i>Stopping…';
@@ -1519,19 +1556,16 @@
                 });
 
                 if (res.ok) {
-                    // Remove the card immediately — it will vanish from tlRender on next tick anyway
                     const card = document.getElementById(`tl-card-${id}`);
                     if (card) {
                         card.style.transition = 'opacity .3s, transform .3s';
-                        card.style.opacity = '0';
-                        card.style.transform = 'scale(.95)';
+                        card.style.opacity    = '0';
+                        card.style.transform  = 'scale(.95)';
                         setTimeout(() => card.remove(), 320);
                     }
 
-                    // Mark as logged so the print modal fires correctly
                     tlMarkLogged(id);
 
-                    // Find the reservation object and trigger print modal
                     const r = allRes.find(r => String(r.id) === String(id));
                     if (r) {
                         setTimeout(() => {
@@ -1544,7 +1578,6 @@
                 } else {
                     const body = await res.json().catch(() => ({}));
                     tlToast('warning', 'Could not stop session', body.message || `Server returned ${res.status}.`);
-                    // Re-enable button and remove overlay on failure so admin can retry
                     tlCancelStop(id);
                 }
             } catch (err) {
@@ -1638,6 +1671,13 @@
                         card=document.createElement('div'); card.id=`tl-card-${r.id}`;
                         const sf=(r.start_time||'').substring(0,5)||'–', ef=(r.end_time||'').substring(0,5)||'–';
                         const logged=tlIsLogged(r.id);
+
+                        /*
+                         * FIX: Stop button now uses data-* attributes instead of
+                         * inline JSON.stringify() in the onclick, which breaks when
+                         * names/resources contain quotes or special characters.
+                         * Click is handled by the delegated listener above.
+                         */
                         card.className=`tl-session-card ${state}`;
                         card.innerHTML=`
                             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">
@@ -1655,7 +1695,10 @@
                                 <div style="display:flex;align-items:center;gap:6px;">
                                     <span class="tl-used-${r.id}" style="font-size:.65rem;font-weight:600;color:var(--text-muted);">${Math.max(0,Math.floor(elMs/60000))}m used</span>
                                     <button class="tl-stop-btn"
-                                            onclick="tlShowStopConfirm(${r.id}, ${JSON.stringify(name)}, ${JSON.stringify(res)})"
+                                            data-id="${r.id}"
+                                            data-name="${escHtml(name)}"
+                                            data-resource="${escHtml(res)}"
+                                            type="button"
                                             aria-label="Stop session for ${escHtml(name)}">
                                         <i class="fa-solid fa-stop" style="font-size:.55rem;" aria-hidden="true"></i>
                                         Stop
@@ -1665,8 +1708,7 @@
                             ${logged&&remMs<=0?`<div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check" style="font-size:.6rem;"></i>Logged</div>`:''}`;
                         grid.appendChild(card);
                     } else {
-                        // Card already exists — only update the live parts, don't touch the stop button
-                        // Skip update if the confirm overlay is showing (admin is deciding)
+                        // Only update live-changing parts; skip if confirm overlay is open
                         if (card.querySelector('.tl-stop-confirm')) return;
 
                         card.className=`tl-session-card ${state}`;
