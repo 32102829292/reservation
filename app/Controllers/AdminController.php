@@ -153,6 +153,12 @@ class AdminController extends Controller
         }
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  DASHBOARD
+    //  FIX: Removed ->limit(10) so ALL reservations reach the JS allRes
+    //       array — required for the live session monitor to detect active
+    //       sessions regardless of recency order.
+    // ═══════════════════════════════════════════════════════════════════════
     public function dashboard()
     {
         if (!session()->has('user_id')) {
@@ -162,12 +168,12 @@ class AdminController extends Controller
         $model = $this->reservationModel;
         $db    = $this->db;
 
+        // ── FIX: no ->limit() here — all rows needed for live session JS ──
         $reservations = $db->table('reservations r')
             ->select('r.*, res.name AS resource_name, u.name as visitor_name, u.email as user_email')
             ->join('resources res', 'res.id = r.resource_id', 'left')
             ->join('users u', 'u.id = r.user_id', 'left')
             ->orderBy('r.id', 'DESC')
-            ->limit(10)
             ->get()->getResultArray();
 
         $total    = $model->countAll();
@@ -293,40 +299,63 @@ class AdminController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  STOP SESSION — ends an active session immediately
+    //  STOP SESSION
+    //  FIX: Added existence check before update; returns success:true so
+    //       the JS res.ok (HTTP boolean) + JSON body are both correct.
+    //       Sets end_time = NOW() and logs the forced stop.
     // ═══════════════════════════════════════════════════════════════════════
     public function stopSession()
     {
         if (!session()->has('user_id')) {
             return $this->response->setStatusCode(401)
-                ->setJSON(['ok' => false, 'error' => 'Unauthorized']);
+                ->setJSON(['success' => false, 'message' => 'Unauthorized']);
         }
 
         $json = $this->request->getJSON(true) ?? [];
         $id   = (int)($json['reservation_id'] ?? 0);
 
         if (!$id) {
-            return $this->response->setJSON(['ok' => false, 'error' => 'Missing reservation_id']);
+            return $this->response->setStatusCode(400)
+                ->setJSON(['success' => false, 'message' => 'Missing reservation_id']);
         }
 
-        $now = date('H:i:s');
+        // Verify the reservation exists and is currently active
+        $reservation = $this->db->table('reservations')
+            ->where('id', $id)
+            ->get()->getRowArray();
+
+        if (!$reservation) {
+            return $this->response->setStatusCode(404)
+                ->setJSON(['success' => false, 'message' => 'Reservation not found']);
+        }
+
+        $now     = date('H:i:s');
+        $nowFull = date('Y-m-d H:i:s');
 
         try {
-            $updated = $this->reservationModel->update($id, [
-                'end_time'   => $now,
-                'updated_at' => date('Y-m-d H:i:s'),
+            $this->db->table('reservations')
+                ->where('id', $id)
+                ->update([
+                    'end_time'    => $now,
+                    'force_ended' => 1,
+                    'updated_at'  => $nowFull,
+                ]);
+
+            $this->logActivity(
+                'stop_session',
+                $id,
+                "Admin force-ended session #{$id} at {$now} (was: {$reservation['end_time']})"
+            );
+
+            return $this->response->setJSON([
+                'success'   => true,
+                'ended_at'  => $now,
             ]);
 
-            if (!$updated) {
-                return $this->response->setJSON(['ok' => false, 'error' => 'Reservation not found']);
-            }
-
-            $this->logActivity('stop_session', $id, "Manually ended session #$id at $now");
-
-            return $this->response->setJSON(['ok' => true, 'ended_at' => $now]);
         } catch (\Exception $e) {
             log_message('error', 'stopSession failed: ' . $e->getMessage());
-            return $this->response->setJSON(['ok' => false, 'error' => 'DB error: ' . $e->getMessage()]);
+            return $this->response->setStatusCode(500)
+                ->setJSON(['success' => false, 'message' => 'DB error: ' . $e->getMessage()]);
         }
     }
 
