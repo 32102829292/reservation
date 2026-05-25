@@ -309,27 +309,19 @@ class AdminController extends Controller
             return $this->response->setJSON(['ok' => false, 'error' => 'Missing reservation_id']);
         }
 
-        $reservation = $this->reservationModel->find($id);
-        if (!$reservation) {
-            return $this->response->setJSON(['ok' => false, 'error' => 'Reservation not found']);
-        }
-
         $now = date('H:i:s');
 
         try {
-            $this->reservationModel->update($id, [
+            $updated = $this->reservationModel->update($id, [
                 'end_time'   => $now,
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
 
-            $visitorName  = $reservation['visitor_name'] ?? 'Guest';
-            $resourceName = $reservation['resource_name'] ?? ('Resource #' . $reservation['resource_id']);
+            if (!$updated) {
+                return $this->response->setJSON(['ok' => false, 'error' => 'Reservation not found']);
+            }
 
-            $this->logActivity(
-                'stop_session',
-                $id,
-                "Manually ended session #$id for {$visitorName} ({$resourceName}) at $now"
-            );
+            $this->logActivity('stop_session', $id, "Manually ended session #$id at $now");
 
             return $this->response->setJSON(['ok' => true, 'ended_at' => $now]);
         } catch (\Exception $e) {
