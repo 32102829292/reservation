@@ -126,6 +126,7 @@ $routes->group('admin', ['filter' => 'role:chairman'], function($routes) {
     $routes->get('manage-pcs',            'AdminController::managePCs');
     $routes->post('add-pc',               'AdminController::addPC');
     $routes->post('update-pc-status',     'AdminController::updatePCStatus');
+    $routes->post('admin/sessions/stop', 'AdminController::stopSession');
     $routes->get('delete-pc/(:num)',      'AdminController::deletePC/$1');
     $routes->get('fix-missing-claims',    'AdminController::fixMissingClaims');
     $routes->get('check-guest-limit', 'AdminController::checkGuestLimit');

@@ -300,9 +300,9 @@ class AdminController extends Controller
 
     // ═══════════════════════════════════════════════════════════════════════
     //  STOP SESSION
-    //  FIX: Added existence check before update; returns success:true so
-    //       the JS res.ok (HTTP boolean) + JSON body are both correct.
-    //       Sets end_time = NOW() and logs the forced stop.
+    //  PostgreSQL-compatible: uses true instead of 1 for force_ended boolean.
+    //  Route: POST /admin/sessions/stop
+    //  Body (JSON): { reservation_id: int }
     // ═══════════════════════════════════════════════════════════════════════
     public function stopSession()
     {
@@ -319,7 +319,7 @@ class AdminController extends Controller
                 ->setJSON(['success' => false, 'message' => 'Missing reservation_id']);
         }
 
-        // Verify the reservation exists and is currently active
+        // Verify the reservation exists
         $reservation = $this->db->table('reservations')
             ->where('id', $id)
             ->get()->getRowArray();
@@ -337,7 +337,7 @@ class AdminController extends Controller
                 ->where('id', $id)
                 ->update([
                     'end_time'    => $now,
-                    'force_ended' => 1,
+                    'force_ended' => true,   // PostgreSQL BOOLEAN — not 1
                     'updated_at'  => $nowFull,
                 ]);
 
@@ -348,8 +348,8 @@ class AdminController extends Controller
             );
 
             return $this->response->setJSON([
-                'success'   => true,
-                'ended_at'  => $now,
+                'success'  => true,
+                'ended_at' => $now,
             ]);
 
         } catch (\Exception $e) {
