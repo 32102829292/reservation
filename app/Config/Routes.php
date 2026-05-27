@@ -130,7 +130,7 @@ $routes->group('admin', ['filter' => 'role:chairman'], function($routes) {
     // Resident Accounts
     $routes->get('residents-account',         'AdminController::residentAccounts');
     $routes->post('delete-resident',          'AdminController::deleteResident');
-    $routes->get('resident-accounts/export',  'AdminController::exportResidents');
+    $routes->get('residents-account/export',  'AdminController::exportResidents');
     $routes->get('delete-pc/(:num)',      'AdminController::deletePC/$1');
     $routes->get('fix-missing-claims',    'AdminController::fixMissingClaims');
     $routes->get('check-guest-limit', 'AdminController::checkGuestLimit');
