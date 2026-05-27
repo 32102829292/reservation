@@ -1,5 +1,5 @@
 <?php
-$page      = 'resident-accounts';
+$page      = 'residents-account';
 $adminName = $admin_name ?? session()->get('name') ?? 'Administrator';
 
 $total      = $total      ?? 0;
