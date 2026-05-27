@@ -1,23 +1,7 @@
-
 <?php
 /**
- * Admin Dashboard View — fully debugged + notification system fixed
- * FIX: modal time now shows 12h PHT format in readable font (not mono)
- * FIX: Calendar UI — taller cells, proper event pills, styled nav buttons
- * FIX: Chart mobile layout — grid-two responsive, doughnut fixed size
- * FIX: Stop Session button — z-index, pointer-events, safe onclick (no JSON.stringify in HTML attr)
- * FIX: StopSessionTrait compat — sends ended_at_ms, checks data.ok not just res.ok
- *
- * BACKEND:
- *   POST /admin/sessions/stop
- *   Body (JSON): { reservation_id: int, ended_at_ms: int }
- *   Handled by: StopSessionTrait::stopSession()
- *   Returns: { ok: true, actual_minutes: int, message: "..." }
- *          | { ok: false, error: "..." }
- *
- * DB columns required on `reservations`:
- *   session_ended_at        TIMESTAMP NULL
- *   actual_duration_minutes INT DEFAULT 0
+ * Admin Dashboard View
+ * FIX: Session cards now show actual stop time (session_ended_at) when force-stopped
  */
 ?>
 <!DOCTYPE html>
@@ -272,6 +256,22 @@
             border-color: rgba(239,68,68,.4);
         }
         .tl-stop-btn:active { transform: scale(.96); }
+
+        /* ── Stopped time pill ── */
+        .tl-stopped-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: rgba(239,68,68,.1);
+            color: #ef4444;
+            border: 1px solid rgba(239,68,68,.2);
+            border-radius: 6px;
+            font-size: .62rem;
+            font-weight: 700;
+            font-family: var(--font);
+            white-space: nowrap;
+        }
 
         .tl-stop-confirm {
             position: absolute;
@@ -1179,18 +1179,7 @@
         const allRes     = <?= json_encode($reservations, $JSON_FLAGS) ?>;
         const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         const PRINT_EP   = '/admin/log-print';
-
-        /*
-         * ══════════════════════════════════════════════════
-         * STOP SESSION ENDPOINT
-         * POST /admin/sessions/stop
-         * Handled by StopSessionTrait::stopSession()
-         * Body:     { reservation_id: int, ended_at_ms: int }
-         * Response: { ok: true, actual_minutes: int, message: "..." }
-         *         | { ok: false, error: "..." }
-         * ══════════════════════════════════════════════════
-         */
-        const STOP_EP = '/admin/sessions/stop';
+        const STOP_EP    = '/admin/sessions/stop';
 
         const INS = {
             hourArr:      <?= json_encode(array_values($insHourArr), $JSON_FLAGS) ?>,
@@ -1241,6 +1230,18 @@
             const ampm = h < 12 ? 'AM' : 'PM';
             h = h % 12 || 12;
             return `${h}:${m} ${ampm}`;
+        };
+
+        /**
+         * Format a timestamp (ISO string or ms) to 12h time, e.g. "2:34 PM"
+         */
+        const fmtStopTime = ts => {
+            if (!ts) return null;
+            try {
+                const d = new Date(ts);
+                if (isNaN(d)) return null;
+                return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            } catch(e) { return null; }
         };
 
         /* ══════ NOTIFICATIONS ══════ */
@@ -1464,11 +1465,7 @@
 
         /* ══════════════════════════════════════════
            STOP SESSION
-           - Sends ended_at_ms: Date.now() for StopSessionTrait
-           - Checks data.ok (trait response) not just res.ok (HTTP)
-           - Shows actual_minutes from trait in success toast
         ══════════════════════════════════════════ */
-
         document.addEventListener('click', function(e) {
             const stopBtn = e.target.closest('.tl-stop-btn');
             if (stopBtn) {
@@ -1537,21 +1534,21 @@
                 yesBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:.65rem;margin-right:4px;"></i>Stopping…';
             }
 
+            const stoppedAtMs = Date.now();
+
             try {
                 const res = await fetch(STOP_EP, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
                     body: JSON.stringify({
                         reservation_id: id,
-                        ended_at_ms:    Date.now()   // ← required by StopSessionTrait
+                        ended_at_ms:    stoppedAtMs
                     })
                 });
 
-                // Always parse JSON first — trait returns { ok, ... } regardless of HTTP status
                 const data = await res.json().catch(() => ({}));
 
                 if (res.ok && data.ok) {
-                    // ── Success path ──────────────────────────────────────
                     const card = document.getElementById(`tl-card-${id}`);
                     if (card) {
                         card.style.transition = 'opacity .3s, transform .3s';
@@ -1570,12 +1567,13 @@
                         }, 400);
                     }
 
-                    const mins = data.actual_minutes ?? null;
-                    const minsTxt = mins !== null ? ` · ${mins} min used` : '';
-                    tlToast('success', 'Session stopped', `Reservation #${id} ended.${minsTxt}`);
+                    const mins     = data.actual_minutes ?? null;
+                    const minsTxt  = mins !== null ? ` · ${mins} min used` : '';
+                    const stopTime = fmtStopTime(new Date(stoppedAtMs).toISOString());
+                    const timeTxt  = stopTime ? ` · Stopped at ${stopTime}` : '';
+                    tlToast('success', 'Session stopped', `Reservation #${id} ended.${minsTxt}${timeTxt}`);
 
                 } else {
-                    // ── Error path — trait may return 200 with ok:false ───
                     const errMsg = data.error || data.message || `Server returned ${res.status}.`;
                     tlToast('warning', 'Could not stop session', errMsg);
                     tlCancelStop(id);
@@ -1597,7 +1595,6 @@
                 if ((r.reservation_date||'').split('T')[0]!==today)  return false;
                 if ((r.status||'').toLowerCase()!=='approved')        return false;
                 if (!isClaimed(r)) return false;
-                // If already force-stopped, exclude from live grid
                 if (r.session_ended_at) return false;
                 const s = new Date(r.reservation_date.split('T')[0]+'T'+r.start_time).getTime();
                 const e = new Date(r.reservation_date.split('T')[0]+'T'+r.end_time).getTime();
@@ -1669,10 +1666,20 @@
                             if (!tlIsLogged(r.id)) { if (!tlCurrentPrint) setTimeout(()=>tlOpenPrintModal(r),1200); else tlPrintQueue.push(r); }
                         }
                     }
+
+                    /* ── Format scheduled end time and stopped time ── */
+                    const sf  = (r.start_time||'').substring(0,5)||'–';
+                    const ef  = (r.end_time  ||'').substring(0,5)||'–';
+                    const sfF = to12hPHT(r.start_time);
+                    const efF = to12hPHT(r.end_time);
+
+                    /* session_ended_at: actual stop time if force-stopped */
+                    const stoppedAt     = r.session_ended_at || null;
+                    const stoppedAtFmt  = stoppedAt ? fmtStopTime(stoppedAt) : null;
+
                     let card=document.getElementById(`tl-card-${r.id}`);
                     if (!card) {
                         card=document.createElement('div'); card.id=`tl-card-${r.id}`;
-                        const sf=(r.start_time||'').substring(0,5)||'–', ef=(r.end_time||'').substring(0,5)||'–';
                         const logged=tlIsLogged(r.id);
                         card.className=`tl-session-card ${state}`;
                         card.innerHTML=`
@@ -1686,8 +1693,18 @@
                                 </span>
                             </div>
                             <div class="tl-prog-track"><div class="tl-prog-fill" id="tl-pf-${r.id}" style="width:${prog}%"></div></div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:7px;">
-                                <span style="font-size:.65rem;color:var(--text-sub);font-family:var(--mono);">${escHtml(sf)}–${escHtml(ef)}</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:7px;flex-wrap:wrap;gap:4px;">
+                                <div style="display:flex;flex-direction:column;gap:2px;">
+                                    <span style="font-size:.65rem;color:var(--text-sub);font-family:var(--mono);">
+                                        <i class="fa-regular fa-clock" style="font-size:.55rem;margin-right:2px;opacity:.6;"></i>
+                                        ${escHtml(sfF)} – ${escHtml(efF)}
+                                    </span>
+                                    ${stoppedAtFmt ? `
+                                    <span class="tl-stopped-pill">
+                                        <i class="fa-solid fa-circle-stop" style="font-size:.55rem;"></i>
+                                        Stopped at ${escHtml(stoppedAtFmt)}
+                                    </span>` : ''}
+                                </div>
                                 <div style="display:flex;align-items:center;gap:6px;">
                                     <span class="tl-used-${r.id}" style="font-size:.65rem;font-weight:600;color:var(--text-muted);">${Math.max(0,Math.floor(elMs/60000))}m used</span>
                                     <button class="tl-stop-btn"

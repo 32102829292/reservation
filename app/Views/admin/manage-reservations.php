@@ -44,9 +44,6 @@ $statusIcons = [
     'unclaimed' => 'fa-ticket',
 ];
 
-/**
- * Resolve the display name — never falls back to "Guest".
- */
 function resolveResName(array $res): string {
     $vn = trim($res['visitor_name'] ?? '');
     if ($vn !== '') return $vn;
@@ -55,9 +52,6 @@ function resolveResName(array $res): string {
     return 'Unknown';
 }
 
-/**
- * Is this a walk-in (non-registered) visitor?
- */
 function isWalkIn(array $res): bool {
     $vt = strtolower(trim($res['visitor_type'] ?? ''));
     return $vt !== '' && $vt !== 'user';
@@ -289,6 +283,22 @@ $pendingCount = $counts['pending'];
         @keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
         .fade-up { animation: slideUp .4s ease both; }
 
+        /* ── Stopped-at pill in modal ── */
+        .stopped-at-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 5px;
+            padding: 3px 8px;
+            background: rgba(239,68,68,.1);
+            color: #ef4444;
+            border: 1px solid rgba(239,68,68,.2);
+            border-radius: 6px;
+            font-size: .62rem;
+            font-weight: 700;
+            font-family: var(--font);
+        }
+
         /* ── Dark mode ── */
         body.dark .stat-card          { background: #0b1628 !important; border-color: rgba(99,102,241,.15) !important; }
         body.dark .card               { background: #0b1628 !important; border-color: rgba(99,102,241,.1) !important; }
@@ -322,6 +332,7 @@ $pendingCount = $counts['pending'];
         body.dark .walkin-quota-strip .wq-icon.exceeded { background: rgba(220,38,38,.15) !important; }
         body.dark .visitor-role-badge.walkin { background: rgba(194,65,12,.15) !important; border-color: rgba(251,146,60,.3) !important; }
         body.dark .visitor-role-badge.registered { background: rgba(99,102,241,.15) !important; border-color: rgba(196,181,253,.3) !important; }
+        body.dark .stopped-at-pill    { background: rgba(239,68,68,.15) !important; border-color: rgba(239,68,68,.3) !important; }
     </style>
 </head>
 
@@ -336,7 +347,7 @@ $pendingCount = $counts['pending'];
         <?= csrf_field() ?><input type="hidden" name="id" id="declineId">
     </form>
 
-    <!-- DETAIL MODAL -->
+    <!-- ════════ DETAIL MODAL ════════ -->
     <div id="detailModal" class="overlay" role="dialog" aria-modal="true">
         <div class="overlay-bg" onclick="closeModal('detail')"></div>
         <div class="modal-box">
@@ -372,7 +383,7 @@ $pendingCount = $counts['pending'];
             </div>
 
             <div style="padding:0 24px 8px">
-                <!-- Requestor row with role badge -->
+                <!-- Requestor -->
                 <div class="drow">
                     <div class="dicon"><i class="fa-solid fa-user"></i></div>
                     <div style="flex:1;min-width:0">
@@ -382,33 +393,94 @@ $pendingCount = $counts['pending'];
                         <span id="dRoleBadge" class="visitor-role-badge" style="display:none"></span>
                     </div>
                 </div>
-                <div class="drow"><div class="dicon"><i class="fa-solid fa-desktop"></i></div><div><p class="dlabel">Resource</p><p id="dResource" class="dvalue"></p><p id="dPc" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
-                <div class="drow"><div class="dicon"><i class="fa-solid fa-calendar-day"></i></div><div><p class="dlabel">Schedule</p><p id="dDate" class="dvalue"></p><p id="dTime" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
-                <div class="drow"><div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div><div><p class="dlabel">Purpose</p><p id="dPurpose" class="dvalue"></p></div></div>
-                <div class="drow"><div class="dicon"><i class="fa-solid fa-id-badge"></i></div><div><p class="dlabel">Visitor Type</p><p id="dType" class="dvalue"></p></div></div>
+
+                <!-- Resource -->
+                <div class="drow">
+                    <div class="dicon"><i class="fa-solid fa-desktop"></i></div>
+                    <div>
+                        <p class="dlabel">Resource</p>
+                        <p id="dResource" class="dvalue"></p>
+                        <p id="dPc" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
+                    </div>
+                </div>
+
+                <!-- Schedule — includes force-stop time when present -->
+                <div class="drow">
+                    <div class="dicon"><i class="fa-solid fa-calendar-day"></i></div>
+                    <div>
+                        <p class="dlabel">Schedule</p>
+                        <p id="dDate" class="dvalue"></p>
+                        <p id="dTime" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
+                        <!-- Force-stop time — shown only when session was manually stopped -->
+                        <span id="dStoppedAt" class="stopped-at-pill" style="display:none;"></span>
+                    </div>
+                </div>
+
+                <!-- Purpose -->
+                <div class="drow">
+                    <div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div>
+                    <div>
+                        <p class="dlabel">Purpose</p>
+                        <p id="dPurpose" class="dvalue"></p>
+                    </div>
+                </div>
+
+                <!-- Visitor Type -->
+                <div class="drow">
+                    <div class="dicon"><i class="fa-solid fa-id-badge"></i></div>
+                    <div>
+                        <p class="dlabel">Visitor Type</p>
+                        <p id="dType" class="dvalue"></p>
+                    </div>
+                </div>
+
+                <!-- Approved/Declined By -->
                 <div class="drow" id="dApprovedByRow" style="display:none">
                     <div class="dicon" id="dApprovedByIcon"><i class="fa-solid fa-user-check"></i></div>
-                    <div><p class="dlabel" id="dApprovedByLabel">Approved By</p><p id="dApprovedByName" class="dvalue"></p><p id="dApprovedByEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p><p id="dApprovedAt" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div>
+                    <div>
+                        <p class="dlabel" id="dApprovedByLabel">Approved By</p>
+                        <p id="dApprovedByName" class="dvalue"></p>
+                        <p id="dApprovedByEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
+                        <p id="dApprovedAt" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
+                    </div>
                 </div>
-                <div class="drow"><div class="dicon"><i class="fa-regular fa-clock"></i></div><div><p class="dlabel">Submitted</p><p id="dCreated" class="dvalue"></p></div></div>
+
+                <!-- Submitted -->
+                <div class="drow">
+                    <div class="dicon"><i class="fa-regular fa-clock"></i></div>
+                    <div>
+                        <p class="dlabel">Submitted</p>
+                        <p id="dCreated" class="dvalue"></p>
+                    </div>
+                </div>
             </div>
 
+            <!-- QR ticket -->
             <div id="dQr" class="ticket-section" style="display:none;margin:0 24px 14px">
                 <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--text-sub);margin-bottom:12px">E-Ticket</p>
                 <canvas id="qrCanvas" style="border-radius:12px"></canvas>
                 <p id="dTicketCode" style="font-size:11px;color:var(--text-sub);font-family:monospace;margin-top:8px;text-align:center;word-break:break-all;padding:0 8px"></p>
                 <button onclick="downloadTicket()" style="margin-top:12px;display:flex;align-items:center;gap:8px;padding:8px 18px;background:var(--indigo);color:#fff;border-radius:10px;font-weight:800;font-size:12px;border:none;cursor:pointer;font-family:var(--font)"><i class="fa-solid fa-download" style="font-size:11px"></i> Download E-Ticket</button>
             </div>
+
+            <!-- Claimed indicator -->
             <div id="dClaimed" style="display:none;margin:0 24px 14px;background:#ede9fe;border:2px dashed #c4b5fd;border-radius:18px;padding:20px;text-align:center">
                 <i class="fa-solid fa-check-double" style="font-size:1.5rem;color:#7c3aed;display:block;margin-bottom:6px"></i>
                 <p style="font-weight:800;color:#7c3aed;font-size:13px">Ticket Already Claimed</p>
                 <p style="font-size:11px;color:#8b5cf6;margin-top:3px">This reservation has been used.</p>
             </div>
+
+            <!-- Print log strip (read-only, always shown when a log exists) -->
             <div id="dPrintLog" style="display:none;align-items:center;gap:12px;">
                 <div style="width:36px;height:36px;background:#dcfce7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-print" style="color:#16a34a;font-size:13px"></i></div>
-                <div style="flex:1;min-width:0"><p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:2px">Print Log</p><p id="dPrintText" style="font-size:13px;font-weight:700;"></p></div>
+                <div style="flex:1;min-width:0">
+                    <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:2px">Print Log</p>
+                    <p id="dPrintText" style="font-size:13px;font-weight:700;"></p>
+                </div>
                 <span id="dPrintBadge" style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:999px;flex-shrink:0"></span>
             </div>
+
+            <!-- Print log form — hidden for unclaimed reservations -->
             <div id="dPrintLogForm">
                 <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:12px;display:flex;align-items:center;gap:7px"><i class="fa-solid fa-print" style="color:var(--indigo)"></i> Log Print for this Reservation</p>
                 <div style="display:flex;align-items:flex-end;gap:10px">
@@ -420,6 +492,8 @@ $pendingCount = $counts['pending'];
                 </div>
                 <p id="printSaveMsg" style="font-size:12px;font-weight:700;margin-top:6px;min-height:18px;color:var(--text-sub)"></p>
             </div>
+
+            <!-- Actions -->
             <div id="dActions" style="padding:16px 24px;border-top:1px solid var(--border-subtle);display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"></div>
         </div>
     </div>
@@ -458,7 +532,7 @@ $pendingCount = $counts['pending'];
         </div>
     </div>
 
-    <!-- MAIN -->
+    <!-- ════════ MAIN ════════ -->
     <main class="main-area">
         <div class="fade-up">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px">
@@ -544,7 +618,7 @@ $pendingCount = $counts['pending'];
 
         <p id="resultCount" style="font-size:11px;font-weight:700;color:var(--text-sub);padding:0 4px;margin-bottom:12px"></p>
 
-        <!-- DESKTOP TABLE -->
+        <!-- ════════ DESKTOP TABLE ════════ -->
         <div class="tbl-wrap hidden-on-mobile fade-up">
             <table id="resTable">
                 <thead>
@@ -595,7 +669,37 @@ $pendingCount = $counts['pending'];
                             $roleLabel   = $resIsWalkIn ? 'Guest (Walk-in)' : 'Registered User';
                             $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
                             $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
-                            $mdata       = json_encode(['id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,'roleLabel'=>$roleLabel,'roleClass'=>$roleClass,'roleIcon'=>$roleIcon,'isWalkIn'=>$resIsWalkIn,'created'=>$created,'code'=>$code,'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt,'walkInQuota'=>$walkInQ]);
+                            $stoppedAt   = $res['session_ended_at'] ?? null;
+                            $mdata       = json_encode([
+                                'id'          => $res['id'],
+                                'status'      => $s,
+                                'name'        => $name,
+                                'email'       => $email,
+                                'resource'    => $resource,
+                                'pc'          => $pc,
+                                'date'        => $date,
+                                'rawDate'     => $rawDate,
+                                'start'       => $start,
+                                'end'         => $end,
+                                'purpose'     => $purpose,
+                                'type'        => $type,
+                                'roleLabel'   => $roleLabel,
+                                'roleClass'   => $roleClass,
+                                'roleIcon'    => $roleIcon,
+                                'isWalkIn'    => $resIsWalkIn,
+                                'created'     => $created,
+                                'code'        => $code,
+                                'claimed'     => $isClaimed,
+                                'unclaimed'   => $isUnclaimed,
+                                'approverName'  => $approverName,
+                                'approverEmail' => $approverEmail,
+                                'approvedAt'    => $approvedAt,
+                                'plPrinted'   => $plPrinted,
+                                'plPages'     => $plPages,
+                                'plAt'        => $plAt,
+                                'walkInQuota' => $walkInQ,
+                                'stoppedAt'   => $stoppedAt,
+                            ]);
                         ?>
                             <tr class="res-row"
                                 data-id="<?= $res['id'] ?>"
@@ -623,6 +727,14 @@ $pendingCount = $counts['pending'];
                                 <td>
                                     <p style="font-size:13px;font-weight:700;"><?= $date ?></p>
                                     <p style="font-size:11px;color:var(--indigo);font-weight:600;margin-top:2px"><?= $start ?> – <?= $end ?></p>
+                                    <?php if ($stoppedAt): ?>
+                                        <?php
+                                        $stoppedFmt = date('g:i A', strtotime($stoppedAt));
+                                        ?>
+                                        <p style="font-size:10px;font-weight:700;color:#ef4444;margin-top:3px;display:flex;align-items:center;gap:3px;">
+                                            <i class="fa-solid fa-circle-stop" style="font-size:.55rem;"></i> Stopped <?= $stoppedFmt ?>
+                                        </p>
+                                    <?php endif; ?>
                                 </td>
                                 <td><span style="font-size:12px;color:var(--text-muted);font-weight:500;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:130px"><?= $purpose ?></span></td>
                                 <td><span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?>" style="font-size:9px"></i><?= ucfirst($s) ?></span></td>
@@ -664,7 +776,7 @@ $pendingCount = $counts['pending'];
             </div>
         </div>
 
-        <!-- MOBILE CARDS -->
+        <!-- ════════ MOBILE CARDS ════════ -->
         <div id="mobileCardList" style="display:flex;flex-direction:column;gap:10px">
             <?php if (empty($processed)): ?>
                 <div class="empty-state"><i class="fa-solid fa-calendar-xmark" style="font-size:2rem;color:var(--border);display:block;margin-bottom:10px"></i><p style="font-weight:800;color:var(--text-sub)">No reservations yet</p></div>
@@ -700,7 +812,37 @@ $pendingCount = $counts['pending'];
                     $roleLabel   = $resIsWalkIn ? 'Guest (Walk-in)' : 'Registered User';
                     $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
                     $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
-                    $mdata       = json_encode(['id'=>$res['id'],'status'=>$s,'name'=>$name,'email'=>$email,'resource'=>$resource,'pc'=>$pc,'date'=>$date,'rawDate'=>$rawDate,'start'=>$start,'end'=>$end,'purpose'=>$purpose,'type'=>$type,'roleLabel'=>$roleLabel,'roleClass'=>$roleClass,'roleIcon'=>$roleIcon,'isWalkIn'=>$resIsWalkIn,'created'=>$created,'code'=>$code,'claimed'=>$isClaimed,'unclaimed'=>$isUnclaimed,'approverName'=>$approverName,'approverEmail'=>$approverEmail,'approvedAt'=>$approvedAt,'plPrinted'=>$plPrinted,'plPages'=>$plPages,'plAt'=>$plAt,'walkInQuota'=>$walkInQ]);
+                    $stoppedAt   = $res['session_ended_at'] ?? null;
+                    $mdata       = json_encode([
+                        'id'          => $res['id'],
+                        'status'      => $s,
+                        'name'        => $name,
+                        'email'       => $email,
+                        'resource'    => $resource,
+                        'pc'          => $pc,
+                        'date'        => $date,
+                        'rawDate'     => $rawDate,
+                        'start'       => $start,
+                        'end'         => $end,
+                        'purpose'     => $purpose,
+                        'type'        => $type,
+                        'roleLabel'   => $roleLabel,
+                        'roleClass'   => $roleClass,
+                        'roleIcon'    => $roleIcon,
+                        'isWalkIn'    => $resIsWalkIn,
+                        'created'     => $created,
+                        'code'        => $code,
+                        'claimed'     => $isClaimed,
+                        'unclaimed'   => $isUnclaimed,
+                        'approverName'  => $approverName,
+                        'approverEmail' => $approverEmail,
+                        'approvedAt'    => $approvedAt,
+                        'plPrinted'   => $plPrinted,
+                        'plPages'     => $plPages,
+                        'plAt'        => $plAt,
+                        'walkInQuota' => $walkInQ,
+                        'stoppedAt'   => $stoppedAt,
+                    ]);
                     $avatarBg = ['pending'=>'background:#fef3c7;color:#92400e','approved'=>'background:#dcfce7;color:#166534','claimed'=>'background:#ede9fe;color:#6b21a8','declined'=>'background:#fee2e2;color:#991b1b','canceled'=>'background:#fee2e2;color:#991b1b','expired'=>'background:#f1f5f9;color:#64748b','unclaimed'=>'background:#fff7ed;color:#c2410c'][$s] ?? 'background:#f1f5f9;color:#64748b';
                 ?>
                     <div class="res-card"
@@ -728,7 +870,17 @@ $pendingCount = $counts['pending'];
                         <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
                             <div style="flex:1;min-width:0">
                                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="fa-solid fa-desktop" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i><p style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $resource ?><?= $pc ? ' · '.$pc : '' ?></p></div>
-                                <div style="display:flex;align-items:center;gap:6px"><i class="fa-regular fa-calendar" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i><p style="font-size:11px;color:var(--text-muted);font-weight:600"><?= $date ?></p><span style="font-size:10px;color:var(--indigo);font-weight:700"><?= $start ?> – <?= $end ?></span></div>
+                                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                                    <i class="fa-regular fa-calendar" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i>
+                                    <p style="font-size:11px;color:var(--text-muted);font-weight:600"><?= $date ?></p>
+                                    <span style="font-size:10px;color:var(--indigo);font-weight:700"><?= $start ?> – <?= $end ?></span>
+                                    <?php if ($stoppedAt): ?>
+                                        <span style="font-size:10px;font-weight:700;color:#ef4444;display:inline-flex;align-items:center;gap:3px;">
+                                            <i class="fa-solid fa-circle-stop" style="font-size:.55rem;"></i>
+                                            Stopped <?= date('g:i A', strtotime($stoppedAt)) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                             <div class="card-print-pill" style="flex-shrink:0">
                                 <?php if ($plPrinted === true): ?><span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> <?= $plPages ?>pg</span>
@@ -794,89 +946,177 @@ $pendingCount = $counts['pending'];
         }
 
         async function savePrintLog() {
-            const rid = _currentReservationId, pages = parseInt(document.getElementById('printPagesInput').value,10)||0;
-            const btn = document.getElementById('savePrintBtn'), msg = document.getElementById('printSaveMsg');
-            if (!rid) { msg.textContent='No reservation selected.'; msg.style.color='#dc2626'; return; }
-            btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin" style="font-size:11px"></i> Saving…'; msg.textContent='';
-            const body=new FormData(); body.append(csrfName,csrfToken); body.append('reservation_id',rid); body.append('printed',pages>0?1:0); body.append('pages',pages);
+            const rid   = _currentReservationId;
+            const pages = parseInt(document.getElementById('printPagesInput').value, 10) || 0;
+            const btn   = document.getElementById('savePrintBtn');
+            const msg   = document.getElementById('printSaveMsg');
+            if (!rid) { msg.textContent = 'No reservation selected.'; msg.style.color = '#dc2626'; return; }
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:11px"></i> Saving…';
+            msg.textContent = '';
+            const body = new FormData();
+            body.append(csrfName, csrfToken);
+            body.append('reservation_id', rid);
+            body.append('printed', pages > 0 ? 1 : 0);
+            body.append('pages', pages);
             try {
-                const res=await fetch('<?= base_url('admin/log-print') ?>',{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'},body});
-                const text=await res.text(); let data;
-                try{data=JSON.parse(text);}catch{throw new Error(`Server error (${res.status})`);}
-                if(data.ok){
+                const res  = await fetch('<?= base_url('admin/log-print') ?>', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body });
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch { throw new Error(`Server error (${res.status})`); }
+                if (data.ok) {
                     refreshCsrf(data);
-                    const now=new Date(), fmt=now.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-                    printLogMap[rid]={printed:pages>0,pages,at:fmt};
-                    refreshPrintLogStrip(rid); refreshBothPrintCells(rid,pages);
-                    msg.textContent=pages>0?`✓ Saved — ${pages} page${pages!==1?'s':''} printed`:'✓ Saved — no printing logged'; msg.style.color='#16a34a';
-                    btn.innerHTML='<i class="fa-solid fa-check" style="font-size:11px"></i> Saved';
-                    setTimeout(()=>{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';},2000);
-                } else {throw new Error(data.error??'Unknown error');}
-            } catch(err){
-                msg.textContent='✗ Failed: '+err.message; msg.style.color='#dc2626';
-                btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
+                    const now = new Date();
+                    const fmt = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    printLogMap[rid] = { printed: pages > 0, pages, at: fmt };
+                    refreshPrintLogStrip(rid);
+                    refreshBothPrintCells(rid, pages);
+                    msg.textContent = pages > 0 ? `✓ Saved — ${pages} page${pages !== 1 ? 's' : ''} printed` : '✓ Saved — no printing logged';
+                    msg.style.color = '#16a34a';
+                    btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:11px"></i> Saved';
+                    setTimeout(() => { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save'; }, 2000);
+                } else { throw new Error(data.error ?? 'Unknown error'); }
+            } catch (err) {
+                msg.textContent = '✗ Failed: ' + err.message; msg.style.color = '#dc2626';
+                btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
             }
         }
 
         function refreshPrintLogStrip(rid) {
-            const plog=printLogMap[rid], logEl=document.getElementById('dPrintLog');
-            if(!plog){logEl.style.display='none';return;}
-            logEl.style.display='flex';
-            const logText=document.getElementById('dPrintText'), logBadge=document.getElementById('dPrintBadge');
-            if(plog.printed){logText.textContent=`Printed ${plog.pages} page${plog.pages!==1?'s':''}${plog.at?' · '+plog.at:''}`;logBadge.textContent=`${plog.pages}pg`;logBadge.style.cssText='background:#dcfce7;color:#16a34a';}
-            else{logText.textContent='No printing during this session';logBadge.textContent='No print';logBadge.style.cssText='background:#f1f5f9;color:#64748b';}
+            const plog  = printLogMap[rid];
+            const logEl = document.getElementById('dPrintLog');
+            if (!plog) { logEl.style.display = 'none'; return; }
+            logEl.style.display = 'flex';
+            const logText  = document.getElementById('dPrintText');
+            const logBadge = document.getElementById('dPrintBadge');
+            if (plog.printed) {
+                logText.textContent = `Printed ${plog.pages} page${plog.pages !== 1 ? 's' : ''}${plog.at ? ' · ' + plog.at : ''}`;
+                logBadge.textContent = `${plog.pages}pg`;
+                logBadge.style.cssText = 'background:#dcfce7;color:#16a34a';
+            } else {
+                logText.textContent = 'No printing during this session';
+                logBadge.textContent = 'No print';
+                logBadge.style.cssText = 'background:#f1f5f9;color:#64748b';
+            }
         }
 
-        function refreshBothPrintCells(rid,pages){
-            allTableRows.forEach(row=>{if(row.dataset.id==rid){const cell=row.cells[7];if(pages>0){cell.innerHTML=`<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`;row.dataset.plPrinted='Yes';row.dataset.plPages=pages;}else{cell.innerHTML=`<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;row.dataset.plPrinted='No';row.dataset.plPages='';}}}); 
-            allCards.forEach(card=>{if(card.dataset.id==rid){const w=card.querySelector('.card-print-pill');if(w){w.innerHTML=pages>0?`<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`:`<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;}card.dataset.plPrinted=pages>0?'Yes':'No';card.dataset.plPages=pages>0?pages:'';}});
+        function refreshBothPrintCells(rid, pages) {
+            allTableRows.forEach(row => {
+                if (row.dataset.id == rid) {
+                    const cell = row.cells[7];
+                    if (pages > 0) {
+                        cell.innerHTML = `<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`;
+                        row.dataset.plPrinted = 'Yes'; row.dataset.plPages = pages;
+                    } else {
+                        cell.innerHTML = `<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;
+                        row.dataset.plPrinted = 'No'; row.dataset.plPages = '';
+                    }
+                }
+            });
+            allCards.forEach(card => {
+                if (card.dataset.id == rid) {
+                    const w = card.querySelector('.card-print-pill');
+                    if (w) {
+                        w.innerHTML = pages > 0
+                            ? `<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`
+                            : `<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;
+                    }
+                    card.dataset.plPrinted = pages > 0 ? 'Yes' : 'No';
+                    card.dataset.plPages   = pages > 0 ? pages : '';
+                }
+            });
         }
 
-        function exportCSV(){
-            const visibleRows=allTableRows.filter(r=>r.style.display!=='none');
-            const headers=['ID','User Name','Email','Role','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
-            const escape=v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
-            const lines=[headers.map(escape).join(',')];
-            visibleRows.forEach(row=>{try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));lines.push([d.id??'',d.name??'',d.email??'',d.roleLabel??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));}catch(e){}});
-            const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
-            const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`admin-reservations-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
+        function exportCSV() {
+            const visibleRows = allTableRows.filter(r => r.style.display !== 'none');
+            const headers = ['ID','User Name','Email','Role','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Stopped At','Printed','Pages Printed','Submitted At'];
+            const escape  = v => { const s = String(v ?? ''); return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s; };
+            const lines   = [headers.map(escape).join(',')];
+            visibleRows.forEach(row => {
+                try {
+                    const d = JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/, '').replace(/\)$/, ''));
+                    lines.push([
+                        d.id ?? '', d.name ?? '', d.email ?? '', d.roleLabel ?? '',
+                        d.resource ?? '', d.pc ?? '', d.date ?? '', d.start ?? '', d.end ?? '',
+                        d.purpose ?? '', d.type ?? '', d.status ?? '',
+                        d.approverName ?? '', d.approvedAt ?? '',
+                        d.stoppedAt ?? '',
+                        row.dataset.plPrinted ?? '', row.dataset.plPages ?? '', d.created ?? ''
+                    ].map(escape).join(','));
+                } catch (e) {}
+            });
+            const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob), a = document.createElement('a');
+            a.href = url; a.download = `admin-reservations-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click(); URL.revokeObjectURL(url);
         }
 
-        function setTab(btn,tab){document.querySelectorAll('.qtab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');curTab=tab;syncCards(tab);applyFilters();}
-        function filterByStatus(tab){curTab=tab;document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));syncCards(tab);applyFilters();}
-        function syncCards(tab){document.querySelectorAll('[data-filter]').forEach(c=>c.classList.toggle('ring',c.dataset.filter===tab));}
+        function setTab(btn, tab) { document.querySelectorAll('.qtab').forEach(t => t.classList.remove('active')); btn.classList.add('active'); curTab = tab; syncCards(tab); applyFilters(); }
+        function filterByStatus(tab) { curTab = tab; document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab)); syncCards(tab); applyFilters(); }
+        function syncCards(tab) { document.querySelectorAll('[data-filter]').forEach(c => c.classList.toggle('ring', c.dataset.filter === tab)); }
 
-        function applyFilters(){
-            const q=document.getElementById('searchInput').value.toLowerCase().trim(), date=document.getElementById('dateInput').value;
-            const matchesFilters=el=>{let matchTab;if(curTab==='all')matchTab=true;else if(curTab==='declined')matchTab=['declined','canceled'].includes(el.dataset.status);else matchTab=el.dataset.status===curTab;return matchTab&&(!q||el.dataset.search.includes(q))&&(!date||el.dataset.date===date);};
-            let n=0; allTableRows.forEach(row=>{const show=matchesFilters(row);row.style.display=show?'':'none';if(show)n++;});
-            let m=0; allCards.forEach(card=>{const show=matchesFilters(card);card.style.display=show?'':'none';if(show)m++;});
-            if(allCards.length>0)document.getElementById('mobileEmpty').style.display=m===0?'block':'none';
-            const total=allTableRows.length;
-            document.getElementById('resultCount').textContent=`Showing ${n} of ${total} reservation${total!==1?'s':''}`;
-            document.getElementById('tableFooter').textContent=`${n} result${n!==1?'s':''} displayed`;
+        function applyFilters() {
+            const q    = document.getElementById('searchInput').value.toLowerCase().trim();
+            const date = document.getElementById('dateInput').value;
+            const matchesFilters = el => {
+                let matchTab;
+                if (curTab === 'all') matchTab = true;
+                else if (curTab === 'declined') matchTab = ['declined','canceled'].includes(el.dataset.status);
+                else matchTab = el.dataset.status === curTab;
+                return matchTab && (!q || el.dataset.search.includes(q)) && (!date || el.dataset.date === date);
+            };
+            let n = 0;
+            allTableRows.forEach(row => { const show = matchesFilters(row); row.style.display = show ? '' : 'none'; if (show) n++; });
+            let m = 0;
+            allCards.forEach(card => { const show = matchesFilters(card); card.style.display = show ? '' : 'none'; if (show) m++; });
+            if (allCards.length > 0) document.getElementById('mobileEmpty').style.display = m === 0 ? 'block' : 'none';
+            const total = allTableRows.length;
+            document.getElementById('resultCount').textContent  = `Showing ${n} of ${total} reservation${total !== 1 ? 's' : ''}`;
+            document.getElementById('tableFooter').textContent  = `${n} result${n !== 1 ? 's' : ''} displayed`;
         }
 
-        let sortDir={};
-        function sortTable(col){
-            sortDir[col]=!sortDir[col];
-            const tbody=document.getElementById('tableBody');
-            Array.from(tbody.querySelectorAll('.res-row')).sort((a,b)=>{const at=(a.cells[col]?.innerText??'').trim().toLowerCase(),bt=(b.cells[col]?.innerText??'').trim().toLowerCase();return sortDir[col]?at.localeCompare(bt):bt.localeCompare(at);}).forEach(r=>tbody.appendChild(r));
-            document.querySelectorAll('thead th').forEach((th,i)=>{th.classList.toggle('sorted',i===col);const ic=th.querySelector('.sort-icon');if(ic)ic.className=`fa-solid ${i===col?(sortDir[col]?'fa-sort-up':'fa-sort-down'):'fa-sort'} sort-icon`;});
+        let sortDir = {};
+        function sortTable(col) {
+            sortDir[col] = !sortDir[col];
+            const tbody = document.getElementById('tableBody');
+            Array.from(tbody.querySelectorAll('.res-row'))
+                .sort((a, b) => {
+                    const at = (a.cells[col]?.innerText ?? '').trim().toLowerCase();
+                    const bt = (b.cells[col]?.innerText ?? '').trim().toLowerCase();
+                    return sortDir[col] ? at.localeCompare(bt) : bt.localeCompare(at);
+                })
+                .forEach(r => tbody.appendChild(r));
+            document.querySelectorAll('thead th').forEach((th, i) => {
+                th.classList.toggle('sorted', i === col);
+                const ic = th.querySelector('.sort-icon');
+                if (ic) ic.className = `fa-solid ${i === col ? (sortDir[col] ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'} sort-icon`;
+            });
         }
 
-        const STATUS_META={
-            pending:{icon:'fa-clock',bg:'#fef3c7',color:'#92400e',label:'Pending — Awaiting approval'},
-            approved:{icon:'fa-circle-check',bg:'#dcfce7',color:'#166534',label:'Approved'},
-            claimed:{icon:'fa-check-double',bg:'#f3e8ff',color:'#6b21a8',label:'Claimed — Ticket used'},
-            declined:{icon:'fa-xmark-circle',bg:'#fee2e2',color:'#991b1b',label:'Declined'},
-            canceled:{icon:'fa-ban',bg:'#fee2e2',color:'#991b1b',label:'Cancelled'},
-            expired:{icon:'fa-hourglass-end',bg:'#f1f5f9',color:'#475569',label:'Expired — Was never approved'},
-            unclaimed:{icon:'fa-ticket',bg:'#fff7ed',color:'#c2410c',label:'Unclaimed — Approved but did not show up'},
+        const STATUS_META = {
+            pending:   { icon: 'fa-clock',         bg: '#fef3c7', color: '#92400e', label: 'Pending — Awaiting approval' },
+            approved:  { icon: 'fa-circle-check',  bg: '#dcfce7', color: '#166534', label: 'Approved' },
+            claimed:   { icon: 'fa-check-double',  bg: '#f3e8ff', color: '#6b21a8', label: 'Claimed — Ticket used' },
+            declined:  { icon: 'fa-xmark-circle',  bg: '#fee2e2', color: '#991b1b', label: 'Declined' },
+            canceled:  { icon: 'fa-ban',            bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
+            expired:   { icon: 'fa-hourglass-end', bg: '#f1f5f9', color: '#475569', label: 'Expired — Was never approved' },
+            unclaimed: { icon: 'fa-ticket',         bg: '#fff7ed', color: '#c2410c', label: 'Unclaimed — Approved but did not show up' },
         };
 
-        function openDetail(d){
+        /* ── Format an ISO/datetime string to "2:34 PM" ── */
+        function fmtStopTime(ts) {
+            if (!ts) return null;
+            try {
+                const d = new Date(ts);
+                if (isNaN(d)) return null;
+                return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            } catch (e) { return null; }
+        }
+
+        function openDetail(d) {
             _currentReservationId = d.id;
+
+            /* ── Reset print log form ── */
             const plog = printLogMap[d.id];
             document.getElementById('printPagesInput').value = plog ? (plog.printed ? plog.pages : 0) : 0;
             document.getElementById('printSaveMsg').textContent = '';
@@ -884,12 +1124,13 @@ $pendingCount = $counts['pending'];
             saveBtn.disabled = false;
             saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
 
+            /* ── Header ── */
             const m = STATUS_META[d.status] || STATUS_META.pending;
-            document.getElementById('dId').textContent       = 'Reservation #' + d.id;
-            document.getElementById('dName').textContent     = d.name;
-            document.getElementById('dEmail').textContent    = d.email;
+            document.getElementById('dId').textContent   = 'Reservation #' + d.id;
+            document.getElementById('dName').textContent = d.name;
+            document.getElementById('dEmail').textContent = d.email;
 
-            // Role badge
+            /* ── Role badge ── */
             const badge = document.getElementById('dRoleBadge');
             badge.style.display = 'inline-flex';
             badge.className = 'visitor-role-badge ' + (d.roleClass || 'registered');
@@ -897,17 +1138,32 @@ $pendingCount = $counts['pending'];
 
             document.getElementById('dResource').textContent = d.resource;
             document.getElementById('dPc').textContent       = d.pc ? 'PC: ' + d.pc : '';
-            document.getElementById('dDate').textContent     = d.date;
-            document.getElementById('dTime').textContent     = d.start + ' – ' + d.end;
-            document.getElementById('dPurpose').textContent  = d.purpose;
-            document.getElementById('dType').textContent     = d.type;
-            document.getElementById('dCreated').textContent  = d.created;
 
+            /* ── Schedule ── */
+            document.getElementById('dDate').textContent = d.date;
+            document.getElementById('dTime').textContent = d.start + ' – ' + d.end;
+
+            /* ── Force-stop time ── */
+            const stoppedEl  = document.getElementById('dStoppedAt');
+            const stoppedFmt = fmtStopTime(d.stoppedAt);
+            if (stoppedFmt) {
+                stoppedEl.style.display = 'inline-flex';
+                stoppedEl.innerHTML = `<i class="fa-solid fa-circle-stop" style="font-size:.6rem;"></i> Force-stopped at ${stoppedFmt}`;
+            } else {
+                stoppedEl.style.display = 'none';
+                stoppedEl.innerHTML = '';
+            }
+
+            document.getElementById('dPurpose').textContent = d.purpose;
+            document.getElementById('dType').textContent    = d.type;
+            document.getElementById('dCreated').textContent = d.created;
+
+            /* ── Status bar ── */
             const bar = document.getElementById('dStatusBar');
             bar.style.background = m.bg; bar.style.color = m.color;
             bar.innerHTML = `<i class="fa-solid ${m.icon}"></i> <span style="font-weight:700">${m.label}</span>`;
 
-            // Approver row
+            /* ── Approver row ── */
             const approverRow = document.getElementById('dApprovedByRow');
             if (d.approverName && ['approved','claimed','declined','expired','unclaimed'].includes(d.status)) {
                 approverRow.style.display = 'flex';
@@ -916,32 +1172,32 @@ $pendingCount = $counts['pending'];
                 const iconEl = document.getElementById('dApprovedByIcon');
                 iconEl.className = 'dicon';
                 iconEl.style.background = isDeclined ? '#fee2e2' : '#dcfce7';
-                iconEl.style.color = isDeclined ? '#dc2626' : '#16a34a';
+                iconEl.style.color      = isDeclined ? '#dc2626' : '#16a34a';
                 iconEl.innerHTML = `<i class="fa-solid ${isDeclined ? 'fa-user-xmark' : 'fa-user-check'}"></i>`;
                 document.getElementById('dApprovedByName').textContent  = d.approverName;
                 document.getElementById('dApprovedByEmail').textContent = d.approverEmail || '';
                 document.getElementById('dApprovedAt').textContent      = d.approvedAt ? `on ${d.approvedAt}` : '';
-            } else { approverRow.style.display = 'none'; }
+            } else {
+                approverRow.style.display = 'none';
+            }
 
+            /* ── Unclaimed banner ── */
             document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
 
-            // Walk-in quota strip
-            const quotaEl = document.getElementById('dWalkInQuota');
-            const dotsEl  = document.getElementById('wqDots');
-            const labelEl = document.getElementById('wqLabel');
-            const badgeEl = document.getElementById('wqBadge');
+            /* ── Walk-in quota strip ── */
+            const quotaEl  = document.getElementById('dWalkInQuota');
+            const dotsEl   = document.getElementById('wqDots');
+            const labelEl  = document.getElementById('wqLabel');
+            const badgeEl  = document.getElementById('wqBadge');
             const wqIconEl = document.getElementById('wqIcon');
             const q = d.walkInQuota ?? null;
-
             if (q && d.isWalkIn) {
                 quotaEl.classList.add('show');
                 dotsEl.innerHTML = '';
                 for (let i = 0; i < 3; i++) {
                     const dot = document.createElement('span');
                     dot.className = 'wq-dot';
-                    dot.style.background = i < q.used
-                        ? (!q.fair ? '#dc2626' : '#4338ca')
-                        : 'var(--border)';
+                    dot.style.background = i < q.used ? (!q.fair ? '#dc2626' : '#4338ca') : 'var(--border)';
                     dotsEl.appendChild(dot);
                 }
                 if (!q.fair) {
@@ -963,86 +1219,141 @@ $pendingCount = $counts['pending'];
                 quotaEl.classList.remove('show');
             }
 
-            // QR / claimed
-            const qrSec = document.getElementById('dQr'), clSec = document.getElementById('dClaimed');
+            /* ── QR / claimed indicator ── */
+            const qrSec = document.getElementById('dQr');
+            const clSec = document.getElementById('dClaimed');
             if (d.claimed || d.status === 'claimed') {
                 qrSec.style.display = 'none'; clSec.style.display = 'block';
             } else if (d.status === 'approved' || d.status === 'unclaimed') {
                 clSec.style.display = 'none'; qrSec.style.display = 'flex';
-                QRCode.toCanvas(document.getElementById('qrCanvas'), d.code, {width:150,margin:1,color:{dark:'#1e293b',light:'#ffffff'}});
+                QRCode.toCanvas(document.getElementById('qrCanvas'), d.code, { width: 150, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } });
                 document.getElementById('dTicketCode').textContent = d.code;
-            } else { qrSec.style.display = 'none'; clSec.style.display = 'none'; }
+            } else {
+                qrSec.style.display = 'none'; clSec.style.display = 'none';
+            }
 
+            /* ── Print log read-only strip ── */
             refreshPrintLogStrip(d.id);
 
+            /* ── Print log FORM: hide for unclaimed (they never showed up) ── */
+            document.getElementById('dPrintLogForm').style.display = d.unclaimed ? 'none' : 'block';
+
+            /* ── Action buttons ── */
             const acts = document.getElementById('dActions');
             if (d.status === 'pending') {
-                acts.innerHTML = `<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>`;
+                acts.innerHTML = `
+                    <button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve">
+                        <i class="fa-solid fa-check"></i> Approve
+                    </button>
+                    <button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline">
+                        <i class="fa-solid fa-xmark"></i> Decline
+                    </button>`;
             } else {
-                acts.innerHTML = `<button onclick="closeModal('detail')" class="btn-cancel" style="width:100%"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Close</button>`;
+                acts.innerHTML = `
+                    <button onclick="closeModal('detail')" class="btn-cancel" style="width:100%">
+                        <i class="fa-solid fa-xmark" style="font-size:11px"></i> Close
+                    </button>`;
             }
 
             document.getElementById('detailModal').classList.add('open');
             document.body.style.overflow = 'hidden';
         }
 
-        function downloadTicket(){const canvas=document.getElementById('qrCanvas'),code=document.getElementById('dTicketCode').textContent;const link=document.createElement('a');link.download=`E-Ticket-${code}.png`;link.href=canvas.toDataURL('image/png');link.click();}
-        function triggerApprove(id,name){approveTargetId=id;document.getElementById('approveConfirmName').textContent=name?`"${name}"`:'';openModal('approve');}
-        function triggerDecline(id,name){declineTargetId=id;document.getElementById('declineConfirmName').textContent=name?`"${name}"`:'';openModal('decline');}
-
-        document.getElementById('confirmApproveBtn').addEventListener('click',function(){if(!approveTargetId)return;this.disabled=true;this.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Approving…';document.getElementById('approveId').value=approveTargetId;document.getElementById('approveForm').submit();});
-        document.getElementById('confirmDeclineBtn').addEventListener('click',function(){if(!declineTargetId)return;this.disabled=true;this.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Declining…';document.getElementById('declineId').value=declineTargetId;document.getElementById('declineForm').submit();});
-
-        const modalIds={detail:'detailModal',approve:'approveModal',decline:'declineModal'};
-        function openModal(key){const el=document.getElementById(modalIds[key]);if(el){el.classList.add('open');document.body.style.overflow='hidden';}}
-        function closeModal(key){
-            const el=document.getElementById(modalIds[key]);if(el){el.classList.remove('open');}
-            const anyOpen=Object.values(modalIds).some(id=>document.getElementById(id)?.classList.contains('open'));
-            if(!anyOpen)document.body.style.overflow='';
-            if(key==='detail')_currentReservationId=null;
-            if(key==='approve'){const b=document.getElementById('confirmApproveBtn');b.disabled=false;b.innerHTML='<i class="fa-solid fa-check"></i> Approve';}
-            if(key==='decline'){const b=document.getElementById('confirmDeclineBtn');b.disabled=false;b.innerHTML='<i class="fa-solid fa-xmark"></i> Decline';}
+        function downloadTicket() {
+            const canvas = document.getElementById('qrCanvas');
+            const code   = document.getElementById('dTicketCode').textContent;
+            const link   = document.createElement('a');
+            link.download = `E-Ticket-${code}.png`;
+            link.href     = canvas.toDataURL('image/png');
+            link.click();
         }
-        document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('detail');closeModal('approve');closeModal('decline');}});
+
+        function triggerApprove(id, name) { approveTargetId = id; document.getElementById('approveConfirmName').textContent = name ? `"${name}"` : ''; openModal('approve'); }
+        function triggerDecline(id, name) { declineTargetId = id; document.getElementById('declineConfirmName').textContent = name ? `"${name}"` : ''; openModal('decline'); }
+
+        document.getElementById('confirmApproveBtn').addEventListener('click', function () {
+            if (!approveTargetId) return;
+            this.disabled = true;
+            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving…';
+            document.getElementById('approveId').value = approveTargetId;
+            document.getElementById('approveForm').submit();
+        });
+        document.getElementById('confirmDeclineBtn').addEventListener('click', function () {
+            if (!declineTargetId) return;
+            this.disabled = true;
+            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Declining…';
+            document.getElementById('declineId').value = declineTargetId;
+            document.getElementById('declineForm').submit();
+        });
+
+        const modalIds = { detail: 'detailModal', approve: 'approveModal', decline: 'declineModal' };
+        function openModal(key) { const el = document.getElementById(modalIds[key]); if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; } }
+        function closeModal(key) {
+            const el = document.getElementById(modalIds[key]); if (el) el.classList.remove('open');
+            const anyOpen = Object.values(modalIds).some(id => document.getElementById(id)?.classList.contains('open'));
+            if (!anyOpen) document.body.style.overflow = '';
+            if (key === 'detail') _currentReservationId = null;
+            if (key === 'approve') { const b = document.getElementById('confirmApproveBtn'); b.disabled = false; b.innerHTML = '<i class="fa-solid fa-check"></i> Approve'; }
+            if (key === 'decline') { const b = document.getElementById('confirmDeclineBtn'); b.disabled = false; b.innerHTML = '<i class="fa-solid fa-xmark"></i> Decline'; }
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('detail'); closeModal('approve'); closeModal('decline'); } });
 
         applyFilters();
 
-        /* Auto-refresh */
-        const AUTO_REFRESH_INTERVAL=30;
-        let autoRefreshTimer=null,countdownTimer=null,secondsLeft=AUTO_REFRESH_INTERVAL,refreshPaused=false;
-        const refreshIndicator=document.createElement('div');
-        refreshIndicator.id='autoRefreshIndicator';
-        refreshIndicator.style.cssText='position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,16px));right:16px;backdrop-filter:blur(8px);color:white;font-family:var(--font);font-size:11px;font-weight:700;padding:6px 12px;border-radius:999px;z-index:90;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(55,48,163,.3);cursor:pointer;background:rgba(55,48,163,.9);';
-        refreshIndicator.title='Click to refresh now';
-        refreshIndicator.innerHTML=`<span id="refreshDot" style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block"></span><span id="refreshCountdown">Refresh in ${AUTO_REFRESH_INTERVAL}s</span>`;
+        /* ── Auto-refresh ── */
+        const AUTO_REFRESH_INTERVAL = 30;
+        let autoRefreshTimer = null, countdownTimer = null, secondsLeft = AUTO_REFRESH_INTERVAL, refreshPaused = false;
+        const refreshIndicator = document.createElement('div');
+        refreshIndicator.id = 'autoRefreshIndicator';
+        refreshIndicator.style.cssText = 'position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,16px));right:16px;backdrop-filter:blur(8px);color:white;font-family:var(--font);font-size:11px;font-weight:700;padding:6px 12px;border-radius:999px;z-index:90;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(55,48,163,.3);cursor:pointer;background:rgba(55,48,163,.9);';
+        refreshIndicator.title = 'Click to refresh now';
+        refreshIndicator.innerHTML = `<span id="refreshDot" style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block"></span><span id="refreshCountdown">Refresh in ${AUTO_REFRESH_INTERVAL}s</span>`;
         document.body.appendChild(refreshIndicator);
-        refreshIndicator.addEventListener('click',()=>doAutoRefresh(true));
+        refreshIndicator.addEventListener('click', () => doAutoRefresh(true));
 
-        function updateCountdown(){const el=document.getElementById('refreshCountdown'),dot=document.getElementById('refreshDot');if(!el)return;if(refreshPaused){el.textContent='Refresh paused';dot.style.background='#fbbf24';}else{el.textContent=`Refresh in ${secondsLeft}s`;dot.style.background='#4ade80';}}
-        function startCountdown(){clearInterval(countdownTimer);secondsLeft=AUTO_REFRESH_INTERVAL;updateCountdown();countdownTimer=setInterval(()=>{if(!refreshPaused){secondsLeft--;if(secondsLeft<=0)secondsLeft=AUTO_REFRESH_INTERVAL;}updateCountdown();},1000);}
-
-        async function doAutoRefresh(force=false){
-            const anyOpen=document.querySelector('.overlay.open');if(anyOpen&&!force)return;
-            const search=document.getElementById('searchInput'),date=document.getElementById('dateInput');
-            if(!force&&(document.activeElement===search||document.activeElement===date))return;
-            try{
-                const dot=document.getElementById('refreshDot'),el=document.getElementById('refreshCountdown');
-                if(dot)dot.style.background='#818cf8';if(el)el.textContent='Refreshing…';
-                const response=await fetch(window.location.href,{headers:{'X-Requested-With':'XMLHttpRequest','Accept':'text/html'},credentials:'same-origin'});
-                if(!response.ok)throw new Error('HTTP '+response.status);
-                const html=await response.text(),parser=new DOMParser(),newDoc=parser.parseFromString(html,'text/html');
-                const newTbody=newDoc.querySelector('#tableBody'),oldTbody=document.querySelector('#tableBody');if(newTbody&&oldTbody)oldTbody.innerHTML=newTbody.innerHTML;
-                const newCards=newDoc.querySelector('#mobileCardList'),oldCards=document.querySelector('#mobileCardList');if(newCards&&oldCards)oldCards.innerHTML=newCards.innerHTML;
-                allTableRows.length=0;document.querySelectorAll('#tableBody .res-row').forEach(r=>allTableRows.push(r));
-                allCards.length=0;document.querySelectorAll('#mobileCardList .res-card').forEach(c=>allCards.push(c));
-                applyFilters();secondsLeft=AUTO_REFRESH_INTERVAL;updateCountdown();if(dot)dot.style.background='#4ade80';
-            }catch(err){console.warn('Auto-refresh failed:',err.message);const dot=document.getElementById('refreshDot');if(dot){dot.style.background='#f87171';setTimeout(()=>{if(dot)dot.style.background='#4ade80';},3000);}}
+        function updateCountdown() {
+            const el = document.getElementById('refreshCountdown'), dot = document.getElementById('refreshDot');
+            if (!el) return;
+            if (refreshPaused) { el.textContent = 'Refresh paused'; dot.style.background = '#fbbf24'; }
+            else { el.textContent = `Refresh in ${secondsLeft}s`; dot.style.background = '#4ade80'; }
+        }
+        function startCountdown() {
+            clearInterval(countdownTimer); secondsLeft = AUTO_REFRESH_INTERVAL; updateCountdown();
+            countdownTimer = setInterval(() => { if (!refreshPaused) { secondsLeft--; if (secondsLeft <= 0) secondsLeft = AUTO_REFRESH_INTERVAL; } updateCountdown(); }, 1000);
         }
 
-        const observer=new MutationObserver(()=>{refreshPaused=!!document.querySelector('.overlay.open');updateCountdown();});
-        document.querySelectorAll('.overlay').forEach(el=>observer.observe(el,{attributes:true,attributeFilter:['class']}));
-        ['searchInput','dateInput'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.addEventListener('focus',()=>{refreshPaused=true;updateCountdown();});el.addEventListener('blur',()=>{refreshPaused=!!document.querySelector('.overlay.open');updateCountdown();});});
-        autoRefreshTimer=setInterval(()=>doAutoRefresh(),AUTO_REFRESH_INTERVAL*1000);
+        async function doAutoRefresh(force = false) {
+            const anyOpen = document.querySelector('.overlay.open'); if (anyOpen && !force) return;
+            const search = document.getElementById('searchInput'), date = document.getElementById('dateInput');
+            if (!force && (document.activeElement === search || document.activeElement === date)) return;
+            try {
+                const dot = document.getElementById('refreshDot'), el = document.getElementById('refreshCountdown');
+                if (dot) dot.style.background = '#818cf8'; if (el) el.textContent = 'Refreshing…';
+                const response = await fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }, credentials: 'same-origin' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const html = await response.text(), parser = new DOMParser(), newDoc = parser.parseFromString(html, 'text/html');
+                const newTbody = newDoc.querySelector('#tableBody'), oldTbody = document.querySelector('#tableBody');
+                if (newTbody && oldTbody) oldTbody.innerHTML = newTbody.innerHTML;
+                const newCards = newDoc.querySelector('#mobileCardList'), oldCards = document.querySelector('#mobileCardList');
+                if (newCards && oldCards) oldCards.innerHTML = newCards.innerHTML;
+                allTableRows.length = 0; document.querySelectorAll('#tableBody .res-row').forEach(r => allTableRows.push(r));
+                allCards.length = 0; document.querySelectorAll('#mobileCardList .res-card').forEach(c => allCards.push(c));
+                applyFilters(); secondsLeft = AUTO_REFRESH_INTERVAL; updateCountdown(); if (dot) dot.style.background = '#4ade80';
+            } catch (err) {
+                console.warn('Auto-refresh failed:', err.message);
+                const dot = document.getElementById('refreshDot');
+                if (dot) { dot.style.background = '#f87171'; setTimeout(() => { if (dot) dot.style.background = '#4ade80'; }, 3000); }
+            }
+        }
+
+        const observer = new MutationObserver(() => { refreshPaused = !!document.querySelector('.overlay.open'); updateCountdown(); });
+        document.querySelectorAll('.overlay').forEach(el => observer.observe(el, { attributes: true, attributeFilter: ['class'] }));
+        ['searchInput','dateInput'].forEach(id => {
+            const el = document.getElementById(id); if (!el) return;
+            el.addEventListener('focus', () => { refreshPaused = true; updateCountdown(); });
+            el.addEventListener('blur',  () => { refreshPaused = !!document.querySelector('.overlay.open'); updateCountdown(); });
+        });
+        autoRefreshTimer = setInterval(() => doAutoRefresh(), AUTO_REFRESH_INTERVAL * 1000);
         startCountdown();
     </script>
 </body>
