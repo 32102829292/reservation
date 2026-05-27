@@ -37,25 +37,12 @@ $pendingSkCount = $pCount;
     <meta name="theme-color" content="#3730a3">
     <link rel="stylesheet" href="<?= base_url('css/admin_app.css') ?>">
     <style>
-        /* ══════════════════════════════
-           BASE
-        ══════════════════════════════ */
         .main-area { padding: 24px 20px 80px; }
         @media(max-width:639px) { .main-area { padding: 14px 12px 80px; } }
 
-        /* ══════════════════════════════
-           PAGE HEADER
-        ══════════════════════════════ */
-        .page-header {
-            display: flex; flex-direction: column; gap: 3px; margin-bottom: 20px;
-        }
-        .page-header-top {
-            display: flex; justify-content: space-between;
-            align-items: flex-start; gap: 12px; flex-wrap: wrap;
-        }
-        .topbar-right {
-            display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap;
-        }
+        .page-header { display: flex; flex-direction: column; gap: 3px; margin-bottom: 20px; }
+        .page-header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+        .topbar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
         .icon-btn {
             width: 44px; height: 44px; background: var(--card);
             border: 1px solid rgba(99,102,241,.12); border-radius: var(--r-sm);
@@ -68,9 +55,6 @@ $pendingSkCount = $pCount;
             .topbar-right { width: 100%; justify-content: flex-end; }
         }
 
-        /* ══════════════════════════════
-           STAT CARDS — responsive
-        ══════════════════════════════ */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0,1fr));
@@ -94,9 +78,6 @@ $pendingSkCount = $pCount;
             .stat-card { padding: 12px 14px; }
         }
 
-        /* ══════════════════════════════
-           FILTER CARD
-        ══════════════════════════════ */
         .card { background: var(--card); border-radius: var(--r-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
         .search-wrap { position: relative; }
         .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 12px; pointer-events: none; }
@@ -118,18 +99,12 @@ $pendingSkCount = $pCount;
         .qtab:hover { background: var(--input-bg); }
         .qtab.active { background: var(--indigo); color: #fff; border-color: var(--indigo); }
 
-        /* ══════════════════════════════
-           SK AVATAR
-        ══════════════════════════════ */
         .sk-avatar {
             width: 36px; height: 36px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             font-weight: 900; font-size: 14px; flex-shrink: 0;
         }
 
-        /* ══════════════════════════════
-           SK CARD (mobile)
-        ══════════════════════════════ */
         .sk-card {
             background: var(--card); border-radius: var(--r-lg);
             border: 1px solid var(--border); padding: 14px 16px;
@@ -137,9 +112,6 @@ $pendingSkCount = $pCount;
         }
         .sk-card:hover { border-color: var(--indigo-border); box-shadow: var(--shadow-md); transform: translateY(-1px); }
 
-        /* ══════════════════════════════
-           OVERLAY / MODAL
-        ══════════════════════════════ */
         .overlay {
             display: none; position: fixed; inset: 0;
             z-index: 300; align-items: center; justify-content: center;
@@ -165,9 +137,6 @@ $pendingSkCount = $pCount;
         .modal-box::-webkit-scrollbar { width: 4px; }
         .modal-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-        /* ══════════════════════════════
-           BUTTONS
-        ══════════════════════════════ */
         .btn-ghost {
             background: var(--input-bg-alt); color: var(--text-muted);
             border: none; border-radius: 9px; padding: 6px 10px;
@@ -177,15 +146,19 @@ $pendingSkCount = $pCount;
         }
         .btn-ghost:hover { background: var(--indigo-light); color: var(--indigo); }
 
-        /* ══════════════════════════════
-           SHOW / HIDE HELPERS
-        ══════════════════════════════ */
+        /* Delete button variant */
+        .btn-delete-sm {
+            background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5;
+            border-radius: 9px; padding: 6px 10px;
+            font-size: 11px; font-weight: 800; cursor: pointer;
+            font-family: var(--font); transition: all .15s;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .btn-delete-sm:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+
         @media(min-width:768px) { #mobileCardList, #mobileNoResults { display:none!important; } }
         @media(max-width:767px) { .hidden-on-mobile { display:none!important; } }
 
-        /* ══════════════════════════════
-           DARK MODE — unified palette
-        ══════════════════════════════ */
         body.dark .stat-card { background: var(--card); border-color: rgba(99,102,241,.15); }
         body.dark .card { background: var(--card); border-color: rgba(99,102,241,.1); }
         body.dark .sk-card { background: var(--card); border-color: rgba(99,102,241,.1); }
@@ -196,6 +169,8 @@ $pendingSkCount = $pCount;
         body.dark .modal-box { background: var(--card); }
         body.dark .btn-ghost { background: var(--input-bg); color: #7fb3e8; }
         body.dark .btn-ghost:hover { background: rgba(99,102,241,.18); color: #a5b4fc; }
+        body.dark .btn-delete-sm { background: rgba(220,38,38,.15); color: #f87171; border-color: rgba(220,38,38,.3); }
+        body.dark .btn-delete-sm:hover { background: #dc2626; color: #fff; }
         body.dark .page-eyebrow { color:#4a6fa5; }
         body.dark .page-title   { color:#e2eaf8; }
         body.dark .page-sub     { color:#4a6fa5; }
@@ -210,10 +185,14 @@ $pendingSkCount = $pCount;
 <body>
     <?php include APPPATH . 'Views/partials/admin_layout.php'; ?>
 
+    <!-- Hidden forms -->
     <form id="approveForm" method="POST" action="/admin/approve-sk" style="display:none"><?= csrf_field() ?><input type="hidden" name="id" id="approveId"></form>
     <form id="rejectForm"  method="POST" action="/admin/reject-sk"  style="display:none"><?= csrf_field() ?><input type="hidden" name="id" id="rejectId"></form>
+    <form id="deleteForm"  method="POST" action="/admin/delete-sk"  style="display:none"><?= csrf_field() ?><input type="hidden" name="id" id="deleteId"></form>
 
-    <!-- DETAIL MODAL -->
+    <!-- ══════════════════════════════════════════════════════════
+         DETAIL MODAL
+    ══════════════════════════════════════════════════════════ -->
     <div id="detailModal" class="overlay" role="dialog" aria-modal="true">
         <div class="overlay-bg" onclick="closeModal('detail')"></div>
         <div class="modal-box">
@@ -233,11 +212,13 @@ $pendingSkCount = $pCount;
                 <div class="drow"><div class="dicon"><i class="fa-regular fa-calendar"></i></div><div><p class="dlabel">Applied</p><p id="dDate" class="dvalue"></p></div></div>
                 <div class="drow"><div class="dicon"><i class="fa-solid fa-shield-check"></i></div><div><p class="dlabel">Email Verified</p><p id="dVerified" class="dvalue"></p></div></div>
             </div>
-            <div id="dActions" style="padding:16px 20px;border-top:1px solid var(--border-subtle);display:flex;gap:10px;margin-top:8px"></div>
+            <div id="dActions" style="padding:16px 20px;border-top:1px solid var(--border-subtle);display:flex;gap:10px;margin-top:8px;flex-wrap:wrap"></div>
         </div>
     </div>
 
-    <!-- Approve confirm -->
+    <!-- ══════════════════════════════════════════════════════════
+         APPROVE CONFIRM MODAL
+    ══════════════════════════════════════════════════════════ -->
     <div id="approveModal" class="overlay">
         <div class="overlay-bg" onclick="closeModal('approve')"></div>
         <div class="modal-box sm">
@@ -255,7 +236,9 @@ $pendingSkCount = $pCount;
         </div>
     </div>
 
-    <!-- Reject confirm -->
+    <!-- ══════════════════════════════════════════════════════════
+         REJECT CONFIRM MODAL
+    ══════════════════════════════════════════════════════════ -->
     <div id="rejectModal" class="overlay">
         <div class="overlay-bg" onclick="closeModal('reject')"></div>
         <div class="modal-box sm">
@@ -273,6 +256,36 @@ $pendingSkCount = $pCount;
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════════════════════════
+         DELETE CONFIRM MODAL
+    ══════════════════════════════════════════════════════════ -->
+    <div id="deleteModal" class="overlay">
+        <div class="overlay-bg" onclick="closeModal('delete')"></div>
+        <div class="modal-box sm">
+            <div class="sheet-handle"></div>
+            <div style="padding:24px 24px 20px;text-align:center">
+                <div style="width:64px;height:64px;background:#fee2e2;color:#dc2626;border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem">
+                    <i class="fa-solid fa-trash-can"></i>
+                </div>
+                <h3 style="font-size:18px;font-weight:800;">Delete SK Account?</h3>
+                <p style="color:var(--text-sub);font-size:13px;margin-top:4px;font-weight:500">
+                    This will <strong>permanently remove</strong> the account and all associated data. This cannot be undone.
+                </p>
+                <p id="deleteConfirmName" style="font-size:13px;margin-top:10px;font-weight:800;color:#dc2626"></p>
+            </div>
+            <div style="padding:0 24px 24px;display:flex;gap:10px">
+                <button class="btn-cancel" onclick="closeModal('delete')">
+                    <i class="fa-solid fa-xmark" style="font-size:11px"></i> Cancel
+                </button>
+                <button id="confirmDeleteBtn"
+                    onclick="submitDelete()"
+                    style="flex:1;height:40px;border-radius:12px;background:#dc2626;color:#fff;border:none;font-weight:800;font-size:13px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s">
+                    <i class="fa-solid fa-trash-can"></i> Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+
     <main class="main-area">
         <!-- Header -->
         <header class="page-header fade-up">
@@ -286,6 +299,14 @@ $pendingSkCount = $pCount;
                     <div class="icon-btn" onclick="adminToggleDark()">
                         <span id="darkIcon"><i class="fa-regular fa-sun"></i></span>
                     </div>
+                    <!-- Link to Resident Accounts -->
+                    <a href="/admin/resident-accounts"
+                        style="display:flex;align-items:center;gap:7px;background:var(--indigo-light);border:1px solid var(--indigo-border);color:var(--indigo);padding:9px 14px;border-radius:var(--r-sm);font-weight:700;font-size:12px;flex-shrink:0;text-decoration:none;transition:all .15s"
+                        onmouseover="this.style.background='var(--indigo)';this.style.color='#fff'"
+                        onmouseout="this.style.background='var(--indigo-light)';this.style.color='var(--indigo)'">
+                        <i class="fa-solid fa-users" style="font-size:11px"></i>
+                        View Residents
+                    </a>
                     <?php if ($pCount > 0): ?>
                         <div style="display:flex;align-items:center;gap:7px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:9px 14px;border-radius:var(--r-sm);font-weight:700;font-size:12px;flex-shrink:0">
                             <i class="fa-solid fa-clock" style="font-size:11px"></i>
@@ -296,7 +317,7 @@ $pendingSkCount = $pCount;
             </div>
         </header>
 
-        <!-- Stat cards — 2-col on mobile, 4-col on desktop -->
+        <!-- Stat cards -->
         <div class="stats-grid fade-up">
             <?php foreach ([
                 ['Total',    $total,  '#3730a3','fa-users',      'all'],
@@ -322,7 +343,6 @@ $pendingSkCount = $pCount;
                     <input id="searchInput" type="text" placeholder="Search by name or email…" class="search-input" oninput="applyFilter()">
                 </div>
             </div>
-            <!-- Tabs — scrollable on mobile -->
             <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch">
                 <button class="qtab active" data-tab="all"      onclick="switchToTab('all')"><i class="fa-solid fa-users" style="font-size:11px"></i> All <span style="font-size:9px;font-weight:800;opacity:.7"><?= $total ?></span></button>
                 <button class="qtab" data-tab="pending"  onclick="switchToTab('pending')"><i class="fa-solid fa-clock" style="font-size:11px"></i> Pending<?php if($pCount>0):?><span style="background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;"><?=$pCount?></span><?php endif;?></button>
@@ -333,7 +353,9 @@ $pendingSkCount = $pCount;
 
         <p id="resultCount" style="font-size:11px;font-weight:700;color:var(--text-sub);padding:0 4px;margin-bottom:10px"></p>
 
-        <!-- DESKTOP TABLE -->
+        <!-- ══════════════════════════════════════════════════════════
+             DESKTOP TABLE
+        ══════════════════════════════════════════════════════════ -->
         <div class="tbl-wrap hidden-on-mobile fade-up">
             <table>
                 <thead>
@@ -343,7 +365,7 @@ $pendingSkCount = $pCount;
                         <th>Email</th>
                         <th>Applied</th>
                         <th>Status</th>
-                        <th style="text-align:right;width:190px">Actions</th>
+                        <th style="text-align:right;width:230px">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="skTableBody">
@@ -380,11 +402,20 @@ $pendingSkCount = $pCount;
                                 <td><span class="badge badge-<?=$s?>"><i class="fa-solid <?=$sIcon[$s]??'fa-circle'?>" style="font-size:9px"></i> <?=ucfirst($s)?></span></td>
                                 <td style="text-align:right">
                                     <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap">
-                                        <button onclick='openDetail(<?=htmlspecialchars($mdata,ENT_QUOTES)?>)' class="btn-ghost"><i class="fa-solid fa-eye" style="font-size:10px"></i> View</button>
+                                        <button onclick='openDetail(<?=htmlspecialchars($mdata,ENT_QUOTES)?>)' class="btn-ghost">
+                                            <i class="fa-solid fa-eye" style="font-size:10px"></i> View
+                                        </button>
                                         <?php if($s==='pending'): ?>
-                                            <button onclick="triggerApprove(<?=$sk['id']?>,'<?=addslashes($name)?>')" class="btn-approve-sm"><i class="fa-solid fa-check" style="font-size:10px"></i> Approve</button>
-                                            <button onclick="triggerReject(<?=$sk['id']?>,'<?=addslashes($name)?>')" class="btn-reject-sm"><i class="fa-solid fa-xmark" style="font-size:10px"></i></button>
+                                            <button onclick="triggerApprove(<?=$sk['id']?>,'<?=addslashes($name)?>')" class="btn-approve-sm">
+                                                <i class="fa-solid fa-check" style="font-size:10px"></i> Approve
+                                            </button>
+                                            <button onclick="triggerReject(<?=$sk['id']?>,'<?=addslashes($name)?>')" class="btn-reject-sm">
+                                                <i class="fa-solid fa-xmark" style="font-size:10px"></i>
+                                            </button>
                                         <?php endif; ?>
+                                        <button onclick="triggerDelete(<?=$sk['id']?>,'<?=addslashes($name)?>')" class="btn-delete-sm">
+                                            <i class="fa-solid fa-trash-can" style="font-size:10px"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -398,7 +429,9 @@ $pendingSkCount = $pCount;
             </div>
         </div>
 
-        <!-- MOBILE CARDS -->
+        <!-- ══════════════════════════════════════════════════════════
+             MOBILE CARDS
+        ══════════════════════════════════════════════════════════ -->
         <div id="mobileCardList" style="display:flex;flex-direction:column;gap:10px">
             <?php if (empty($allMerged)): ?>
                 <div class="empty-state">
@@ -434,8 +467,8 @@ $pendingSkCount = $pCount;
                         <p style="font-size:11px;color:var(--text-sub);font-weight:600;margin-bottom:10px">
                             <i class="fa-regular fa-calendar" style="font-size:10px;margin-right:4px"></i>Applied <?=$date?>
                         </p>
-                        <?php if($s==='pending'): ?>
-                            <div style="display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border-subtle)" onclick="event.stopPropagation()">
+                        <div style="display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border-subtle)" onclick="event.stopPropagation()">
+                            <?php if($s==='pending'): ?>
                                 <button onclick="triggerApprove(<?=$sk['id']?>,'<?=addslashes($name)?>')"
                                     style="flex:1;height:36px;border-radius:10px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:5px">
                                     <i class="fa-solid fa-check" style="font-size:10px"></i> Approve
@@ -444,12 +477,14 @@ $pendingSkCount = $pCount;
                                     style="flex:1;height:36px;border-radius:10px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:5px">
                                     <i class="fa-solid fa-xmark" style="font-size:10px"></i> Reject
                                 </button>
-                            </div>
-                        <?php else: ?>
-                            <div style="padding-top:8px;border-top:1px solid var(--border-subtle)">
-                                <p style="font-size:10px;font-weight:800;color:var(--border);font-family:monospace">#<?=$sk['id']?></p>
-                            </div>
-                        <?php endif; ?>
+                            <?php else: ?>
+                                <p style="font-size:10px;font-weight:800;color:var(--border);font-family:monospace;flex:1">#<?=$sk['id']?></p>
+                            <?php endif; ?>
+                            <button onclick="triggerDelete(<?=$sk['id']?>,'<?=addslashes($name)?>')"
+                                style="height:36px;padding:0 12px;border-radius:10px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:5px">
+                                <i class="fa-solid fa-trash-can" style="font-size:10px"></i>
+                            </button>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -463,7 +498,7 @@ $pendingSkCount = $pCount;
 
     <script>
         let curTab = 'all';
-        let approveTargetId = null, rejectTargetId = null;
+        let approveTargetId = null, rejectTargetId = null, deleteTargetId = null;
         const allTableRows   = Array.from(document.querySelectorAll('.sk-row'));
         const allMobileCards = Array.from(document.querySelectorAll('.mobile-sk-card'));
 
@@ -511,38 +546,84 @@ $pendingSkCount = $pCount;
             document.getElementById('dPhone').textContent    = d.phone;
             document.getElementById('dDate').textContent     = d.date;
             document.getElementById('dVerified').textContent = d.verified === 'Yes' ? '✓ Verified' : '✗ Not verified';
+
             const acts = document.getElementById('dActions');
+            let html = '';
             if (d.status === 'pending') {
-                acts.innerHTML = `
-                    <button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button>
-                    <button onclick="triggerReject(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-reject"><i class="fa-solid fa-xmark"></i> Reject</button>`;
+                html += `<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button>`;
+                html += `<button onclick="triggerReject(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-reject"><i class="fa-solid fa-xmark"></i> Reject</button>`;
             } else {
-                acts.innerHTML = `<button onclick="closeModal('detail')" class="btn-cancel" style="width:100%"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Close</button>`;
+                html += `<button onclick="closeModal('detail')" class="btn-cancel" style="flex:1"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Close</button>`;
             }
+            // Delete button always present
+            html += `<button onclick="triggerDelete(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');"
+                style="height:40px;padding:0 16px;border-radius:12px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;white-space:nowrap">
+                <i class="fa-solid fa-trash-can" style="font-size:11px"></i> Delete
+            </button>`;
+            acts.innerHTML = html;
+
             document.getElementById('detailModal').classList.add('open');
             document.body.style.overflow = 'hidden';
         }
 
-        function triggerApprove(id,name){ approveTargetId=id; document.getElementById('approveConfirmName').textContent=name?`"${name}"`:''; openModal('approve'); }
-        function triggerReject(id,name) { rejectTargetId=id;  document.getElementById('rejectConfirmName').textContent=name?`"${name}"`:'';  openModal('reject'); }
-
+        /* ── Approve ── */
+        function triggerApprove(id, name) {
+            approveTargetId = id;
+            document.getElementById('approveConfirmName').textContent = name ? `"${name}"` : '';
+            openModal('approve');
+        }
         function submitApprove() {
-            const b=document.getElementById('confirmApproveBtn'); b.disabled=true; b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Approving…';
-            document.getElementById('approveId').value=approveTargetId; document.getElementById('approveForm').submit();
+            const b = document.getElementById('confirmApproveBtn');
+            b.disabled = true; b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving…';
+            document.getElementById('approveId').value = approveTargetId;
+            document.getElementById('approveForm').submit();
+        }
+
+        /* ── Reject ── */
+        function triggerReject(id, name) {
+            rejectTargetId = id;
+            document.getElementById('rejectConfirmName').textContent = name ? `"${name}"` : '';
+            openModal('reject');
         }
         function submitReject() {
-            const b=document.getElementById('confirmRejectBtn'); b.disabled=true; b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Rejecting…';
-            document.getElementById('rejectId').value=rejectTargetId; document.getElementById('rejectForm').submit();
+            const b = document.getElementById('confirmRejectBtn');
+            b.disabled = true; b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Rejecting…';
+            document.getElementById('rejectId').value = rejectTargetId;
+            document.getElementById('rejectForm').submit();
         }
 
-        const overlayIds = { detail:'detailModal', approve:'approveModal', reject:'rejectModal' };
-        function openModal(key)  { const el=document.getElementById(overlayIds[key]); if(el){el.classList.add('open');document.body.style.overflow='hidden';} }
-        function closeModal(key) {
-            const el=document.getElementById(overlayIds[key]); if(el){el.classList.remove('open');document.body.style.overflow='';}
-            if(key==='approve'){const b=document.getElementById('confirmApproveBtn');if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-check"></i> Approve';}}
-            if(key==='reject') {const b=document.getElementById('confirmRejectBtn'); if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-xmark"></i> Reject';}}
+        /* ── Delete ── */
+        function triggerDelete(id, name) {
+            deleteTargetId = id;
+            document.getElementById('deleteConfirmName').textContent = name ? `"${name}"` : '';
+            openModal('delete');
         }
-        document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeModal('detail');closeModal('approve');closeModal('reject');} });
+        function submitDelete() {
+            const b = document.getElementById('confirmDeleteBtn');
+            b.disabled = true; b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting…';
+            document.getElementById('deleteId').value = deleteTargetId;
+            document.getElementById('deleteForm').submit();
+        }
+
+        /* ── Modal helpers ── */
+        const overlayIds = { detail:'detailModal', approve:'approveModal', reject:'rejectModal', delete:'deleteModal' };
+        function openModal(key) {
+            const el = document.getElementById(overlayIds[key]);
+            if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; }
+        }
+        function closeModal(key) {
+            const el = document.getElementById(overlayIds[key]);
+            if (el) { el.classList.remove('open'); document.body.style.overflow = ''; }
+            if (key === 'approve') { const b = document.getElementById('confirmApproveBtn'); if(b){ b.disabled=false; b.innerHTML='<i class="fa-solid fa-check"></i> Approve'; } }
+            if (key === 'reject')  { const b = document.getElementById('confirmRejectBtn');  if(b){ b.disabled=false; b.innerHTML='<i class="fa-solid fa-xmark"></i> Reject'; } }
+            if (key === 'delete')  { const b = document.getElementById('confirmDeleteBtn');  if(b){ b.disabled=false; b.innerHTML='<i class="fa-solid fa-trash-can"></i> Delete Permanently'; } }
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeModal('detail'); closeModal('approve'); closeModal('reject'); closeModal('delete');
+            }
+        });
+
         applyFilter();
     </script>
 </body>
