@@ -1,0 +1,87 @@
+CRITICAL - 2026-01-21 12:01:23 --> ErrorException: Undefined array key "is_approved"
+[Method: POST, Route: login-action]
+in APPPATH\Controllers\AuthController.php on line 32.
+ 1 APPPATH\Controllers\AuthController.php(32): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "is_approved"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Controllers\\AuthController.php', 32)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-21 12:01:37 --> ErrorException: Undefined array key "is_approved"
+[Method: POST, Route: login-action]
+in APPPATH\Controllers\AuthController.php on line 32.
+ 1 APPPATH\Controllers\AuthController.php(32): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "is_approved"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Controllers\\AuthController.php', 32)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-21 12:11:01 --> ErrorException: Undefined array key "is_approved"
+[Method: POST, Route: login-action]
+in APPPATH\Controllers\AuthController.php on line 32.
+ 1 APPPATH\Controllers\AuthController.php(32): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "is_approved"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Controllers\\AuthController.php', 32)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-21 12:11:16 --> ErrorException: Undefined array key "is_approved"
+[Method: POST, Route: login-action]
+in APPPATH\Controllers\AuthController.php on line 32.
+ 1 APPPATH\Controllers\AuthController.php(32): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "is_approved"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Controllers\\AuthController.php', 32)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-01-21 12:55:35 --> mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `us...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `us...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `us...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1841): CodeIgniter\Database\BaseConnection->query('INSERT INTO `us...', NULL, false)
+#4 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2230): CodeIgniter\Database\BaseBuilder->batchExecute('_insertBatch', 100)
+#5 C:\xamp\htdocs\reservation_ci\app\Database\Seeds\InitSeeder.php(37): CodeIgniter\Database\BaseBuilder->insertBatch(Array)
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\Seeder.php(149): App\Database\Seeds\InitSeeder->run()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Commands\Database\Seed.php(79): CodeIgniter\Database\Seeder->call('App\\Database\\Se...')
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Seed->run(Array)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('db:seed', Array)
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xamp\htdocs\reservation_ci\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+ERROR - 2026-01-21 12:56:25 --> mysqli_sql_exception: Duplicate entry 'chairman@example.com' for key 'email' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `us...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `us...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `us...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1841): CodeIgniter\Database\BaseConnection->query('INSERT INTO `us...', NULL, false)
+#4 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2230): CodeIgniter\Database\BaseBuilder->batchExecute('_insertBatch', 100)
+#5 C:\xamp\htdocs\reservation_ci\app\Database\Seeds\InitSeeder.php(37): CodeIgniter\Database\BaseBuilder->insertBatch(Array)
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\Seeder.php(149): App\Database\Seeds\InitSeeder->run()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Commands\Database\Seed.php(79): CodeIgniter\Database\Seeder->call('App\\Database\\Se...')
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Seed->run(Array)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('db:seed', Array)
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xamp\htdocs\reservation_ci\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+CRITICAL - 2026-01-21 13:38:52 --> CodeIgniter\Filters\Exceptions\FilterException: "" filter must have a matching alias defined.
+[Method: GET, Route: /]
+in SYSTEMPATH\Filters\Filters.php on line 590.
+ 1 SYSTEMPATH\Filters\Filters.php(590): CodeIgniter\Filters\Exceptions\FilterException::forNoAlias('')
+ 2 SYSTEMPATH\Filters\Filters.php(641): CodeIgniter\Filters\Filters->enableFilter('', 'before')
+ 3 SYSTEMPATH\CodeIgniter.php(467): CodeIgniter\Filters\Filters->enableFilters([...], 'before')
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')

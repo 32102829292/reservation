@@ -1,0 +1,325 @@
+ERROR - 2026-03-11 20:17:34 --> mysqli_sql_exception: Unknown column 'accounts.is_verified' in 'field list' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `users`....', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `users`....')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `users`....')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `users`....', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\BaseModel.php(715): CodeIgniter\Model->doFirst()
+#6 C:\xamp\htdocs\reservation_ci\app\Controllers\AuthController.php(41): CodeIgniter\BaseModel->first()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#12 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#13 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#14 {main}
+CRITICAL - 2026-03-11 20:17:34 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'accounts.is_verified' in 'field list'
+[Method: POST, Route: login-action]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `users`.*, `accounts`.`password`, `accounts`.`is_verified`
+FROM `users`
+JOIN `accounts` ON `accounts`.`user_id` = `users`.`id`
+WHERE `users`.`email` = :users.email:
+ LIMIT 1', [...], false)
+ 2 SYSTEMPATH\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\BaseModel.php(715): CodeIgniter\Model->doFirst()
+ 4 APPPATH\Controllers\AuthController.php(41): CodeIgniter\BaseModel->first()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-11 20:17:34 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'accounts.is_verified' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `users`.*, `accounts`.`password`, `accounts`.`is_verified`
+FROM `users`
+JOIN `accounts` ON `accounts`.`user_id` = `users`.`id`
+WHERE `users`.`email` = \'chairman@example.com\'
+ LIMIT 1')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `users`.*, `accounts`.`password`, `accounts`.`is_verified`
+FROM `users`
+JOIN `accounts` ON `accounts`.`user_id` = `users`.`id`
+WHERE `users`.`email` = \'chairman@example.com\'
+ LIMIT 1')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `users`.*, `accounts`.`password`, `accounts`.`is_verified`
+FROM `users`
+JOIN `accounts` ON `accounts`.`user_id` = `users`.`id`
+WHERE `users`.`email` = :users.email:
+ LIMIT 1', [...], false)
+ 4 SYSTEMPATH\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\BaseModel.php(715): CodeIgniter\Model->doFirst()
+ 6 APPPATH\Controllers\AuthController.php(41): CodeIgniter\BaseModel->first()
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-11 20:17:34 --> [Caused by] mysqli_sql_exception: Unknown column 'accounts.is_verified' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `users`.*, `accounts`.`password`, `accounts`.`is_verified`
+FROM `users`
+JOIN `accounts` ON `accounts`.`user_id` = `users`.`id`
+WHERE `users`.`email` = \'chairman@example.com\'
+ LIMIT 1', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `users`.*, `accounts`.`password`, `accounts`.`is_verified`
+FROM `users`
+JOIN `accounts` ON `accounts`.`user_id` = `users`.`id`
+WHERE `users`.`email` = \'chairman@example.com\'
+ LIMIT 1')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `users`.*, `accounts`.`password`, `accounts`.`is_verified`
+FROM `users`
+JOIN `accounts` ON `accounts`.`user_id` = `users`.`id`
+WHERE `users`.`email` = \'chairman@example.com\'
+ LIMIT 1')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `users`.*, `accounts`.`password`, `accounts`.`is_verified`
+FROM `users`
+JOIN `accounts` ON `accounts`.`user_id` = `users`.`id`
+WHERE `users`.`email` = :users.email:
+ LIMIT 1', [...], false)
+ 5 SYSTEMPATH\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(715): CodeIgniter\Model->doFirst()
+ 7 APPPATH\Controllers\AuthController.php(41): CodeIgniter\BaseModel->first()
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+14 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-03-11 20:27:07 --> Email: sendWithMail throwed ErrorException: mail(): Failed to connect to mailserver at &quot;localhost&quot; port 25, verify your &quot;SMTP&quot; and &quot;smtp_port&quot; setting in php.ini or use ini_set() in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Email\Email.php:1771
+Stack trace:
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'mail(): Failed ...', 'C:\\xamp\\htdocs\\...', 1771)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Email\Email.php(1771): mail('gabuatangelimae...', '=?UTF-8?Q?Verif...', 'This is a multi...', 'Date: Wed, 11 M...', '-f noreply@elea...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Email\Email.php(1703): CodeIgniter\Email\Email->sendWithMail()
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Email\Email.php(1597): CodeIgniter\Email\Email->spoolEmail()
+#4 C:\xamp\htdocs\reservation_ci\app\Controllers\AuthController.php(327): CodeIgniter\Email\Email->send()
+#5 C:\xamp\htdocs\reservation_ci\app\Controllers\AuthController.php(191): App\Controllers\AuthController->sendVerificationEmail('gabuatangelimae...', 'Angeli Mae Gabu...', 'c063d14ebfcd228...')
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AuthController->registerAction()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#13 {main}
+ERROR - 2026-03-11 20:27:07 --> Email: Unable to send email using PHP mail(). Your server might not be configured to send mail using this method.
+ERROR - 2026-03-11 20:27:07 --> 
+ERROR - 2026-03-11 20:27:07 --> [AuthController] Verify email FAILED for gabuatangelimae@gmail.com | Unable to send email using PHP mail(). Your server might not be configured to send mail using this method.<br><pre>Date: Wed, 11 Mar 2026 20:27:05 +0800
+From: &quot;E-Learning System&quot; &lt;noreply@elearning.edu.ph&gt;
+Return-Path: &lt;noreply@elearning.edu.ph&gt;
+Reply-To: &lt;noreply@elearning.edu.ph&gt;
+User-Agent: CodeIgniter
+X-Sender: noreply@elearning.edu.ph
+X-Mailer: CodeIgniter
+X-Priority: 3 (Normal)
+Message-ID: &lt;69b15f99bf4ed0.57005457@elearning.edu.ph&gt;
+Mime-Version: 1.0
+Content-Type: multipart/alternative; boundary=&quot;B_ALT_69b15f99bf5111.72606257&quot;
+</pre>
+ERROR - 2026-03-11 20:50:32 --> Email: Unable to send email using SMTP. Your server might not be configured to send mail using this method.
+ERROR - 2026-03-11 20:50:32 --> 220 send.smtp.mailtrap.io ESMTP
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+starttls: 220 2.0.0 Ready to start TLS
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-AUTH LOGIN PLAIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+from: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+The following SMTP error was encountered: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+quit: 221 2.0.0 Bye
+
+ERROR - 2026-03-11 20:50:32 --> [AuthController] Verify email FAILED for gabuatangelimae@gmail.com | 220 send.smtp.mailtrap.io ESMTP
+<br><pre>hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+</pre><pre>starttls: 220 2.0.0 Ready to start TLS
+</pre><pre>hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-AUTH LOGIN PLAIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+</pre><pre>from: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+</pre>The following SMTP error was encountered: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+<br><pre>quit: 221 2.0.0 Bye
+</pre>Unable to send email using SMTP. Your server might not be configured to send mail using this method.<br><pre>Date: Wed, 11 Mar 2026 20:50:28 +0800
+To: gabuatangelimae@gmail.com
+From: &quot;E-Learning System&quot; &lt;noreply@elearning.edu.ph&gt;
+Return-Path: &lt;noreply@elearning.edu.ph&gt;
+Subject: =?UTF-8?Q?Verify=20Your=20Email=20Address=20=E2=80=94=20E-Learning=20Sys?= =?UTF-8?Q?tem?=
+Reply-To: &lt;noreply@elearning.edu.ph&gt;
+User-Agent: CodeIgniter
+X-Sender: noreply@elearning.edu.ph
+X-Mailer: CodeIgniter
+X-Priority: 3 (Normal)
+Message-ID: &lt;69b165142d2db3.98431674@elearning.edu.ph&gt;
+Mime-Version: 1.0
+
+</pre>
+ERROR - 2026-03-11 20:54:43 --> Email: Unable to send email using SMTP. Your server might not be configured to send mail using this method.
+ERROR - 2026-03-11 20:54:43 --> 220 send.smtp.mailtrap.io ESMTP
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+starttls: 220 2.0.0 Ready to start TLS
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-AUTH LOGIN PLAIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+from: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+The following SMTP error was encountered: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+quit: 221 2.0.0 Bye
+
+ERROR - 2026-03-11 20:54:43 --> [AuthController] Verify email FAILED for gabuatangelimae@gmail.com | 220 send.smtp.mailtrap.io ESMTP
+<br><pre>hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+</pre><pre>starttls: 220 2.0.0 Ready to start TLS
+</pre><pre>hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-AUTH LOGIN PLAIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+</pre><pre>from: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+</pre>The following SMTP error was encountered: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+<br><pre>quit: 221 2.0.0 Bye
+</pre>Unable to send email using SMTP. Your server might not be configured to send mail using this method.<br><pre>Date: Wed, 11 Mar 2026 20:54:38 +0800
+To: gabuatangelimae@gmail.com
+From: &quot;E-Learning System&quot; &lt;noreply@elearning.edu.ph&gt;
+Return-Path: &lt;noreply@elearning.edu.ph&gt;
+Subject: =?UTF-8?Q?Verify=20Your=20Email=20Address=20=E2=80=94=20E-Learning=20Sys?= =?UTF-8?Q?tem?=
+Reply-To: &lt;noreply@elearning.edu.ph&gt;
+User-Agent: CodeIgniter
+X-Sender: noreply@elearning.edu.ph
+X-Mailer: CodeIgniter
+X-Priority: 3 (Normal)
+Message-ID: &lt;69b1660e6f2c47.17702548@elearning.edu.ph&gt;
+Mime-Version: 1.0
+
+</pre>
+ERROR - 2026-03-11 20:56:34 --> Email: Unable to send email using SMTP. Your server might not be configured to send mail using this method.
+ERROR - 2026-03-11 20:56:34 --> 220 send.smtp.mailtrap.io ESMTP
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+starttls: 220 2.0.0 Ready to start TLS
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-AUTH LOGIN PLAIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+from: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+The following SMTP error was encountered: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+quit: 221 2.0.0 Bye
+
+ERROR - 2026-03-11 20:57:17 --> Email: Unable to send email using SMTP. Your server might not be configured to send mail using this method.
+ERROR - 2026-03-11 20:57:17 --> 220 send.smtp.mailtrap.io ESMTP
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+starttls: 220 2.0.0 Ready to start TLS
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-AUTH LOGIN PLAIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+from: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+The following SMTP error was encountered: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+quit: 221 2.0.0 Bye
+
+ERROR - 2026-03-11 21:01:30 --> Email: Unable to send email using SMTP. Your server might not be configured to send mail using this method.
+ERROR - 2026-03-11 21:01:30 --> 220 send.smtp.mailtrap.io ESMTP
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+starttls: 220 2.0.0 Ready to start TLS
+
+hello: 250-send.smtp.mailtrap.io
+250-PIPELINING
+250-SIZE 31457280
+250-AUTH LOGIN PLAIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 SMTPUTF8
+
+from: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+The following SMTP error was encountered: 550 5.7.1 Sending from domain elearning.edu.ph is not allowed
+
+quit: 221 2.0.0 Bye
+

@@ -1,0 +1,30 @@
+CRITICAL - 2026-01-23 11:16:56 --> ErrorException: Undefined variable $total
+[Method: GET, Route: sk/dashboard]
+in APPPATH\Views\sk\dashboard.php on line 54.
+ 1 APPPATH\Views\sk\dashboard.php(54): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $total', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\sk\\dashboard.php', 54)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\sk\\dashboard.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('sk/dashboard', [], true)
+ 5 APPPATH\Controllers\SkController.php(9): view('sk/dashboard')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\SkController->dashboard()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\SkController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-23 11:18:39 --> ErrorException: Undefined variable $total
+[Method: GET, Route: sk/dashboard]
+in APPPATH\Views\sk\dashboard.php on line 54.
+ 1 APPPATH\Views\sk\dashboard.php(54): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $total', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\sk\\dashboard.php', 54)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\sk\\dashboard.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('sk/dashboard', [], true)
+ 5 APPPATH\Controllers\SkController.php(9): view('sk/dashboard')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\SkController->dashboard()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\SkController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')

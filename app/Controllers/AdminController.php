@@ -130,8 +130,9 @@ class AdminController extends Controller
         }
 
         // Build walk-in quota map: lowercase name => quota info
+        // FIX #3: Use 3-day window here to match the UI labels in new-reservation.php
         $walkInQuotaMap = [];
-        $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
+        $threeDaysAgo = date('Y-m-d', strtotime('-3 days'));
         $rows = $db->query("
             SELECT LOWER(TRIM(visitor_name)) AS name_key,
                    COUNT(*) AS used,
@@ -141,12 +142,13 @@ class AdminController extends Controller
               AND status NOT IN ('declined','canceled')
               AND reservation_date >= ?
             GROUP BY LOWER(TRIM(visitor_name))
-        ", [$twoWeeksAgo])->getResultArray();
+        ", [$threeDaysAgo])->getResultArray();
 
         foreach ($rows as $row) {
             $used  = (int)$row['used'];
+            // Reset is 4 days after the oldest booking in the 3-day window
             $reset = $row['oldest_date']
-                ? date('F j, Y', strtotime($row['oldest_date'] . ' +15 days'))
+                ? date('F j, Y', strtotime($row['oldest_date'] . ' +4 days'))
                 : null;
             $walkInQuotaMap[$row['name_key']] = [
                 'used'      => $used,
@@ -626,6 +628,7 @@ class AdminController extends Controller
         $startTime  = $this->request->getGet('start_time');
         $endTime    = $this->request->getGet('end_time');
         $excludeId  = (int) $this->request->getGet('exclude_id');
+        $pcNumber   = trim($this->request->getGet('pc_number') ?? '');
 
         if (!$resourceId || !$date) {
             return $this->response->setJSON([
@@ -635,9 +638,9 @@ class AdminController extends Controller
             ]);
         }
 
-        // Fetch all booked slots for this resource+date
+        // Fetch all booked slots for this resource+date, including pc_number for PC-aware checks
         $query = $this->db->table('reservations')
-            ->select('start_time, end_time, status')
+            ->select('start_time, end_time, status, pc_number')
             ->where('resource_id', $resourceId)
             ->where('reservation_date', $date)
             ->whereIn('status', ['pending', 'approved']);
@@ -648,14 +651,30 @@ class AdminController extends Controller
 
         $bookedSlots = $query->get()->getResultArray();
 
-        // Check if the requested time range conflicts with any slot
+        // Check if the requested time range conflicts with any slot.
+        // When a specific PC is requested, only count it as a conflict if
+        // the existing reservation uses that same PC.
         $hasConflict = false;
         if ($startTime && $endTime) {
+            $pcsRequested = !empty($pcNumber)
+                ? array_map('trim', explode(',', $pcNumber))
+                : [];
+
             foreach ($bookedSlots as $slot) {
-                if ($startTime < $slot['end_time'] && $endTime > $slot['start_time']) {
-                    $hasConflict = true;
-                    break;
+                if ($startTime >= $slot['end_time'] || $endTime <= $slot['start_time']) {
+                    continue; // no time overlap
                 }
+
+                if (!empty($pcsRequested) && !empty($slot['pc_number'])) {
+                    // Both sides specify a PC — only conflict when the same PC is requested
+                    $slotPcs = array_map('trim', explode(',', $slot['pc_number']));
+                    if (empty(array_intersect($pcsRequested, $slotPcs))) {
+                        continue; // different PCs, no conflict
+                    }
+                }
+
+                $hasConflict = true;
+                break;
             }
         }
 
@@ -754,11 +773,12 @@ class AdminController extends Controller
                 );
             }
 
+            // FIX #3: Walk-in fairness check now uses 3-day window to match the UI.
             $walkInCheck = $reservationModel->checkWalkInFairness($visitorName);
             if (!$walkInCheck['fair']) {
                 return redirect()->back()->withInput()->with('error',
                     "Walk-in visitor \"{$visitorName}\" has already used all 3 reservation slots " .
-                    "in the last 2 weeks. They may book again on or after {$walkInCheck['reset']}."
+                    "in the last 3 days. They may book again on or after {$walkInCheck['reset']}."
                 );
             }
         }
@@ -785,20 +805,41 @@ class AdminController extends Controller
 
         $db->transStart();
 
-        $conflict = $reservationModel
+        // Base overlap query: same resource, same date, overlapping time, active status
+        $conflictQuery = $reservationModel
             ->where('resource_id', $resourceId)
             ->where('reservation_date', $reservationDate)
             ->whereIn('status', ['pending', 'approved'])
             ->groupStart()
                 ->where('start_time <', $endTime)
                 ->where('end_time >',  $startTime)
-            ->groupEnd()
-            ->first();
+            ->groupEnd();
+
+        // When specific PC(s) are selected, only conflict if the same PC is already booked.
+        // This allows multiple people to book the same resource (e.g. Computer Lab)
+        // simultaneously as long as they each use a different PC.
+        if (!empty($pcValue)) {
+            $pcsRequested = array_map('trim', explode(',', $pcValue));
+            $conflictQuery->groupStart();
+            foreach ($pcsRequested as $i => $pc) {
+                $likePattern = '%' . $db->escapeLikeString($pc) . '%';
+                if ($i === 0) {
+                    $conflictQuery->like('pc_number', $pc, 'none');
+                } else {
+                    $conflictQuery->orLike('pc_number', $pc, 'none');
+                }
+            }
+            $conflictQuery->groupEnd();
+        }
+
+        $conflict = $conflictQuery->first();
 
         if ($conflict) {
             $db->transRollback();
-            return redirect()->back()->withInput()
-                ->with('error', 'This time slot is already booked. Please choose another time.');
+            $errorMsg = !empty($pcValue)
+                ? 'One or more of the selected PCs is already booked for this time slot. Please choose different PCs or a different time.'
+                : 'This time slot is already booked. Please choose another time.';
+            return redirect()->back()->withInput()->with('error', $errorMsg);
         }
 
         $eTicketCode = 'ADMIN' . strtoupper(uniqid());
@@ -842,6 +883,12 @@ class AdminController extends Controller
 
     // ═══════════════════════════════════════════════════════════════════════
     //  CHECK GUEST LIMIT
+    //
+    //  FIX #3: Replaced the 14-day ($twoWeeksAgo) lookback window with a
+    //  3-day ($threeDaysAgo) window throughout this method so it matches
+    //  the "last 3 days" label shown in the frontend guest-limit widget.
+    //  Reset date is now calculated as oldest_booking_date + 4 days
+    //  (i.e. the day the oldest booking falls out of the 3-day window).
     // ═══════════════════════════════════════════════════════════════════════
     public function checkGuestLimit()
     {
@@ -904,7 +951,8 @@ class AdminController extends Controller
             ]);
         }
 
-        $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
+        // FIX #3: 3-day window instead of 14-day
+        $threeDaysAgo = date('Y-m-d', strtotime('-3 days'));
 
         $usedRow = $db->query("
             SELECT COUNT(*) AS total FROM reservations
@@ -912,12 +960,14 @@ class AdminController extends Controller
               AND status NOT IN ('declined', 'canceled')
               AND user_id IS NULL
               AND reservation_date >= ?
-        ", [$name, $twoWeeksAgo])->getRowArray();
+        ", [$name, $threeDaysAgo])->getRowArray();
 
         $used = (int) ($usedRow['total'] ?? 0);
 
         $reset = null;
         if ($used >= 3) {
+            // Find the oldest booking within the 3-day window.
+            // The guest can book again once that booking is more than 3 days old.
             $oldest = $db->query("
                 SELECT reservation_date FROM reservations
                 WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
@@ -926,11 +976,12 @@ class AdminController extends Controller
                   AND reservation_date >= ?
                 ORDER BY reservation_date ASC
                 LIMIT 1
-            ", [$name, $twoWeeksAgo])->getRowArray();
+            ", [$name, $threeDaysAgo])->getRowArray();
 
+            // FIX #3: reset = oldest date + 4 days (falls outside the 3-day window)
             $reset = $oldest
-                ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +15 days'))
-                : date('F j, Y', strtotime('+14 days'));
+                ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +4 days'))
+                : date('F j, Y', strtotime('+3 days'));
         }
 
         return $this->response->setJSON([

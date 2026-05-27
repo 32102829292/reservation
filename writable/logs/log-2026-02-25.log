@@ -1,0 +1,119 @@
+CRITICAL - 2026-02-25 09:17:45 --> ErrorException: Undefined array key "password"
+[Method: POST, Route: login-action]
+in APPPATH\Controllers\AuthController.php on line 32.
+ 1 APPPATH\Controllers\AuthController.php(32): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "password"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Controllers\\AuthController.php', 32)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-02-25 09:31:26 --> mysqli_sql_exception: Unknown column 'created_by' in 'where clause' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COUNT(*)...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Model.php(675): CodeIgniter\Database\BaseBuilder->countAllResults(true)
+#5 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(789): CodeIgniter\Model->countAllResults()
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AdminController->profile()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#13 {main}
+CRITICAL - 2026-02-25 09:31:26 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'created_by' in 'where clause'
+[Method: GET, Route: admin/profile]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `reservations`
+WHERE `created_by` = :created_by:', [...], false)
+ 2 SYSTEMPATH\Model.php(675): CodeIgniter\Database\BaseBuilder->countAllResults(true)
+ 3 APPPATH\Controllers\AdminController.php(789): CodeIgniter\Model->countAllResults()
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->profile()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-02-25 09:31:26 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'created_by' in 'where clause'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*) AS `numrows`
+FROM `reservations`
+WHERE `created_by` = \'5\'')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*) AS `numrows`
+FROM `reservations`
+WHERE `created_by` = \'5\'')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `reservations`
+WHERE `created_by` = :created_by:', [...], false)
+ 4 SYSTEMPATH\Model.php(675): CodeIgniter\Database\BaseBuilder->countAllResults(true)
+ 5 APPPATH\Controllers\AdminController.php(789): CodeIgniter\Model->countAllResults()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->profile()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-02-25 09:31:26 --> [Caused by] mysqli_sql_exception: Unknown column 'created_by' in 'where clause'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COUNT(*) AS `numrows`
+FROM `reservations`
+WHERE `created_by` = \'5\'', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*) AS `numrows`
+FROM `reservations`
+WHERE `created_by` = \'5\'')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*) AS `numrows`
+FROM `reservations`
+WHERE `created_by` = \'5\'')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1733): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `reservations`
+WHERE `created_by` = :created_by:', [...], false)
+ 5 SYSTEMPATH\Model.php(675): CodeIgniter\Database\BaseBuilder->countAllResults(true)
+ 6 APPPATH\Controllers\AdminController.php(789): CodeIgniter\Model->countAllResults()
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->profile()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-02-25 09:35:27 --> mysqli_sql_exception: Column 'reservation_id' cannot be null in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `ac...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `ac...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `ac...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `ac...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(34): CodeIgniter\Database\BaseBuilder->insert(Array)
+#5 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(360): App\Controllers\AdminController->logActivity('update_pc_statu...', NULL, 'Updated PC PC-0...')
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AdminController->updatePCStatus()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#13 {main}
+ERROR - 2026-02-25 09:35:27 --> Failed to log activity: Column 'reservation_id' cannot be null
+ERROR - 2026-02-25 09:35:29 --> mysqli_sql_exception: Column 'reservation_id' cannot be null in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `ac...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `ac...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `ac...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `ac...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(34): CodeIgniter\Database\BaseBuilder->insert(Array)
+#5 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(360): App\Controllers\AdminController->logActivity('update_pc_statu...', NULL, 'Updated PC PC-0...')
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AdminController->updatePCStatus()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#13 {main}
+ERROR - 2026-02-25 09:35:29 --> Failed to log activity: Column 'reservation_id' cannot be null

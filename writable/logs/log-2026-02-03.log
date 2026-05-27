@@ -1,0 +1,123 @@
+CRITICAL - 2026-02-03 11:34:59 --> ErrorException: Undefined array key "phone"
+[Method: GET, Route: profile]
+in APPPATH\Views\user\profile.php on line 77.
+ 1 APPPATH\Views\user\profile.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "phone"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('user/profile', [], true)
+ 5 APPPATH\Controllers\UserController.php(65): view('user/profile', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UserController->profile()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-02-03 11:51:25 --> ErrorException: Undefined array key "phone"
+[Method: GET, Route: profile]
+in APPPATH\Views\user\profile.php on line 77.
+ 1 APPPATH\Views\user\profile.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "phone"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('user/profile', [], true)
+ 5 APPPATH\Controllers\UserController.php(65): view('user/profile', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UserController->profile()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-02-03 11:54:39 --> mysqli_sql_exception: Duplicate entry 'chairman@example.com' for key 'email' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `us...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `us...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `us...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `us...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Database\Seeds\CleanAndCreateAdmin.php(12): CodeIgniter\Database\BaseBuilder->insert(Array)
+#5 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\Seeder.php(149): App\Database\Seeds\CleanAndCreateAdmin->run()
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Commands\Database\Seed.php(79): CodeIgniter\Database\Seeder->call('App\\Database\\Se...')
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Seed->run(Array)
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('db:seed', Array)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#11 C:\xamp\htdocs\reservation_ci\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#12 {main}
+CRITICAL - 2026-02-03 11:58:24 --> ErrorException: Undefined array key "phone"
+[Method: GET, Route: profile]
+in APPPATH\Views\user\profile.php on line 77.
+ 1 APPPATH\Views\user\profile.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "phone"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('user/profile', [], true)
+ 5 APPPATH\Controllers\UserController.php(65): view('user/profile', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UserController->profile()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-02-03 12:06:23 --> ErrorException: Undefined array key "phone"
+[Method: GET, Route: profile]
+in APPPATH\Views\user\profile.php on line 77.
+ 1 APPPATH\Views\user\profile.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "phone"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('user/profile', [], true)
+ 5 APPPATH\Controllers\UserController.php(65): view('user/profile', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UserController->profile()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-02-03 14:02:08 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`reservation_system`.`pcs`, CONSTRAINT `pcs_added_by_foreign` FOREIGN KEY (`added_by`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `pc...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pc...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pc...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1841): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pc...', NULL, false)
+#4 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2230): CodeIgniter\Database\BaseBuilder->batchExecute('_insertBatch', 100)
+#5 C:\xamp\htdocs\reservation_ci\app\Database\Seeds\PcSeeder.php(19): CodeIgniter\Database\BaseBuilder->insertBatch(Array)
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\Seeder.php(149): App\Database\Seeds\PcSeeder->run()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Commands\Database\Seed.php(79): CodeIgniter\Database\Seeder->call('App\\Database\\Se...')
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Seed->run(Array)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('db:seed', Array)
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xamp\htdocs\reservation_ci\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+ERROR - 2026-02-03 14:02:31 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`reservation_system`.`pcs`, CONSTRAINT `pcs_added_by_foreign` FOREIGN KEY (`added_by`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `pc...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pc...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pc...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1841): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pc...', NULL, false)
+#4 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2230): CodeIgniter\Database\BaseBuilder->batchExecute('_insertBatch', 100)
+#5 C:\xamp\htdocs\reservation_ci\app\Database\Seeds\PcSeeder.php(19): CodeIgniter\Database\BaseBuilder->insertBatch(Array)
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\Seeder.php(149): App\Database\Seeds\PcSeeder->run()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Commands\Database\Seed.php(79): CodeIgniter\Database\Seeder->call('App\\Database\\Se...')
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Seed->run(Array)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('db:seed', Array)
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xamp\htdocs\reservation_ci\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+ERROR - 2026-02-03 14:03:45 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`reservation_system`.`pcs`, CONSTRAINT `pcs_added_by_foreign` FOREIGN KEY (`added_by`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `pc...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `pc...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `pc...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1841): CodeIgniter\Database\BaseConnection->query('INSERT INTO `pc...', NULL, false)
+#4 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2230): CodeIgniter\Database\BaseBuilder->batchExecute('_insertBatch', 100)
+#5 C:\xamp\htdocs\reservation_ci\app\Database\Seeds\PcSeeder.php(19): CodeIgniter\Database\BaseBuilder->insertBatch(Array)
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\Seeder.php(149): App\Database\Seeds\PcSeeder->run()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Commands\Database\Seed.php(79): CodeIgniter\Database\Seeder->call('App\\Database\\Se...')
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Seed->run(Array)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('db:seed', Array)
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xamp\htdocs\reservation_ci\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}

@@ -1,0 +1,14 @@
+CRITICAL - 2026-01-24 11:49:19 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "layouts/sk_layout.php"
+[Method: GET, Route: sk/reservations]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('layouts/sk_layout.php')
+ 2 SYSTEMPATH\View\View.php(242): CodeIgniter\View\View->render('layouts/sk_layout', [], true)
+ 3 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('sk/reservations', [], true)
+ 4 APPPATH\Controllers\SkController.php(33): view('sk/reservations', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\SkController->reservations()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\SkController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')

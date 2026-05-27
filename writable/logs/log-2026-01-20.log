@@ -1,0 +1,346 @@
+CRITICAL - 2026-01-20 11:11:18 --> CodeIgniter\Exceptions\BadMethodCallException: Call to undefined method App\Models\ReservationModel::getUserReservations
+[Method: GET, Route: reservation-list]
+in SYSTEMPATH\Model.php on line 927.
+ 1 APPPATH\Controllers\Reservation.php(60): CodeIgniter\Model->__call('getUserReservations', [...])
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-01-20 13:13:16 --> mysqli_sql_exception: Unknown column 'r.pc_number' in 'field list' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `r`.`id`...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `r`.`id`...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `r`.`id`...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xamp\htdocs\reservation_ci\app\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#13 {main}
+CRITICAL - 2026-01-20 13:13:16 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'r.pc_number' in 'field list'
+[Method: GET, Route: reservation-list]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = :r.user_id:
+ORDER BY `r`.`reservation_date` DESC', [...], false)
+ 2 APPPATH\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 13:13:16 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'r.pc_number' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = :r.user_id:
+ORDER BY `r`.`reservation_date` DESC', [...], false)
+ 4 APPPATH\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 13:13:16 --> [Caused by] mysqli_sql_exception: Unknown column 'r.pc_number' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = :r.user_id:
+ORDER BY `r`.`reservation_date` DESC', [...], false)
+ 5 APPPATH\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-01-20 13:15:45 --> mysqli_sql_exception: Unknown column 'res.name' in 'field list' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `r`.`id`...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `r`.`id`...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `r`.`id`...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xamp\htdocs\reservation_ci\app\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#13 {main}
+CRITICAL - 2026-01-20 13:15:45 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'res.name' in 'field list'
+[Method: GET, Route: reservation-list]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = :r.user_id:
+ORDER BY `r`.`reservation_date` DESC', [...], false)
+ 2 APPPATH\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 13:15:45 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'res.name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = :r.user_id:
+ORDER BY `r`.`reservation_date` DESC', [...], false)
+ 4 APPPATH\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 13:15:45 --> [Caused by] mysqli_sql_exception: Unknown column 'res.name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = :r.user_id:
+ORDER BY `r`.`reservation_date` DESC', [...], false)
+ 5 APPPATH\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-01-20 13:22:23 --> mysqli_sql_exception: Unknown column 'res.name' in 'field list' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `r`.`id`...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `r`.`id`...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `r`.`id`...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xamp\htdocs\reservation_ci\app\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#13 {main}
+CRITICAL - 2026-01-20 13:22:23 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'res.name' in 'field list'
+[Method: GET, Route: reservation-list]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = :r.user_id:
+ORDER BY `r`.`reservation_date` DESC', [...], false)
+ 2 APPPATH\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 13:22:23 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'res.name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = :r.user_id:
+ORDER BY `r`.`reservation_date` DESC', [...], false)
+ 4 APPPATH\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 13:22:23 --> [Caused by] mysqli_sql_exception: Unknown column 'res.name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = \'6\'
+ORDER BY `r`.`reservation_date` DESC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `r`.`id`, `r`.`e_ticket_code`, `r`.`reservation_date`, `r`.`start_time`, `r`.`end_time`, `r`.`purpose`, `r`.`status`, `r`.`pc_number`, `res`.`name` AS `resource_name`
+FROM `reservations` `r`
+JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+WHERE `r`.`user_id` = :r.user_id:
+ORDER BY `r`.`reservation_date` DESC', [...], false)
+ 5 APPPATH\Models\ReservationModel.php(61): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\Reservation.php(82): App\Models\ReservationModel->getUserReservations('6')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 13:28:16 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "user/reservation-list.php"
+[Method: GET, Route: reservation-list]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('user/reservation-list.php')
+ 2 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('user/reservation-list', [], true)
+ 3 APPPATH\Controllers\Reservation.php(84): view('user/reservation-list', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Reservation->reservationList()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Reservation))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 13:54:39 --> ErrorException: Undefined array key "username"
+[Method: GET, Route: profile]
+in APPPATH\Views\user\profile.php on line 62.
+ 1 APPPATH\Views\user\profile.php(62): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "username"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php', 62)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('user/profile', [], true)
+ 5 APPPATH\Controllers\UserController.php(120): view('user/profile', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UserController->profile()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 13:55:12 --> ErrorException: Undefined array key "username"
+[Method: GET, Route: profile]
+in APPPATH\Views\user\profile.php on line 62.
+ 1 APPPATH\Views\user\profile.php(62): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "username"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php', 62)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('user/profile', [], true)
+ 5 APPPATH\Controllers\UserController.php(120): view('user/profile', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UserController->profile()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 14:53:28 --> ErrorException: Undefined array key "is_approved"
+[Method: POST, Route: login-action]
+in APPPATH\Controllers\AuthController.php on line 32.
+ 1 APPPATH\Controllers\AuthController.php(32): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "is_approved"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Controllers\\AuthController.php', 32)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-01-20 14:54:53 --> ErrorException: Undefined array key "is_approved"
+[Method: POST, Route: login-action]
+in APPPATH\Controllers\AuthController.php on line 32.
+ 1 APPPATH\Controllers\AuthController.php(32): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "is_approved"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Controllers\\AuthController.php', 32)
+ 2 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AuthController->loginAction()
+ 3 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AuthController))
+ 4 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')

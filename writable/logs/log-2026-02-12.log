@@ -1,0 +1,30 @@
+CRITICAL - 2026-02-12 16:11:04 --> ErrorException: Undefined array key "phone"
+[Method: GET, Route: profile]
+in APPPATH\Views\user\profile.php on line 77.
+ 1 APPPATH\Views\user\profile.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "phone"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\user\\profile.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('user/profile', [], true)
+ 5 APPPATH\Controllers\UserController.php(65): view('user/profile', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UserController->profile()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-02-12 16:28:56 --> ErrorException: Undefined array key "phone"
+[Method: GET, Route: sk/profile]
+in APPPATH\Views\sk\profile.php on line 95.
+ 1 APPPATH\Views\sk\profile.php(95): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "phone"', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\sk\\profile.php', 95)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\sk\\profile.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('sk/profile', [], true)
+ 5 APPPATH\Controllers\SkController.php(147): view('sk/profile', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\SkController->profile()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\SkController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')

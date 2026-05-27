@@ -44,12 +44,30 @@ $statusIcons = [
     'unclaimed' => 'fa-ticket',
 ];
 
+/**
+ * Return the raw full name from the reservation row.
+ * Priority: user join name (visitor_name populated by SQL alias) → full_name → visitor_name → 'Unknown'
+ */
 function resolveResName(array $res): string {
+    // visitor_name is set by the SQL join as u.name for registered users,
+    // or the literal visitor_name column for walk-ins.
     $vn = trim($res['visitor_name'] ?? '');
     if ($vn !== '') return $vn;
     $fn = trim($res['full_name'] ?? '');
     if ($fn !== '') return $fn;
     return 'Unknown';
+}
+
+/**
+ * Return the display name shown in table/card cells.
+ * Walk-in visitors are prefixed with "Guest — " so staff can tell at a glance.
+ */
+function resolveDisplayName(array $res): string {
+    $raw = resolveResName($res);
+    if (isWalkIn($res)) {
+        return 'Guest — ' . $raw;
+    }
+    return $raw;
 }
 
 function isWalkIn(array $res): bool {
@@ -197,6 +215,22 @@ $pendingCount = $counts['pending'];
             background: #ede9fe; color: #4f46e5; border: 1px solid #c4b5fd;
         }
 
+        /* ── Guest name highlight in table ── */
+        .guest-name-prefix {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #c2410c;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin-right: 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
         /* ── Print log strip ── */
         #dPrintLog {
             display: none; margin: 0 24px 12px; border-radius: 18px; padding: 12px 14px;
@@ -333,6 +367,7 @@ $pendingCount = $counts['pending'];
         body.dark .visitor-role-badge.walkin { background: rgba(194,65,12,.15) !important; border-color: rgba(251,146,60,.3) !important; }
         body.dark .visitor-role-badge.registered { background: rgba(99,102,241,.15) !important; border-color: rgba(196,181,253,.3) !important; }
         body.dark .stopped-at-pill    { background: rgba(239,68,68,.15) !important; border-color: rgba(239,68,68,.3) !important; }
+        body.dark .guest-name-prefix  { background: rgba(194,65,12,.15) !important; border-color: rgba(251,146,60,.3) !important; color: #fb923c !important; }
     </style>
 </head>
 
@@ -388,6 +423,7 @@ $pendingCount = $counts['pending'];
                     <div class="dicon"><i class="fa-solid fa-user"></i></div>
                     <div style="flex:1;min-width:0">
                         <p class="dlabel">Requestor</p>
+                        <!-- rawName holds the actual name; guestPrefix shown only for walk-ins -->
                         <p id="dName" class="dvalue"></p>
                         <p id="dEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
                         <span id="dRoleBadge" class="visitor-role-badge" style="display:none"></span>
@@ -404,14 +440,13 @@ $pendingCount = $counts['pending'];
                     </div>
                 </div>
 
-                <!-- Schedule — includes force-stop time when present -->
+                <!-- Schedule -->
                 <div class="drow">
                     <div class="dicon"><i class="fa-solid fa-calendar-day"></i></div>
                     <div>
                         <p class="dlabel">Schedule</p>
                         <p id="dDate" class="dvalue"></p>
                         <p id="dTime" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
-                        <!-- Force-stop time — shown only when session was manually stopped -->
                         <span id="dStoppedAt" class="stopped-at-pill" style="display:none;"></span>
                     </div>
                 </div>
@@ -470,7 +505,7 @@ $pendingCount = $counts['pending'];
                 <p style="font-size:11px;color:#8b5cf6;margin-top:3px">This reservation has been used.</p>
             </div>
 
-            <!-- Print log strip (read-only, always shown when a log exists) -->
+            <!-- Print log strip (read-only) -->
             <div id="dPrintLog" style="display:none;align-items:center;gap:12px;">
                 <div style="width:36px;height:36px;background:#dcfce7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-print" style="color:#16a34a;font-size:13px"></i></div>
                 <div style="flex:1;min-width:0">
@@ -480,7 +515,7 @@ $pendingCount = $counts['pending'];
                 <span id="dPrintBadge" style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:999px;flex-shrink:0"></span>
             </div>
 
-            <!-- Print log form — hidden for unclaimed reservations -->
+            <!-- Print log form -->
             <div id="dPrintLogForm">
                 <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:12px;display:flex;align-items:center;gap:7px"><i class="fa-solid fa-print" style="color:var(--indigo)"></i> Log Print for this Reservation</p>
                 <div style="display:flex;align-items:flex-end;gap:10px">
@@ -641,7 +676,8 @@ $pendingCount = $counts['pending'];
                         <?php foreach ($processed as $res):
                             $s           = $res['_status'];
                             $isUnclaimed = $res['_unclaimed'];
-                            $name        = htmlspecialchars(resolveResName($res));
+                            $rawName     = resolveResName($res);          // actual name from DB
+                            $name        = htmlspecialchars($rawName);    // safe for HTML
                             $email       = htmlspecialchars(trim($res['visitor_email'] ?? $res['user_email'] ?? ''));
                             $resource    = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
                             $pc          = htmlspecialchars($res['pc_number']     ?? $res['pc_numbers']   ?? '');
@@ -670,10 +706,14 @@ $pendingCount = $counts['pending'];
                             $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
                             $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
                             $stoppedAt   = $res['session_ended_at'] ?? null;
+                            // search string includes 'guest' keyword for walk-ins so filtering by "guest" works
+                            $searchStr   = strtolower($rawName . ' ' . $resource . ' ' . $purpose . ' ' . $email . ' ' . $approverName . ' ' . $roleLabel . ($resIsWalkIn ? ' guest walkin walk-in' : ''));
                             $mdata       = json_encode([
                                 'id'          => $res['id'],
                                 'status'      => $s,
-                                'name'        => $name,
+                                'name'        => $name,      // raw name without prefix
+                                'rawName'     => $rawName,   // used in modal heading
+                                'isWalkIn'    => $resIsWalkIn,
                                 'email'       => $email,
                                 'resource'    => $resource,
                                 'pc'          => $pc,
@@ -686,7 +726,6 @@ $pendingCount = $counts['pending'];
                                 'roleLabel'   => $roleLabel,
                                 'roleClass'   => $roleClass,
                                 'roleIcon'    => $roleIcon,
-                                'isWalkIn'    => $resIsWalkIn,
                                 'created'     => $created,
                                 'code'        => $code,
                                 'claimed'     => $isClaimed,
@@ -705,7 +744,7 @@ $pendingCount = $counts['pending'];
                                 data-id="<?= $res['id'] ?>"
                                 data-status="<?= $s ?>"
                                 data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
-                                data-search="<?= strtolower("$name $resource $purpose $email $approverName $roleLabel") ?>"
+                                data-search="<?= htmlspecialchars($searchStr, ENT_QUOTES) ?>"
                                 data-date="<?= $rawDate ?>"
                                 data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
                                 data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
@@ -713,11 +752,17 @@ $pendingCount = $counts['pending'];
                                 onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
                                 <td><span style="font-size:11px;font-weight:800;color:var(--text-sub);font-family:monospace">#<?= $res['id'] ?></span></td>
                                 <td>
-                                    <p style="font-weight:700;font-size:13px;"><?= $name ?></p>
+                                    <?php if ($resIsWalkIn): ?>
+                                        <p style="font-weight:700;font-size:13px;">
+                                            <span class="guest-name-prefix">Guest</span><?= $name ?>
+                                        </p>
+                                    <?php else: ?>
+                                        <p style="font-weight:700;font-size:13px;"><?= $name ?></p>
+                                    <?php endif; ?>
                                     <?php if ($email): ?><p style="font-size:11px;color:var(--text-sub);margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
                                     <span class="visitor-role-badge <?= $roleClass ?>">
                                         <i class="fa-solid <?= $roleIcon ?>" style="font-size:8px"></i>
-                                        <?= $resIsWalkIn ? 'Guest' : 'User' ?>
+                                        <?= $resIsWalkIn ? 'Walk-in Guest' : 'Registered User' ?>
                                     </span>
                                 </td>
                                 <td>
@@ -728,11 +773,8 @@ $pendingCount = $counts['pending'];
                                     <p style="font-size:13px;font-weight:700;"><?= $date ?></p>
                                     <p style="font-size:11px;color:var(--indigo);font-weight:600;margin-top:2px"><?= $start ?> – <?= $end ?></p>
                                     <?php if ($stoppedAt): ?>
-                                        <?php
-                                        $stoppedFmt = date('g:i A', strtotime($stoppedAt));
-                                        ?>
                                         <p style="font-size:10px;font-weight:700;color:#ef4444;margin-top:3px;display:flex;align-items:center;gap:3px;">
-                                            <i class="fa-solid fa-circle-stop" style="font-size:.55rem;"></i> Stopped <?= $stoppedFmt ?>
+                                            <i class="fa-solid fa-circle-stop" style="font-size:.55rem;"></i> Stopped <?= date('g:i A', strtotime($stoppedAt)) ?>
                                         </p>
                                     <?php endif; ?>
                                 </td>
@@ -784,7 +826,8 @@ $pendingCount = $counts['pending'];
                 <?php foreach ($processed as $res):
                     $s           = $res['_status'];
                     $isUnclaimed = $res['_unclaimed'];
-                    $name        = htmlspecialchars(resolveResName($res));
+                    $rawName     = resolveResName($res);
+                    $name        = htmlspecialchars($rawName);
                     $email       = htmlspecialchars(trim($res['visitor_email'] ?? $res['user_email'] ?? ''));
                     $resource    = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
                     $pc          = htmlspecialchars($res['pc_number']     ?? $res['pc_numbers']   ?? '');
@@ -813,10 +856,13 @@ $pendingCount = $counts['pending'];
                     $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
                     $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
                     $stoppedAt   = $res['session_ended_at'] ?? null;
+                    $searchStr   = strtolower($rawName . ' ' . $resource . ' ' . $purpose . ' ' . $email . ' ' . $approverName . ' ' . $roleLabel . ($resIsWalkIn ? ' guest walkin walk-in' : ''));
                     $mdata       = json_encode([
                         'id'          => $res['id'],
                         'status'      => $s,
                         'name'        => $name,
+                        'rawName'     => $rawName,
+                        'isWalkIn'    => $resIsWalkIn,
                         'email'       => $email,
                         'resource'    => $resource,
                         'pc'          => $pc,
@@ -829,7 +875,6 @@ $pendingCount = $counts['pending'];
                         'roleLabel'   => $roleLabel,
                         'roleClass'   => $roleClass,
                         'roleIcon'    => $roleIcon,
-                        'isWalkIn'    => $resIsWalkIn,
                         'created'     => $created,
                         'code'        => $code,
                         'claimed'     => $isClaimed,
@@ -849,20 +894,26 @@ $pendingCount = $counts['pending'];
                         data-id="<?= $res['id'] ?>"
                         data-status="<?= $s ?>"
                         data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
-                        data-search="<?= strtolower("$name $resource $purpose $email $approverName $roleLabel") ?>"
+                        data-search="<?= htmlspecialchars($searchStr, ENT_QUOTES) ?>"
                         data-date="<?= $rawDate ?>"
                         data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
                         data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
                         data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
                         onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
                         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                            <div style="width:38px;height:38px;border-radius:14px;<?= $avatarBg ?>;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0"><?= mb_strtoupper(mb_substr(strip_tags($name),0,1)) ?></div>
+                            <div style="width:38px;height:38px;border-radius:14px;<?= $avatarBg ?>;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0"><?= mb_strtoupper(mb_substr(strip_tags($rawName),0,1)) ?></div>
                             <div style="flex:1;min-width:0">
-                                <p style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $name ?></p>
+                                <?php if ($resIsWalkIn): ?>
+                                    <p style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                                        <span class="guest-name-prefix">Guest</span><?= $name ?>
+                                    </p>
+                                <?php else: ?>
+                                    <p style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $name ?></p>
+                                <?php endif; ?>
                                 <?php if ($email): ?><p style="font-size:11px;color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
                                 <span class="visitor-role-badge <?= $roleClass ?>">
                                     <i class="fa-solid <?= $roleIcon ?>" style="font-size:8px"></i>
-                                    <?= $resIsWalkIn ? 'Guest' : 'User' ?>
+                                    <?= $resIsWalkIn ? 'Walk-in Guest' : 'Registered User' ?>
                                 </span>
                             </div>
                             <span class="badge badge-<?= $s ?>" style="flex-shrink:0"><i class="fa-solid <?= $icon ?>" style="font-size:9px"></i><?= ucfirst($s) ?></span>
@@ -1036,7 +1087,7 @@ $pendingCount = $counts['pending'];
                 try {
                     const d = JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/, '').replace(/\)$/, ''));
                     lines.push([
-                        d.id ?? '', d.name ?? '', d.email ?? '', d.roleLabel ?? '',
+                        d.id ?? '', d.rawName ?? d.name ?? '', d.email ?? '', d.roleLabel ?? '',
                         d.resource ?? '', d.pc ?? '', d.date ?? '', d.start ?? '', d.end ?? '',
                         d.purpose ?? '', d.type ?? '', d.status ?? '',
                         d.approverName ?? '', d.approvedAt ?? '',
@@ -1103,7 +1154,6 @@ $pendingCount = $counts['pending'];
             unclaimed: { icon: 'fa-ticket',         bg: '#fff7ed', color: '#c2410c', label: 'Unclaimed — Approved but did not show up' },
         };
 
-        /* ── Format an ISO/datetime string to "2:34 PM" ── */
         function fmtStopTime(ts) {
             if (!ts) return null;
             try {
@@ -1126,8 +1176,24 @@ $pendingCount = $counts['pending'];
 
             /* ── Header ── */
             const m = STATUS_META[d.status] || STATUS_META.pending;
-            document.getElementById('dId').textContent   = 'Reservation #' + d.id;
-            document.getElementById('dName').textContent = d.name;
+            document.getElementById('dId').textContent = 'Reservation #' + d.id;
+
+            /* ── Name display — show "Guest — Name" for walk-ins in modal ── */
+            const nameEl = document.getElementById('dName');
+            if (d.isWalkIn) {
+                nameEl.innerHTML = '<span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#c2410c;background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:1px 5px;margin-right:6px;vertical-align:middle;">Guest</span>'
+                    + document.createTextNode(d.rawName || d.name).textContent.replace(/</g,'&lt;');
+                // Use innerHTML safely
+                nameEl.textContent = '';
+                const prefix = document.createElement('span');
+                prefix.className = 'guest-name-prefix';
+                prefix.textContent = 'Guest';
+                nameEl.appendChild(prefix);
+                nameEl.appendChild(document.createTextNode(d.rawName || d.name));
+            } else {
+                nameEl.textContent = d.rawName || d.name;
+            }
+
             document.getElementById('dEmail').textContent = d.email;
 
             /* ── Role badge ── */
@@ -1148,10 +1214,15 @@ $pendingCount = $counts['pending'];
             const stoppedFmt = fmtStopTime(d.stoppedAt);
             if (stoppedFmt) {
                 stoppedEl.style.display = 'inline-flex';
-                stoppedEl.innerHTML = `<i class="fa-solid fa-circle-stop" style="font-size:.6rem;"></i> Force-stopped at ${stoppedFmt}`;
+                stoppedEl.textContent = '';
+                const stopIcon = document.createElement('i');
+                stopIcon.className = 'fa-solid fa-circle-stop';
+                stopIcon.style.fontSize = '.6rem';
+                stoppedEl.appendChild(stopIcon);
+                stoppedEl.appendChild(document.createTextNode(' Force-stopped at ' + stoppedFmt));
             } else {
                 stoppedEl.style.display = 'none';
-                stoppedEl.innerHTML = '';
+                stoppedEl.textContent = '';
             }
 
             document.getElementById('dPurpose').textContent = d.purpose;
@@ -1235,17 +1306,17 @@ $pendingCount = $counts['pending'];
             /* ── Print log read-only strip ── */
             refreshPrintLogStrip(d.id);
 
-            /* ── Print log FORM: hide for unclaimed (they never showed up) ── */
+            /* ── Print log FORM: hide for unclaimed ── */
             document.getElementById('dPrintLogForm').style.display = d.unclaimed ? 'none' : 'block';
 
             /* ── Action buttons ── */
             const acts = document.getElementById('dActions');
             if (d.status === 'pending') {
                 acts.innerHTML = `
-                    <button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve">
+                    <button onclick="triggerApprove(${d.id},'${(d.rawName || d.name).replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve">
                         <i class="fa-solid fa-check"></i> Approve
                     </button>
-                    <button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline">
+                    <button onclick="triggerDecline(${d.id},'${(d.rawName || d.name).replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline">
                         <i class="fa-solid fa-xmark"></i> Decline
                     </button>`;
             } else {

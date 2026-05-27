@@ -1,0 +1,44 @@
+CRITICAL - 2026-02-10 22:26:14 --> ErrorException: session_start(): Ignoring session_start() because a session is already active
+[Method: GET, Route: admin/new-reservation]
+in APPPATH\Views\admin\new-reservation.php on line 2.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(8, 'session_start(): Ignoring session_start() because a session is already active', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\admin\\new-reservation.php', 2)
+ 2 APPPATH\Views\admin\new-reservation.php(2): session_start()
+ 3 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\admin\\new-reservation.php')
+ 4 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('admin/new-reservation', [], true)
+ 6 APPPATH\Controllers\AdminController.php(39): view('admin/new-reservation', [...])
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->newReservation()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-02-10 22:26:32 --> ErrorException: require_once(../config/database.php): Failed to open stream: No such file or directory
+[Method: GET, Route: admin/new-reservation]
+in APPPATH\Views\admin\new-reservation.php on line 2.
+ 1 APPPATH\Views\admin\new-reservation.php(2): CodeIgniter\Debug\Exceptions->errorHandler(2, 'require_once(../config/database.php): Failed to open stream: No such file or directory', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\admin\\new-reservation.php', 2)
+ 2 APPPATH\Views\admin\new-reservation.php(2): require_once()
+ 3 SYSTEMPATH\View\View.php(226): include('C:\\xamp\\htdocs\\reservation_ci\\app\\Views\\admin\\new-reservation.php')
+ 4 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('admin/new-reservation', [], true)
+ 6 APPPATH\Controllers\AdminController.php(39): view('admin/new-reservation', [...])
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->newReservation()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-02-10 22:31:56 --> ErrorException: Undefined variable $pdo
+[Method: GET, Route: admin/login]
+in APPPATH\Config\Routes.php on line 2.
+ 1 APPPATH\Config\Routes.php(2): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $pdo', 'C:\\xamp\\htdocs\\reservation_ci\\app\\Config\\Routes.php', 2)
+ 2 SYSTEMPATH\Router\RouteCollection.php(339): require('C:\\xamp\\htdocs\\reservation_ci\\app\\Config\\Routes.php')
+ 3 SYSTEMPATH\CodeIgniter.php(821): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 4 SYSTEMPATH\CodeIgniter.php(455): CodeIgniter\CodeIgniter->tryToRouteIt(null)
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')

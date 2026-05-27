@@ -1,0 +1,510 @@
+ERROR - 2026-03-13 09:24:47 --> mysqli_sql_exception: Table 'reservation_system.print_logs' doesn't exist in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#12 {main}
+CRITICAL - 2026-03-13 09:24:47 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'reservation_system.print_logs' doesn't exist
+[Method: GET, Route: admin/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 2 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:24:47 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'reservation_system.print_logs' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 4 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:24:47 --> [Caused by] mysqli_sql_exception: Table 'reservation_system.print_logs' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 5 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-03-13 09:33:06 --> mysqli_sql_exception: Table 'reservation_system.print_logs' doesn't exist in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#12 {main}
+CRITICAL - 2026-03-13 09:33:06 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'reservation_system.print_logs' doesn't exist
+[Method: GET, Route: admin/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 2 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:33:06 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'reservation_system.print_logs' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 4 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:33:06 --> [Caused by] mysqli_sql_exception: Table 'reservation_system.print_logs' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 5 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-03-13 09:36:44 --> mysqli_sql_exception: Unknown column 'pl.printed' in 'field list' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#12 {main}
+CRITICAL - 2026-03-13 09:36:44 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'pl.printed' in 'field list'
+[Method: GET, Route: admin/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 2 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:36:44 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'pl.printed' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 4 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:36:44 --> [Caused by] mysqli_sql_exception: Unknown column 'pl.printed' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 5 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-03-13 09:37:47 --> mysqli_sql_exception: Unknown column 'pl.pages' in 'field list' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#12 {main}
+CRITICAL - 2026-03-13 09:37:47 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'pl.pages' in 'field list'
+[Method: GET, Route: admin/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 2 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:37:47 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'pl.pages' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 4 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:37:47 --> [Caused by] mysqli_sql_exception: Unknown column 'pl.pages' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 5 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+ERROR - 2026-03-13 09:38:17 --> mysqli_sql_exception: Unknown column 'pl.created_at' in 'field list' in C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id...', 0)
+#1 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id...')
+#2 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id...')
+#3 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id...', Array, false)
+#4 C:\xamp\htdocs\reservation_ci\app\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+#6 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+#7 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xamp\htdocs\reservation_ci\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 C:\xamp\htdocs\reservation_ci\vendor\codeigniter4\framework\system\rewrite.php(44): require_once('C:\\xamp\\htdocs\\...')
+#12 {main}
+CRITICAL - 2026-03-13 09:38:17 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'pl.created_at' in 'field list'
+[Method: GET, Route: admin/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 2 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:38:17 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'pl.created_at' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 4 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
+CRITICAL - 2026-03-13 09:38:17 --> [Caused by] mysqli_sql_exception: Unknown column 'pl.created_at' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `pl`.`id`, `pl`.`reservation_id`, `pl`.`printed`, `pl`.`pages`, `pl`.`created_at`, COALESCE(u.name, `r`.`visitor_name`, "Guest") AS visitor_name, `res`.`name` AS `resource_name`, `r`.`reservation_date`, `r`.`start_time`
+FROM `print_logs` `pl`
+LEFT JOIN `reservations` `r` ON `r`.`id` = `pl`.`reservation_id`
+LEFT JOIN `resources` `res` ON `res`.`id` = `r`.`resource_id`
+LEFT JOIN `users` `u` ON `u`.`id` = `r`.`user_id`
+ORDER BY `pl`.`created_at` DESC
+ LIMIT 50', [], false)
+ 5 APPPATH\Controllers\AdminController.php(248): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AdminController->dashboard()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AdminController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xamp\\htdocs\\reservation_ci\\public\\index.php')
