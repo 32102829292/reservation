@@ -1809,7 +1809,7 @@ PDF TEXT:
     // ═══════════════════════════════════════════════════════════════════════
 //  RESIDENT ACCOUNTS
 // ═══════════════════════════════════════════════════════════════════════
-public function residentAccounts()
+public function residentsAccount()
 {
     if (!session()->has('user_id')) {
         return redirect()->to('/login')->with('error', 'Please login first');
@@ -1842,8 +1842,8 @@ public function residentAccounts()
     $verified   = count(array_filter($residents, fn($r) => !empty($r['email_verified'])));
     $unverified = $total - $verified;
 
-    return view('admin/resident-accounts', [
-        'page'              => 'resident-accounts',
+    return view('admin/residents-account', [
+        'page'              => 'residents-account',
         'residents'         => $residents,
         'reservationCounts' => $reservationCounts,
         'total'             => $total,
@@ -1896,7 +1896,7 @@ public function deleteResident()
             "Deleted resident: {$user['name']} (#{$id}, {$user['email']})"
         );
 
-        return redirect()->to('/admin/resident-accounts')
+        return redirect()->to('/admin/residents-account')
             ->with('success', "Resident \"{$user['name']}\" has been permanently deleted.");
 
     } catch (\Exception $e) {
