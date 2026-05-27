@@ -783,15 +783,6 @@ class AdminController extends Controller
                 ->with('error', 'End time must be after start time.');
         }
 
-        // ── Same-day check — skipped for WiFi ──
-        if (!$isWifi && $visitorType === 'User' && $userId > 0) {
-            $sameDayReservations = $reservationModel->getUserSameDayReservations($userId, $reservationDate);
-            if (!empty($sameDayReservations)) {
-                return redirect()->back()->withInput()
-                    ->with('error', 'This user already has a reservation on this date. Only one reservation per day is allowed.');
-            }
-        }
-
         $db->transStart();
 
         $conflict = $reservationModel
