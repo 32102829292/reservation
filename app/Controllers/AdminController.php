@@ -123,14 +123,11 @@ class AdminController extends Controller
             ->orderBy('r.id', 'DESC')
             ->get()->getResultArray();
 
-        // Build print log map: reservation_id => log row
         $printLogMap = [];
         foreach ($db->table('print_logs')->get()->getResultArray() as $pl) {
             $printLogMap[(int)$pl['reservation_id']] = $pl;
         }
 
-        // Build walk-in quota map: lowercase name => quota info
-        // FIX #3: Use 3-day window here to match the UI labels in new-reservation.php
         $walkInQuotaMap = [];
         $threeDaysAgo = date('Y-m-d', strtotime('-3 days'));
         $rows = $db->query("
@@ -146,7 +143,6 @@ class AdminController extends Controller
 
         foreach ($rows as $row) {
             $used  = (int)$row['used'];
-            // Reset is 4 days after the oldest booking in the 3-day window
             $reset = $row['oldest_date']
                 ? date('F j, Y', strtotime($row['oldest_date'] . ' +4 days'))
                 : null;
@@ -611,7 +607,7 @@ class AdminController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  CHECK AVAILABILITY (AJAX) — returns booked slots + conflict flag
+    //  CHECK AVAILABILITY (AJAX)
     // ═══════════════════════════════════════════════════════════════════════
     public function checkAvailability()
     {
@@ -638,7 +634,6 @@ class AdminController extends Controller
             ]);
         }
 
-        // Fetch all booked slots for this resource+date, including pc_number for PC-aware checks
         $query = $this->db->table('reservations')
             ->select('start_time, end_time, status, pc_number')
             ->where('resource_id', $resourceId)
@@ -651,9 +646,6 @@ class AdminController extends Controller
 
         $bookedSlots = $query->get()->getResultArray();
 
-        // Check if the requested time range conflicts with any slot.
-        // When a specific PC is requested, only count it as a conflict if
-        // the existing reservation uses that same PC.
         $hasConflict = false;
         if ($startTime && $endTime) {
             $pcsRequested = !empty($pcNumber)
@@ -662,14 +654,13 @@ class AdminController extends Controller
 
             foreach ($bookedSlots as $slot) {
                 if ($startTime >= $slot['end_time'] || $endTime <= $slot['start_time']) {
-                    continue; // no time overlap
+                    continue;
                 }
 
                 if (!empty($pcsRequested) && !empty($slot['pc_number'])) {
-                    // Both sides specify a PC — only conflict when the same PC is requested
                     $slotPcs = array_map('trim', explode(',', $slot['pc_number']));
                     if (empty(array_intersect($pcsRequested, $slotPcs))) {
-                        continue; // different PCs, no conflict
+                        continue;
                     }
                 }
 
@@ -723,13 +714,11 @@ class AdminController extends Controller
             }
         }
 
-        // ── Determine if selected resource is WiFi (skips all quota/block checks) ──
         $selectedResource = !empty($resourceId)
             ? $db->table('resources')->where('id', $resourceId)->get()->getRowArray()
             : null;
         $isWifi = $selectedResource && stripos($selectedResource['name'], 'wifi') !== false;
 
-        // ── Block check (registered user) — skipped for WiFi ──
         if (!$isWifi && $visitorType === 'User' && $userId > 0) {
             $isBlocked = $reservationModel->isBlocked($userId);
             if ($isBlocked) {
@@ -740,7 +729,6 @@ class AdminController extends Controller
             }
         }
 
-        // ── Fairness check (registered user) — skipped for WiFi ──
         if (!$isWifi && $visitorType === 'User' && $userId > 0) {
             $fairness = $reservationModel->checkFairness($userId);
             if (!$fairness['fair']) {
@@ -751,7 +739,6 @@ class AdminController extends Controller
             }
         }
 
-        // ── Walk-in checks — skipped entirely for WiFi ──
         if (!$isWifi && strtolower($visitorType) !== 'user') {
             if (empty($visitorName)) {
                 return redirect()->back()->withInput()
@@ -773,7 +760,6 @@ class AdminController extends Controller
                 );
             }
 
-            // FIX #3: Walk-in fairness check now uses 3-day window to match the UI.
             $walkInCheck = $reservationModel->checkWalkInFairness($visitorName);
             if (!$walkInCheck['fair']) {
                 return redirect()->back()->withInput()->with('error',
@@ -805,7 +791,6 @@ class AdminController extends Controller
 
         $db->transStart();
 
-        // Base overlap query: same resource, same date, overlapping time, active status
         $conflictQuery = $reservationModel
             ->where('resource_id', $resourceId)
             ->where('reservation_date', $reservationDate)
@@ -815,14 +800,10 @@ class AdminController extends Controller
                 ->where('end_time >',  $startTime)
             ->groupEnd();
 
-        // When specific PC(s) are selected, only conflict if the same PC is already booked.
-        // This allows multiple people to book the same resource (e.g. Computer Lab)
-        // simultaneously as long as they each use a different PC.
         if (!empty($pcValue)) {
             $pcsRequested = array_map('trim', explode(',', $pcValue));
             $conflictQuery->groupStart();
             foreach ($pcsRequested as $i => $pc) {
-                $likePattern = '%' . $db->escapeLikeString($pc) . '%';
                 if ($i === 0) {
                     $conflictQuery->like('pc_number', $pc, 'none');
                 } else {
@@ -883,12 +864,6 @@ class AdminController extends Controller
 
     // ═══════════════════════════════════════════════════════════════════════
     //  CHECK GUEST LIMIT
-    //
-    //  FIX #3: Replaced the 14-day ($twoWeeksAgo) lookback window with a
-    //  3-day ($threeDaysAgo) window throughout this method so it matches
-    //  the "last 3 days" label shown in the frontend guest-limit widget.
-    //  Reset date is now calculated as oldest_booking_date + 4 days
-    //  (i.e. the day the oldest booking falls out of the 3-day window).
     // ═══════════════════════════════════════════════════════════════════════
     public function checkGuestLimit()
     {
@@ -951,7 +926,6 @@ class AdminController extends Controller
             ]);
         }
 
-        // FIX #3: 3-day window instead of 14-day
         $threeDaysAgo = date('Y-m-d', strtotime('-3 days'));
 
         $usedRow = $db->query("
@@ -966,8 +940,6 @@ class AdminController extends Controller
 
         $reset = null;
         if ($used >= 3) {
-            // Find the oldest booking within the 3-day window.
-            // The guest can book again once that booking is more than 3 days old.
             $oldest = $db->query("
                 SELECT reservation_date FROM reservations
                 WHERE LOWER(TRIM(visitor_name)) = LOWER(TRIM(?))
@@ -978,7 +950,6 @@ class AdminController extends Controller
                 LIMIT 1
             ", [$name, $threeDaysAgo])->getRowArray();
 
-            // FIX #3: reset = oldest date + 4 days (falls outside the 3-day window)
             $reset = $oldest
                 ? date('F j, Y', strtotime($oldest['reservation_date'] . ' +4 days'))
                 : date('F j, Y', strtotime('+3 days'));
@@ -1108,6 +1079,70 @@ class AdminController extends Controller
         }
 
         return redirect()->to('/admin/manage-sk')->with('success', 'SK account rejected.');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  DELETE SK  ← NEW
+    // ═══════════════════════════════════════════════════════════════════════
+    public function deleteSK()
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+
+        $id = (int) $this->request->getPost('id');
+        if (!$id) {
+            return redirect()->back()->with('error', 'Invalid request.');
+        }
+
+        // Only allow deleting role=sk — never chairman or regular users
+        $user = $this->db->table('users')
+            ->where('id', $id)
+            ->where('role', 'sk')
+            ->get()->getRowArray();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'SK account not found or cannot be deleted.');
+        }
+
+        try {
+            $this->db->transStart();
+
+            // Delete login credentials
+            $this->db->table('accounts')->where('user_id', $id)->delete();
+
+            // Orphan any reservations they created rather than deleting history
+            $this->db->table('reservations')->where('user_id', $id)->set([
+                'user_id'    => null,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ])->update();
+
+            // Remove activity logs tied to this SK user
+            $this->db->table('activity_logs')->where('user_id', $id)->delete();
+
+            // Finally delete the user record
+            $this->db->table('users')->where('id', $id)->delete();
+
+            $this->db->transComplete();
+
+            if ($this->db->transStatus() === false) {
+                throw new \Exception('Transaction failed');
+            }
+
+            $this->logActivity(
+                'delete_sk',
+                null,
+                "Permanently deleted SK account: {$user['name']} (#{$id}, {$user['email']})"
+            );
+
+            return redirect()->to('/admin/manage-sk')
+                ->with('success', "SK account \"{$user['name']}\" has been permanently deleted.");
+
+        } catch (\Exception $e) {
+            $this->db->transRollback();
+            log_message('error', 'deleteSK error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete SK account. Please try again.');
+        }
     }
 
     public function loginLogs()
@@ -1806,161 +1841,158 @@ PDF TEXT:
         );
         return $text;
     }
+
     // ═══════════════════════════════════════════════════════════════════════
-//  RESIDENT ACCOUNTS
-// ═══════════════════════════════════════════════════════════════════════
-public function residentAccounts()
-{
-    if (!session()->has('user_id')) {
-        return redirect()->to('/login')->with('error', 'Please login first');
-    }
+    //  RESIDENT ACCOUNTS
+    // ═══════════════════════════════════════════════════════════════════════
+    public function residentAccounts()
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
 
-    $db = $this->db;
+        $db = $this->db;
 
-    $residents = $db->table('users u')
-        ->select('u.*, a.is_verified AS email_verified')
-        ->join('accounts a', 'a.user_id = u.id', 'left')
-        ->where('u.role', 'user')
-        ->orderBy('u.created_at', 'DESC')
-        ->get()->getResultArray();
-
-    // Reservation count per resident (single query, no N+1)
-    $reservationCounts = [];
-    if (!empty($residents)) {
-        $ids = array_column($residents, 'id');
-        $rows = $db->table('reservations')
-            ->select('user_id, COUNT(*) as total')
-            ->whereIn('user_id', $ids)
-            ->groupBy('user_id')
+        $residents = $db->table('users u')
+            ->select('u.*, a.is_verified AS email_verified')
+            ->join('accounts a', 'a.user_id = u.id', 'left')
+            ->where('u.role', 'user')
+            ->orderBy('u.created_at', 'DESC')
             ->get()->getResultArray();
-        foreach ($rows as $row) {
-            $reservationCounts[(int)$row['user_id']] = (int)$row['total'];
-        }
-    }
 
-    $total      = count($residents);
-    $verified   = count(array_filter($residents, fn($r) => !empty($r['email_verified'])));
-    $unverified = $total - $verified;
-
-    return view('admin/resident-accounts', [
-        'page'              => 'resident-accounts',
-        'residents'         => $residents,
-        'reservationCounts' => $reservationCounts,
-        'total'             => $total,
-        'verified'          => $verified,
-        'unverified'        => $unverified,
-    ]);
-}
-
-public function deleteResident()
-{
-    if (!session()->has('user_id')) {
-        return redirect()->to('/login')->with('error', 'Please login first');
-    }
-
-    $id = (int) $this->request->getPost('id');
-    if (!$id) {
-        return redirect()->back()->with('error', 'Invalid request.');
-    }
-
-    // Only allow deleting role=user — never SK or admin
-    $user = $this->db->table('users')
-        ->where('id', $id)
-        ->where('role', 'user')
-        ->get()->getRowArray();
-
-    if (!$user) {
-        return redirect()->back()->with('error', 'Resident not found or cannot be deleted.');
-    }
-
-    try {
-        $this->db->transStart();
-
-        // Delete child records first to avoid FK constraint errors
-        $this->db->table('accounts')->where('user_id', $id)->delete();
-        $this->db->table('reservations')->where('user_id', $id)->set([
-            'user_id'    => null,
-            'updated_at' => date('Y-m-d H:i:s'),
-        ])->update();                          // preserve reservation history, just orphan it
-        $this->db->table('users')->where('id', $id)->delete();
-
-        $this->db->transComplete();
-
-        if ($this->db->transStatus() === false) {
-            throw new \Exception('Transaction failed');
+        $reservationCounts = [];
+        if (!empty($residents)) {
+            $ids = array_column($residents, 'id');
+            $rows = $db->table('reservations')
+                ->select('user_id, COUNT(*) as total')
+                ->whereIn('user_id', $ids)
+                ->groupBy('user_id')
+                ->get()->getResultArray();
+            foreach ($rows as $row) {
+                $reservationCounts[(int)$row['user_id']] = (int)$row['total'];
+            }
         }
 
-        $this->logActivity(
-            'delete_resident',
-            null,
-            "Deleted resident: {$user['name']} (#{$id}, {$user['email']})"
-        );
+        $total      = count($residents);
+        $verified   = count(array_filter($residents, fn($r) => !empty($r['email_verified'])));
+        $unverified = $total - $verified;
 
-        return redirect()->to('/admin/resident-accounts')
-            ->with('success', "Resident \"{$user['name']}\" has been permanently deleted.");
-
-    } catch (\Exception $e) {
-        $this->db->transRollback();
-        log_message('error', 'deleteResident error: ' . $e->getMessage());
-        return redirect()->back()->with('error', 'Failed to delete resident. Please try again.');
-    }
-}
-
-public function exportResidents()
-{
-    if (!session()->has('user_id')) {
-        return redirect()->to('/login')->with('error', 'Please login first');
-    }
-
-    $db = $this->db;
-
-    $residents = $db->table('users u')
-        ->select('u.id, u.name, u.email, u.phone, u.created_at, a.is_verified AS email_verified')
-        ->join('accounts a', 'a.user_id = u.id', 'left')
-        ->where('u.role', 'user')
-        ->orderBy('u.created_at', 'DESC')
-        ->get()->getResultArray();
-
-    // Reservation counts
-    $reservationCounts = [];
-    if (!empty($residents)) {
-        $ids = array_column($residents, 'id');
-        $rows = $db->table('reservations')
-            ->select('user_id, COUNT(*) as total')
-            ->whereIn('user_id', $ids)
-            ->groupBy('user_id')
-            ->get()->getResultArray();
-        foreach ($rows as $row) {
-            $reservationCounts[(int)$row['user_id']] = (int)$row['total'];
-        }
-    }
-
-    $filename = 'residents_' . date('Y-m-d_His') . '.csv';
-
-    header('Content-Type: text/csv; charset=UTF-8');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    header('Pragma: no-cache');
-    header('Expires: 0');
-
-    $out = fopen('php://output', 'w');
-    fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));  // UTF-8 BOM for Excel
-
-    fputcsv($out, ['ID', 'Full Name', 'Email', 'Phone', 'Registered', 'Email Verified', 'Reservations']);
-
-    foreach ($residents as $r) {
-        fputcsv($out, [
-            $r['id'],
-            $r['name'] ?? 'Unknown',
-            $r['email'] ?? '',
-            $r['phone'] ?? '',
-            !empty($r['created_at']) ? date('Y-m-d', strtotime($r['created_at'])) : '',
-            !empty($r['email_verified']) ? 'Yes' : 'No',
-            $reservationCounts[(int)$r['id']] ?? 0,
+        return view('admin/resident-accounts', [
+            'page'              => 'resident-accounts',
+            'residents'         => $residents,
+            'reservationCounts' => $reservationCounts,
+            'total'             => $total,
+            'verified'          => $verified,
+            'unverified'        => $unverified,
         ]);
     }
 
-    fclose($out);
-    $this->logActivity('export_residents', null, 'Exported resident accounts CSV');
-    exit;
-}
+    public function deleteResident()
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+
+        $id = (int) $this->request->getPost('id');
+        if (!$id) {
+            return redirect()->back()->with('error', 'Invalid request.');
+        }
+
+        $user = $this->db->table('users')
+            ->where('id', $id)
+            ->where('role', 'user')
+            ->get()->getRowArray();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'Resident not found or cannot be deleted.');
+        }
+
+        try {
+            $this->db->transStart();
+
+            $this->db->table('accounts')->where('user_id', $id)->delete();
+            $this->db->table('reservations')->where('user_id', $id)->set([
+                'user_id'    => null,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ])->update();
+            $this->db->table('users')->where('id', $id)->delete();
+
+            $this->db->transComplete();
+
+            if ($this->db->transStatus() === false) {
+                throw new \Exception('Transaction failed');
+            }
+
+            $this->logActivity(
+                'delete_resident',
+                null,
+                "Deleted resident: {$user['name']} (#{$id}, {$user['email']})"
+            );
+
+            return redirect()->to('/admin/resident-accounts')
+                ->with('success', "Resident \"{$user['name']}\" has been permanently deleted.");
+
+        } catch (\Exception $e) {
+            $this->db->transRollback();
+            log_message('error', 'deleteResident error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete resident. Please try again.');
+        }
+    }
+
+    public function exportResidents()
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+
+        $db = $this->db;
+
+        $residents = $db->table('users u')
+            ->select('u.id, u.name, u.email, u.phone, u.created_at, a.is_verified AS email_verified')
+            ->join('accounts a', 'a.user_id = u.id', 'left')
+            ->where('u.role', 'user')
+            ->orderBy('u.created_at', 'DESC')
+            ->get()->getResultArray();
+
+        $reservationCounts = [];
+        if (!empty($residents)) {
+            $ids = array_column($residents, 'id');
+            $rows = $db->table('reservations')
+                ->select('user_id, COUNT(*) as total')
+                ->whereIn('user_id', $ids)
+                ->groupBy('user_id')
+                ->get()->getResultArray();
+            foreach ($rows as $row) {
+                $reservationCounts[(int)$row['user_id']] = (int)$row['total'];
+            }
+        }
+
+        $filename = 'residents_' . date('Y-m-d_His') . '.csv';
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $out = fopen('php://output', 'w');
+        fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        fputcsv($out, ['ID', 'Full Name', 'Email', 'Phone', 'Registered', 'Email Verified', 'Reservations']);
+
+        foreach ($residents as $r) {
+            fputcsv($out, [
+                $r['id'],
+                $r['name'] ?? 'Unknown',
+                $r['email'] ?? '',
+                $r['phone'] ?? '',
+                !empty($r['created_at']) ? date('Y-m-d', strtotime($r['created_at'])) : '',
+                !empty($r['email_verified']) ? 'Yes' : 'No',
+                $reservationCounts[(int)$r['id']] ?? 0,
+            ]);
+        }
+
+        fclose($out);
+        $this->logActivity('export_residents', null, 'Exported resident accounts CSV');
+        exit;
+    }
 }
