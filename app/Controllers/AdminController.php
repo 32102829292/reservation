@@ -1806,4 +1806,161 @@ PDF TEXT:
         );
         return $text;
     }
+    // ═══════════════════════════════════════════════════════════════════════
+//  RESIDENT ACCOUNTS
+// ═══════════════════════════════════════════════════════════════════════
+public function residentAccounts()
+{
+    if (!session()->has('user_id')) {
+        return redirect()->to('/login')->with('error', 'Please login first');
+    }
+
+    $db = $this->db;
+
+    $residents = $db->table('users u')
+        ->select('u.*, a.is_verified AS email_verified')
+        ->join('accounts a', 'a.user_id = u.id', 'left')
+        ->where('u.role', 'user')
+        ->orderBy('u.created_at', 'DESC')
+        ->get()->getResultArray();
+
+    // Reservation count per resident (single query, no N+1)
+    $reservationCounts = [];
+    if (!empty($residents)) {
+        $ids = array_column($residents, 'id');
+        $rows = $db->table('reservations')
+            ->select('user_id, COUNT(*) as total')
+            ->whereIn('user_id', $ids)
+            ->groupBy('user_id')
+            ->get()->getResultArray();
+        foreach ($rows as $row) {
+            $reservationCounts[(int)$row['user_id']] = (int)$row['total'];
+        }
+    }
+
+    $total      = count($residents);
+    $verified   = count(array_filter($residents, fn($r) => !empty($r['email_verified'])));
+    $unverified = $total - $verified;
+
+    return view('admin/resident-accounts', [
+        'page'              => 'resident-accounts',
+        'residents'         => $residents,
+        'reservationCounts' => $reservationCounts,
+        'total'             => $total,
+        'verified'          => $verified,
+        'unverified'        => $unverified,
+    ]);
+}
+
+public function deleteResident()
+{
+    if (!session()->has('user_id')) {
+        return redirect()->to('/login')->with('error', 'Please login first');
+    }
+
+    $id = (int) $this->request->getPost('id');
+    if (!$id) {
+        return redirect()->back()->with('error', 'Invalid request.');
+    }
+
+    // Only allow deleting role=user — never SK or admin
+    $user = $this->db->table('users')
+        ->where('id', $id)
+        ->where('role', 'user')
+        ->get()->getRowArray();
+
+    if (!$user) {
+        return redirect()->back()->with('error', 'Resident not found or cannot be deleted.');
+    }
+
+    try {
+        $this->db->transStart();
+
+        // Delete child records first to avoid FK constraint errors
+        $this->db->table('accounts')->where('user_id', $id)->delete();
+        $this->db->table('reservations')->where('user_id', $id)->set([
+            'user_id'    => null,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ])->update();                          // preserve reservation history, just orphan it
+        $this->db->table('users')->where('id', $id)->delete();
+
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            throw new \Exception('Transaction failed');
+        }
+
+        $this->logActivity(
+            'delete_resident',
+            null,
+            "Deleted resident: {$user['name']} (#{$id}, {$user['email']})"
+        );
+
+        return redirect()->to('/admin/resident-accounts')
+            ->with('success', "Resident \"{$user['name']}\" has been permanently deleted.");
+
+    } catch (\Exception $e) {
+        $this->db->transRollback();
+        log_message('error', 'deleteResident error: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Failed to delete resident. Please try again.');
+    }
+}
+
+public function exportResidents()
+{
+    if (!session()->has('user_id')) {
+        return redirect()->to('/login')->with('error', 'Please login first');
+    }
+
+    $db = $this->db;
+
+    $residents = $db->table('users u')
+        ->select('u.id, u.name, u.email, u.phone, u.created_at, a.is_verified AS email_verified')
+        ->join('accounts a', 'a.user_id = u.id', 'left')
+        ->where('u.role', 'user')
+        ->orderBy('u.created_at', 'DESC')
+        ->get()->getResultArray();
+
+    // Reservation counts
+    $reservationCounts = [];
+    if (!empty($residents)) {
+        $ids = array_column($residents, 'id');
+        $rows = $db->table('reservations')
+            ->select('user_id, COUNT(*) as total')
+            ->whereIn('user_id', $ids)
+            ->groupBy('user_id')
+            ->get()->getResultArray();
+        foreach ($rows as $row) {
+            $reservationCounts[(int)$row['user_id']] = (int)$row['total'];
+        }
+    }
+
+    $filename = 'residents_' . date('Y-m-d_His') . '.csv';
+
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+
+    $out = fopen('php://output', 'w');
+    fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));  // UTF-8 BOM for Excel
+
+    fputcsv($out, ['ID', 'Full Name', 'Email', 'Phone', 'Registered', 'Email Verified', 'Reservations']);
+
+    foreach ($residents as $r) {
+        fputcsv($out, [
+            $r['id'],
+            $r['name'] ?? 'Unknown',
+            $r['email'] ?? '',
+            $r['phone'] ?? '',
+            !empty($r['created_at']) ? date('Y-m-d', strtotime($r['created_at'])) : '',
+            !empty($r['email_verified']) ? 'Yes' : 'No',
+            $reservationCounts[(int)$r['id']] ?? 0,
+        ]);
+    }
+
+    fclose($out);
+    $this->logActivity('export_residents', null, 'Exported resident accounts CSV');
+    exit;
+}
 }
