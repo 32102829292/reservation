@@ -113,13 +113,18 @@ class AdminController extends Controller
 
         $db = $this->db;
 
+        // FIX: Use COALESCE so walk-in visitor_name is not overwritten by the
+        // NULL result of the left-join when user_id is NULL (walk-in guests).
         $reservations = $db->table('reservations r')
-            ->select('r.*, res.name AS resource_name,
-                      u.name AS visitor_name, u.email AS visitor_email,
-                      approver.name AS approver_name, approver.email AS approver_email')
-            ->join('resources res',  'res.id = r.resource_id',    'left')
-            ->join('users u',        'u.id = r.user_id',          'left')
-            ->join('users approver', 'approver.id = r.approved_by','left')
+            ->select('r.*,
+                      res.name AS resource_name,
+                      COALESCE(u.name,  r.visitor_name) AS visitor_name,
+                      COALESCE(u.email, r.user_email)   AS visitor_email,
+                      approver.name  AS approver_name,
+                      approver.email AS approver_email')
+            ->join('resources res',  'res.id = r.resource_id',     'left')
+            ->join('users u',        'u.id = r.user_id',           'left')
+            ->join('users approver', 'approver.id = r.approved_by', 'left')
             ->orderBy('r.id', 'DESC')
             ->get()->getResultArray();
 
@@ -1082,7 +1087,7 @@ class AdminController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  DELETE SK  ← NEW
+    //  DELETE SK
     // ═══════════════════════════════════════════════════════════════════════
     public function deleteSK()
     {
@@ -1095,7 +1100,6 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Invalid request.');
         }
 
-        // Only allow deleting role=sk — never chairman or regular users
         $user = $this->db->table('users')
             ->where('id', $id)
             ->where('role', 'sk')
@@ -1108,19 +1112,15 @@ class AdminController extends Controller
         try {
             $this->db->transStart();
 
-            // Delete login credentials
             $this->db->table('accounts')->where('user_id', $id)->delete();
 
-            // Orphan any reservations they created rather than deleting history
             $this->db->table('reservations')->where('user_id', $id)->set([
                 'user_id'    => null,
                 'updated_at' => date('Y-m-d H:i:s'),
             ])->update();
 
-            // Remove activity logs tied to this SK user
             $this->db->table('activity_logs')->where('user_id', $id)->delete();
 
-            // Finally delete the user record
             $this->db->table('users')->where('id', $id)->delete();
 
             $this->db->transComplete();
