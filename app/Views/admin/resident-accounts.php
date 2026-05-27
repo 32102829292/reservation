@@ -17,6 +17,10 @@ $avatarStyles = [
     'background:#e0f2fe;color:#0369a1',
     'background:#fce7f3;color:#9d174d',
 ];
+
+// Compute pending count
+$pendingResidents = array_filter($residents, fn($r) => ($r['status'] ?? 'pending') === 'pending');
+$pendingCount     = count($pendingResidents);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -54,12 +58,15 @@ $avatarStyles = [
         /* ── Stat cards ── */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0,1fr));
+            grid-template-columns: repeat(4, minmax(0,1fr));
             gap: 10px;
             margin-bottom: 16px;
         }
-        @media(max-width:639px) {
-            .stats-grid { gap: 8px; }
+        @media(max-width:767px) {
+            .stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+        }
+        @media(max-width:400px) {
+            .stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 7px; }
         }
         .stat-card {
             background: var(--card); border-radius: var(--r-lg);
@@ -121,6 +128,24 @@ $avatarStyles = [
             display: inline-flex; align-items: center; gap: 4px;
         }
         .btn-delete-sm:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+
+        .btn-approve-sm {
+            background: #dcfce7; color: #166534; border: 1px solid #86efac;
+            border-radius: 9px; padding: 6px 10px;
+            font-size: 11px; font-weight: 800; cursor: pointer;
+            font-family: var(--font); transition: all .15s;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .btn-approve-sm:hover { background: #16a34a; color: #fff; border-color: #16a34a; }
+
+        .btn-reject-sm {
+            background: #fef3c7; color: #92400e; border: 1px solid #fde68a;
+            border-radius: 9px; padding: 6px 10px;
+            font-size: 11px; font-weight: 800; cursor: pointer;
+            font-family: var(--font); transition: all .15s;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .btn-reject-sm:hover { background: #d97706; color: #fff; border-color: #d97706; }
 
         .btn-ghost {
             background: var(--input-bg-alt); color: var(--text-muted);
@@ -206,6 +231,10 @@ $avatarStyles = [
         body.dark .btn-ghost:hover { background: rgba(99,102,241,.18); color: #a5b4fc; }
         body.dark .btn-delete-sm { background: rgba(220,38,38,.15); color: #f87171; border-color: rgba(220,38,38,.3); }
         body.dark .btn-delete-sm:hover { background: #dc2626; color: #fff; }
+        body.dark .btn-approve-sm { background: rgba(22,163,74,.15); color: #86efac; border-color: rgba(134,239,172,.3); }
+        body.dark .btn-approve-sm:hover { background: #16a34a; color: #fff; }
+        body.dark .btn-reject-sm { background: rgba(217,119,6,.15); color: #fde68a; border-color: rgba(253,230,138,.3); }
+        body.dark .btn-reject-sm:hover { background: #d97706; color: #fff; }
         body.dark .page-eyebrow { color:#4a6fa5; }
         body.dark .page-title   { color:#e2eaf8; }
         body.dark .page-sub     { color:#4a6fa5; }
@@ -218,16 +247,29 @@ $avatarStyles = [
         @keyframes slideUp     { from{opacity:0;transform:translateY(60px)} to{opacity:1;transform:none} }
         @keyframes slideInRight{ from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:none} }
         .fade-up { animation: slideUp .35s ease both; }
+
+        /* ── Pending status pill ── */
+        .status-pending  { background:#fef3c7;color:#92400e;border:1px solid #fde68a; }
+        .status-approved { background:#dcfce7;color:#166534;border:1px solid #86efac; }
+        .status-rejected { background:#fee2e2;color:#dc2626;border:1px solid #fca5a5; }
     </style>
 </head>
 
 <body>
     <?php include APPPATH . 'Views/partials/admin_layout.php'; ?>
 
-    <!-- ── Hidden delete form ── -->
-    <form id="deleteResidentForm" method="POST" action="/admin/delete-resident" style="display:none">
+    <!-- ── Hidden forms ── -->
+    <form id="deleteResidentForm"  method="POST" action="/admin/delete-resident"  style="display:none">
         <?= csrf_field() ?>
         <input type="hidden" name="id" id="deleteResidentId">
+    </form>
+    <form id="approveResidentForm" method="POST" action="/admin/approve-resident" style="display:none">
+        <?= csrf_field() ?>
+        <input type="hidden" name="id" id="approveResidentId">
+    </form>
+    <form id="rejectResidentForm"  method="POST" action="/admin/reject-resident"  style="display:none">
+        <?= csrf_field() ?>
+        <input type="hidden" name="id" id="rejectResidentId">
     </form>
 
     <!-- ════════════════════════════════════════════════════════
@@ -293,7 +335,7 @@ $avatarStyles = [
                 </div>
             </div>
             <!-- Actions -->
-            <div id="dActions" style="padding:16px 20px;border-top:1px solid var(--border-subtle);display:flex;gap:10px;margin-top:8px;flex-wrap:wrap"></div>
+            <div id="dActions" style="padding:16px 20px;border-top:1px solid var(--border-subtle);display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"></div>
         </div>
     </div>
 
@@ -323,6 +365,66 @@ $avatarStyles = [
                     onclick="submitDelete()"
                     style="flex:1;height:40px;border-radius:12px;background:#dc2626;color:#fff;border:none;font-weight:800;font-size:13px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s">
                     <i class="fa-solid fa-trash-can"></i> Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         APPROVE CONFIRM MODAL
+    ════════════════════════════════════════════════════════ -->
+    <div id="approveModal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="approveModalTitle">
+        <div class="overlay-bg" onclick="closeModal('approve')"></div>
+        <div class="modal-box sm">
+            <div class="sheet-handle"></div>
+            <div style="padding:24px 24px 20px;text-align:center">
+                <div style="width:64px;height:64px;background:#dcfce7;color:#16a34a;border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3 id="approveModalTitle" style="font-size:18px;font-weight:800;">Approve Resident Account?</h3>
+                <p style="color:var(--text-sub);font-size:13px;margin-top:6px;font-weight:500;line-height:1.6">
+                    The resident will receive an email notification and gain full access to the system.
+                </p>
+                <p id="approveConfirmName" style="font-size:13px;margin-top:10px;font-weight:800;color:#16a34a"></p>
+            </div>
+            <div style="padding:0 24px 24px;display:flex;gap:10px">
+                <button class="btn-cancel" onclick="closeModal('approve')" style="flex:1">
+                    <i class="fa-solid fa-xmark" style="font-size:11px"></i> Cancel
+                </button>
+                <button id="confirmApproveBtn"
+                    onclick="submitApprove()"
+                    style="flex:1;height:40px;border-radius:12px;background:#16a34a;color:#fff;border:none;font-weight:800;font-size:13px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s">
+                    <i class="fa-solid fa-circle-check"></i> Approve
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         REJECT CONFIRM MODAL
+    ════════════════════════════════════════════════════════ -->
+    <div id="rejectModal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
+        <div class="overlay-bg" onclick="closeModal('reject')"></div>
+        <div class="modal-box sm">
+            <div class="sheet-handle"></div>
+            <div style="padding:24px 24px 20px;text-align:center">
+                <div style="width:64px;height:64px;background:#fef3c7;color:#d97706;border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+                <h3 id="rejectModalTitle" style="font-size:18px;font-weight:800;">Reject Resident Account?</h3>
+                <p style="color:var(--text-sub);font-size:13px;margin-top:6px;font-weight:500;line-height:1.6">
+                    The resident will be notified that their application was not approved.
+                </p>
+                <p id="rejectConfirmName" style="font-size:13px;margin-top:10px;font-weight:800;color:#d97706"></p>
+            </div>
+            <div style="padding:0 24px 24px;display:flex;gap:10px">
+                <button class="btn-cancel" onclick="closeModal('reject')" style="flex:1">
+                    <i class="fa-solid fa-xmark" style="font-size:11px"></i> Cancel
+                </button>
+                <button id="confirmRejectBtn"
+                    onclick="submitReject()"
+                    style="flex:1;height:40px;border-radius:12px;background:#d97706;color:#fff;border:none;font-weight:800;font-size:13px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s">
+                    <i class="fa-solid fa-ban"></i> Reject
                 </button>
             </div>
         </div>
@@ -366,7 +468,7 @@ $avatarStyles = [
             </div>
         </header>
 
-        <!-- Stat cards -->
+        <!-- Stat cards — now 4 cards including Pending -->
         <div class="stats-grid fade-up">
             <div class="stat-card" style="border-left-color:#3730a3" onclick="switchToTab('all')" title="Show all residents">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -388,6 +490,13 @@ $avatarStyles = [
                     <i class="fa-solid fa-circle-exclamation" style="font-size:13px;color:#d97706"></i>
                 </div>
                 <p class="stat-num" style="color:#d97706"><?= $unverified ?></p>
+            </div>
+            <div class="stat-card" style="border-left-color:#f59e0b" onclick="switchToTab('pending')" title="Show pending residents">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                    <p class="stat-lbl">Pending</p>
+                    <i class="fa-solid fa-clock" style="font-size:13px;color:#f59e0b"></i>
+                </div>
+                <p class="stat-num" style="color:#f59e0b"><?= $pendingCount ?></p>
             </div>
         </div>
 
@@ -417,6 +526,10 @@ $avatarStyles = [
                     <i class="fa-solid fa-circle-exclamation" style="font-size:11px"></i> Unverified
                     <span style="font-size:9px;font-weight:800;opacity:.7"><?= $unverified ?></span>
                 </button>
+                <button class="qtab" data-tab="pending" onclick="switchToTab('pending')">
+                    <i class="fa-solid fa-clock" style="font-size:11px"></i> Pending
+                    <span style="font-size:9px;font-weight:800;opacity:.7"><?= $pendingCount ?></span>
+                </button>
             </div>
         </div>
 
@@ -436,13 +549,14 @@ $avatarStyles = [
                         <th>Registered</th>
                         <th>Reservations</th>
                         <th>Verified</th>
-                        <th style="text-align:right;width:130px">Actions</th>
+                        <th>Status</th>
+                        <th style="text-align:right;width:180px">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="resTableBody">
                     <?php if (empty($residents)): ?>
                         <tr id="emptyState">
-                            <td colspan="8">
+                            <td colspan="9">
                                 <div style="padding:80px 24px;text-align:center">
                                     <i class="fa-solid fa-users" style="font-size:2.5rem;color:var(--border);display:block;margin-bottom:12px"></i>
                                     <p style="font-weight:800;color:var(--text-sub);font-size:15px">No resident accounts yet</p>
@@ -478,6 +592,7 @@ $avatarStyles = [
                         ?>
                         <tr class="res-row"
                             data-verifytab="<?= $verTab ?>"
+                            data-statustab="<?= htmlspecialchars($status) ?>"
                             data-search="<?= htmlspecialchars($searchStr) ?>">
                             <td>
                                 <span style="font-size:11px;font-weight:800;color:var(--text-sub);font-family:monospace">#<?= $r['id'] ?></span>
@@ -516,11 +631,37 @@ $avatarStyles = [
                                     </span>
                                 <?php endif; ?>
                             </td>
+                            <td>
+                                <?php
+                                $statusClass = match($status) {
+                                    'approved' => 'status-approved',
+                                    'rejected' => 'status-rejected',
+                                    default    => 'status-pending',
+                                };
+                                $statusIcon = match($status) {
+                                    'approved' => 'fa-circle-check',
+                                    'rejected' => 'fa-ban',
+                                    default    => 'fa-clock',
+                                };
+                                ?>
+                                <span class="badge <?= $statusClass ?>">
+                                    <i class="fa-solid <?= $statusIcon ?>" style="font-size:9px"></i>
+                                    <?= ucfirst($status) ?>
+                                </span>
+                            </td>
                             <td style="text-align:right">
-                                <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
+                                <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap">
                                     <button onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)' class="btn-ghost">
                                         <i class="fa-solid fa-eye" style="font-size:10px"></i> View
                                     </button>
+                                    <?php if ($status === 'pending'): ?>
+                                        <button onclick="triggerApprove(<?= $r['id'] ?>,'<?= addslashes($name) ?>')" class="btn-approve-sm" title="Approve">
+                                            <i class="fa-solid fa-circle-check" style="font-size:10px"></i>
+                                        </button>
+                                        <button onclick="triggerReject(<?= $r['id'] ?>,'<?= addslashes($name) ?>')" class="btn-reject-sm" title="Reject">
+                                            <i class="fa-solid fa-ban" style="font-size:10px"></i>
+                                        </button>
+                                    <?php endif; ?>
                                     <button onclick="triggerDelete(<?= $r['id'] ?>,'<?= addslashes($name) ?>')" class="btn-delete-sm" title="Delete resident">
                                         <i class="fa-solid fa-trash-can" style="font-size:10px"></i>
                                     </button>
@@ -530,9 +671,9 @@ $avatarStyles = [
                         <?php endforeach; ?>
                     <?php endif; ?>
 
-                    <!-- Desktop no-results row (injected by JS, kept here as fallback) -->
+                    <!-- Desktop no-results row -->
                     <tr id="desktopNoResults" style="display:none">
-                        <td colspan="8">
+                        <td colspan="9">
                             <div style="padding:60px 24px;text-align:center">
                                 <i class="fa-solid fa-filter-circle-xmark" style="font-size:2rem;color:var(--border);display:block;margin-bottom:10px"></i>
                                 <p style="font-weight:800;color:var(--text-sub);font-size:14px">No accounts match your filter.</p>
@@ -589,13 +730,24 @@ $avatarStyles = [
                         'avatarStyle'  => $avatarStyle,
                         'initials'     => $init,
                     ]);
+                    $statusClass = match($status) {
+                        'approved' => 'status-approved',
+                        'rejected' => 'status-rejected',
+                        default    => 'status-pending',
+                    };
+                    $statusIcon = match($status) {
+                        'approved' => 'fa-circle-check',
+                        'rejected' => 'fa-ban',
+                        default    => 'fa-clock',
+                    };
                 ?>
                 <div class="res-card mobile-res-card"
                     data-verifytab="<?= $verTab ?>"
+                    data-statustab="<?= htmlspecialchars($status) ?>"
                     data-search="<?= htmlspecialchars($searchStr) ?>"
                     onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
 
-                    <!-- Top row: avatar + name + badge -->
+                    <!-- Top row: avatar + name + verified badge -->
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
                         <div class="res-avatar" style="<?= $avatarStyle ?>"><?= $init ?></div>
                         <div style="flex:1;min-width:0">
@@ -613,8 +765,8 @@ $avatarStyles = [
                         <?php endif; ?>
                     </div>
 
-                    <!-- Meta row: date + reservations -->
-                    <div style="display:flex;gap:14px;margin-bottom:10px">
+                    <!-- Meta row: date + reservations + status -->
+                    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
                         <p style="font-size:11px;color:var(--text-sub);font-weight:600">
                             <i class="fa-regular fa-calendar" style="font-size:10px;margin-right:3px"></i><?= $date ?>
                         </p>
@@ -622,21 +774,30 @@ $avatarStyles = [
                             <i class="fa-solid fa-bookmark" style="font-size:10px;margin-right:3px"></i>
                             <?= $resCount ?> reservation<?= $resCount !== 1 ? 's' : '' ?>
                         </p>
-                        <?php if (!empty($phone) && $phone !== 'N/A'): ?>
-                        <p style="font-size:11px;color:var(--text-sub);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                            <i class="fa-solid fa-phone" style="font-size:10px;margin-right:3px"></i><?= $phone ?>
-                        </p>
-                        <?php endif; ?>
+                        <span class="badge <?= $statusClass ?>" style="font-size:10px">
+                            <i class="fa-solid <?= $statusIcon ?>" style="font-size:9px"></i>
+                            <?= ucfirst($status) ?>
+                        </span>
                     </div>
 
-                    <!-- Bottom row: ID + delete -->
-                    <div style="display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border-subtle);align-items:center" onclick="event.stopPropagation()">
+                    <!-- Bottom row: ID + action buttons -->
+                    <div style="display:flex;gap:6px;padding-top:10px;border-top:1px solid var(--border-subtle);align-items:center" onclick="event.stopPropagation()">
                         <p style="font-size:10px;font-weight:800;color:var(--border);font-family:monospace;flex:1">#<?= $r['id'] ?></p>
+
+                        <?php if ($status === 'pending'): ?>
+                            <button onclick="triggerApprove(<?= $r['id'] ?>,'<?= addslashes($name) ?>')"
+                                class="btn-approve-sm">
+                                <i class="fa-solid fa-circle-check" style="font-size:10px"></i> Approve
+                            </button>
+                            <button onclick="triggerReject(<?= $r['id'] ?>,'<?= addslashes($name) ?>')"
+                                class="btn-reject-sm">
+                                <i class="fa-solid fa-ban" style="font-size:10px"></i> Reject
+                            </button>
+                        <?php endif; ?>
+
                         <button onclick="triggerDelete(<?= $r['id'] ?>,'<?= addslashes($name) ?>')"
-                            style="height:34px;padding:0 14px;border-radius:10px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .15s"
-                            onmouseover="this.style.background='#dc2626';this.style.color='#fff'"
-                            onmouseout="this.style.background='#fee2e2';this.style.color='#dc2626'">
-                            <i class="fa-solid fa-trash-can" style="font-size:10px"></i> Delete
+                            class="btn-delete-sm">
+                            <i class="fa-solid fa-trash-can" style="font-size:10px"></i>
                         </button>
                     </div>
                 </div>
@@ -660,9 +821,11 @@ $avatarStyles = [
         'use strict';
 
         /* ─── State ─── */
-        let curTab         = 'all';
-        let deleteTargetId = null;
-        let searchTimer    = null;
+        let curTab          = 'all';
+        let deleteTargetId  = null;
+        let approveTargetId = null;
+        let rejectTargetId  = null;
+        let searchTimer     = null;
 
         /* ─── Node lists ─── */
         const allTableRows   = Array.from(document.querySelectorAll('.res-row'));
@@ -687,7 +850,15 @@ $avatarStyles = [
             const q = searchInput.value.toLowerCase().trim();
 
             const match = el => {
-                const tabOk    = curTab === 'all' || el.dataset.verifytab === curTab;
+                // Verify tab filter
+                let tabOk = false;
+                if (curTab === 'all') {
+                    tabOk = true;
+                } else if (curTab === 'pending') {
+                    tabOk = el.dataset.statustab === 'pending';
+                } else {
+                    tabOk = el.dataset.verifytab === curTab;
+                }
                 const searchOk = !q || el.dataset.search.includes(q);
                 return tabOk && searchOk;
             };
@@ -696,15 +867,13 @@ $avatarStyles = [
             allTableRows.forEach(r   => { const s = match(r); r.style.display = s ? '' : 'none'; if (s) n++; });
             allMobileCards.forEach(c => { const s = match(c); c.style.display = s ? '' : 'none'; if (s) m++; });
 
-            const tot = allTableRows.length;
-            const shown = tot ? n : m;  // fall back to mobile count if desktop list is hidden
-            resultCount.textContent = `Showing ${shown} of ${tot || allMobileCards.length} account${(tot || allMobileCards.length) !== 1 ? 's' : ''}`;
+            const tot   = allTableRows.length || allMobileCards.length;
+            const shown = allTableRows.length ? n : m;
+            resultCount.textContent = `Showing ${shown} of ${tot} account${tot !== 1 ? 's' : ''}`;
 
             if (tableFooter) tableFooter.textContent = `${n} result${n !== 1 ? 's' : ''} displayed`;
 
-            // Desktop no-results
-            if (desktopNR) desktopNR.style.display = (n === 0 && allTableRows.length > 0) ? '' : 'none';
-            // Mobile no-results
+            if (desktopNR) desktopNR.style.display = (n === 0 && allTableRows.length > 0)   ? ''      : 'none';
             if (mobileNR)  mobileNR.style.display  = (m === 0 && allMobileCards.length > 0) ? 'block' : 'none';
         }
 
@@ -746,17 +915,34 @@ $avatarStyles = [
             document.getElementById('dPhone').textContent        = d.phone || 'N/A';
             document.getElementById('dDate').textContent         = d.date;
             document.getElementById('dReservations').textContent = d.reservations + ' total reservation' + (d.reservations !== 1 ? 's' : '');
-            document.getElementById('dStatus').textContent       = d.status.charAt(0).toUpperCase() + d.status.slice(1);
 
-            /* Actions */
+            const statusLabels = { approved: '✅ Approved', rejected: '❌ Rejected', pending: '⏳ Pending Approval' };
+            document.getElementById('dStatus').textContent = statusLabels[d.status] || d.status;
+
+            /* Actions — show Approve/Reject only when pending */
             const safeName = d.name.replace(/'/g, "\\'");
+
+            let pendingBtns = '';
+            if (d.status === 'pending') {
+                pendingBtns = `
+                    <button onclick="triggerApprove(${d.id},'${safeName}');closeModal('detail');"
+                        style="height:40px;padding:0 14px;border-radius:12px;background:#dcfce7;color:#166534;border:1px solid #86efac;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s">
+                        <i class="fa-solid fa-circle-check" style="font-size:11px"></i> Approve
+                    </button>
+                    <button onclick="triggerReject(${d.id},'${safeName}');closeModal('detail');"
+                        style="height:40px;padding:0 14px;border-radius:12px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s">
+                        <i class="fa-solid fa-ban" style="font-size:11px"></i> Reject
+                    </button>`;
+            }
+
             document.getElementById('dActions').innerHTML = `
-                <button onclick="closeModal('detail')" class="btn-cancel" style="flex:1">
+                <button onclick="closeModal('detail')" class="btn-cancel" style="flex:1;min-width:80px">
                     <i class="fa-solid fa-xmark" style="font-size:11px"></i> Close
                 </button>
+                ${pendingBtns}
                 <button onclick="triggerDelete(${d.id},'${safeName}');closeModal('detail');"
-                    style="height:40px;padding:0 16px;border-radius:12px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s">
-                    <i class="fa-solid fa-trash-can" style="font-size:11px"></i> Delete Account
+                    style="height:40px;padding:0 14px;border-radius:12px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s">
+                    <i class="fa-solid fa-trash-can" style="font-size:11px"></i> Delete
                 </button>`;
 
             openModal('detail');
@@ -780,8 +966,47 @@ $avatarStyles = [
         }
         window.submitDelete = submitDelete;
 
+        /* ─── Approve flow ─── */
+        function triggerApprove(id, name) {
+            approveTargetId = id;
+            document.getElementById('approveConfirmName').textContent = name ? `"${name}"` : '';
+            openModal('approve');
+        }
+        window.triggerApprove = triggerApprove;
+
+        function submitApprove() {
+            const btn = document.getElementById('confirmApproveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving…';
+            document.getElementById('approveResidentId').value = approveTargetId;
+            document.getElementById('approveResidentForm').submit();
+        }
+        window.submitApprove = submitApprove;
+
+        /* ─── Reject flow ─── */
+        function triggerReject(id, name) {
+            rejectTargetId = id;
+            document.getElementById('rejectConfirmName').textContent = name ? `"${name}"` : '';
+            openModal('reject');
+        }
+        window.triggerReject = triggerReject;
+
+        function submitReject() {
+            const btn = document.getElementById('confirmRejectBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Rejecting…';
+            document.getElementById('rejectResidentId').value = rejectTargetId;
+            document.getElementById('rejectResidentForm').submit();
+        }
+        window.submitReject = submitReject;
+
         /* ─── Modal helpers ─── */
-        const overlayMap = { detail: 'detailModal', delete: 'deleteModal' };
+        const overlayMap = {
+            detail:  'detailModal',
+            delete:  'deleteModal',
+            approve: 'approveModal',
+            reject:  'rejectModal',
+        };
 
         function openModal(key) {
             const el = document.getElementById(overlayMap[key]);
@@ -790,17 +1015,27 @@ $avatarStyles = [
         function closeModal(key) {
             const el = document.getElementById(overlayMap[key]);
             if (el) { el.classList.remove('open'); document.body.style.overflow = ''; }
-            if (key === 'delete') {
-                const btn = document.getElementById('confirmDeleteBtn');
-                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Delete Permanently'; }
+
+            /* Reset button states */
+            const resetMap = {
+                delete:  ['confirmDeleteBtn',  '<i class="fa-solid fa-trash-can"></i> Delete Permanently'],
+                approve: ['confirmApproveBtn', '<i class="fa-solid fa-circle-check"></i> Approve'],
+                reject:  ['confirmRejectBtn',  '<i class="fa-solid fa-ban"></i> Reject'],
+            };
+            if (resetMap[key]) {
+                const [btnId, html] = resetMap[key];
+                const btn = document.getElementById(btnId);
+                if (btn) { btn.disabled = false; btn.innerHTML = html; }
             }
         }
         window.openModal  = openModal;
         window.closeModal = closeModal;
 
-        /* Escape key */
+        /* Escape key closes all modals */
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') { closeModal('detail'); closeModal('delete'); }
+            if (e.key === 'Escape') {
+                ['detail', 'delete', 'approve', 'reject'].forEach(closeModal);
+            }
         });
 
         /* ─── Auto-dismiss flash toasts after 5 s ─── */
