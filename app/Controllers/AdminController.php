@@ -51,7 +51,7 @@ class AdminController extends Controller
         if ($userId) {
             $userExists = $this->db->table('users')
                 ->where('id', $userId)
-                ->whereIn('status', ['active', 'pending'])
+                ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
                 ->countAllResults();
 
             if ($userExists) return $userId;
@@ -61,7 +61,7 @@ class AdminController extends Controller
         if ($email) {
             $user = $this->db->table('users')
                 ->where('email', $email)
-                ->whereIn('status', ['active', 'pending'])
+                ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
                 ->get()->getRowArray();
 
             if ($user) {
@@ -75,7 +75,7 @@ class AdminController extends Controller
 
         $chairman = $this->db->table('users')
             ->where('role', 'chairman')
-            ->whereIn('status', ['active', 'pending'])
+            ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
             ->orderBy('id', 'ASC')
             ->get()->getRowArray();
 
@@ -89,7 +89,7 @@ class AdminController extends Controller
         }
 
         $anyUser = $this->db->table('users')
-            ->whereIn('status', ['active', 'pending'])
+            ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
             ->orderBy('id', 'ASC')
             ->get()->getRowArray();
 
@@ -106,87 +106,92 @@ class AdminController extends Controller
     }
 
     public function manageReservations()
-{
-    if (!session()->has('user_id')) {
-        return redirect()->to('/login')->with('error', 'Please login first');
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+
+        $db = $this->db;
+
+        $reservations = $db->table('reservations r')
+            ->select('r.*, res.name AS resource_name,
+                      u.name AS visitor_name, u.email AS visitor_email,
+                      approver.name AS approver_name, approver.email AS approver_email')
+            ->join('resources res',  'res.id = r.resource_id',    'left')
+            ->join('users u',        'u.id = r.user_id',          'left')
+            ->join('users approver', 'approver.id = r.approved_by','left')
+            ->orderBy('r.id', 'DESC')
+            ->get()->getResultArray();
+
+        // Build print log map: reservation_id => log row
+        $printLogMap = [];
+        foreach ($db->table('print_logs')->get()->getResultArray() as $pl) {
+            $printLogMap[(int)$pl['reservation_id']] = $pl;
+        }
+
+        // Build walk-in quota map: lowercase name => quota info
+        $walkInQuotaMap = [];
+        $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
+        $rows = $db->query("
+            SELECT LOWER(TRIM(visitor_name)) AS name_key,
+                   COUNT(*) AS used,
+                   MIN(reservation_date) AS oldest_date
+            FROM reservations
+            WHERE user_id IS NULL
+              AND status NOT IN ('declined','canceled')
+              AND reservation_date >= ?
+            GROUP BY LOWER(TRIM(visitor_name))
+        ", [$twoWeeksAgo])->getResultArray();
+
+        foreach ($rows as $row) {
+            $used  = (int)$row['used'];
+            $reset = $row['oldest_date']
+                ? date('F j, Y', strtotime($row['oldest_date'] . ' +15 days'))
+                : null;
+            $walkInQuotaMap[$row['name_key']] = [
+                'used'      => $used,
+                'remaining' => max(0, 3 - $used),
+                'fair'      => $used < 3,
+                'reset'     => $reset,
+            ];
+        }
+
+        return view('admin/manage-reservations', [
+            'page'           => 'manage-reservations',
+            'reservations'   => $reservations,
+            'printLogMap'    => $printLogMap,
+            'walkInQuotaMap' => $walkInQuotaMap,
+        ]);
     }
 
-    $db = $this->db;
+    public function newReservation()
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
 
-    $reservations = $db->table('reservations r')
-        ->select('r.*, res.name AS resource_name,
-                  u.name AS visitor_name, u.email AS visitor_email,
-                  approver.name AS approver_name, approver.email AS approver_email')
-        ->join('resources res',  'res.id = r.resource_id',    'left')
-        ->join('users u',        'u.id = r.user_id',          'left')
-        ->join('users approver', 'approver.id = r.approved_by','left')
-        ->orderBy('r.id', 'DESC')
-        ->get()->getResultArray();
+        $resources = $this->db->table('resources')
+            ->where('status', 'active')
+            ->orderBy('name', 'ASC')
+            ->get()->getResultArray();
 
-    // Build print log map: reservation_id => log row
-    $printLogMap = [];
-    foreach ($db->table('print_logs')->get()->getResultArray() as $pl) {
-        $printLogMap[(int)$pl['reservation_id']] = $pl;
+        $pcs = $this->db->table('pcs')
+            ->orderBy('pc_number', 'ASC')
+            ->get()->getResultArray();
+
+        $users = $this->db->table('users')
+            ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
+            ->where('role', 'user')
+            ->orderBy('name', 'ASC')
+            ->get()->getResultArray();
+
+        return view('admin/new-reservation', [
+            'page'      => 'new-reservation',
+            'resources' => $resources,
+            'pcs'       => $pcs,
+            'users'     => $users,
+        ]);
     }
-
-    // Build walk-in quota map: lowercase name => quota info
-    $walkInQuotaMap = [];
-    $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
-    $rows = $db->query("
-        SELECT LOWER(TRIM(visitor_name)) AS name_key,
-               COUNT(*) AS used,
-               MIN(reservation_date) AS oldest_date
-        FROM reservations
-        WHERE user_id IS NULL
-          AND status NOT IN ('declined','canceled')
-          AND reservation_date >= ?
-        GROUP BY LOWER(TRIM(visitor_name))
-    ", [$twoWeeksAgo])->getResultArray();
-
-    foreach ($rows as $row) {
-        $used  = (int)$row['used'];
-        $reset = $row['oldest_date']
-            ? date('F j, Y', strtotime($row['oldest_date'] . ' +15 days'))
-            : null;
-        $walkInQuotaMap[$row['name_key']] = [
-            'used'      => $used,
-            'remaining' => max(0, 3 - $used),
-            'fair'      => $used < 3,
-            'reset'     => $reset,
-        ];
-    }
-
-    return view('admin/manage-reservations', [
-        'page'           => 'manage-reservations',
-        'reservations'   => $reservations,
-        'printLogMap'    => $printLogMap,
-        'walkInQuotaMap' => $walkInQuotaMap,
-    ]);
-}
-
-public function newReservation()
-{
-    if (!session()->has('user_id')) {
-        return redirect()->to('/login')->with('error', 'Please login first');
-    }
-
-    $resources = $this->db->table('resources')
-        ->where('status', 'active')
-        ->orderBy('name', 'ASC')
-        ->get()->getResultArray();
-
-    $users = $this->db->table('users')
-        ->whereIn('status', ['active', 'pending'])
-        ->where('role', 'user')
-        ->orderBy('name', 'ASC')
-        ->get()->getResultArray();
-
-    return view('admin/new-reservation', [
-        'page'      => 'new-reservation',
-        'resources' => $resources,
-        'users'     => $users,
-    ]);
-}
 
     private function sendSKDecisionEmail(string $to, string $name, string $decision): void
     {
@@ -238,9 +243,6 @@ public function newReservation()
 
     // ═══════════════════════════════════════════════════════════════════════
     //  DASHBOARD
-    //  FIX: Removed ->limit(10) so ALL reservations reach the JS allRes
-    //       array — required for the live session monitor to detect active
-    //       sessions regardless of recency order.
     // ═══════════════════════════════════════════════════════════════════════
     public function dashboard()
     {
@@ -251,7 +253,6 @@ public function newReservation()
         $model = $this->reservationModel;
         $db    = $this->db;
 
-        // ── FIX: no ->limit() here — all rows needed for live session JS ──
         $reservations = $db->table('reservations r')
             ->select('r.*, res.name AS resource_name, u.name as visitor_name, u.email as user_email')
             ->join('resources res', 'res.id = r.resource_id', 'left')
@@ -381,13 +382,6 @@ public function newReservation()
         ]);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  STOP SESSION
-    //  PostgreSQL-compatible: uses true instead of 1 for force_ended boolean.
-    //  Route: POST /admin/sessions/stop
-    //  Body (JSON): { reservation_id: int }
-    // ═══════════════════════════════════════════════════════════════════════
-    
     public function logPrint()
     {
         if (!session()->has('user_id')) {
@@ -1266,7 +1260,7 @@ public function newReservation()
                 'name'        => $name,
                 'email'       => $email,
                 'role'        => 'chairman',
-                'status'      => 'active',
+                'status'      => 'approved',  // FIXED: 'active' → 'approved' (enum value)
                 'is_approved' => true,
                 'is_verified' => true,
                 'created_at'  => date('Y-m-d H:i:s'),
@@ -1306,7 +1300,7 @@ public function newReservation()
                 'name'        => 'Admin',
                 'email'       => 'admin@demo.com',
                 'role'        => 'chairman',
-                'status'      => 'active',
+                'status'      => 'approved',  // FIXED: 'active' → 'approved' (enum value)
                 'is_approved' => true,
                 'is_verified' => true,
                 'created_at'  => date('Y-m-d H:i:s'),
@@ -1375,7 +1369,7 @@ public function newReservation()
 
         $user = $this->db->table('users')
             ->where('email', $userEmail)
-            ->whereIn('status', ['active', 'pending'])
+            ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
             ->get()->getRowArray();
 
         if ($user) {
