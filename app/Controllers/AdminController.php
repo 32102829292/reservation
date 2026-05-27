@@ -105,6 +105,89 @@ class AdminController extends Controller
         return null;
     }
 
+    public function manageReservations()
+{
+    if (!session()->has('user_id')) {
+        return redirect()->to('/login')->with('error', 'Please login first');
+    }
+
+    $db = $this->db;
+
+    $reservations = $db->table('reservations r')
+        ->select('r.*, res.name AS resource_name,
+                  u.name AS visitor_name, u.email AS visitor_email,
+                  approver.name AS approver_name, approver.email AS approver_email')
+        ->join('resources res',  'res.id = r.resource_id',    'left')
+        ->join('users u',        'u.id = r.user_id',          'left')
+        ->join('users approver', 'approver.id = r.approved_by','left')
+        ->orderBy('r.id', 'DESC')
+        ->get()->getResultArray();
+
+    // Build print log map: reservation_id => log row
+    $printLogMap = [];
+    foreach ($db->table('print_logs')->get()->getResultArray() as $pl) {
+        $printLogMap[(int)$pl['reservation_id']] = $pl;
+    }
+
+    // Build walk-in quota map: lowercase name => quota info
+    $walkInQuotaMap = [];
+    $twoWeeksAgo = date('Y-m-d', strtotime('-14 days'));
+    $rows = $db->query("
+        SELECT LOWER(TRIM(visitor_name)) AS name_key,
+               COUNT(*) AS used,
+               MIN(reservation_date) AS oldest_date
+        FROM reservations
+        WHERE user_id IS NULL
+          AND status NOT IN ('declined','canceled')
+          AND reservation_date >= ?
+        GROUP BY LOWER(TRIM(visitor_name))
+    ", [$twoWeeksAgo])->getResultArray();
+
+    foreach ($rows as $row) {
+        $used  = (int)$row['used'];
+        $reset = $row['oldest_date']
+            ? date('F j, Y', strtotime($row['oldest_date'] . ' +15 days'))
+            : null;
+        $walkInQuotaMap[$row['name_key']] = [
+            'used'      => $used,
+            'remaining' => max(0, 3 - $used),
+            'fair'      => $used < 3,
+            'reset'     => $reset,
+        ];
+    }
+
+    return view('admin/manage-reservations', [
+        'page'           => 'manage-reservations',
+        'reservations'   => $reservations,
+        'printLogMap'    => $printLogMap,
+        'walkInQuotaMap' => $walkInQuotaMap,
+    ]);
+}
+
+public function newReservation()
+{
+    if (!session()->has('user_id')) {
+        return redirect()->to('/login')->with('error', 'Please login first');
+    }
+
+    $resources = $this->db->table('resources')
+        ->where('status', 'active')
+        ->orderBy('name', 'ASC')
+        ->get()->getResultArray();
+
+    $users = $this->db->table('users')
+        ->whereIn('status', ['active', 'pending'])
+        ->where('role', 'user')
+        ->orderBy('name', 'ASC')
+        ->get()->getResultArray();
+
+    return view('admin/new-reservation', [
+        'page'      => 'new-reservation',
+        'resources' => $resources,
+        'users'     => $users,
+    ]);
+}
+
     private function sendSKDecisionEmail(string $to, string $name, string $decision): void
     {
         $apiKey = env('BREVO_API_KEY', '');
