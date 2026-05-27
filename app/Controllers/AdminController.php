@@ -51,7 +51,7 @@ class AdminController extends Controller
         if ($userId) {
             $userExists = $this->db->table('users')
                 ->where('id', $userId)
-                ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
+                ->whereIn('status', ['approved', 'pending'])
                 ->countAllResults();
 
             if ($userExists) return $userId;
@@ -61,7 +61,7 @@ class AdminController extends Controller
         if ($email) {
             $user = $this->db->table('users')
                 ->where('email', $email)
-                ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
+                ->whereIn('status', ['approved', 'pending'])
                 ->get()->getRowArray();
 
             if ($user) {
@@ -75,7 +75,7 @@ class AdminController extends Controller
 
         $chairman = $this->db->table('users')
             ->where('role', 'chairman')
-            ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
+            ->whereIn('status', ['approved', 'pending'])
             ->orderBy('id', 'ASC')
             ->get()->getRowArray();
 
@@ -89,7 +89,7 @@ class AdminController extends Controller
         }
 
         $anyUser = $this->db->table('users')
-            ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
+            ->whereIn('status', ['approved', 'pending'])
             ->orderBy('id', 'ASC')
             ->get()->getRowArray();
 
@@ -180,7 +180,7 @@ class AdminController extends Controller
             ->get()->getResultArray();
 
         $users = $this->db->table('users')
-            ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
+            ->whereIn('status', ['approved', 'pending'])
             ->where('role', 'user')
             ->orderBy('name', 'ASC')
             ->get()->getResultArray();
@@ -609,6 +609,64 @@ class AdminController extends Controller
     }
 
     // ═══════════════════════════════════════════════════════════════════════
+    //  CHECK AVAILABILITY (AJAX) — returns booked slots + conflict flag
+    // ═══════════════════════════════════════════════════════════════════════
+    public function checkAvailability()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Forbidden']);
+        }
+
+        if (!session()->has('user_id')) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
+        }
+
+        $resourceId = (int) $this->request->getGet('resource_id');
+        $date       = $this->request->getGet('date');
+        $startTime  = $this->request->getGet('start_time');
+        $endTime    = $this->request->getGet('end_time');
+        $excludeId  = (int) $this->request->getGet('exclude_id');
+
+        if (!$resourceId || !$date) {
+            return $this->response->setJSON([
+                'available'    => true,
+                'booked_slots' => [],
+                'has_conflict' => false,
+            ]);
+        }
+
+        // Fetch all booked slots for this resource+date
+        $query = $this->db->table('reservations')
+            ->select('start_time, end_time, status')
+            ->where('resource_id', $resourceId)
+            ->where('reservation_date', $date)
+            ->whereIn('status', ['pending', 'approved']);
+
+        if ($excludeId) {
+            $query->where('id !=', $excludeId);
+        }
+
+        $bookedSlots = $query->get()->getResultArray();
+
+        // Check if the requested time range conflicts with any slot
+        $hasConflict = false;
+        if ($startTime && $endTime) {
+            foreach ($bookedSlots as $slot) {
+                if ($startTime < $slot['end_time'] && $endTime > $slot['start_time']) {
+                    $hasConflict = true;
+                    break;
+                }
+            }
+        }
+
+        return $this->response->setJSON([
+            'available'    => !$hasConflict,
+            'booked_slots' => $bookedSlots,
+            'has_conflict' => $hasConflict,
+        ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     //  CREATE RESERVATION
     // ═══════════════════════════════════════════════════════════════════════
     public function createReservation()
@@ -646,7 +704,14 @@ class AdminController extends Controller
             }
         }
 
-        if ($visitorType === 'User' && $userId > 0) {
+        // ── Determine if selected resource is WiFi (skips all quota/block checks) ──
+        $selectedResource = !empty($resourceId)
+            ? $db->table('resources')->where('id', $resourceId)->get()->getRowArray()
+            : null;
+        $isWifi = $selectedResource && stripos($selectedResource['name'], 'wifi') !== false;
+
+        // ── Block check (registered user) — skipped for WiFi ──
+        if (!$isWifi && $visitorType === 'User' && $userId > 0) {
             $isBlocked = $reservationModel->isBlocked($userId);
             if ($isBlocked) {
                 return redirect()->back()->with('error',
@@ -656,7 +721,8 @@ class AdminController extends Controller
             }
         }
 
-        if ($visitorType === 'User' && $userId > 0) {
+        // ── Fairness check (registered user) — skipped for WiFi ──
+        if (!$isWifi && $visitorType === 'User' && $userId > 0) {
             $fairness = $reservationModel->checkFairness($userId);
             if (!$fairness['fair']) {
                 $message = isset($fairness['blocked'])
@@ -666,7 +732,8 @@ class AdminController extends Controller
             }
         }
 
-        if (strtolower($visitorType) !== 'user') {
+        // ── Walk-in checks — skipped entirely for WiFi ──
+        if (!$isWifi && strtolower($visitorType) !== 'user') {
             if (empty($visitorName)) {
                 return redirect()->back()->withInput()
                     ->with('error', 'Walk-in visitor name is required.');
@@ -716,7 +783,8 @@ class AdminController extends Controller
                 ->with('error', 'End time must be after start time.');
         }
 
-        if ($visitorType === 'User' && $userId > 0) {
+        // ── Same-day check — skipped for WiFi ──
+        if (!$isWifi && $visitorType === 'User' && $userId > 0) {
             $sameDayReservations = $reservationModel->getUserSameDayReservations($userId, $reservationDate);
             if (!empty($sameDayReservations)) {
                 return redirect()->back()->withInput()
@@ -1260,7 +1328,7 @@ class AdminController extends Controller
                 'name'        => $name,
                 'email'       => $email,
                 'role'        => 'chairman',
-                'status'      => 'approved',  // FIXED: 'active' → 'approved' (enum value)
+                'status'      => 'approved',
                 'is_approved' => true,
                 'is_verified' => true,
                 'created_at'  => date('Y-m-d H:i:s'),
@@ -1300,7 +1368,7 @@ class AdminController extends Controller
                 'name'        => 'Admin',
                 'email'       => 'admin@demo.com',
                 'role'        => 'chairman',
-                'status'      => 'approved',  // FIXED: 'active' → 'approved' (enum value)
+                'status'      => 'approved',
                 'is_approved' => true,
                 'is_verified' => true,
                 'created_at'  => date('Y-m-d H:i:s'),
@@ -1369,7 +1437,7 @@ class AdminController extends Controller
 
         $user = $this->db->table('users')
             ->where('email', $userEmail)
-            ->whereIn('status', ['approved', 'pending'])  // FIXED: 'active' → 'approved'
+            ->whereIn('status', ['approved', 'pending'])
             ->get()->getRowArray();
 
         if ($user) {

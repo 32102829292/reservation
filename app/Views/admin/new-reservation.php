@@ -187,6 +187,90 @@
         .pc-btn.selected { background: var(--indigo); color: white; border-color: var(--indigo); }
 
         /* ══════════════════════════════
+           AVAILABILITY STATUS
+        ══════════════════════════════ */
+        #availabilityStatus {
+            display: none;
+            margin-top: 10px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: .82rem;
+            font-weight: 600;
+            align-items: center;
+            gap: 10px;
+            transition: all .2s;
+        }
+        #availabilityStatus.av-checking {
+            display: flex;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            color: #0369a1;
+        }
+        #availabilityStatus.av-ok {
+            display: flex;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #15803d;
+        }
+        #availabilityStatus.av-conflict {
+            display: flex;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+        }
+        #availabilityStatus.av-info {
+            display: flex;
+            background: #fefce8;
+            border: 1px solid #fde68a;
+            color: #92400e;
+        }
+        .av-icon {
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: .8rem;
+        }
+        .av-checking .av-icon { background: #e0f2fe; }
+        .av-ok      .av-icon { background: #dcfce7; }
+        .av-conflict .av-icon { background: #fee2e2; }
+        .av-info    .av-icon { background: #fef9c3; }
+
+        /* Booked slots table */
+        #bookedSlotsWrap {
+            display: none;
+            margin-top: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(99,102,241,.1);
+        }
+        .bs-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 9px 13px;
+            background: #f8fafc;
+            border-bottom: 1px solid rgba(99,102,241,.08);
+            font-size: .7rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .1em; color: #94a3b8;
+        }
+        .bs-row {
+            display: flex; align-items: center; gap: 0;
+            padding: 9px 13px;
+            border-bottom: 1px solid rgba(99,102,241,.05);
+            font-size: .8rem;
+            background: white;
+        }
+        .bs-row:last-child { border-bottom: none; }
+        .bs-row:hover { background: #f8fafc; }
+        .bs-col { flex: 1; }
+        .bs-status-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 9px; border-radius: 20px;
+            font-size: .68rem; font-weight: 700;
+        }
+        .bs-pill-approved { background: #dcfce7; color: #15803d; }
+        .bs-pill-pending  { background: #fef3c7; color: #92400e; }
+        .bs-conflict-row  { background: #fef2f2 !important; }
+
+        /* ══════════════════════════════
            SUBMIT BUTTON
         ══════════════════════════════ */
         .submit-btn {
@@ -388,9 +472,11 @@
         @keyframes sheetUp { from { opacity:0; transform:translateY(60px); } to { opacity:1; transform:none; } }
         @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
         @keyframes shake   { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
+        @keyframes spin    { to { transform: rotate(360deg); } }
         .fade-up   { animation: slideUp .4s ease both; }
         .fade-up-1 { animation: slideUp .45s .05s ease both; }
         .shake     { animation: shake .35s ease; }
+        .spin-icon { animation: spin 1s linear infinite; display: inline-block; }
 
         /* ══════════════════════════════
            CUSTOM DATE / TIME PICKERS
@@ -601,6 +687,16 @@
         body.dark .pin-box { background: #101e35; border-color: rgba(99,102,241,.25); color: #e2eaf8; }
         body.dark .pin-box.pin-ok  { background: rgba(22,163,74,.1);  border-color: #16a34a; }
         body.dark .pin-box.pin-err { background: rgba(220,38,38,.1);  border-color: #dc2626; }
+        /* availability dark */
+        body.dark #availabilityStatus.av-checking { background: rgba(3,105,161,.12); border-color: rgba(186,230,253,.2); color: #7dd3fc; }
+        body.dark #availabilityStatus.av-ok       { background: rgba(21,128,61,.12);  border-color: rgba(187,247,208,.2); color: #86efac; }
+        body.dark #availabilityStatus.av-conflict { background: rgba(185,28,28,.12);  border-color: rgba(254,202,202,.2); color: #fca5a5; }
+        body.dark #availabilityStatus.av-info     { background: rgba(146,64,14,.12);  border-color: rgba(253,230,138,.2); color: #fcd34d; }
+        body.dark #bookedSlotsWrap { border-color: rgba(99,102,241,.15); }
+        body.dark .bs-header { background: #101e35; color: #4a6fa5; border-color: rgba(99,102,241,.1); }
+        body.dark .bs-row { background: #0b1628; border-color: rgba(99,102,241,.07); color: #e2eaf8; }
+        body.dark .bs-row:hover { background: #101e35; }
+        body.dark .bs-conflict-row { background: rgba(185,28,28,.1) !important; }
     </style>
 </head>
 
@@ -847,16 +943,33 @@
                                     $rname  = htmlspecialchars($res['name']);
                                     $lower  = strtolower($res['name']);
                                     $hasPcs = (strpos($lower,'computer')!==false||strpos($lower,'pc')!==false||strpos($lower,'lab')!==false)?'1':'0';
+                                    $isWifi = (strpos($lower,'wifi')!==false)?'1':'0';
                                 ?>
-                                <div class="cs-opt" data-value="<?= $res['id'] ?>" data-name="<?= $rname ?>" data-has-pcs="<?= $hasPcs ?>">
+                                <div class="cs-opt"
+                                     data-value="<?= $res['id'] ?>"
+                                     data-name="<?= $rname ?>"
+                                     data-has-pcs="<?= $hasPcs ?>"
+                                     data-is-wifi="<?= $isWifi ?>">
                                     <div class="cs-opt-icon" style="background:rgba(99,102,241,.1)">
+                                        <?php if ($isWifi === '1'): ?>
+                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 5.5C4.1 2.8 8 2 8 2s3.9.8 7 3.5" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/><path d="M3.5 8C5.2 6.4 8 6 8 6s2.8.4 4.5 2" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/><path d="M6 10.5C6.7 9.9 8 9.7 8 9.7s1.3.2 2 .8" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="13" r="1" fill="#6366f1"/></svg>
+                                        <?php else: ?>
                                         <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="10" rx="2" stroke="#6366f1" stroke-width="1.3"/><path d="M5 15h6M8 12v3" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg>
+                                        <?php endif; ?>
                                     </div>
                                     <span class="cs-opt-label"><?= $rname ?></span>
+                                    <?php if ($isWifi === '1'): ?>
+                                    <span style="font-size:.6rem;font-weight:700;background:rgba(99,102,241,.1);color:#6366f1;padding:2px 7px;border-radius:20px;letter-spacing:.04em">NO LIMIT</span>
+                                    <?php endif; ?>
                                     <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </div>
                                 <?php endforeach; ?>
                             </div>
+                        </div>
+                        <!-- WiFi notice banner — shown when WiFi is selected -->
+                        <div id="wifiNoticeBanner" style="display:none;margin-top:8px;padding:9px 13px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:9px;font-size:.78rem;font-weight:600;color:#4c1d95;display:none;align-items:center;gap:8px">
+                            <i class="fa-solid fa-wifi" style="color:#7c3aed;font-size:.8rem"></i>
+                            WiFi reservations have <strong>no booking limit</strong> — quota and fairness checks are skipped.
                         </div>
                     </div>
 
@@ -908,8 +1021,27 @@
                         </div>
                     </div>
 
+                    <!-- ══ LIVE AVAILABILITY STATUS ══ -->
+                    <div id="availabilityStatus">
+                        <div class="av-icon" id="avIcon"></div>
+                        <div style="flex:1">
+                            <div id="avTitle" style="font-weight:700;font-size:.82rem"></div>
+                            <div id="avSub"   style="font-size:.7rem;margin-top:1px;opacity:.85"></div>
+                        </div>
+                        <div id="avPill" style="padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:800;letter-spacing:.04em;white-space:nowrap"></div>
+                    </div>
+
+                    <!-- Booked slots breakdown table -->
+                    <div id="bookedSlotsWrap">
+                        <div class="bs-header">
+                            <i class="fa-solid fa-clock" style="font-size:.65rem"></i>
+                            Other bookings on this date
+                        </div>
+                        <div id="bookedSlotsList"></div>
+                    </div>
+
                     <!-- Styled purpose select -->
-                    <div style="margin-bottom:14px">
+                    <div style="margin-bottom:14px;margin-top:14px">
                         <label class="field-label">Purpose of Visit</label>
                         <div class="cs-wrap" id="purposeWrap">
                             <div class="cs-trigger" id="purposeTrigger">
@@ -1075,17 +1207,24 @@
             });
         }
 
-        function getSelectedResourceVal()  { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
-        function getSelectedResourceName() { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.querySelector('.cs-opt-label')?.textContent.trim() : '—'; }
-        function getSelectedPurpose()      { const o = document.querySelector('#purposeDrop  .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
+        function getSelectedResourceVal()    { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
+        function getSelectedResourceName()   { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.querySelector('.cs-opt-label')?.textContent.trim() : '—'; }
+        function getSelectedResourceIsWifi() { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? (o.dataset.isWifi === '1') : false; }
+        function getSelectedPurpose()        { const o = document.querySelector('#purposeDrop  .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
 
         initCS('resourceWrap', 'resourceDrop', 'resourceLabel', function(val, opt) {
             document.getElementById('nativeResource').innerHTML = `<option value="${val}" selected></option>`;
             const hasPcs = opt.dataset.hasPcs === '1';
+            const isWifi = opt.dataset.isWifi === '1';
             document.getElementById('pcSection').style.display = hasPcs ? 'block' : 'none';
+            // Show/hide WiFi banner
+            const wifiBanner = document.getElementById('wifiNoticeBanner');
+            wifiBanner.style.display = isWifi ? 'flex' : 'none';
             selectedPcs = [];
             updatePcHidden();
             document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
+            // Trigger availability check when resource changes
+            schedAvailabilityCheck();
         });
 
         initCS('purposeWrap', 'purposeDrop', 'purposeLabel', function(val) {
@@ -1094,6 +1233,161 @@
             if (val !== 'Others') document.getElementById('purposeOther').value = '';
         });
 
+        /* ════════════════════════════
+           LIVE AVAILABILITY CHECKER
+        ════════════════════════════ */
+        let _avTimer = null;
+
+        function schedAvailabilityCheck() {
+            clearTimeout(_avTimer);
+            _avTimer = setTimeout(runAvailabilityCheck, 450);
+        }
+
+        function runAvailabilityCheck() {
+            const resourceId = getSelectedResourceVal();
+            const date       = document.getElementById('resDate').value;
+            const startTime  = document.getElementById('startTime').value;
+            const endTime    = document.getElementById('endTime').value;
+
+            const status = document.getElementById('availabilityStatus');
+            const slots  = document.getElementById('bookedSlotsWrap');
+
+            if (!resourceId || !date) {
+                status.className = '';
+                status.style.display = 'none';
+                slots.style.display = 'none';
+                return;
+            }
+
+            // Show checking state
+            setAvStatus('checking',
+                '<i class="fa-solid fa-circle-notch spin-icon" style="font-size:.75rem"></i>',
+                'Checking availability…',
+                startTime && endTime ? 'Verifying your time slot against existing bookings.' : 'Select start & end time to check for conflicts.',
+                ''
+            );
+
+            const params = new URLSearchParams({
+                resource_id: resourceId,
+                date:        date,
+                start_time:  startTime || '',
+                end_time:    endTime   || '',
+            });
+
+            fetch('/admin/check-availability?' + params.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const booked = data.booked_slots || [];
+
+                if (data.has_conflict) {
+                    setAvStatus('conflict',
+                        '<i class="fa-solid fa-ban" style="font-size:.78rem;color:#b91c1c"></i>',
+                        'Time slot conflict detected',
+                        'Your selected time overlaps with an existing booking. Please choose a different time.',
+                        'UNAVAILABLE'
+                    );
+                } else if (startTime && endTime) {
+                    setAvStatus('ok',
+                        '<i class="fa-solid fa-circle-check" style="font-size:.78rem;color:#15803d"></i>',
+                        'Time slot is available',
+                        booked.length
+                            ? `${booked.length} other booking(s) on this date — none overlap your selected time.`
+                            : 'No other bookings on this date. All yours!',
+                        'AVAILABLE'
+                    );
+                } else {
+                    setAvStatus('info',
+                        '<i class="fa-solid fa-calendar-check" style="font-size:.78rem;color:#92400e"></i>',
+                        booked.length ? `${booked.length} booking(s) on this date` : 'No bookings yet on this date',
+                        'Select start & end time to check if your slot is free.',
+                        booked.length ? `${booked.length} BOOKED` : 'FREE'
+                    );
+                }
+
+                // Render booked slots table
+                if (booked.length > 0) {
+                    renderBookedSlots(booked, startTime, endTime);
+                } else {
+                    slots.style.display = 'none';
+                }
+            })
+            .catch(() => {
+                setAvStatus('info',
+                    '<i class="fa-solid fa-wifi" style="font-size:.78rem;color:#92400e"></i>',
+                    'Could not check availability',
+                    'Network error. Please continue manually.',
+                    ''
+                );
+                slots.style.display = 'none';
+            });
+        }
+
+        function setAvStatus(type, iconHtml, title, sub, pill) {
+            const status = document.getElementById('availabilityStatus');
+            const pillColors = {
+                ok:       { bg: '#dcfce7', color: '#15803d' },
+                conflict: { bg: '#fee2e2', color: '#b91c1c' },
+                info:     { bg: '#fef3c7', color: '#92400e' },
+                checking: { bg: '#e0f2fe', color: '#0369a1' },
+            };
+            const avIcon  = document.getElementById('avIcon');
+            const avTitle = document.getElementById('avTitle');
+            const avSub   = document.getElementById('avSub');
+            const avPill  = document.getElementById('avPill');
+
+            status.className = 'av-' + type;
+            avIcon.innerHTML  = iconHtml;
+            avTitle.textContent = title;
+            avSub.textContent   = sub;
+            if (pill) {
+                const c = pillColors[type] || {};
+                avPill.style.background = c.bg || '#e2e8f0';
+                avPill.style.color      = c.color || '#475569';
+                avPill.textContent      = pill;
+                avPill.style.display    = 'inline-block';
+            } else {
+                avPill.style.display = 'none';
+            }
+        }
+
+        function renderBookedSlots(slots, myStart, myEnd) {
+            const wrap = document.getElementById('bookedSlotsWrap');
+            const list = document.getElementById('bookedSlotsList');
+
+            let html = '';
+            slots.forEach(s => {
+                const start = s.start_time.substring(0, 5);
+                const end   = s.end_time.substring(0, 5);
+                const isConflict = myStart && myEnd &&
+                    myStart < s.end_time && myEnd > s.start_time;
+                const statusClass = s.status === 'approved' ? 'bs-pill-approved' : 'bs-pill-pending';
+                const statusLabel = s.status === 'approved' ? '✔ Approved' : '⏳ Pending';
+                const rowClass    = isConflict ? 'bs-row bs-conflict-row' : 'bs-row';
+
+                html += `<div class="${rowClass}">
+                    <div class="bs-col">
+                        <span class="bs-status-pill ${statusClass}">${statusLabel}</span>
+                    </div>
+                    <div class="bs-col" style="font-family:var(--mono);font-size:.78rem;font-weight:600">
+                        ${start} – ${end}
+                    </div>
+                    <div class="bs-col" style="text-align:right">
+                        ${isConflict ? '<span style="font-size:.68rem;font-weight:700;color:#b91c1c;background:#fee2e2;padding:2px 7px;border-radius:20px">⚡ CONFLICT</span>' : ''}
+                    </div>
+                </div>`;
+            });
+
+            list.innerHTML = html;
+            wrap.style.display = 'block';
+        }
+
+        // Hook date/time pickers to re-run availability check
+        // These are called from the picker IIFE below via window callbacks
+        window._onDatePicked  = schedAvailabilityCheck;
+        window._onTimePicked  = schedAvailabilityCheck;
+
         function previewReservation() {
             // Block if walk-in name matches a registered resident
             if (currentType === 'Visitor' && window._guestIsRegistered) {
@@ -1101,10 +1395,16 @@
                 return;
             }
 
-            // Block if walk-in quota exceeded
-            if (currentType === 'Visitor' && window._guestBlocked) {
+            // Block if walk-in quota exceeded (only for non-WiFi)
+            if (currentType === 'Visitor' && window._guestBlocked && !getSelectedResourceIsWifi()) {
                 const name = document.getElementById('visitorNameInput')?.value?.trim() || 'This guest';
                 alert(`⛔ ${name} has reached the 3-reservation limit within the last 3 days and cannot make a new reservation.`);
+                return;
+            }
+
+            // Block if hard time conflict detected
+            if (window._avHasConflict) {
+                alert('⛔ This time slot has a confirmed booking conflict. Please choose a different time or date.');
                 return;
             }
 
@@ -1163,6 +1463,9 @@
             if (!isUser) {
                 rows.splice(2, 0, ['Identity', 'Confirmed ✓']);
             }
+            if (getSelectedResourceIsWifi()) {
+                rows.push(['Quota Check', '⚡ Skipped — WiFi resource']);
+            }
             document.getElementById('modalSummaryBox').innerHTML =
                 rows.map(([l,v]) => `<div class="mrow"><span class="mrow-label">${l}</span><span class="mrow-value">${v}</span></div>`).join('');
             document.getElementById('qrWrap').style.display     = 'none';
@@ -1205,6 +1508,16 @@
             btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:.8rem"></i> Confirm & Save';
         }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        // Track conflict state for blocking preview
+        window._avHasConflict = false;
+        const _origSetAvStatus = setAvStatus;
+        // Patch setAvStatus to track conflict
+        const _origSetAv = setAvStatus;
+        window.setAvStatus = function(type, ...args) {
+            window._avHasConflict = (type === 'conflict');
+            _origSetAv(type, ...args);
+        };
     </script>
 
     <!-- Custom Date / Time Picker JS -->
@@ -1275,7 +1588,10 @@
             $('resDate').value=iso;
             $('dateLabel').textContent=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
             $('dateTrigger').classList.add('has-value');
-            renderCal(); setTimeout(closeAll,180);
+            renderCal();
+            setTimeout(closeAll,180);
+            // Trigger availability check
+            if (window._onDatePicked) window._onDatePicked();
         }
         function clearDate(){ selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');renderCal(); }
         function gotoToday(){ calView={y:TODAY.getFullYear(),m:TODAY.getMonth()};pickDay(TODAY.getDate()); }
@@ -1308,6 +1624,8 @@
             const triggerId=which==='start'?'startTrigger':'endTrigger';
             $(labelId).textContent=label;$(inputId).value=iso24;$(triggerId).classList.add('has-value');
             closeAll();
+            // Trigger availability check
+            if (window._onTimePicked) window._onTimePicked();
         }
 
         $('dateTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('calDrop','dateTrigger');if(activeDrop==='calDrop')renderCal();});
