@@ -22,6 +22,7 @@ $navItems = [
     ['url' => '/admin/manage-reservations', 'icon' => 'fa-calendar',     'label' => 'Reservations',    'key' => 'manage-reservations'],
     ['url' => '/admin/manage-pcs',          'icon' => 'fa-desktop',      'label' => 'Manage PCs',      'key' => 'manage-pcs'],
     ['url' => '/admin/manage-sk',           'icon' => 'fa-user-shield',  'label' => 'Manage SK',       'key' => 'manage-sk'],
+    ['url' => '/admin/resident-accounts', 'icon' => 'fa-users', 'label' => 'Residents', 'key' => 'resident-accounts'],
     ['url' => '/admin/books',               'icon' => 'fa-book-open',    'label' => 'Library',         'key' => 'books'],
     ['url' => '/admin/login-logs',          'icon' => 'fa-clock',        'label' => 'Login Logs',      'key' => 'login-logs'],
     ['url' => '/admin/scanner',             'icon' => 'fa-qrcode',       'label' => 'Scanner',         'key' => 'scanner'],
