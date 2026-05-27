@@ -127,6 +127,8 @@ $routes->group('admin', ['filter' => 'role:chairman'], function($routes) {
     $routes->post('add-pc',               'AdminController::addPC');
     $routes->post('update-pc-status',     'AdminController::updatePCStatus');
     $routes->post('delete-sk', 'AdminController::deleteSK');
+    $routes->post('admin/approve-resident', 'AdminController::approveResident');
+    $routes->post('admin/reject-resident',  'AdminController::rejectResident');
     $routes->post('sessions/stop', 'AdminController::stopSession');
     $routes->get('resident-accounts',         'AdminController::residentAccounts');
     $routes->post('delete-resident',          'AdminController::deleteResident');

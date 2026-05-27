@@ -1995,4 +1995,114 @@ PDF TEXT:
         $this->logActivity('export_residents', null, 'Exported resident accounts CSV');
         exit;
     }
+    // ═══════════════════════════════════════════════════════════════════════
+    //  APPROVE / REJECT RESIDENT
+    // ═══════════════════════════════════════════════════════════════════════
+    public function approveResident()
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+
+        $id = (int) $this->request->getPost('id');
+        if (!$id) {
+            return redirect()->back()->with('error', 'Invalid request.');
+        }
+
+        $user = (new UserModel())->find($id);
+        if (!$user || $user['role'] !== 'user') {
+            return redirect()->back()->with('error', 'Resident not found.');
+        }
+
+        (new UserModel())->update($id, [
+            'status'      => 'approved',
+            'is_approved' => true,
+            'updated_at'  => date('Y-m-d H:i:s'),
+        ]);
+
+        $this->sendResidentDecisionEmail($user['email'], $user['name'], 'approved');
+        $this->logActivity('approve_resident', null, "Approved resident account: {$user['name']} ({$user['email']})");
+
+        return redirect()->to('/admin/resident-accounts')
+            ->with('success', "Resident \"{$user['name']}\" has been approved.");
+    }
+
+    public function rejectResident()
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+
+        $id = (int) $this->request->getPost('id');
+        if (!$id) {
+            return redirect()->back()->with('error', 'Invalid request.');
+        }
+
+        $user = (new UserModel())->find($id);
+        if (!$user || $user['role'] !== 'user') {
+            return redirect()->back()->with('error', 'Resident not found.');
+        }
+
+        (new UserModel())->update($id, [
+            'status'      => 'rejected',
+            'is_approved' => false,
+            'updated_at'  => date('Y-m-d H:i:s'),
+        ]);
+
+        $this->sendResidentDecisionEmail($user['email'], $user['name'], 'rejected');
+        $this->logActivity('reject_resident', null, "Rejected resident account: {$user['name']} ({$user['email']})");
+
+        return redirect()->to('/admin/resident-accounts')
+            ->with('success', "Resident \"{$user['name']}\" has been rejected.");
+    }
+
+    private function sendResidentDecisionEmail(string $to, string $name, string $decision): void
+    {
+        $apiKey = env('BREVO_API_KEY', '');
+        if (empty($apiKey)) {
+            log_message('error', '[AdminController] BREVO_API_KEY is not set');
+            return;
+        }
+
+        $subject = $decision === 'approved'
+            ? 'Your Resident Account Has Been Approved'
+            : 'Update on Your Resident Account Application';
+
+        $body = view('emails/sk_decision', [
+            'name'     => $name,
+            'decision' => $decision,
+            'loginUrl' => base_url('login'),
+        ]);
+
+        $payload = json_encode([
+            'sender'      => [
+                'name'  => env('EMAIL_FROM_NAME', 'E-Learning System'),
+                'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph'),
+            ],
+            'to'          => [['email' => $to, 'name' => $name]],
+            'subject'     => $subject,
+            'htmlContent' => $body,
+        ]);
+
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'Accept: application/json',
+                'api-key: ' . $apiKey,
+            ],
+        ]);
+
+        $response   = curl_exec($ch);
+        $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpStatus !== 201) {
+            log_message('error', '[AdminController] Resident decision email failed: HTTP ' . $httpStatus . ' | ' . $response);
+        }
+    }
 }

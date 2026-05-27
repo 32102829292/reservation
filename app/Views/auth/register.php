@@ -2011,22 +2011,25 @@
     // ── Show flash messages on page load ──
     window.addEventListener('DOMContentLoaded', () => {
       if (FLASH_SUCCESS) {
-        const isSK = FLASH_SUCCESS.toLowerCase().includes('pending') || FLASH_SUCCESS.toLowerCase().includes('chairman');
-        if (isSK) {
-          showResult('warning', 'Account Created — Pending Approval', FLASH_SUCCESS, [{
+    // Both SK and resident registrations now mention chairman approval
+    const needsApproval = FLASH_SUCCESS.toLowerCase().includes('pending')
+                       || FLASH_SUCCESS.toLowerCase().includes('chairman')
+                       || FLASH_SUCCESS.toLowerCase().includes('approval');
+    if (needsApproval) {
+        showResult('warning', 'Account Created — Pending Approval', FLASH_SUCCESS, [{
             label: 'Go to Login',
             icon: 'fa-right-to-bracket',
             cls: 'amber',
             action: 'login'
-          }], 8);
-        } else {
-          showResult('success', 'Account Created!', FLASH_SUCCESS, [{
+        }], 8);
+    } else {
+        showResult('success', 'Account Created!', FLASH_SUCCESS, [{
             label: 'Sign In Now',
             icon: 'fa-right-to-bracket',
             cls: 'green',
             action: 'login'
-          }], 5);
-        }
+        }], 5);
+    }
       } else if (FLASH_INFO) {
         showResult('warning', 'One More Step', FLASH_INFO, [{
           label: 'Go to Login',

@@ -9,21 +9,12 @@ use CodeIgniter\I18n\Time;
 
 class AuthController extends BaseController
 {
-    // ─────────────────────────────────────────────
-    //  HELPER — PostgreSQL returns booleans as 't'/'f' strings.
-    //  This normalises any possible value to a real PHP bool.
-    // ─────────────────────────────────────────────
-
     private function isTrue($value): bool
     {
         if ($value === true || $value === 1) return true;
         if (is_string($value)) return in_array(strtolower(trim($value)), ['t', 'true', '1', 'yes'], true);
         return false;
     }
-
-    // ─────────────────────────────────────────────
-    //  LOGIN
-    // ─────────────────────────────────────────────
 
     public function login()
     {
@@ -46,8 +37,6 @@ class AuthController extends BaseController
 
         $userModel = new UserModel();
 
-        // Alias accounts.is_verified to avoid column-name collision
-        // with users.is_verified — both tables share the same column name.
         $user = $userModel
             ->select('
                 users.id,
@@ -62,21 +51,20 @@ class AuthController extends BaseController
             ->where('users.email', $email)
             ->first();
 
-        // Unknown email OR wrong password — same generic message (security best-practice)
         if (!$user || !password_verify($password, $user['password'])) {
             $session->setFlashdata('error', 'Invalid email or password.');
             return redirect()->to('/login');
         }
 
-        // PostgreSQL returns native booleans as 't'/'f' — use the helper
         if (!$this->isTrue($user['account_verified'])) {
             $session->setFlashdata('warning', 'Please verify your email address first. Check your inbox for the verification link.');
             return redirect()->to('/login');
         }
 
-        // SK-specific status gates
-        if ($user['role'] === 'sk' && $user['status'] === 'pending') {
-            $session->setFlashdata('warning', 'Your SK account is pending approval by the Barangay Chairman. You will be notified via email once a decision is made.');
+        // Pending approval gate — applies to both SK and residents
+        if ($user['status'] === 'pending') {
+            $roleLabel = $user['role'] === 'sk' ? 'SK' : 'resident';
+            $session->setFlashdata('warning', "Your {$roleLabel} account is pending approval by the Barangay Chairman. You will be notified via email once a decision is made.");
             return redirect()->to('/login');
         }
 
@@ -85,7 +73,11 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        // All checks passed — create session
+        if ($user['role'] === 'user' && $user['status'] === 'rejected') {
+            $session->setFlashdata('error', 'Your resident account was not approved. Please contact the Barangay office for more information.');
+            return redirect()->to('/login');
+        }
+
         $session->set([
             'user_id'    => $user['id'],
             'email'      => $user['email'],
@@ -109,10 +101,6 @@ class AuthController extends BaseController
             default:         return redirect()->to('/dashboard');
         }
     }
-
-    // ─────────────────────────────────────────────
-    //  REGISTER
-    // ─────────────────────────────────────────────
 
     public function register()
     {
@@ -181,14 +169,14 @@ class AuthController extends BaseController
         $isSK   = ($dbRole === 'sk');
         $now    = Time::now('Asia/Manila')->toDateTimeString();
 
-        // Use native PHP false/true so PostgreSQL stores proper boolean values
+        // Both residents and SK require chairman approval — is_approved starts as false
         $userModel->insert([
             'name'        => $fullName,
             'full_name'   => $fullName,
             'email'       => $email,
             'role'        => $dbRole,
             'status'      => 'pending',
-            'is_approved' => $isSK ? false : true,
+            'is_approved' => false,
             'is_verified' => false,
             'created_at'  => $now,
             'updated_at'  => $now,
@@ -204,7 +192,6 @@ class AuthController extends BaseController
         $accountModel      = new AccountModel();
         $verificationToken = bin2hex(random_bytes(32));
 
-        // Use native PHP false so PostgreSQL stores a proper boolean FALSE
         $accountModel->insert([
             'user_id'            => $userId,
             'password'           => password_hash($password, PASSWORD_DEFAULT),
@@ -225,15 +212,11 @@ class AuthController extends BaseController
         if ($isSK) {
             $session->setFlashdata('success', '✅ Account created! Please check your email (' . $email . ') and click the verification link. After verification, your account will need approval from the Barangay Chairman.');
         } else {
-            $session->setFlashdata('success', '✅ Account created! Please check your email (' . $email . ') and click the verification link to activate your account.');
+            $session->setFlashdata('success', '✅ Account created! Please check your email (' . $email . ') and click the verification link. After verification, your account will need approval from the Barangay Chairman before you can log in.');
         }
 
         return redirect()->to('/login');
     }
-
-    // ─────────────────────────────────────────────
-    //  EMAIL VERIFICATION
-    // ─────────────────────────────────────────────
 
     public function verifyEmail($token)
     {
@@ -250,7 +233,6 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        // Use the helper for consistent PostgreSQL boolean handling
         if ($this->isTrue($account['is_verified'])) {
             session()->setFlashdata('info', 'Your email is already verified. You can log in.');
             return redirect()->to('/login');
@@ -258,7 +240,6 @@ class AuthController extends BaseController
 
         $now = Time::now('Asia/Manila')->toDateTimeString();
 
-        // Use native true so PostgreSQL stores a proper boolean TRUE
         $accountModel->update($account['id'], [
             'is_verified'        => true,
             'verification_token' => null,
@@ -273,28 +254,30 @@ class AuthController extends BaseController
             return redirect()->to('/login');
         }
 
-        $isSK = ($user['role'] === 'sk');
+        $isSK       = ($user['role'] === 'sk');
+        $isResident = ($user['role'] === 'user');
 
-        // Use native true so PostgreSQL stores a proper boolean TRUE
+        // Both SK and residents stay 'pending' until chairman approves
         $userModel->update($account['user_id'], [
             'is_verified' => true,
-            'status'      => $isSK ? 'pending' : 'approved',
+            'status'      => 'pending',
             'updated_at'  => $now,
         ]);
 
+        // Notify chairman for both roles
+        if ($isSK || $isResident) {
+            $this->notifyChairmanNewAccount($user);
+        }
+
         if ($isSK) {
-            $this->notifyChairmanNewSK($user);
-            session()->setFlashdata('info', '✅ Email verified! Your SK account is now pending approval by the Barangay Chairman. You will receive an email notification once a decision has been made.');
+            session()->setFlashdata('info', '✅ Email verified! Your SK account is now pending approval by the Barangay Chairman. You will be notified via email once a decision has been made.');
             return redirect()->to('/login');
         }
 
-        session()->setFlashdata('success', '✅ Email verified successfully! You can now log in.');
+        // Resident
+        session()->setFlashdata('info', '✅ Email verified! Your resident account is now pending approval by the Barangay Chairman. You will be notified via email once a decision has been made.');
         return redirect()->to('/login');
     }
-
-    // ─────────────────────────────────────────────
-    //  LOGOUT
-    // ─────────────────────────────────────────────
 
     public function logout()
     {
@@ -319,10 +302,6 @@ class AuthController extends BaseController
         $session->destroy();
         return redirect()->to('/login');
     }
-
-    // ─────────────────────────────────────────────
-    //  HELPERS
-    // ─────────────────────────────────────────────
 
     public function redirectDashboard()
     {
@@ -407,7 +386,7 @@ class AuthController extends BaseController
         return true;
     }
 
-    private function notifyChairmanNewSK(array $user): void
+    private function notifyChairmanNewAccount(array $user): void
     {
         $chairmanEmail = env('CHAIRMAN_EMAIL', 'chairman@elearning.edu.ph');
         $apiKey        = env('BREVO_API_KEY', '');
@@ -417,11 +396,16 @@ class AuthController extends BaseController
             return;
         }
 
+        $isSK      = ($user['role'] === 'sk');
+        $roleLabel = $isSK ? 'SK Officer' : 'Resident';
+        $manageUrl = $isSK ? base_url('admin/manage-sk') : base_url('admin/resident-accounts');
+
         $body = view('emails/admin_sk_pending', [
             'skName'    => $user['name'],
             'skEmail'   => $user['email'],
             'appliedAt' => $user['created_at'],
-            'manageUrl' => base_url('admin/manage-sk'),
+            'manageUrl' => $manageUrl,
+            'roleLabel' => $roleLabel,
         ]);
 
         $payload = json_encode([
@@ -430,7 +414,7 @@ class AuthController extends BaseController
                 'email' => env('EMAIL_FROM_ADDRESS', 'noreply@elearning.edu.ph'),
             ],
             'to'          => [['email' => $chairmanEmail]],
-            'subject'     => 'New SK Account Awaiting Your Approval — Action Required',
+            'subject'     => "New {$roleLabel} Account Awaiting Your Approval — Action Required",
             'htmlContent' => $body,
         ]);
 
@@ -452,7 +436,7 @@ class AuthController extends BaseController
         curl_close($ch);
 
         if ($httpStatus !== 201) {
-            log_message('error', '[AuthController] Chairman SK notification failed: HTTP ' . $httpStatus . ' | ' . $response);
+            log_message('error', '[AuthController] Chairman account notification failed: HTTP ' . $httpStatus . ' | ' . $response);
         }
     }
 }
