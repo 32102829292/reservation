@@ -1,3 +1,4 @@
+
 <?php
 /**
  * Admin Dashboard View — fully debugged + notification system fixed
@@ -5,12 +6,18 @@
  * FIX: Calendar UI — taller cells, proper event pills, styled nav buttons
  * FIX: Chart mobile layout — grid-two responsive, doughnut fixed size
  * FIX: Stop Session button — z-index, pointer-events, safe onclick (no JSON.stringify in HTML attr)
+ * FIX: StopSessionTrait compat — sends ended_at_ms, checks data.ok not just res.ok
  *
- * BACKEND REQUIRED:
+ * BACKEND:
  *   POST /admin/sessions/stop
- *   Body (JSON): { reservation_id: int }
- *   Action: set end_time = NOW(), or mark a "force_ended" flag on the reservation
- *   Returns: { success: true } or { success: false, message: "..." }
+ *   Body (JSON): { reservation_id: int, ended_at_ms: int }
+ *   Handled by: StopSessionTrait::stopSession()
+ *   Returns: { ok: true, actual_minutes: int, message: "..." }
+ *          | { ok: false, error: "..." }
+ *
+ * DB columns required on `reservations`:
+ *   session_ended_at        TIMESTAMP NULL
+ *   actual_duration_minutes INT DEFAULT 0
  */
 ?>
 <!DOCTYPE html>
@@ -233,15 +240,11 @@
         /* ══════════════════════════════════════════
            STOP SESSION BUTTON — FIXED
         ══════════════════════════════════════════ */
-
-        /* Session card must be relative + isolated so the overlay positions correctly
-           and nothing bleeds pointer-events into the button */
         .tl-session-card {
             position: relative;
-            isolation: isolate; /* NEW: prevents z-index bleed from children */
+            isolation: isolate;
         }
 
-        /* The stop button itself */
         .tl-stop-btn {
             display: inline-flex;
             align-items: center;
@@ -258,11 +261,11 @@
             transition: background .15s, border-color .15s, transform .1s;
             white-space: nowrap;
             flex-shrink: 0;
-            position: relative; /* NEW */
-            z-index: 5;         /* NEW: sit above progress bar / other layers */
-            pointer-events: all; /* NEW: explicit */
-            -webkit-tap-highlight-color: transparent; /* NEW: mobile tap fix */
-            touch-action: manipulation; /* NEW: mobile tap fix */
+            position: relative;
+            z-index: 5;
+            pointer-events: all;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
         .tl-stop-btn:hover {
             background: rgba(239,68,68,.22);
@@ -270,7 +273,6 @@
         }
         .tl-stop-btn:active { transform: scale(.96); }
 
-        /* Confirm overlay that appears inside the card */
         .tl-stop-confirm {
             position: absolute;
             inset: 0;
@@ -319,9 +321,7 @@
         }
         .tl-stop-confirm-yes:hover   { background: #dc2626; }
         .tl-stop-confirm-yes:active  { transform: scale(.97); }
-        .tl-stop-confirm-yes:disabled {
-            opacity: .6; cursor: not-allowed;
-        }
+        .tl-stop-confirm-yes:disabled { opacity: .6; cursor: not-allowed; }
         .tl-stop-confirm-no {
             flex: 1;
             padding: 7px 0;
@@ -1184,8 +1184,10 @@
          * ══════════════════════════════════════════════════
          * STOP SESSION ENDPOINT
          * POST /admin/sessions/stop
-         * Body: { reservation_id: <int> }
-         * Expected response: { success: true } | { success: false, message: "..." }
+         * Handled by StopSessionTrait::stopSession()
+         * Body:     { reservation_id: int, ended_at_ms: int }
+         * Response: { ok: true, actual_minutes: int, message: "..." }
+         *         | { ok: false, error: "..." }
          * ══════════════════════════════════════════════════
          */
         const STOP_EP = '/admin/sessions/stop';
@@ -1461,21 +1463,13 @@
         function tlNextPrintModal()  { if (tlPrintQueue.length>0) setTimeout(()=>tlOpenPrintModal(tlPrintQueue.shift()),400); }
 
         /* ══════════════════════════════════════════
-           STOP SESSION — FIXED
-           Key changes:
-           1. Stop button onclick uses a data attribute + event delegation
-              instead of inline JSON.stringify (avoids HTML attr quote-breaking)
-           2. Button has z-index:5 + pointer-events:all in CSS
-           3. Card has isolation:isolate in CSS
+           STOP SESSION
+           - Sends ended_at_ms: Date.now() for StopSessionTrait
+           - Checks data.ok (trait response) not just res.ok (HTTP)
+           - Shows actual_minutes from trait in success toast
         ══════════════════════════════════════════ */
 
-        /**
-         * Global delegated click handler for stop buttons.
-         * Because the card HTML is built dynamically, event delegation is safer
-         * than relying on inline onclick attributes with JSON-serialized strings.
-         */
         document.addEventListener('click', function(e) {
-            // ── Stop button clicked ──────────────────────────
             const stopBtn = e.target.closest('.tl-stop-btn');
             if (stopBtn) {
                 e.stopPropagation();
@@ -1486,7 +1480,6 @@
                 return;
             }
 
-            // ── Confirm-Yes clicked ──────────────────────────
             const yesBtn = e.target.closest('.tl-stop-confirm-yes');
             if (yesBtn) {
                 e.stopPropagation();
@@ -1495,7 +1488,6 @@
                 return;
             }
 
-            // ── Confirm-No clicked ───────────────────────────
             const noBtn = e.target.closest('.tl-stop-confirm-no');
             if (noBtn) {
                 e.stopPropagation();
@@ -1506,7 +1498,6 @@
         });
 
         function tlShowStopConfirm(id, name, resource) {
-            // Remove any stale overlays first
             document.querySelectorAll('.tl-stop-confirm').forEach(el => el.remove());
 
             const card = document.getElementById(`tl-card-${id}`);
@@ -1531,8 +1522,6 @@
                     </button>
                 </div>`;
             card.appendChild(overlay);
-
-            // Focus the confirm button for keyboard accessibility
             setTimeout(() => overlay.querySelector('.tl-stop-confirm-yes')?.focus(), 50);
         }
 
@@ -1552,10 +1541,17 @@
                 const res = await fetch(STOP_EP, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
-                    body: JSON.stringify({ reservation_id: id })
+                    body: JSON.stringify({
+                        reservation_id: id,
+                        ended_at_ms:    Date.now()   // ← required by StopSessionTrait
+                    })
                 });
 
-                if (res.ok) {
+                // Always parse JSON first — trait returns { ok, ... } regardless of HTTP status
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.ok) {
+                    // ── Success path ──────────────────────────────────────
                     const card = document.getElementById(`tl-card-${id}`);
                     if (card) {
                         card.style.transition = 'opacity .3s, transform .3s';
@@ -1574,12 +1570,17 @@
                         }, 400);
                     }
 
-                    tlToast('success', 'Session stopped', `Reservation #${id} has been ended.`);
+                    const mins = data.actual_minutes ?? null;
+                    const minsTxt = mins !== null ? ` · ${mins} min used` : '';
+                    tlToast('success', 'Session stopped', `Reservation #${id} ended.${minsTxt}`);
+
                 } else {
-                    const body = await res.json().catch(() => ({}));
-                    tlToast('warning', 'Could not stop session', body.message || `Server returned ${res.status}.`);
+                    // ── Error path — trait may return 200 with ok:false ───
+                    const errMsg = data.error || data.message || `Server returned ${res.status}.`;
+                    tlToast('warning', 'Could not stop session', errMsg);
                     tlCancelStop(id);
                 }
+
             } catch (err) {
                 tlToast('warning', 'Network error', 'Could not reach the server. Try again.');
                 tlCancelStop(id);
@@ -1596,6 +1597,8 @@
                 if ((r.reservation_date||'').split('T')[0]!==today)  return false;
                 if ((r.status||'').toLowerCase()!=='approved')        return false;
                 if (!isClaimed(r)) return false;
+                // If already force-stopped, exclude from live grid
+                if (r.session_ended_at) return false;
                 const s = new Date(r.reservation_date.split('T')[0]+'T'+r.start_time).getTime();
                 const e = new Date(r.reservation_date.split('T')[0]+'T'+r.end_time).getTime();
                 return s<=nowMs && e>=nowMs;
@@ -1671,13 +1674,6 @@
                         card=document.createElement('div'); card.id=`tl-card-${r.id}`;
                         const sf=(r.start_time||'').substring(0,5)||'–', ef=(r.end_time||'').substring(0,5)||'–';
                         const logged=tlIsLogged(r.id);
-
-                        /*
-                         * FIX: Stop button now uses data-* attributes instead of
-                         * inline JSON.stringify() in the onclick, which breaks when
-                         * names/resources contain quotes or special characters.
-                         * Click is handled by the delegated listener above.
-                         */
                         card.className=`tl-session-card ${state}`;
                         card.innerHTML=`
                             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">
@@ -1708,9 +1704,7 @@
                             ${logged&&remMs<=0?`<div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:.65rem;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check" style="font-size:.6rem;"></i>Logged</div>`:''}`;
                         grid.appendChild(card);
                     } else {
-                        // Only update live-changing parts; skip if confirm overlay is open
                         if (card.querySelector('.tl-stop-confirm')) return;
-
                         card.className=`tl-session-card ${state}`;
                         const cdEl=document.getElementById(`tl-cd-${r.id}`);
                         const pfEl=document.getElementById(`tl-pf-${r.id}`);
