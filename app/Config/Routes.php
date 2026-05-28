@@ -78,6 +78,7 @@ $routes->group('sk', ['filter' => 'role:sk'], function($routes) {
     $routes->post('validate-eticket',    'SkController::validateETicket');
     $routes->get('reservations/download','SkController::downloadCsv');
     $routes->get('activity-logs',        'SkController::activityLogs');
+    $routes->post('sessions/stop', 'SkController::stopSession');
     $routes->get('profile',              'SkController::profile');
     $routes->post('profile/update',      'SkController::updateProfile');
     $routes->post('profile/delete',      'SkController::deleteProfile');
