@@ -428,15 +428,58 @@
 
     $JSON_FLAGS = JSON_HEX_TAG | JSON_HEX_APOS | JSON_UNESCAPED_UNICODE;
 
+    /*
+     * ══════════════════════════════════════════════════════════════
+     * FIX: resolveNameFromRow — checks every plausible column name
+     * your DB/query might return, including first+last concatenation.
+     * The result is stored back into both visitor_name AND full_name
+     * so the JS resolveVisitorName() always finds a non-empty value.
+     * ══════════════════════════════════════════════════════════════
+     */
+    function resolveNameFromRow(array $r): string {
+        // Build first+last concatenation if individual parts exist
+        $firstLast = '';
+        $fn = trim((string)($r['first_name'] ?? ''));
+        $ln = trim((string)($r['last_name']  ?? ''));
+        if ($fn !== '' && $ln !== '') {
+            $firstLast = "$fn $ln";
+        } elseif ($fn !== '') {
+            $firstLast = $fn;
+        } elseif ($ln !== '') {
+            $firstLast = $ln;
+        }
+
+        // Ordered list of every field name your backend might use
+        $candidates = [
+            $r['visitor_name']   ?? '',
+            $r['full_name']      ?? '',
+            $r['resident_name']  ?? '',
+            $r['user_name']      ?? '',
+            $r['name']           ?? '',
+            $r['username']       ?? '',
+            $r['sk_name']        ?? '',
+            $r['contact_name']   ?? '',
+            $r['patron_name']    ?? '',
+            $r['booker_name']    ?? '',
+            $r['display_name']   ?? '',
+            $r['account_name']   ?? '',
+            $r['member_name']    ?? '',
+            $r['client_name']    ?? '',
+            $r['borrower_name']  ?? '',
+            $r['requestor_name'] ?? '',
+            $firstLast,
+        ];
+
+        foreach ($candidates as $val) {
+            $val = trim((string)$val);
+            if ($val !== '') return $val;
+        }
+
+        return 'Unknown';
+    }
+
     $reservations = array_map(function(array $r): array {
-        $name = (string)(
-            $r['visitor_name']  ??
-            $r['full_name']     ??
-            $r['resident_name'] ??
-            $r['user_name']     ??
-            $r['name']          ??
-            ''
-        );
+        $name = resolveNameFromRow($r);
         $r['visitor_name'] = $name;
         $r['full_name']    = $name;
         return $r;
@@ -1207,29 +1250,47 @@
             .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
             .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 
-        /**
-         * FIX: resolveVisitorName — exhaustive field search so live session
-         * cards never fall back to a generic placeholder.
-         * Checks every plausible column name your backend might send.
+        /*
+         * ══════════════════════════════════════════════════════════════
+         * resolveVisitorName
+         * ──────────────────────────────────────────────────────────────
+         * By this point the PHP layer has already normalised every row
+         * so that visitor_name / full_name contain the resolved value.
+         * This JS function is a belt-and-suspenders fallback that checks
+         * every plausible column name in case a row slips through without
+         * the PHP normalisation (e.g. data injected client-side or via a
+         * future API endpoint that bypasses the view pre-processing).
+         * ══════════════════════════════════════════════════════════════
          */
         const resolveVisitorName = r => {
+            // Build first+last concatenation if available
+            const fn = String(r.first_name ?? '').trim();
+            const ln = String(r.last_name  ?? '').trim();
+            const firstLast = fn && ln ? `${fn} ${ln}` : (fn || ln);
+
             const candidates = [
                 r.visitor_name,
                 r.full_name,
                 r.resident_name,
                 r.user_name,
                 r.name,
-                r.user,
                 r.username,
                 r.sk_name,
                 r.contact_name,
                 r.patron_name,
                 r.booker_name,
-                r.first_name && r.last_name ? `${r.first_name} ${r.last_name}`.trim() : null,
-                r.first_name,
-                r.last_name,
+                r.display_name,
+                r.account_name,
+                r.member_name,
+                r.client_name,
+                r.borrower_name,
+                r.requestor_name,
+                firstLast,
             ];
-            return candidates.map(v => String(v ?? '').trim()).find(Boolean) || 'Unknown';
+
+            return candidates
+                .map(v => String(v ?? '').trim())
+                .find(Boolean) || 'Unknown';
         };
 
         const to12hPHT = ts => {
@@ -1243,9 +1304,6 @@
             return `${h}:${m} ${ampm}`;
         };
 
-        /**
-         * Format a timestamp (ISO string or ms) to 12h time, e.g. "2:34 PM"
-         */
         const fmtStopTime = ts => {
             if (!ts) return null;
             try {
@@ -1678,11 +1736,8 @@
                         }
                     }
 
-                    /* ── Format scheduled end time and stopped time ── */
                     const sfF = to12hPHT(r.start_time);
                     const efF = to12hPHT(r.end_time);
-
-                    /* session_ended_at: actual stop time if force-stopped */
                     const stoppedAt     = r.session_ended_at || null;
                     const stoppedAtFmt  = stoppedAt ? fmtStopTime(stoppedAt) : null;
 

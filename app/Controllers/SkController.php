@@ -9,7 +9,7 @@ use App\Models\UserModel;
 
 class SkController extends BaseController
 {
-    use \App\Controllers\Traits\StopSessionTrait;
+    // ── Trait removed to prevent fatal redeclaration conflict with stopSession() ──
 
     public function dashboard()
     {
@@ -198,7 +198,7 @@ class SkController extends BaseController
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  STOP SESSION  (mirrors AdminController — endpoint: /sk/sessions/stop)
+    //  STOP SESSION  (endpoint: POST /sk/sessions/stop)
     // ═══════════════════════════════════════════════════════════════════════
     public function stopSession()
     {
@@ -226,7 +226,6 @@ class SkController extends BaseController
 
         $endedAt = date('Y-m-d H:i:s', intdiv($endedAtMs, 1000));
 
-        // Calculate actual usage duration
         $actualMinutes = null;
         if (!empty($reservation['claimed_at'])) {
             $startTs       = strtotime($reservation['claimed_at']);
@@ -238,9 +237,9 @@ class SkController extends BaseController
 
         try {
             $db->table('reservations')->where('id', $reservationId)->update([
-                'session_ended_at'         => $endedAt,
-                'actual_duration_minutes'  => $actualMinutes,
-                'updated_at'               => date('Y-m-d H:i:s'),
+                'session_ended_at'        => $endedAt,
+                'actual_duration_minutes' => $actualMinutes,
+                'updated_at'              => date('Y-m-d H:i:s'),
             ]);
 
             $db->table('activity_logs')->insert([
