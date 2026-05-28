@@ -3,6 +3,7 @@
  * SK Officer Dashboard — Philippine Time (Asia/Manila) + visitor name fix
  * FIX: getActiveSessions() no longer adds PHT_OFFSET_MS — uses Date.now() directly
  *      so session times (parsed as local/PHT by the browser) are compared correctly.
+ * UPDATE: Added "Stop Session" button to Live Monitor session cards.
  */
 
 /* ── Force Philippine Time for ALL date/time calls in this view ── */
@@ -50,6 +51,7 @@ function sk_icon(string $name, int $size = 16, string $stroke = 'currentColor', 
         'sun'            => '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
         'moon'           => '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
         'logout'         => '<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>',
+        'stop-circle'    => '<circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6" fill="currentColor" stroke="none"/>',
     ];
     $d  = $icons[$name] ?? '<circle cx="12" cy="12" r="10"/>';
     $sw = in_array($name, ['calendar', 'calendar-days', 'calendar-x', 'bar-chart', 'bookmark', 'robot', 'qrcode']) ? '1.5' : '1.8';
@@ -347,6 +349,7 @@ $hhPHT = (int)$nowPHT->format('H');
         .date-row:hover { background:var(--input-bg); }
         .date-row:last-child { border-bottom:none; }
 
+        /* ── Session cards ── */
         .session-card { background:var(--input-bg); border-radius:var(--r-md); border:1px solid var(--border-subtle); padding:12px 14px; border-left-width:4px; transition:all .2s; box-shadow:var(--shadow-sm); }
         .session-card:hover { box-shadow:var(--shadow-md); transform:translateY(-1px); }
         .session-card.s-ok       { border-left-color:#10b981; }
@@ -367,6 +370,39 @@ $hhPHT = (int)$nowPHT->format('H');
         .s-warning .session-prog-fill  { background:#f59e0b; }
         .s-critical .session-prog-fill { background:#ef4444; }
         .s-ended .session-prog-fill    { background:#94a3b8; }
+
+        /* Stop Session button */
+        .stop-session-btn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 8px;
+            font-size: .72rem;
+            font-weight: 700;
+            font-family: var(--font);
+            cursor: pointer;
+            border: 1px solid #fca5a5;
+            background: #fee2e2;
+            color: #991b1b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: background .15s, transform .1s;
+            touch-action: manipulation;
+            letter-spacing: -.01em;
+        }
+        .stop-session-btn:hover:not(:disabled) { background: #fecaca; transform: translateY(-1px); }
+        .stop-session-btn:active:not(:disabled) { transform: translateY(0); }
+        .stop-session-btn:disabled { opacity: .55; cursor: not-allowed; }
+        body.dark .stop-session-btn { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.3); color: #f87171; }
+        body.dark .stop-session-btn:hover:not(:disabled) { background: rgba(239,68,68,.2); }
+
+        /* Stop confirm modal */
+        .stop-modal-back { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:500; display:flex; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(4px); opacity:0; pointer-events:none; transition:opacity .2s; }
+        .stop-modal-back.show { opacity:1; pointer-events:auto; }
+        .stop-modal-card { background:var(--card); border-radius:var(--r-xl); padding:24px; max-width:340px; width:100%; box-shadow:var(--shadow-lg); transform:translateY(8px) scale(.97); transition:transform .25s cubic-bezier(.34,1.56,.64,1); }
+        .stop-modal-back.show .stop-modal-card { transform:none; }
 
         .insight-card { background:var(--card); border:1px solid var(--border-subtle); border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--shadow-sm); overflow:hidden; position:relative; transition:transform var(--ease), box-shadow var(--ease); }
         .insight-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
@@ -441,6 +477,8 @@ $hhPHT = (int)$nowPHT->format('H');
         }
 
         @media(max-width:639px) { .topbar { margin-bottom:14px; } .greeting-name { font-size:1.35rem; } }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 
@@ -492,6 +530,31 @@ $hhPHT = (int)$nowPHT->format('H');
                 <p style="font-size:12px;color:var(--text-sub);">No reservations for this date.</p>
             </div>
             <button onclick="closeDateModal()" style="margin-top:16px;width:100%;padding:12px;background:var(--input-bg);border-radius:var(--r-sm);font-weight:600;color:var(--text-muted);border:1px solid var(--border);cursor:pointer;font-size:.82rem;font-family:var(--font);touch-action:manipulation;">Close</button>
+        </div>
+    </div>
+
+    <!-- Stop Session Confirm Modal -->
+    <div id="stopModal" class="stop-modal-back" onclick="if(event.target===this)closeStopModal()">
+        <div class="stop-modal-card">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <div style="width:42px;height:42px;border-radius:12px;background:#fee2e2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <?= sk_icon('stop-circle', 20, '#dc2626') ?>
+                </div>
+                <div>
+                    <p style="font-weight:800;font-size:.95rem;color:var(--text);letter-spacing:-.01em;">Stop Session Early?</p>
+                    <p style="font-size:.72rem;color:var(--text-sub);margin-top:2px;" id="stopModalSub">This will end the active session immediately.</p>
+                </div>
+            </div>
+            <div style="background:var(--input-bg);border-radius:var(--r-sm);padding:12px;margin-bottom:18px;border:1px solid var(--border-subtle);">
+                <p id="stopModalName" style="font-weight:700;font-size:.85rem;color:var(--text);"></p>
+                <p id="stopModalRes"  style="font-size:.75rem;color:var(--text-sub);margin-top:3px;"></p>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="closeStopModal()" style="flex:1;padding:11px;border-radius:var(--r-sm);background:var(--input-bg);border:1px solid var(--border);font-weight:600;color:var(--text-muted);cursor:pointer;font-size:.82rem;font-family:var(--font);touch-action:manipulation;">Cancel</button>
+                <button id="stopModalConfirmBtn" onclick="confirmStopSession()" style="flex:1;padding:11px;border-radius:var(--r-sm);background:#dc2626;border:none;font-weight:700;color:white;cursor:pointer;font-size:.82rem;font-family:var(--font);touch-action:manipulation;transition:background .15s;">
+                    Stop Session
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1165,7 +1228,7 @@ $hhPHT = (int)$nowPHT->format('H');
 
         /* Login toast */
         (function() {
-            const todayKey = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+            const todayKey = new Date().toLocaleDateString('en-CA');
             const key = 'sk_toast_' + todayKey;
             if (sessionStorage.getItem(key)) return;
             sessionStorage.setItem(key, '1');
@@ -1174,7 +1237,7 @@ $hhPHT = (int)$nowPHT->format('H');
             setTimeout(() => t.classList.remove('show'), 6000);
         })();
 
-        /* Timer banner — uses PHP-emitted Unix timestamps, compare with Date.now()/1000 */
+        /* Timer banner */
         (function() {
             const banner = document.getElementById('timerBanner');
             if (!banner) return;
@@ -1320,44 +1383,86 @@ $hhPHT = (int)$nowPHT->format('H');
             document.getElementById('dateModal').classList.remove('show');
             document.body.style.overflow = '';
         }
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { closeDateModal(); closeStopModal(); }
+        });
 
         /* ══════════════════════════════════════════════════════════
-         * LIVE SESSIONS — TIMEZONE FIX
-         *
-         * BEFORE (broken): used PHT_OFFSET_MS = 8*60*60*1000 and
-         *   compared  (nowMs + offset)  vs  locally-parsed sMs/eMs,
-         *   effectively making "now" appear 8 hours in the future,
-         *   so no sessions ever qualified as active.
-         *
-         * AFTER (fixed): Date.now() is compared directly against
-         *   new Date(dateStr + 'T' + timeStr).getTime(), which the
-         *   browser parses as local time (PHT). Both are in the same
-         *   reference frame — no offset needed.
+         * STOP SESSION — Modal + API call
+         * ══════════════════════════════════════════════════════════ */
+        let _stopPendingId   = null;
+        let _stopPendingName = null;
+        let _stopPendingRes  = null;
+
+        function openStopModal(id, name, resource) {
+            _stopPendingId   = id;
+            _stopPendingName = name;
+            _stopPendingRes  = resource;
+            document.getElementById('stopModalName').textContent = name;
+            document.getElementById('stopModalRes').textContent  = resource;
+            document.getElementById('stopModalSub').textContent  = 'This will immediately end their active session.';
+            const btn = document.getElementById('stopModalConfirmBtn');
+            btn.disabled    = false;
+            btn.textContent = 'Stop Session';
+            btn.style.background = '#dc2626';
+            document.getElementById('stopModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeStopModal() {
+            document.getElementById('stopModal').classList.remove('show');
+            document.body.style.overflow = '';
+            _stopPendingId = null;
+        }
+
+        async function confirmStopSession() {
+            if (!_stopPendingId) return;
+            const id  = _stopPendingId;
+            const btn = document.getElementById('stopModalConfirmBtn');
+            btn.disabled     = true;
+            btn.innerHTML    = `<svg style="animation:spin .7s linear infinite" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Stopping…`;
+            try {
+                const res = await fetch(`/sk/sessions/${id}/stop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || `HTTP ${res.status}`);
+                }
+                closeStopModal();
+                // Remove card immediately from live grid
+                document.getElementById(`tl-${id}`)?.remove();
+                const grid = document.getElementById('sessionsGrid');
+                if (!grid.children.length) {
+                    document.getElementById('noSessions').classList.remove('hidden');
+                }
+                tlToast('success', `Session ended`, `${_stopPendingName ?? 'Session'} stopped by officer`);
+            } catch (e) {
+                btn.disabled     = false;
+                btn.textContent  = 'Stop Session';
+                btn.style.background = '#dc2626';
+                tlToast('expired', 'Could not stop session', e.message || 'Please try again');
+            }
+        }
+
+        /* ══════════════════════════════════════════════════════════
+         * LIVE SESSIONS
          * ══════════════════════════════════════════════════════════ */
         const TL_WARN = 5 * 60 * 1000, TL_CRIT = 2 * 60 * 1000;
         let sessionState = {};
 
-        /**
-         * Returns today's date string (YYYY-MM-DD) in local/PHT time.
-         * Uses en-CA locale which formats as YYYY-MM-DD reliably.
-         */
         function getTodayLocal() {
             return new Date().toLocaleDateString('en-CA');
         }
 
-        /**
-         * Get all currently active sessions.
-         * A session is active when:
-         *  - reservation_date === today (local PHT)
-         *  - status === 'approved'
-         *  - claimed === true  (QR scanned)
-         *  - session_ended_at is empty (not force-stopped)
-         *  - current time is between start_time and end_time
-         */
         function getActiveSessions() {
-            const nowMs    = Date.now();          // ms, UTC — same ref frame as local parse
-            const todayPHT = getTodayLocal();     // 'YYYY-MM-DD' in browser local (= PHT)
+            const nowMs    = Date.now();
+            const todayPHT = getTodayLocal();
 
             return allResData.filter(r => {
                 if (!r.start_time || !r.end_time) return false;
@@ -1367,17 +1472,14 @@ $hhPHT = (int)$nowPHT->format('H');
 
                 if ((r.status || '').toLowerCase() !== 'approved') return false;
 
-                // Must be claimed (QR scanned) to show as active
                 const isClaimed = r.claimed == 1   ||
                                   r.claimed === true ||
                                   r.claimed === 'true' ||
                                   r.claimed === 't';
                 if (!isClaimed) return false;
 
-                // Skip force-stopped sessions
                 if (r.session_ended_at) return false;
 
-                // Parse as LOCAL time — browser in PHT → correct ms value
                 const sMs = new Date(rDate + 'T' + r.start_time).getTime();
                 const eMs = new Date(rDate + 'T' + r.end_time  ).getTime();
 
@@ -1396,10 +1498,17 @@ $hhPHT = (int)$nowPHT->format('H');
             const c  = document.getElementById('tl-toast-container');
             const t  = document.createElement('div');
             t.className = 'tl-toast';
-            const bg = type === 'warning' ? 'rgba(245,158,11,.2)' : 'rgba(239,68,68,.2)';
-            const ic = type === 'warning'
-                ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
-                : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+            let bg, ic;
+            if (type === 'success') {
+                bg = 'rgba(16,185,129,.2)';
+                ic = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+            } else if (type === 'warning') {
+                bg = 'rgba(245,158,11,.2)';
+                ic = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+            } else {
+                bg = 'rgba(239,68,68,.2)';
+                ic = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+            }
             t.innerHTML = `
                 <div class="tl-toast-icon" style="background:${bg};">${ic}</div>
                 <div style="flex:1;min-width:0;">
@@ -1413,9 +1522,9 @@ $hhPHT = (int)$nowPHT->format('H');
 
         function renderSessions() {
             const sessions = getActiveSessions();
-            const grid = document.getElementById('sessionsGrid');
-            const noS  = document.getElementById('noSessions');
-            const nowMs = Date.now(); // ← plain Date.now(), no PHT offset
+            const grid  = document.getElementById('sessionsGrid');
+            const noS   = document.getElementById('noSessions');
+            const nowMs = Date.now();
 
             if (!sessions.length) {
                 grid.innerHTML = '';
@@ -1429,8 +1538,8 @@ $hhPHT = (int)$nowPHT->format('H');
                 const eMs   = new Date(rDate + 'T' + r.end_time  ).getTime();
                 const sMs   = new Date(rDate + 'T' + r.start_time).getTime();
                 const totMs = eMs - sMs;
-                const remMs = eMs - nowMs;   // time remaining
-                const elMs  = nowMs - sMs;   // elapsed time
+                const remMs = eMs - nowMs;
+                const elMs  = nowMs - sMs;
                 const prog  = Math.min(100, Math.max(0, (elMs / totMs) * 100));
                 const cls   = sessionClass(remMs);
                 const name  = resolveVisitorName(r);
@@ -1438,12 +1547,17 @@ $hhPHT = (int)$nowPHT->format('H');
 
                 if (!sessionState[r.id]) sessionState[r.id] = { warned: false, expired: false };
                 const st = sessionState[r.id];
-                if (!st.warned && remMs > 0 && remMs <= TL_WARN)  { st.warned = true;  tlToast('warning', `${name} — 5 min left`, `${res} ending soon`); }
+                if (!st.warned  && remMs > 0 && remMs <= TL_WARN) { st.warned  = true; tlToast('warning', `${name} — 5 min left`, `${res} ending soon`); }
                 if (!st.expired && remMs <= 0)                      { st.expired = true; tlToast('expired', `${name}'s session ended`, `${res} time limit reached`); }
 
                 let card = document.getElementById(`tl-${r.id}`);
                 if (!card) { card = document.createElement('div'); card.id = `tl-${r.id}`; grid.appendChild(card); }
                 card.className = `session-card ${cls}`;
+
+                // Escape for inline onclick attribute
+                const safeName = name.replace(/'/g, "\\'");
+                const safeRes  = res.replace(/'/g, "\\'");
+
                 card.innerHTML = `
                     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">
                         <div style="min-width:0;flex:1;">
@@ -1456,7 +1570,17 @@ $hhPHT = (int)$nowPHT->format('H');
                     <div style="display:flex;justify-content:space-between;margin-top:7px;">
                         <span style="font-size:.65rem;color:var(--text-sub);font-family:var(--mono);">${(r.start_time||'').slice(0,5)}–${(r.end_time||'').slice(0,5)} PHT</span>
                         <span style="font-size:.65rem;font-weight:600;color:var(--text-muted);">${Math.max(0,Math.floor(elMs/60000))}m used</span>
-                    </div>`;
+                    </div>
+                    <button
+                        class="stop-session-btn"
+                        onclick="openStopModal(${r.id}, '${safeName}', '${safeRes}')"
+                        title="Force-end this session">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <rect x="9" y="9" width="6" height="6" fill="currentColor" stroke="none"/>
+                        </svg>
+                        Stop Session
+                    </button>`;
             });
 
             const ids = sessions.map(r => `tl-${r.id}`);

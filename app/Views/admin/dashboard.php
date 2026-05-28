@@ -1,9 +1,3 @@
-<?php
-/**
- * Admin Dashboard View
- * FIX: Session cards now show actual stop time (session_ended_at) when force-stopped
- */
-?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -1213,13 +1207,30 @@
             .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
             .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 
-        const resolveVisitorName = r =>
-            (r.visitor_name  || '').trim() ||
-            (r.full_name     || '').trim() ||
-            (r.resident_name || '').trim() ||
-            (r.user_name     || '').trim() ||
-            (r.name          || '').trim() ||
-            'Guest';
+        /**
+         * FIX: resolveVisitorName — exhaustive field search so live session
+         * cards never fall back to a generic placeholder.
+         * Checks every plausible column name your backend might send.
+         */
+        const resolveVisitorName = r => {
+            const candidates = [
+                r.visitor_name,
+                r.full_name,
+                r.resident_name,
+                r.user_name,
+                r.name,
+                r.user,
+                r.username,
+                r.sk_name,
+                r.contact_name,
+                r.patron_name,
+                r.booker_name,
+                r.first_name && r.last_name ? `${r.first_name} ${r.last_name}`.trim() : null,
+                r.first_name,
+                r.last_name,
+            ];
+            return candidates.map(v => String(v ?? '').trim()).find(Boolean) || 'Unknown';
+        };
 
         const to12hPHT = ts => {
             if (!ts) return '—';
@@ -1668,8 +1679,6 @@
                     }
 
                     /* ── Format scheduled end time and stopped time ── */
-                    const sf  = (r.start_time||'').substring(0,5)||'–';
-                    const ef  = (r.end_time  ||'').substring(0,5)||'–';
                     const sfF = to12hPHT(r.start_time);
                     const efF = to12hPHT(r.end_time);
 
