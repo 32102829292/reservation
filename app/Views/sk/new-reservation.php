@@ -102,7 +102,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .divider { border: none; border-top: 1px solid rgba(99, 102, 241, .07); margin: 20px 0; }
 
         /* ══════════════════════════════
-           FIELD GRIDS — responsive
+           FIELD GRIDS
         ══════════════════════════════ */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
@@ -188,6 +188,58 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .pc-btn.selected { background: var(--indigo); color: white; border-color: var(--indigo); }
 
         /* ══════════════════════════════
+           AVAILABILITY STATUS
+        ══════════════════════════════ */
+        #availabilityStatus {
+            display: none;
+            margin-top: 10px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: .82rem;
+            font-weight: 600;
+            align-items: center;
+            gap: 10px;
+            transition: all .2s;
+        }
+        #availabilityStatus.av-checking { display:flex; background:#f0f9ff; border:1px solid #bae6fd; color:#0369a1; }
+        #availabilityStatus.av-ok       { display:flex; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; }
+        #availabilityStatus.av-conflict { display:flex; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; }
+        #availabilityStatus.av-info     { display:flex; background:#fefce8; border:1px solid #fde68a; color:#92400e; }
+        .av-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:.8rem; }
+        .av-checking .av-icon { background:#e0f2fe; }
+        .av-ok       .av-icon { background:#dcfce7; }
+        .av-conflict .av-icon { background:#fee2e2; }
+        .av-info     .av-icon { background:#fef9c3; }
+
+        /* Booked slots table */
+        #bookedSlotsWrap {
+            display: none;
+            margin-top: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(99,102,241,.1);
+        }
+        .bs-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 9px 13px; background: #f8fafc;
+            border-bottom: 1px solid rgba(99,102,241,.08);
+            font-size: .7rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .1em; color: #94a3b8;
+        }
+        .bs-row {
+            display: flex; align-items: center;
+            padding: 9px 13px;
+            border-bottom: 1px solid rgba(99,102,241,.05);
+            font-size: .8rem; background: white;
+        }
+        .bs-row:last-child { border-bottom: none; }
+        .bs-col { flex: 1; }
+        .bs-status-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:.68rem; font-weight:700; }
+        .bs-pill-approved { background:#dcfce7; color:#15803d; }
+        .bs-pill-pending  { background:#fef3c7; color:#92400e; }
+        .bs-conflict-row  { background:#fef2f2 !important; }
+
+        /* ══════════════════════════════
            SUBMIT BUTTON
         ══════════════════════════════ */
         .submit-btn {
@@ -250,7 +302,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 
         /* ══════════════════════════════
            REGISTERED-USER WARNING BOX
-           Appears when a walk-in name matches a user in the DB
         ══════════════════════════════ */
         .reg-warn-box {
             display: none;
@@ -318,12 +369,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             padding: 18px 20px;
             margin-top: 4px;
         }
-        .confirm-code-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 14px;
-        }
+        .confirm-code-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
         .confirm-code-icon {
             width: 34px; height: 34px;
             background: var(--indigo-light);
@@ -355,22 +401,15 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             color: var(--indigo);
             letter-spacing: .22em;
         }
-        .pin-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-            margin-bottom: 8px;
-        }
+        .pin-row { display: flex; gap: 10px; margin-top: 12px; margin-bottom: 8px; }
         .pin-box {
             width: 52px; height: 56px;
             text-align: center;
-            font-size: 1.3rem;
-            font-weight: 800;
+            font-size: 1.3rem; font-weight: 800;
             font-family: var(--mono);
             border: 2px solid rgba(99,102,241,.25);
             border-radius: 12px;
-            background: white;
-            color: #0f172a;
+            background: white; color: #0f172a;
             outline: none;
             transition: border-color .15s, box-shadow .15s;
             caret-color: var(--indigo);
@@ -378,10 +417,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .pin-box:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
         .pin-box.pin-ok  { border-color: #16a34a; background: #f0fdf4; }
         .pin-box.pin-err { border-color: #dc2626; background: #fef2f2; }
-        .pin-feedback {
-            font-size: .78rem; font-weight: 700;
-            min-height: 20px; margin-top: 2px;
-        }
+        .pin-feedback { font-size: .78rem; font-weight: 700; min-height: 20px; margin-top: 2px; }
 
         /* ══════════════════════════════
            ANIMATIONS
@@ -390,9 +426,11 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         @keyframes sheetUp { from { opacity:0; transform:translateY(60px); } to { opacity:1; transform:none; } }
         @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
         @keyframes shake   { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
+        @keyframes spin    { to { transform: rotate(360deg); } }
         .fade-up   { animation: slideUp .4s ease both; }
         .fade-up-1 { animation: slideUp .45s .05s ease both; }
         .shake     { animation: shake .35s ease; }
+        .spin-icon { animation: spin 1s linear infinite; display: inline-block; }
 
         /* ══════════════════════════════
            CUSTOM DATE / TIME PICKERS
@@ -532,10 +570,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         .cs-opt:hover { background: var(--indigo-light); color: var(--indigo); }
         .cs-opt.cs-placeholder { color: #94a3b8; font-weight: 400; font-size: .82rem; }
         .cs-opt.cs-selected { background: rgba(99,102,241,.07); color: var(--indigo); }
-        .cs-opt-icon {
-            width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; font-size: 11px;
-        }
+        .cs-opt-icon { width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
         .cs-opt-label { flex: 1; }
         .cs-check { width: 14px; height: 14px; flex-shrink: 0; color: var(--indigo); opacity: 0; transition: opacity .12s; }
         .cs-opt.cs-selected .cs-check { opacity: 1; }
@@ -557,9 +592,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         body.dark .section-title { color: #e2eaf8; }
         body.dark .field-input,
         body.dark input.field-input,
-        body.dark select.field-input {
-            background: #101e35; border-color: rgba(99,102,241,.18); color: #e2eaf8;
-        }
+        body.dark select.field-input { background: #101e35; border-color: rgba(99,102,241,.18); color: #e2eaf8; }
         body.dark .field-input:focus { background: #0b1628; border-color: var(--indigo); }
         body.dark .field-input[readonly] { background: #060e1e; color: #4a6fa5; }
         body.dark .field-input::placeholder { color: #4a6fa5; }
@@ -604,6 +637,16 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         body.dark .pin-box { background: #101e35; border-color: rgba(99,102,241,.25); color: #e2eaf8; }
         body.dark .pin-box.pin-ok  { background: rgba(22,163,74,.1);  border-color: #16a34a; }
         body.dark .pin-box.pin-err { background: rgba(220,38,38,.1);  border-color: #dc2626; }
+        /* availability dark */
+        body.dark #availabilityStatus.av-checking { background: rgba(3,105,161,.12); border-color: rgba(186,230,253,.2); color: #7dd3fc; }
+        body.dark #availabilityStatus.av-ok       { background: rgba(21,128,61,.12);  border-color: rgba(187,247,208,.2); color: #86efac; }
+        body.dark #availabilityStatus.av-conflict { background: rgba(185,28,28,.12);  border-color: rgba(254,202,202,.2); color: #fca5a5; }
+        body.dark #availabilityStatus.av-info     { background: rgba(146,64,14,.12);  border-color: rgba(253,230,138,.2); color: #fcd34d; }
+        body.dark #bookedSlotsWrap { border-color: rgba(99,102,241,.15); }
+        body.dark .bs-header { background: #101e35; color: #4a6fa5; border-color: rgba(99,102,241,.1); }
+        body.dark .bs-row { background: #0b1628; border-color: rgba(99,102,241,.07); color: #e2eaf8; }
+        body.dark .bs-row:hover { background: #101e35; }
+        body.dark .bs-conflict-row { background: rgba(185,28,28,.1) !important; }
     </style>
 </head>
 
@@ -702,7 +745,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         <div><div class="section-title">Personal Details</div></div>
                     </div>
 
-                    <!-- Registered user fields -->
                     <div id="userFields" class="grid-2">
                         <div>
                             <label class="field-label">Full Name</label>
@@ -718,7 +760,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         </div>
                     </div>
 
-                    <!-- Walk-in visitor fields -->
                     <div id="visitorFields" style="display:none">
                         <div class="grid-2" style="margin-bottom:12px">
                             <div>
@@ -737,7 +778,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                             </div>
                         </div>
 
-                        <!-- FIX: Registered-user warning box — shown when typed name matches a resident -->
                         <div id="registeredWarnBox" class="reg-warn-box">
                             <i class="fa-solid fa-triangle-exclamation" style="margin-top:1px;flex-shrink:0;color:#ea580c"></i>
                             <div>
@@ -749,7 +789,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                             </div>
                         </div>
 
-                        <!-- Guest quota indicator -->
                         <div id="guestLimitBox" style="display:none;margin-bottom:12px">
                             <div id="guestLimitInner" style="display:flex;align-items:center;gap:12px;padding:11px 15px;border-radius:10px;border:1px solid;font-size:.8rem;font-weight:600;transition:all .2s">
                                 <div id="guestLimitIcon" style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem"></div>
@@ -768,7 +807,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                             </div>
                         </div>
 
-                        <!-- CONFIRMATION CODE WIDGET — shown only for brand-new walk-in visitors -->
                         <div id="confirmCodeSection" style="display:none">
                             <div class="confirm-code-box">
                                 <div class="confirm-code-header">
@@ -782,8 +820,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Step 1: Generate -->
                                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
                                     <button type="button" onclick="generateConfirmCode()" id="genCodeBtn" class="gen-code-btn">
                                         <i class="fa-solid fa-arrows-rotate" style="font-size:.75rem"></i>
@@ -796,26 +832,19 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                                         <span style="font-size:.68rem;color:#94a3b8;font-weight:600;margin-left:8px;display:inline-block;margin-top:4px">← Read aloud to visitor</span>
                                     </div>
                                 </div>
-
-                                <!-- Step 2: Visitor types code -->
                                 <div id="pinInputArea" style="display:none">
                                     <label class="field-label" style="color:#3730a3;margin-bottom:8px;display:block;font-size:.75rem">
                                         <i class="fa-solid fa-keyboard" style="margin-right:5px;font-size:.7rem"></i>
                                         Visitor enters the code:
                                     </label>
                                     <div class="pin-row">
-                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin0"
-                                               oninput="pinAdvance(this,1)" onkeydown="pinBack(event,this,null)">
-                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin1"
-                                               oninput="pinAdvance(this,2)" onkeydown="pinBack(event,this,0)">
-                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin2"
-                                               oninput="pinAdvance(this,3)" onkeydown="pinBack(event,this,1)">
-                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin3"
-                                               oninput="pinFinish(this)" onkeydown="pinBack(event,this,2)">
+                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin0" oninput="pinAdvance(this,1)" onkeydown="pinBack(event,this,null)">
+                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin1" oninput="pinAdvance(this,2)" onkeydown="pinBack(event,this,0)">
+                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin2" oninput="pinAdvance(this,3)" onkeydown="pinBack(event,this,1)">
+                                        <input type="text" inputmode="numeric" maxlength="1" class="pin-box" id="pin3" oninput="pinFinish(this)" onkeydown="pinBack(event,this,2)">
                                     </div>
                                     <div id="pinFeedback" class="pin-feedback"></div>
                                 </div>
-
                                 <input type="hidden" id="confirmCodeVerified" value="0">
                             </div>
                         </div>
@@ -832,7 +861,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         <div><div class="section-title">Resource & Schedule</div></div>
                     </div>
 
-                    <!-- Resource select -->
                     <div style="margin-bottom:14px">
                         <label class="field-label">Select Asset / Resource</label>
                         <div class="cs-wrap" id="resourceWrap">
@@ -860,7 +888,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         </div>
                     </div>
 
-                    <!-- PC workstation section -->
                     <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block">Assign Workstation(s)</label>
                         <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
@@ -908,8 +935,27 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         </div>
                     </div>
 
+                    <!-- ══ LIVE AVAILABILITY STATUS ══ -->
+                    <div id="availabilityStatus">
+                        <div class="av-icon" id="avIcon"></div>
+                        <div style="flex:1">
+                            <div id="avTitle" style="font-weight:700;font-size:.82rem"></div>
+                            <div id="avSub"   style="font-size:.7rem;margin-top:1px;opacity:.85"></div>
+                        </div>
+                        <div id="avPill" style="padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:800;letter-spacing:.04em;white-space:nowrap"></div>
+                    </div>
+
+                    <!-- Booked slots breakdown -->
+                    <div id="bookedSlotsWrap">
+                        <div class="bs-header">
+                            <i class="fa-solid fa-clock" style="font-size:.65rem"></i>
+                            Other bookings on this date
+                        </div>
+                        <div id="bookedSlotsList"></div>
+                    </div>
+
                     <!-- Purpose -->
-                    <div style="margin-bottom:14px">
+                    <div style="margin-bottom:14px;margin-top:14px">
                         <label class="field-label">Purpose of Visit</label>
                         <div class="cs-wrap" id="purposeWrap">
                             <div class="cs-trigger" id="purposeTrigger">
@@ -1088,6 +1134,8 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             selectedPcs = [];
             updatePcHidden();
             document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
+            // Trigger availability check when resource changes
+            schedAvailabilityCheck();
         });
 
         initCS('purposeWrap', 'purposeDrop', 'purposeLabel', function(val) {
@@ -1096,22 +1144,164 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             if (val !== 'Others') document.getElementById('purposeOther').value = '';
         });
 
+        /* ─── Availability checker ─── */
+        window._avHasConflict = false;
+        let _avTimer = null;
+
+        function schedAvailabilityCheck() {
+            clearTimeout(_avTimer);
+            _avTimer = setTimeout(runAvailabilityCheck, 450);
+        }
+
+        function runAvailabilityCheck() {
+            const resourceId = getSelectedResourceVal();
+            const date       = document.getElementById('resDate').value;
+            const startTime  = document.getElementById('startTime').value;
+            const endTime    = document.getElementById('endTime').value;
+            const status     = document.getElementById('availabilityStatus');
+            const slots      = document.getElementById('bookedSlotsWrap');
+
+            if (!resourceId || !date) {
+                status.className = '';
+                status.style.display = 'none';
+                slots.style.display  = 'none';
+                window._avHasConflict = false;
+                return;
+            }
+
+            setAvStatus('checking',
+                '<i class="fa-solid fa-circle-notch spin-icon" style="font-size:.75rem"></i>',
+                'Checking availability…',
+                startTime && endTime ? 'Verifying your time slot against existing bookings.' : 'Select start & end time to check for conflicts.',
+                ''
+            );
+
+            const params = new URLSearchParams({
+                resource_id: resourceId,
+                date:        date,
+                start_time:  startTime || '',
+                end_time:    endTime   || '',
+            });
+
+            fetch('/sk/check-availability?' + params.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const booked = data.booked_slots || [];
+
+                if (data.has_conflict) {
+                    window._avHasConflict = true;
+                    setAvStatus('conflict',
+                        '<i class="fa-solid fa-ban" style="font-size:.78rem;color:#b91c1c"></i>',
+                        'Time slot conflict detected',
+                        'Your selected time overlaps with an existing booking. Please choose a different time.',
+                        'UNAVAILABLE'
+                    );
+                } else if (startTime && endTime) {
+                    window._avHasConflict = false;
+                    setAvStatus('ok',
+                        '<i class="fa-solid fa-circle-check" style="font-size:.78rem;color:#15803d"></i>',
+                        'Time slot is available',
+                        booked.length
+                            ? `${booked.length} other booking(s) on this date — none overlap your selected time.`
+                            : 'No other bookings on this date. All yours!',
+                        'AVAILABLE'
+                    );
+                } else {
+                    window._avHasConflict = false;
+                    setAvStatus('info',
+                        '<i class="fa-solid fa-calendar-check" style="font-size:.78rem;color:#92400e"></i>',
+                        booked.length ? `${booked.length} booking(s) on this date` : 'No bookings yet on this date',
+                        'Select start & end time to check if your slot is free.',
+                        booked.length ? `${booked.length} BOOKED` : 'FREE'
+                    );
+                }
+
+                if (booked.length > 0) {
+                    renderBookedSlots(booked, startTime, endTime);
+                } else {
+                    slots.style.display = 'none';
+                }
+            })
+            .catch(() => {
+                window._avHasConflict = false;
+                setAvStatus('info',
+                    '<i class="fa-solid fa-wifi" style="font-size:.78rem;color:#92400e"></i>',
+                    'Could not check availability',
+                    'Network error. Please continue manually.',
+                    ''
+                );
+                slots.style.display = 'none';
+            });
+        }
+
+        function setAvStatus(type, iconHtml, title, sub, pill) {
+            const status = document.getElementById('availabilityStatus');
+            const pillColors = {
+                ok:       { bg: '#dcfce7', color: '#15803d' },
+                conflict: { bg: '#fee2e2', color: '#b91c1c' },
+                info:     { bg: '#fef3c7', color: '#92400e' },
+                checking: { bg: '#e0f2fe', color: '#0369a1' },
+            };
+            document.getElementById('avIcon').innerHTML   = iconHtml;
+            document.getElementById('avTitle').textContent = title;
+            document.getElementById('avSub').textContent   = sub;
+            status.className = 'av-' + type;
+            const avPill = document.getElementById('avPill');
+            if (pill) {
+                const c = pillColors[type] || {};
+                avPill.style.background = c.bg    || '#e2e8f0';
+                avPill.style.color      = c.color || '#475569';
+                avPill.textContent      = pill;
+                avPill.style.display    = 'inline-block';
+            } else {
+                avPill.style.display = 'none';
+            }
+        }
+
+        function renderBookedSlots(slots, myStart, myEnd) {
+            const wrap = document.getElementById('bookedSlotsWrap');
+            const list = document.getElementById('bookedSlotsList');
+            let html = '';
+            slots.forEach(s => {
+                const start = s.start_time.substring(0, 5);
+                const end   = s.end_time.substring(0, 5);
+                const isConflict = myStart && myEnd && myStart < s.end_time && myEnd > s.start_time;
+                const statusClass = s.status === 'approved' ? 'bs-pill-approved' : 'bs-pill-pending';
+                const statusLabel = s.status === 'approved' ? '✔ Approved' : '⏳ Pending';
+                const rowClass    = isConflict ? 'bs-row bs-conflict-row' : 'bs-row';
+                html += `<div class="${rowClass}">
+                    <div class="bs-col"><span class="bs-status-pill ${statusClass}">${statusLabel}</span></div>
+                    <div class="bs-col" style="font-family:var(--mono);font-size:.78rem;font-weight:600">${start} – ${end}</div>
+                    <div class="bs-col" style="text-align:right">
+                        ${isConflict ? '<span style="font-size:.68rem;font-weight:700;color:#b91c1c;background:#fee2e2;padding:2px 7px;border-radius:20px">⚡ CONFLICT</span>' : ''}
+                    </div>
+                </div>`;
+            });
+            list.innerHTML = html;
+            wrap.style.display = 'block';
+        }
+
+        // Hook date/time pickers → re-run check
+        window._onDatePicked = schedAvailabilityCheck;
+        window._onTimePicked = schedAvailabilityCheck;
+
         /* ─── Preview / confirm ─── */
         function previewReservation() {
-            // Block if walk-in name matches a registered resident
             if (currentType === 'Visitor' && window._guestIsRegistered) {
                 alert('⛔ This person is a registered resident. Please use the Registered User toggle and select them from the dropdown.');
                 return;
             }
-
-            // Block if walk-in quota exceeded
             if (currentType === 'Visitor' && window._guestBlocked) {
                 const name = document.getElementById('visitorNameInput')?.value?.trim() || 'This visitor';
                 alert(`⛔ ${name} has reached the 3-reservation limit within the last 14 days and cannot make a new reservation.`);
                 return;
             }
-
-            // For new walk-in visitors: require identity confirmation code
+            if (window._avHasConflict) {
+                alert('⛔ This time slot has a confirmed booking conflict. Please choose a different time or date.');
+                return;
+            }
             if (currentType === 'Visitor') {
                 const codeSection = document.getElementById('confirmCodeSection');
                 if (codeSection && codeSection.style.display !== 'none') {
@@ -1163,10 +1353,10 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 ['Date',         document.getElementById('dateLabel').textContent],
                 ['Time',         `${document.getElementById('startLabel').textContent} – ${document.getElementById('endLabel').textContent}`],
                 ['Purpose',      purposeFinal || '—'],
+                ['Availability', '✓ No conflict detected'],
             ];
-            if (!isUser) {
-                rows.splice(2, 0, ['Identity', 'Confirmed ✓']);
-            }
+            if (!isUser) rows.splice(2, 0, ['Identity', 'Confirmed ✓']);
+
             document.getElementById('modalSummaryBox').innerHTML =
                 rows.map(([l,v]) => `<div class="mrow"><span class="mrow-label">${l}</span><span class="mrow-value">${v}</span></div>`).join('');
             document.getElementById('qrWrap').style.display    = 'none';
@@ -1206,6 +1396,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             const btn = document.getElementById('confirmBtn');
             btn.disabled = false;
             btn.style.display = 'flex';
+            btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:.8rem"></i> Confirm & Save';
         }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     </script>
@@ -1271,7 +1462,10 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             $('resDate').value=iso;
             $('dateLabel').textContent=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
             $('dateTrigger').classList.add('has-value');
-            renderCal(); setTimeout(closeAll,180);
+            renderCal();
+            setTimeout(closeAll,180);
+            // Trigger availability check
+            if (window._onDatePicked) window._onDatePicked();
         }
         function clearDate(){ selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');renderCal(); }
         function gotoToday(){ calView={y:TODAY.getFullYear(),m:TODAY.getMonth()};pickDay(TODAY.getDate()); }
@@ -1307,6 +1501,8 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             $(inputId).value=iso24;
             $(triggerId).classList.add('has-value');
             closeAll();
+            // Trigger availability check
+            if (window._onTimePicked) window._onTimePicked();
         }
 
         $('dateTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('calDrop','dateTrigger');if(activeDrop==='calDrop')renderCal();});
@@ -1341,34 +1537,25 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
 
     <!-- ══════════════════════════════════════════
          GUEST LIMIT CHECKER + CONFIRMATION CODE
-         Fixed:
-         - Returns is_registered:true when typed name matches a resident
-         - Uses reservation_date (date column) for 14-day window
-         - Uses user_id IS NULL to count only true walk-ins
     ══════════════════════════════════════════ -->
     <script>
     (function () {
         const LIMIT     = 3;
         const CHECK_URL = '/sk/check-guest-limit';
 
-        // Module state
         window._guestBlocked      = false;
-        window._guestIsRegistered = false;  // FIX: new flag for registered-resident detection
+        window._guestIsRegistered = false;
         window._guestTimer        = null;
         window._generatedCode     = null;
 
-        /* ─── Debounced trigger ─── */
         window.schedGuestCheck = function () {
             clearTimeout(window._guestTimer);
             window._guestTimer = setTimeout(window.runGuestCheck, 600);
         };
 
-        /* ─── Main check ─── */
         window.runGuestCheck = function () {
             clearTimeout(window._guestTimer);
-
             if (currentType === 'User') { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); return; }
-
             const name = (document.getElementById('visitorNameInput')?.value || '').trim();
             if (!name) { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); return; }
 
@@ -1377,40 +1564,26 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             })
             .then(r => r.json())
             .then(data => {
-                // FIX: if the name belongs to a registered resident, warn and block
                 if (data.is_registered) {
                     window._guestIsRegistered = true;
                     window._guestBlocked      = true;
-                    hideGuestBox();
-                    hideCodeSection();
+                    hideGuestBox(); hideCodeSection();
                     showRegisteredWarning(data.registered_name || name);
                     return;
                 }
-
-                // Name is not a registered resident — clear the warning
                 window._guestIsRegistered = false;
                 hideRegisteredWarning();
-
                 if (data.skip_quota) { hideGuestBox(); hideCodeSection(); return; }
-
                 renderGuestBox(data);
-
-                // Show confirmation code only for brand-new, non-blocked visitors
-                if (data.is_new && !data.blocked) {
-                    showCodeSection();
-                } else {
-                    hideCodeSection();
-                }
+                if (data.is_new && !data.blocked) { showCodeSection(); }
+                else { hideCodeSection(); }
             })
             .catch(() => {
                 window._guestIsRegistered = false;
-                hideGuestBox();
-                hideCodeSection();
-                hideRegisteredWarning();
+                hideGuestBox(); hideCodeSection(); hideRegisteredWarning();
             });
         };
 
-        /* ─── Registered-resident warning ─── */
         window.showRegisteredWarning = function (name) {
             const box   = document.getElementById('registeredWarnBox');
             const title = document.getElementById('regWarnTitle');
@@ -1425,54 +1598,39 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             if (box) box.style.display = 'none';
         };
 
-        /* ─── Generate 4-digit code ─── */
         window.generateConfirmCode = function () {
             const code = String(Math.floor(1000 + Math.random() * 9000));
             window._generatedCode = code;
-
             document.getElementById('confirmCodeValue').value = code;
             document.getElementById('confirmCodeVerified').value = '0';
-
             document.getElementById('codeDigits').textContent = code;
             document.getElementById('codeDisplayWrap').style.display = 'flex';
             document.getElementById('pinInputArea').style.display = 'block';
-
             ['pin0','pin1','pin2','pin3'].forEach(id => {
                 const el = document.getElementById(id);
-                el.value = '';
-                el.classList.remove('pin-ok','pin-err');
+                el.value = ''; el.classList.remove('pin-ok','pin-err');
             });
             document.getElementById('pinFeedback').textContent = '';
-            document.getElementById('pinFeedback').style.color = '';
-
+            document.getElementById('pinFeedback').style.color  = '';
             setTimeout(() => document.getElementById('pin0')?.focus(), 50);
         };
 
-        /* ─── PIN navigation helpers ─── */
         window.pinAdvance = function (el, nextIdx) {
             el.value = el.value.replace(/\D/g, '').slice(-1);
-            if (el.value && nextIdx <= 3) {
-                document.getElementById('pin' + nextIdx)?.focus();
-            }
+            if (el.value && nextIdx <= 3) document.getElementById('pin' + nextIdx)?.focus();
         };
 
         window.pinBack = function (e, el, prevIdx) {
-            if (e.key === 'Backspace' && !el.value && prevIdx !== null) {
+            if (e.key === 'Backspace' && !el.value && prevIdx !== null)
                 document.getElementById('pin' + prevIdx)?.focus();
-            }
         };
 
-        /* ─── Final digit entered — check match ─── */
         window.pinFinish = function (el) {
             el.value = el.value.replace(/\D/g, '').slice(-1);
-            const entered = ['pin0','pin1','pin2','pin3']
-                .map(id => document.getElementById(id).value)
-                .join('');
+            const entered = ['pin0','pin1','pin2','pin3'].map(id => document.getElementById(id).value).join('');
             if (entered.length < 4) return;
-
             const fb   = document.getElementById('pinFeedback');
             const pins = document.querySelectorAll('.pin-box');
-
             if (entered === window._generatedCode) {
                 pins.forEach(p => { p.classList.remove('pin-err'); p.classList.add('pin-ok'); });
                 fb.textContent = '✓ Code verified — visitor identity confirmed';
@@ -1488,7 +1646,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             }
         };
 
-        /* ─── Show / hide helpers ─── */
         function showCodeSection() {
             const s = document.getElementById('confirmCodeSection');
             if (s) s.style.display = 'block';
@@ -1498,14 +1655,10 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             const s = document.getElementById('confirmCodeSection');
             if (s) s.style.display = 'none';
             window._generatedCode = null;
-            const cv = document.getElementById('confirmCodeVerified');
-            if (cv) cv.value = '0';
-            const cdv = document.getElementById('confirmCodeValue');
-            if (cdv) cdv.value = '';
-            const wrap = document.getElementById('codeDisplayWrap');
-            if (wrap) wrap.style.display = 'none';
-            const pin = document.getElementById('pinInputArea');
-            if (pin) pin.style.display = 'none';
+            const cv  = document.getElementById('confirmCodeVerified');  if (cv)  cv.value = '0';
+            const cdv = document.getElementById('confirmCodeValue');      if (cdv) cdv.value = '';
+            const wrap = document.getElementById('codeDisplayWrap');     if (wrap) wrap.style.display = 'none';
+            const pin  = document.getElementById('pinInputArea');         if (pin)  pin.style.display  = 'none';
             ['pin0','pin1','pin2','pin3'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) { el.value = ''; el.classList.remove('pin-ok','pin-err'); }
@@ -1515,13 +1668,11 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         }
         window.hideCodeSection = hideCodeSection;
 
-        /* ─── Guest quota box renderer ─── */
         function renderGuestBox(data) {
             const count   = data.count   ?? 0;
             const limit   = data.limit   ?? LIMIT;
             const blocked = data.blocked ?? (count >= limit);
             const pct     = Math.min(count / limit * 100, 100);
-
             window._guestBlocked = blocked;
 
             const box   = document.getElementById('guestLimitBox');
@@ -1538,61 +1689,34 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             bar.style.width   = pct + '%';
 
             if (blocked) {
-                inner.style.background  = '#fef2f2';
-                inner.style.borderColor = '#fecaca';
-                icon.style.background   = '#fee2e2';
-                icon.innerHTML          = '<i class="fa-solid fa-ban" style="color:#dc2626"></i>';
-                title.style.color       = '#dc2626';
-                title.textContent       = 'Reservation limit reached';
-                sub.style.color         = '#dc2626';
-                sub.textContent         = `All ${limit} slots used in the last 14 days.`
-                                        + (data.reset ? ` Resets on ${data.reset}.` : '');
-                pill.style.background   = '#dc2626';
-                pill.style.color        = '#fff';
-                pill.textContent        = 'BLOCKED';
-                bar.style.background    = '#ef4444';
-
+                inner.style.background = '#fef2f2'; inner.style.borderColor = '#fecaca';
+                icon.style.background  = '#fee2e2'; icon.innerHTML = '<i class="fa-solid fa-ban" style="color:#dc2626"></i>';
+                title.style.color = '#dc2626'; title.textContent = 'Reservation limit reached';
+                sub.style.color   = '#dc2626';
+                sub.textContent   = `All ${limit} slots used in the last 14 days.` + (data.reset ? ` Resets on ${data.reset}.` : '');
+                pill.style.background = '#dc2626'; pill.style.color = '#fff'; pill.textContent = 'BLOCKED';
+                bar.style.background  = '#ef4444';
             } else if (count === limit - 1) {
-                inner.style.background  = '#fffbeb';
-                inner.style.borderColor = '#fde68a';
-                icon.style.background   = '#fef3c7';
-                icon.innerHTML          = '<i class="fa-solid fa-triangle-exclamation" style="color:#d97706"></i>';
-                title.style.color       = '#92400e';
-                title.textContent       = 'Last reservation slot';
-                sub.style.color         = '#92400e';
-                sub.textContent         = `${limit - count} slot remaining in the 14-day window.`;
-                pill.style.background   = '#f59e0b';
-                pill.style.color        = '#fff';
-                pill.textContent        = 'LAST SLOT';
-                bar.style.background    = '#f59e0b';
-
+                inner.style.background = '#fffbeb'; inner.style.borderColor = '#fde68a';
+                icon.style.background  = '#fef3c7'; icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#d97706"></i>';
+                title.style.color = '#92400e'; title.textContent = 'Last reservation slot';
+                sub.style.color   = '#92400e'; sub.textContent = `${limit - count} slot remaining in the 14-day window.`;
+                pill.style.background = '#f59e0b'; pill.style.color = '#fff'; pill.textContent = 'LAST SLOT';
+                bar.style.background  = '#f59e0b';
             } else if (count > 0) {
-                inner.style.background  = 'rgba(99,102,241,.05)';
-                inner.style.borderColor = 'rgba(99,102,241,.2)';
-                icon.style.background   = 'rgba(99,102,241,.1)';
-                icon.innerHTML          = '<i class="fa-solid fa-circle-check" style="color:#6366f1"></i>';
-                title.style.color       = '#3730a3';
-                title.textContent       = 'Returning visitor';
-                sub.style.color         = '#4f46e5';
-                sub.textContent         = `${limit - count} slot(s) remaining in the 14-day window.`;
-                pill.style.background   = '#ede9fe';
-                pill.style.color        = '#4f46e5';
-                pill.textContent        = `${count}/${limit} USED`;
-                bar.style.background    = '#6366f1';
-
+                inner.style.background = 'rgba(99,102,241,.05)'; inner.style.borderColor = 'rgba(99,102,241,.2)';
+                icon.style.background  = 'rgba(99,102,241,.1)'; icon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#6366f1"></i>';
+                title.style.color = '#3730a3'; title.textContent = 'Returning visitor';
+                sub.style.color   = '#4f46e5'; sub.textContent = `${limit - count} slot(s) remaining in the 14-day window.`;
+                pill.style.background = '#ede9fe'; pill.style.color = '#4f46e5'; pill.textContent = `${count}/${limit} USED`;
+                bar.style.background  = '#6366f1';
             } else {
-                inner.style.background  = '#f0fdf4';
-                inner.style.borderColor = '#bbf7d0';
-                icon.style.background   = '#dcfce7';
-                icon.innerHTML          = '<i class="fa-solid fa-user-plus" style="color:#16a34a"></i>';
-                title.style.color       = '#15803d';
-                title.textContent       = 'New visitor';
-                sub.style.color         = '#16a34a';
-                sub.textContent         = `No recent reservations found. ${limit} slots available.`;
-                pill.style.background   = '#22c55e';
-                pill.style.color        = '#fff';
-                pill.textContent        = 'NEW';
-                bar.style.background    = '#22c55e';
+                inner.style.background = '#f0fdf4'; inner.style.borderColor = '#bbf7d0';
+                icon.style.background  = '#dcfce7'; icon.innerHTML = '<i class="fa-solid fa-user-plus" style="color:#16a34a"></i>';
+                title.style.color = '#15803d'; title.textContent = 'New visitor';
+                sub.style.color   = '#16a34a'; sub.textContent = `No recent reservations found. ${limit} slots available.`;
+                pill.style.background = '#22c55e'; pill.style.color = '#fff'; pill.textContent = 'NEW';
+                bar.style.background  = '#22c55e';
             }
         }
 

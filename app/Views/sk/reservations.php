@@ -44,12 +44,6 @@ $statusIcons = [
     'unclaimed' => 'fa-ticket',
 ];
 
-/**
- * Helper: resolve the display name for a reservation row.
- * Walk-in visitors are stored in visitor_name.
- * Registered users may be in visitor_name OR full_name.
- * Falls back to 'Unknown' — never 'Guest'.
- */
 function resolveResName(array $res): string {
     $vn = trim($res['visitor_name'] ?? '');
     if ($vn !== '') return $vn;
@@ -58,9 +52,6 @@ function resolveResName(array $res): string {
     return 'Unknown';
 }
 
-/**
- * Helper: is this a walk-in (non-registered) visitor?
- */
 function isWalkIn(array $res): bool {
     $vt = strtolower(trim($res['visitor_type'] ?? ''));
     return $vt !== '' && $vt !== 'user';
@@ -95,33 +86,37 @@ function isWalkIn(array $res): bool {
         .res-card[data-status="unclaimed"]::before { background:#fb923c; }
         .res-card[data-status="expired"]::before   { background:#94a3b8; }
 
-        /* ── Ticket section ── */
+        /* ── Ticket ── */
         .ticket-section { border:2px dashed var(--indigo-border); border-radius:20px; padding:20px; background:var(--indigo-light); display:flex; flex-direction:column; align-items:center; }
+
+        /* ── Stopped-at pill ── */
+        .stopped-at-pill { display:inline-flex; align-items:center; gap:4px; margin-top:5px; padding:3px 8px; background:rgba(239,68,68,.1); color:#ef4444; border:1px solid rgba(239,68,68,.2); border-radius:6px; font-size:.62rem; font-weight:700; font-family:var(--font); }
 
         /* ── Unclaimed banner ── */
         .unclaimed-banner { background:var(--orange-bg,#fff7ed); border:1.5px dashed #fdba74; border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:10px; margin:0 24px 14px; }
         .ub-icon { width:34px; height:34px; background:#fed7aa; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#c2410c; font-size:13px; flex-shrink:0; }
 
-        /* ── Walk-in quota strip ── */
+        /* ── Walk-in quota ── */
         .walkin-quota-strip { display:none; margin:0 24px 12px; border-radius:14px; padding:12px 14px; border:1.5px solid var(--border); background:var(--input-bg); align-items:center; gap:12px; }
         .walkin-quota-strip.show { display:flex; }
         .wq-icon { width:34px; height:34px; background:#e0e7ff; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#4338ca; font-size:13px; flex-shrink:0; }
         .wq-icon.exceeded { background:#fee2e2; color:#dc2626; }
         .wq-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; transition:background .2s; }
 
-        /* ── Visitor role badge (Guest / User) ── */
-        .visitor-role-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 2px 8px; border-radius: 999px;
-            font-size: 10px; font-weight: 800; letter-spacing: .04em;
-            margin-top: 3px;
-        }
-        .visitor-role-badge.walkin {
-            background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;
-        }
-        .visitor-role-badge.registered {
-            background: #ede9fe; color: #4f46e5; border: 1px solid #c4b5fd;
-        }
+        /* ── Role badge ── */
+        .visitor-role-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.04em; margin-top:3px; }
+        .visitor-role-badge.walkin { background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
+        .visitor-role-badge.registered { background:#ede9fe; color:#4f46e5; border:1px solid #c4b5fd; }
+
+        /* ── Print log ── */
+        #dPrintLog { display:none; margin:0 24px 12px; border-radius:18px; padding:12px 14px; border:1px solid var(--border); background:var(--input-bg); align-items:center; gap:12px; }
+        #dPrintLogForm { background:var(--input-bg); border:1px solid var(--border); border-radius:18px; padding:16px 18px; margin:0 24px 14px; }
+        #dPrintLogForm label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--text-sub); display:block; margin-bottom:6px; }
+        #dPrintLogForm input[type=number] { width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 12px; font-size:14px; font-family:var(--font); color:var(--text); background:var(--card); outline:none; }
+        #dPrintLogForm input[type=number]:focus { border-color:var(--indigo); box-shadow:0 0 0 3px rgba(67,56,202,.1); }
+        .btn-save-print { background:var(--indigo); color:#fff; border:none; border-radius:10px; padding:9px 16px; font-size:12px; font-weight:800; cursor:pointer; font-family:var(--font); transition:all .15s; display:flex; align-items:center; gap:6px; }
+        .btn-save-print:hover:not(:disabled) { background:#312e81; }
+        .btn-save-print:disabled { opacity:.6; cursor:not-allowed; }
 
         /* ── Overlay / modals ── */
         .overlay { display:none; position:fixed; inset:0; z-index:300; align-items:center; justify-content:center; }
@@ -129,24 +124,13 @@ function isWalkIn(array $res): bool {
         .overlay-bg { position:absolute; inset:0; background:rgba(15,23,42,.55); backdrop-filter:blur(6px); }
         .modal-box { position:relative; margin:auto; background:var(--card); border-radius:28px; width:94%; max-width:520px; max-height:92vh; overflow-y:auto; box-shadow:0 25px 50px -12px rgba(0,0,0,.35); animation:popIn .22s cubic-bezier(.34,1.56,.64,1) both; }
         .modal-box.sm { max-width:380px; }
-
-        /* Detail modal — bottom sheet on mobile */
-        @media(max-width:639px) {
-            .overlay#detailModal { align-items:flex-end; }
-            .overlay#detailModal .modal-box { margin:0; width:100%; max-width:100%; border-radius:28px 28px 0 0; max-height:92vh; animation:slideUp .28s cubic-bezier(.34,1.2,.64,1) both; }
-        }
-
+        @media(max-width:639px) { .overlay#detailModal { align-items:flex-end; } .overlay#detailModal .modal-box { margin:0; width:100%; max-width:100%; border-radius:28px 28px 0 0; max-height:92vh; animation:slideUp .28s cubic-bezier(.34,1.2,.64,1) both; } }
         .modal-box::-webkit-scrollbar { width:4px; }
         .modal-box::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
 
-        /* ── Filter tabs ── */
-        .qtab { white-space:nowrap; flex-shrink:0; }
-
-        /* ── Export / primary btn ── */
+        /* ── Export / action btns ── */
         .btn-export { display:flex; align-items:center; gap:7px; padding:9px 18px; background:var(--indigo); color:#fff; border-radius:var(--r-sm); font-size:13px; font-weight:700; border:none; cursor:pointer; font-family:var(--font); transition:all .15s; box-shadow:0 4px 12px rgba(55,48,163,.28); }
         .btn-export:hover { background:#312e81; }
-
-        /* ── Approve / Decline ── */
         .btn-approve-sm { background:#dcfce7; color:#166534; border:none; border-radius:8px; padding:6px 12px; font-size:11px; font-weight:800; cursor:pointer; font-family:var(--font); display:flex; align-items:center; gap:5px; transition:all .15s; }
         .btn-approve-sm:hover { background:#16a34a; color:#fff; }
         .btn-decline-sm { background:#fee2e2; color:#991b1b; border:none; border-radius:8px; padding:6px 9px; font-size:11px; font-weight:800; cursor:pointer; font-family:var(--font); display:flex; align-items:center; gap:5px; transition:all .15s; }
@@ -160,31 +144,12 @@ function isWalkIn(array $res): bool {
         .btn-cancel { flex:1; padding:12px; background:var(--input-bg); border-radius:var(--r-sm); font-weight:700; color:var(--text-muted); border:1px solid var(--border); cursor:pointer; font-size:13px; font-family:var(--font); transition:all .15s; display:flex; align-items:center; justify-content:center; gap:7px; }
         .btn-cancel:hover { background:var(--indigo-light); border-color:var(--indigo); color:var(--indigo); }
 
-        /* ── Print log ── */
-        #dPrintLog { display:none; margin:0 24px 12px; border-radius:18px; padding:12px 14px; border:1px solid var(--border); background:var(--input-bg); align-items:center; gap:12px; }
-        #dPrintLogForm { background:var(--input-bg); border:1px solid var(--border); border-radius:18px; padding:16px 18px; margin:0 24px 14px; }
-        #dPrintLogForm label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--text-sub); display:block; margin-bottom:6px; }
-        #dPrintLogForm input[type=number] { width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 12px; font-size:14px; font-family:var(--font); color:var(--text); background:var(--card); outline:none; }
-        #dPrintLogForm input[type=number]:focus { border-color:var(--indigo); box-shadow:0 0 0 3px rgba(67,56,202,.1); }
-        .btn-save-print { background:var(--indigo); color:#fff; border:none; border-radius:10px; padding:9px 16px; font-size:12px; font-weight:800; cursor:pointer; font-family:var(--font); transition:all .15s; display:flex; align-items:center; gap:6px; }
-        .btn-save-print:hover:not(:disabled) { background:#312e81; }
-        .btn-save-print:disabled { opacity:.6; cursor:not-allowed; }
-
-        /* ── Stat cards ── */
+        /* ── Stat / filter ── */
+        .qtab { white-space:nowrap; flex-shrink:0; }
         .stats-grid[style*="repeat(6"] { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
-        @media(max-width:639px) {
-            .stats-grid[style*="repeat(6"] { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:8px !important; }
-            .stat-card { padding:11px 12px !important; }
-            .stat-num  { font-size:1.35rem !important; }
-            .stat-lbl  { font-size:.56rem !important; }
-        }
-
-        /* ── Desktop/mobile split ── */
+        @media(max-width:639px) { .stats-grid[style*="repeat(6"] { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:8px !important; } .stat-card { padding:11px 12px !important; } .stat-num { font-size:1.35rem !important; } .stat-lbl { font-size:.56rem !important; } }
         @media(min-width:768px) { #mobileCardList { display:none !important; } #mobileEmpty { display:none !important; } }
         @media(max-width:767px) { .hidden-on-mobile { display:none !important; } }
-
-        /* ── Page header ── */
-        .topbar-right { flex-wrap:wrap; }
         @media(max-width:480px) { .page-title { font-size:1.3rem !important; } .topbar-right { width:100%; justify-content:flex-end; } .btn-export span.hide-xs { display:none; } }
 
         /* ── Animations ── */
@@ -193,37 +158,24 @@ function isWalkIn(array $res): bool {
         @keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
         .fade-up { animation:slideUp .4s ease both; }
 
-        /* ── Dark mode ── */
-        body.dark .stat-card       { background:#0b1628!important; border-color:rgba(99,102,241,.15)!important; }
-        body.dark .card            { background:#0b1628!important; border-color:rgba(99,102,241,.1)!important; }
-        body.dark .search-input    { background:#101e35!important; border-color:rgba(99,102,241,.18)!important; color:#e2eaf8!important; }
-        body.dark .res-card        { background:#0b1628!important; border-color:rgba(99,102,241,.1)!important; }
-        body.dark .res-card:hover  { border-color:var(--indigo)!important; }
-        body.dark .modal-box       { background:#0b1628!important; }
-        body.dark .tbl-wrap        { background:#0b1628!important; border-color:rgba(99,102,241,.1)!important; }
-        body.dark .res-row:hover td { background:rgba(99,102,241,.06)!important; }
-        body.dark .page-eyebrow    { color:#4a6fa5!important; }
-        body.dark .page-title      { color:#e2eaf8!important; }
-        body.dark .page-sub        { color:#4a6fa5!important; }
-        body.dark .flash-ok        { background:rgba(55,48,163,.2)!important; border-color:rgba(99,102,241,.3)!important; color:#a5b4fc!important; }
-        body.dark .flash-err       { background:rgba(220,38,38,.1)!important; border-color:rgba(248,113,113,.3)!important; color:#f87171!important; }
-        body.dark #dPrintLogForm   { background:#060e1e!important; border-color:rgba(99,102,241,.12)!important; }
-        body.dark #dPrintLogForm input[type=number] { background:#101e35!important; border-color:rgba(99,102,241,.18)!important; color:#e2eaf8!important; }
-        body.dark #dPrintLog       { background:#060e1e!important; border-color:rgba(99,102,241,.1)!important; }
-        body.dark .unclaimed-banner { background:rgba(251,146,60,.1)!important; border-color:rgba(251,146,60,.3)!important; }
-        body.dark .ticket-section  { background:rgba(99,102,241,.08)!important; border-color:rgba(99,102,241,.3)!important; }
-        body.dark .walkin-quota-strip { background:#060e1e!important; border-color:rgba(99,102,241,.15)!important; }
-        body.dark .walkin-quota-strip .wq-icon { background:rgba(99,102,241,.2)!important; }
-        body.dark .walkin-quota-strip .wq-icon.exceeded { background:rgba(220,38,38,.15)!important; }
-        body.dark .visitor-role-badge.walkin { background:rgba(194,65,12,.15)!important; border-color:rgba(251,146,60,.3)!important; }
-        body.dark .visitor-role-badge.registered { background:rgba(99,102,241,.15)!important; border-color:rgba(196,181,253,.3)!important; }
+        /* ── Dark ── */
+        body.dark .modal-box { background:#0b1628 !important; }
+        body.dark .res-card { background:#0b1628 !important; border-color:rgba(99,102,241,.1) !important; }
+        body.dark #dPrintLogForm { background:#060e1e !important; border-color:rgba(99,102,241,.12) !important; }
+        body.dark #dPrintLogForm input[type=number] { background:#101e35 !important; border-color:rgba(99,102,241,.18) !important; color:#e2eaf8 !important; }
+        body.dark #dPrintLog { background:#060e1e !important; border-color:rgba(99,102,241,.1) !important; }
+        body.dark .unclaimed-banner { background:rgba(251,146,60,.1) !important; border-color:rgba(251,146,60,.3) !important; }
+        body.dark .ticket-section { background:rgba(99,102,241,.08) !important; border-color:rgba(99,102,241,.3) !important; }
+        body.dark .walkin-quota-strip { background:#060e1e !important; border-color:rgba(99,102,241,.15) !important; }
+        body.dark .visitor-role-badge.walkin { background:rgba(194,65,12,.15) !important; border-color:rgba(251,146,60,.3) !important; }
+        body.dark .visitor-role-badge.registered { background:rgba(99,102,241,.15) !important; border-color:rgba(196,181,253,.3) !important; }
+        body.dark .stopped-at-pill { background:rgba(239,68,68,.15) !important; border-color:rgba(239,68,68,.3) !important; }
     </style>
 </head>
 <body>
 
 <?php include APPPATH . 'Views/partials/sk_layout.php'; ?>
 
-<!-- Hidden forms for approve / decline -->
 <form id="approveForm" method="POST" action="<?= base_url('sk/approve') ?>" style="display:none">
     <?= csrf_field() ?><input type="hidden" name="id" id="approveId">
 </form>
@@ -231,21 +183,18 @@ function isWalkIn(array $res): bool {
     <?= csrf_field() ?><input type="hidden" name="id" id="declineId">
 </form>
 
-<!-- ═══════════════════════════════════════════
-     DETAIL MODAL
-═══════════════════════════════════════════ -->
+<!-- ════════ DETAIL MODAL ════════ -->
 <div id="detailModal" class="overlay" role="dialog" aria-modal="true">
     <div class="overlay-bg" onclick="closeModal('detail')"></div>
     <div class="modal-box">
         <div class="sheet-handle"></div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:20px 24px 12px">
             <div>
-                <p id="dId" style="font-size:11px;font-weight:800;color:var(--text-sub);font-variant-numeric:tabular-nums;margin-bottom:3px"></p>
+                <p id="dId" style="font-size:11px;font-weight:800;color:var(--text-sub);margin-bottom:3px"></p>
                 <h3 style="font-size:18px;font-weight:800;">Reservation Details</h3>
             </div>
-            <button onclick="closeModal('detail')" class="modal-close" style="margin-top:2px;"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="closeModal('detail')" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
         </div>
-
         <div id="dStatusBar" style="margin:0 24px 12px;padding:10px 14px;border-radius:14px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700"></div>
 
         <div id="dUnclaimedBanner" class="unclaimed-banner" style="display:none">
@@ -253,7 +202,6 @@ function isWalkIn(array $res): bool {
             <div><p style="font-weight:800;font-size:13px;color:#c2410c">Not Yet Claimed</p><p style="font-size:11px;color:#ea580c;font-weight:500;margin-top:2px">Approved but the e-ticket was never scanned.</p></div>
         </div>
 
-        <!-- Walk-in quota strip -->
         <div id="dWalkInQuota" class="walkin-quota-strip">
             <div id="wqIcon" class="wq-icon"><i class="fa-solid fa-person-walking"></i></div>
             <div style="flex:1;min-width:0">
@@ -267,19 +215,26 @@ function isWalkIn(array $res): bool {
         </div>
 
         <div style="padding:0 24px 8px">
-            <!-- REQUESTOR row — shows actual name + role badge -->
             <div class="drow">
                 <div class="dicon"><i class="fa-solid fa-user"></i></div>
                 <div style="flex:1;min-width:0">
                     <p class="dlabel">Requestor</p>
                     <p id="dName" class="dvalue"></p>
                     <p id="dEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
-                    <!-- Role badge: shown below name -->
                     <span id="dRoleBadge" class="visitor-role-badge" style="display:none"></span>
                 </div>
             </div>
             <div class="drow"><div class="dicon"><i class="fa-solid fa-desktop"></i></div><div><p class="dlabel">Resource</p><p id="dResource" class="dvalue"></p><p id="dPc" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
-            <div class="drow"><div class="dicon"><i class="fa-solid fa-calendar-day"></i></div><div><p class="dlabel">Schedule</p><p id="dDate" class="dvalue"></p><p id="dTime" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p></div></div>
+            <div class="drow">
+                <div class="dicon"><i class="fa-solid fa-calendar-day"></i></div>
+                <div>
+                    <p class="dlabel">Schedule</p>
+                    <p id="dDate" class="dvalue"></p>
+                    <p id="dTime" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
+                    <!-- Force-stop time shows here -->
+                    <span id="dStoppedAt" class="stopped-at-pill" style="display:none;"></span>
+                </div>
+            </div>
             <div class="drow"><div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div><div><p class="dlabel">Purpose</p><p id="dPurpose" class="dvalue"></p></div></div>
             <div class="drow"><div class="dicon"><i class="fa-solid fa-id-badge"></i></div><div><p class="dlabel">Visitor Type</p><p id="dType" class="dvalue"></p></div></div>
             <div class="drow" id="dApprovedByRow" style="display:none">
@@ -355,9 +310,7 @@ function isWalkIn(array $res): bool {
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     MAIN CONTENT
-═══════════════════════════════════════════ -->
+<!-- ════════ MAIN ════════ -->
 <main class="main-area">
     <div class="fade-up">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px">
@@ -414,12 +367,12 @@ function isWalkIn(array $res): bool {
             <div style="flex:1;min-width:180px;position:relative;">
                 <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.75rem;pointer-events:none;z-index:1;"></i>
                 <input id="searchInput" type="text" placeholder="Search name, resource, purpose…" class="search-input" style="padding-left:32px;padding-right:30px;width:100%;" oninput="applyFilters();toggleClear('searchInput','searchClear')">
-                <button id="searchClear" onclick="document.getElementById('searchInput').value='';applyFilters();toggleClear('searchInput','searchClear');" title="Clear search" style="display:none;position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:.75rem;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='#94a3b8'"><i class="fa-solid fa-xmark"></i></button>
+                <button id="searchClear" onclick="document.getElementById('searchInput').value='';applyFilters();toggleClear('searchInput','searchClear');" title="Clear" style="display:none;position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:.75rem;padding:2px 4px;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div style="position:relative;width:160px;">
                 <i class="fa-regular fa-calendar" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-sub);font-size:11px;pointer-events:none;z-index:1;"></i>
                 <input id="dateInput" type="date" class="search-input" style="padding-left:36px;padding-right:30px;width:100%;" onchange="applyFilters();toggleClear('dateInput','dateClear')">
-                <button id="dateClear" onclick="document.getElementById('dateInput').value='';applyFilters();toggleClear('dateInput','dateClear');" title="Clear date" style="display:none;position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:.75rem;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='#94a3b8'"><i class="fa-solid fa-xmark"></i></button>
+                <button id="dateClear" onclick="document.getElementById('dateInput').value='';applyFilters();toggleClear('dateInput','dateClear');" title="Clear" style="display:none;position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:.75rem;padding:2px 4px;"><i class="fa-solid fa-xmark"></i></button>
             </div>
         </div>
         <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;">
@@ -435,7 +388,7 @@ function isWalkIn(array $res): bool {
 
     <p id="resultCount" style="font-size:11px;font-weight:700;color:var(--text-sub);padding:0 4px;margin-bottom:12px"></p>
 
-    <!-- DESKTOP TABLE -->
+    <!-- ════════ DESKTOP TABLE ════════ -->
     <div class="tbl-wrap hidden-on-mobile fade-up">
         <table id="resTable">
             <thead>
@@ -458,8 +411,6 @@ function isWalkIn(array $res): bool {
                     <?php foreach ($processed as $res):
                         $s           = $res['_status'];
                         $isUnclaimed = $res['_unclaimed'];
-
-                        // ── FIX: use resolveResName() — never falls back to 'Guest' ──
                         $name        = htmlspecialchars(resolveResName($res));
                         $email       = htmlspecialchars(trim($res['visitor_email'] ?? $res['user_email'] ?? ''));
                         $resource    = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
@@ -482,17 +433,14 @@ function isWalkIn(array $res): bool {
                         $plPages     = $pl ? (int)($pl['pages'] ?? 0) : 0;
                         $plAt        = ($pl && !empty($pl['printed_at'])) ? date('M j · g:i A', strtotime($pl['printed_at'])) : '';
                         $isClaimed   = in_array($res['claimed'] ?? false, [true,1,'t','true','1'], true);
-
-                        // ── Walk-in quota: keyed by visitor_name (lowercased) ──
                         $resIsWalkIn = isWalkIn($res);
                         $nameKey     = mb_strtolower(trim($res['visitor_name'] ?? ''));
                         $walkInQ     = ($resIsWalkIn && $nameKey !== '') ? ($walkInQuotaMap[$nameKey] ?? null) : null;
-
-                        // Role label for badge
                         $roleLabel   = $resIsWalkIn ? 'Guest (Walk-in)' : 'Registered User';
                         $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
                         $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
-
+                        // ── Force-stop time ──
+                        $stoppedAt   = $res['session_ended_at'] ?? null;
                         $mdata = json_encode([
                             'id'           => $res['id'],
                             'status'       => $s,
@@ -521,6 +469,7 @@ function isWalkIn(array $res): bool {
                             'plPages'      => $plPages,
                             'plAt'         => $plAt,
                             'walkInQuota'  => $walkInQ,
+                            'stoppedAt'    => $stoppedAt,
                         ]);
                     ?>
                         <tr class="res-row"
@@ -537,8 +486,7 @@ function isWalkIn(array $res): bool {
                             <td>
                                 <p style="font-weight:700;font-size:13px;"><?= $name ?></p>
                                 <?php if ($email): ?><p style="font-size:11px;color:var(--text-sub);margin-top:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
-                                <!-- Role badge inline in table -->
-                                <span class="visitor-role-badge <?= $roleClass ?>" style="margin-top:3px">
+                                <span class="visitor-role-badge <?= $roleClass ?>">
                                     <i class="fa-solid <?= $roleIcon ?>" style="font-size:8px"></i>
                                     <?= $resIsWalkIn ? 'Guest' : 'User' ?>
                                 </span>
@@ -550,6 +498,12 @@ function isWalkIn(array $res): bool {
                             <td>
                                 <p style="font-size:13px;font-weight:700;"><?= $date ?></p>
                                 <p style="font-size:11px;color:var(--indigo);font-weight:600;margin-top:2px"><?= $start ?> – <?= $end ?></p>
+                                <?php if ($stoppedAt): ?>
+                                    <p style="font-size:10px;font-weight:700;color:#ef4444;margin-top:3px;display:flex;align-items:center;gap:3px;">
+                                        <i class="fa-solid fa-circle-stop" style="font-size:.55rem;"></i>
+                                        Stopped <?= date('g:i A', strtotime($stoppedAt)) ?>
+                                    </p>
+                                <?php endif; ?>
                             </td>
                             <td><span style="font-size:12px;color:var(--text-muted);font-weight:500;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:130px"><?= $purpose ?></span></td>
                             <td><span class="badge badge-<?= $s ?>"><i class="fa-solid <?= $icon ?>" style="font-size:9px"></i><?= ucfirst($s) ?></span></td>
@@ -557,10 +511,7 @@ function isWalkIn(array $res): bool {
                                 <?php if ($approverName && in_array($s, ['approved','claimed','declined','expired','unclaimed'])): ?>
                                     <div style="display:flex;align-items:center;gap:7px">
                                         <div style="width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;<?= $s==='declined'?'background:#fee2e2;color:#dc2626':'background:#dcfce7;color:#16a34a' ?>"><?= mb_strtoupper(mb_substr($approverName,0,1)) ?></div>
-                                        <div style="min-width:0">
-                                            <p style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px"><?= $approverName ?></p>
-                                            <?php if ($approvedAt): ?><p style="font-size:10px;color:var(--text-sub);font-weight:500"><?= $approvedAt ?></p><?php endif; ?>
-                                        </div>
+                                        <div style="min-width:0"><p style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px"><?= $approverName ?></p><?php if ($approvedAt): ?><p style="font-size:10px;color:var(--text-sub);font-weight:500"><?= $approvedAt ?></p><?php endif; ?></div>
                                     </div>
                                 <?php else: ?><span style="font-size:10px;color:var(--border);font-weight:700">—</span><?php endif; ?>
                             </td>
@@ -591,7 +542,7 @@ function isWalkIn(array $res): bool {
         </div>
     </div>
 
-    <!-- MOBILE CARDS -->
+    <!-- ════════ MOBILE CARDS ════════ -->
     <div id="mobileCardList" style="display:flex;flex-direction:column;gap:10px">
         <?php if (empty($processed)): ?>
             <div class="empty-state"><i class="fa-solid fa-calendar-xmark" style="font-size:2rem;color:var(--border);display:block;margin-bottom:10px"></i><p style="font-weight:800;color:var(--text-sub)">No reservations yet</p></div>
@@ -627,7 +578,7 @@ function isWalkIn(array $res): bool {
                 $roleLabel   = $resIsWalkIn ? 'Guest (Walk-in)' : 'Registered User';
                 $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
                 $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
-
+                $stoppedAt   = $res['session_ended_at'] ?? null;
                 $mdata = json_encode([
                     'id'           => $res['id'],
                     'status'       => $s,
@@ -656,6 +607,7 @@ function isWalkIn(array $res): bool {
                     'plPages'      => $plPages,
                     'plAt'         => $plAt,
                     'walkInQuota'  => $walkInQ,
+                    'stoppedAt'    => $stoppedAt,
                 ]);
                 $avatarBg = ['pending'=>'background:#fef3c7;color:#92400e','approved'=>'background:#dcfce7;color:#166534','claimed'=>'background:#ede9fe;color:#6b21a8','declined'=>'background:#fee2e2;color:#991b1b','canceled'=>'background:#fee2e2;color:#991b1b','expired'=>'background:#f1f5f9;color:#64748b','unclaimed'=>'background:#fff7ed;color:#c2410c'][$s] ?? 'background:#f1f5f9;color:#64748b';
             ?>
@@ -674,17 +626,24 @@ function isWalkIn(array $res): bool {
                         <div style="flex:1;min-width:0">
                             <p style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $name ?></p>
                             <?php if ($email): ?><p style="font-size:11px;color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $email ?></p><?php endif; ?>
-                            <span class="visitor-role-badge <?= $roleClass ?>">
-                                <i class="fa-solid <?= $roleIcon ?>" style="font-size:8px"></i>
-                                <?= $resIsWalkIn ? 'Guest' : 'User' ?>
-                            </span>
+                            <span class="visitor-role-badge <?= $roleClass ?>"><i class="fa-solid <?= $roleIcon ?>" style="font-size:8px"></i> <?= $resIsWalkIn ? 'Guest' : 'User' ?></span>
                         </div>
                         <span class="badge badge-<?= $s ?>" style="flex-shrink:0"><i class="fa-solid <?= $icon ?>" style="font-size:9px"></i><?= ucfirst($s) ?></span>
                     </div>
                     <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
                         <div style="flex:1;min-width:0">
                             <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="fa-solid fa-desktop" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i><p style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $resource ?><?= $pc ? ' · '.$pc : '' ?></p></div>
-                            <div style="display:flex;align-items:center;gap:6px"><i class="fa-regular fa-calendar" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i><p style="font-size:11px;color:var(--text-muted);font-weight:600"><?= $date ?></p><span style="font-size:10px;color:var(--indigo);font-weight:700"><?= $start ?> – <?= $end ?></span></div>
+                            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                                <i class="fa-regular fa-calendar" style="font-size:10px;color:var(--text-sub);flex-shrink:0"></i>
+                                <p style="font-size:11px;color:var(--text-muted);font-weight:600"><?= $date ?></p>
+                                <span style="font-size:10px;color:var(--indigo);font-weight:700"><?= $start ?> – <?= $end ?></span>
+                                <?php if ($stoppedAt): ?>
+                                    <span style="font-size:10px;font-weight:700;color:#ef4444;display:inline-flex;align-items:center;gap:3px;">
+                                        <i class="fa-solid fa-circle-stop" style="font-size:.55rem;"></i>
+                                        Stopped <?= date('g:i A', strtotime($stoppedAt)) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="card-print-pill" style="flex-shrink:0">
                             <?php if ($plPrinted === true): ?><span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> <?= $plPages ?>pg</span>
@@ -719,7 +678,6 @@ function isWalkIn(array $res): bool {
 </main>
 
 <script>
-/* ══ CORE LIST LOGIC ══ */
 const allTableRows = Array.from(document.querySelectorAll('#tableBody .res-row'));
 const allCards     = Array.from(document.querySelectorAll('#mobileCardList .res-card'));
 let curTab = 'all', approveTargetId = null, declineTargetId = null;
@@ -730,7 +688,6 @@ function refreshCsrf(data) {
     if (data.csrf_hash && data.csrf_token) {
         csrfToken = data.csrf_hash; csrfName = data.csrf_token;
         document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', csrfToken);
-        document.querySelector('meta[name="csrf-name"]')?.setAttribute('content', csrfName);
     }
 }
 
@@ -749,6 +706,16 @@ function toggleClear(inputId, btnId) {
     document.getElementById(btnId).style.display = document.getElementById(inputId).value ? 'block' : 'none';
 }
 
+// ── Helper: format a server timestamp to "g:i A" display ──
+function fmtStopTime(ts) {
+    if (!ts) return null;
+    try {
+        const d = new Date(ts);
+        if (isNaN(d)) return null;
+        return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    } catch(e) { return null; }
+}
+
 async function savePrintLog() {
     const rid = _currentReservationId, pages = parseInt(document.getElementById('printPagesInput').value,10)||0;
     const btn = document.getElementById('savePrintBtn'), msg = document.getElementById('printSaveMsg');
@@ -761,7 +728,7 @@ async function savePrintLog() {
         try{data=JSON.parse(text);}catch{throw new Error(`Server error (${res.status})`);}
         if(data.ok){
             refreshCsrf(data);
-            const now=new Date(), fmt=now.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+            const now=new Date(),fmt=now.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
             printLogMap[rid]={printed:pages>0,pages,at:fmt};
             refreshPrintLogStrip(rid); refreshBothPrintCells(rid,pages);
             msg.textContent=pages>0?`✓ Saved — ${pages} page${pages!==1?'s':''} printed`:'✓ Saved — no printing logged'; msg.style.color='#16a34a';
@@ -784,16 +751,16 @@ function refreshPrintLogStrip(rid) {
 }
 
 function refreshBothPrintCells(rid,pages){
-    allTableRows.forEach(row=>{if(row.dataset.id==rid){const cell=row.cells[7];if(pages>0){cell.innerHTML=`<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`;row.dataset.plPrinted='Yes';row.dataset.plPages=pages;}else{cell.innerHTML=`<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;row.dataset.plPrinted='No';row.dataset.plPages='';}}}); 
+    allTableRows.forEach(row=>{if(row.dataset.id==rid){const cell=row.cells[7];if(pages>0){cell.innerHTML=`<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`;row.dataset.plPrinted='Yes';row.dataset.plPages=pages;}else{cell.innerHTML=`<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;row.dataset.plPrinted='No';row.dataset.plPages='';}}});
     allCards.forEach(card=>{if(card.dataset.id==rid){const w=card.querySelector('.card-print-pill');if(w){w.innerHTML=pages>0?`<span class="print-pill-yes"><i class="fa-solid fa-print" style="font-size:9px"></i> ${pages}pg</span>`:`<span class="print-pill-no"><i class="fa-solid fa-xmark" style="font-size:9px"></i> No print</span>`;}card.dataset.plPrinted=pages>0?'Yes':'No';card.dataset.plPages=pages>0?pages:'';}});
 }
 
 function exportCSV(){
     const visibleRows=allTableRows.filter(r=>r.style.display!=='none');
-    const headers=['ID','User Name','Email','Role','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Printed','Pages Printed','Submitted At'];
+    const headers=['ID','User Name','Email','Role','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Stopped At','Printed','Pages Printed','Submitted At'];
     const escape=v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
     const lines=[headers.map(escape).join(',')];
-    visibleRows.forEach(row=>{try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));lines.push([d.id??'',d.name??'',d.email??'',d.roleLabel??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));}catch(e){}});
+    visibleRows.forEach(row=>{try{const d=JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/,'').replace(/\)$/,''));lines.push([d.id??'',d.name??'',d.email??'',d.roleLabel??'',d.resource??'',d.pc??'',d.date??'',d.start??'',d.end??'',d.purpose??'',d.type??'',d.status??'',d.approverName??'',d.approvedAt??'',d.stoppedAt??'',row.dataset.plPrinted??'',row.dataset.plPages??'',d.created??''].map(escape).join(','));}catch(e){}});
     const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`sk-reservations-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
 }
@@ -834,7 +801,7 @@ const STATUS_META={
 function openDetail(d){
     _currentReservationId = d.id;
 
-    /* ── Print log ── */
+    /* Print log */
     const plog = printLogMap[d.id];
     document.getElementById('printPagesInput').value = plog ? (plog.printed ? plog.pages : 0) : 0;
     document.getElementById('printSaveMsg').textContent = '';
@@ -842,15 +809,13 @@ function openDetail(d){
     saveBtn.disabled = false;
     saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
 
-    /* ── Status bar ── */
+    /* Status bar */
     const m = STATUS_META[d.status] || STATUS_META.pending;
-    document.getElementById('dId').textContent      = 'Reservation #' + d.id;
-
-    /* ── Requestor: actual name (never "Guest") ── */
+    document.getElementById('dId').textContent = 'Reservation #' + d.id;
     document.getElementById('dName').textContent    = d.name;
     document.getElementById('dEmail').textContent   = d.email;
 
-    /* ── Role badge below name ── */
+    /* Role badge */
     const badge = document.getElementById('dRoleBadge');
     badge.style.display = 'inline-flex';
     badge.className = 'visitor-role-badge ' + (d.roleClass || 'registered');
@@ -860,6 +825,18 @@ function openDetail(d){
     document.getElementById('dPc').textContent      = d.pc ? 'PC: ' + d.pc : '';
     document.getElementById('dDate').textContent    = d.date;
     document.getElementById('dTime').textContent    = d.start + ' – ' + d.end;
+
+    /* ── Force-stop time pill ── */
+    const stoppedEl  = document.getElementById('dStoppedAt');
+    const stoppedFmt = fmtStopTime(d.stoppedAt);
+    if (stoppedFmt) {
+        stoppedEl.style.display = 'inline-flex';
+        stoppedEl.innerHTML = `<i class="fa-solid fa-circle-stop" style="font-size:.6rem;"></i> Force-stopped at ${stoppedFmt}`;
+    } else {
+        stoppedEl.style.display = 'none';
+        stoppedEl.innerHTML = '';
+    }
+
     document.getElementById('dPurpose').textContent = d.purpose;
     document.getElementById('dType').textContent    = d.type;
     document.getElementById('dCreated').textContent = d.created;
@@ -868,7 +845,7 @@ function openDetail(d){
     bar.style.background = m.bg; bar.style.color = m.color;
     bar.innerHTML = `<i class="fa-solid ${m.icon}"></i> <span style="font-weight:700">${m.label}</span>`;
 
-    /* ── Approver row ── */
+    /* Approver row */
     const approverRow = document.getElementById('dApprovedByRow');
     if (d.approverName && ['approved','claimed','declined','expired','unclaimed'].includes(d.status)) {
         approverRow.style.display = 'flex';
@@ -886,52 +863,38 @@ function openDetail(d){
         approverRow.style.display = 'none';
     }
 
-    /* ── Unclaimed banner ── */
     document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
 
-    /* ── Walk-in quota strip ──
-         Show only for walk-in visitors, keyed by the visitor's actual name ── */
+    /* Walk-in quota */
     const quotaEl = document.getElementById('dWalkInQuota');
     const dotsEl  = document.getElementById('wqDots');
     const labelEl = document.getElementById('wqLabel');
     const badgeEl = document.getElementById('wqBadge');
     const iconEl2 = document.getElementById('wqIcon');
     const q       = d.walkInQuota ?? null;
-
     if (q && d.isWalkIn) {
         quotaEl.classList.add('show');
-
         dotsEl.innerHTML = '';
         for (let i = 0; i < 3; i++) {
             const dot = document.createElement('span');
             dot.className = 'wq-dot';
-            const filled = i < q.used;
-            dot.style.background = filled
-                ? (!q.fair ? '#dc2626' : '#4338ca')
-                : 'var(--border)';
+            dot.style.background = i < q.used ? (!q.fair ? '#dc2626' : '#4338ca') : 'var(--border)';
             dotsEl.appendChild(dot);
         }
-
         if (!q.fair) {
-            labelEl.textContent    = `Limit reached — can book again on ${q.reset}`;
-            labelEl.style.color    = '#dc2626';
-            iconEl2.classList.add('exceeded');
-            iconEl2.innerHTML      = '<i class="fa-solid fa-person-walking-arrow-right"></i>';
-            badgeEl.textContent    = `${q.used}/3`;
-            badgeEl.style.cssText  = 'background:#fee2e2;color:#dc2626';
+            labelEl.textContent = `Limit reached — can book again on ${q.reset}`; labelEl.style.color = '#dc2626';
+            iconEl2.classList.add('exceeded'); iconEl2.innerHTML = '<i class="fa-solid fa-person-walking-arrow-right"></i>';
+            badgeEl.textContent = `${q.used}/3`; badgeEl.style.cssText = 'background:#fee2e2;color:#dc2626';
         } else {
-            labelEl.textContent    = `${q.remaining} slot${q.remaining !== 1 ? 's' : ''} left this 2-week window`;
-            labelEl.style.color    = 'var(--text)';
-            iconEl2.classList.remove('exceeded');
-            iconEl2.innerHTML      = '<i class="fa-solid fa-person-walking"></i>';
-            badgeEl.textContent    = `${q.used}/3`;
-            badgeEl.style.cssText  = q.used > 0 ? 'background:#e0e7ff;color:#3730a3' : 'background:var(--input-bg);color:var(--text-sub)';
+            labelEl.textContent = `${q.remaining} slot${q.remaining!==1?'s':''} left`; labelEl.style.color = 'var(--text)';
+            iconEl2.classList.remove('exceeded'); iconEl2.innerHTML = '<i class="fa-solid fa-person-walking"></i>';
+            badgeEl.textContent = `${q.used}/3`; badgeEl.style.cssText = q.used > 0 ? 'background:#e0e7ff;color:#3730a3' : 'background:var(--input-bg);color:var(--text-sub)';
         }
     } else {
         quotaEl.classList.remove('show');
     }
 
-    /* ── QR / claimed sections ── */
+    /* QR / claimed */
     const qrSec = document.getElementById('dQr'), clSec = document.getElementById('dClaimed');
     if (d.claimed || d.status === 'claimed') {
         qrSec.style.display = 'none'; clSec.style.display = 'block';
@@ -945,10 +908,10 @@ function openDetail(d){
 
     refreshPrintLogStrip(d.id);
 
-    /* ── Action buttons ── */
+    /* Actions */
     const acts = document.getElementById('dActions');
     if (d.status === 'pending') {
-        acts.innerHTML = `<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}')" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}')" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>`;
+        acts.innerHTML = `<button onclick="triggerApprove(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-approve"><i class="fa-solid fa-check"></i> Approve</button><button onclick="triggerDecline(${d.id},'${d.name.replace(/'/g,"\\'")}');closeModal('detail');" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>`;
     } else {
         acts.innerHTML = `<button onclick="closeModal('detail')" class="btn-cancel" style="width:100%"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Close</button>`;
     }
@@ -966,7 +929,6 @@ function triggerDecline(id,name){declineTargetId=id;document.getElementById('dec
 document.getElementById('confirmApproveBtn').addEventListener('click',function(){if(!approveTargetId)return;this.disabled=true;this.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Approving…';document.getElementById('approveId').value=approveTargetId;document.getElementById('approveForm').submit();});
 document.getElementById('confirmDeclineBtn').addEventListener('click',function(){if(!declineTargetId)return;this.disabled=true;this.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Declining…';document.getElementById('declineId').value=declineTargetId;document.getElementById('declineForm').submit();});
 
-/* ══ MODAL MANAGER ══ */
 const modalIds={detail:'detailModal',approve:'approveModal',decline:'declineModal'};
 function openModal(key){const el=document.getElementById(modalIds[key]);if(el){el.classList.add('open');document.body.style.overflow='hidden';}}
 function closeModal(key){

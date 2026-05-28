@@ -36,10 +36,10 @@ class SkController extends BaseController
         $allReservations = $model->db->table('reservations r')
             ->select([
                 'r.*',
-                'COALESCE(u.name, r.visitor_name, r.user_id::text) AS full_name',
-                'u.email                                      AS user_email',
-                'res.name                                     AS resource_name',
-                'res.description                              AS resource_description',
+                'COALESCE(u.name, r.visitor_name) AS full_name',
+                'u.email                          AS user_email',
+                'res.name                         AS resource_name',
+                'res.description                  AS resource_description',
             ])
             ->join('users u',       'u.id = r.user_id',       'left')
             ->join('resources res', 'res.id = r.resource_id', 'left')
@@ -121,7 +121,7 @@ class SkController extends BaseController
             ->where('user_id !=', $skUserId)
             ->countAllResults();
 
-        $approvalRate    = $total > 0    ? round(($approved / $total) * 100)   : 0;
+        $approvalRate    = $total > 0    ? round(($approved / $total) * 100)    : 0;
         $utilizationRate = $approved > 0 ? round(($claimed  / $approved) * 100) : 0;
 
         $allBooks = $db->table('books')
@@ -195,6 +195,72 @@ class SkController extends BaseController
             'usedThisMonth'         => $usedThisMonth,
             'maxMonthlySlots'       => $maxMonthlySlots,
         ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  STOP SESSION  (mirrors AdminController — endpoint: /sk/sessions/stop)
+    // ═══════════════════════════════════════════════════════════════════════
+    public function stopSession()
+    {
+        if (!session()->has('user_id')) {
+            return $this->response->setStatusCode(401)
+                ->setJSON(['ok' => false, 'error' => 'Unauthorized']);
+        }
+
+        $json          = $this->request->getJSON(true) ?? [];
+        $reservationId = (int)($json['reservation_id'] ?? 0);
+        $endedAtMs     = isset($json['ended_at_ms']) ? (int)$json['ended_at_ms'] : (time() * 1000);
+
+        if (!$reservationId) {
+            return $this->response->setJSON(['ok' => false, 'error' => 'Missing reservation_id']);
+        }
+
+        $db          = db_connect();
+        $reservation = $db->table('reservations')
+            ->where('id', $reservationId)
+            ->get()->getRowArray();
+
+        if (!$reservation) {
+            return $this->response->setJSON(['ok' => false, 'error' => 'Reservation not found']);
+        }
+
+        $endedAt = date('Y-m-d H:i:s', intdiv($endedAtMs, 1000));
+
+        // Calculate actual usage duration
+        $actualMinutes = null;
+        if (!empty($reservation['claimed_at'])) {
+            $startTs       = strtotime($reservation['claimed_at']);
+            $actualMinutes = max(0, (int)round((intdiv($endedAtMs, 1000) - $startTs) / 60));
+        } elseif (!empty($reservation['reservation_date']) && !empty($reservation['start_time'])) {
+            $startTs       = strtotime($reservation['reservation_date'] . ' ' . $reservation['start_time']);
+            $actualMinutes = max(0, (int)round((intdiv($endedAtMs, 1000) - $startTs) / 60));
+        }
+
+        try {
+            $db->table('reservations')->where('id', $reservationId)->update([
+                'session_ended_at'         => $endedAt,
+                'actual_duration_minutes'  => $actualMinutes,
+                'updated_at'               => date('Y-m-d H:i:s'),
+            ]);
+
+            $db->table('activity_logs')->insert([
+                'user_id'        => session()->get('user_id'),
+                'action'         => 'stop_session',
+                'reservation_id' => $reservationId,
+                'details'        => "SK force-stopped session #$reservationId at $endedAt"
+                                  . ($actualMinutes !== null ? " ({$actualMinutes} min used)" : ''),
+                'created_at'     => date('Y-m-d H:i:s'),
+            ]);
+
+            return $this->response->setJSON([
+                'ok'             => true,
+                'actual_minutes' => $actualMinutes,
+                'ended_at'       => $endedAt,
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'SK stopSession error: ' . $e->getMessage());
+            return $this->response->setJSON(['ok' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+        }
     }
 
     public function reservations()
@@ -473,7 +539,6 @@ class SkController extends BaseController
         $pcsArr  = json_decode($pcsJson, true) ?? [];
         $pcValue = !empty($pcsArr) ? implode(', ', $pcsArr) : null;
 
-        // ── 1. Registered-user path ──────────────────────────────────────
         if ($visitorType === 'User' && empty($userId)) {
             $msg = 'Please select a registered user.';
             if ($request->isAJAX()) {
@@ -516,9 +581,7 @@ class SkController extends BaseController
             }
         }
 
-        // ── 2. Walk-in / guest path ──────────────────────────────────────
         if (strtolower($visitorType) !== 'user') {
-
             if (empty($visitorName)) {
                 $msg = 'Walk-in visitor name is required.';
                 if ($request->isAJAX()) {
@@ -556,7 +619,6 @@ class SkController extends BaseController
             }
         }
 
-        // ── 3. General field validation ──────────────────────────────────
         $rules = [
             'resource_id'      => 'required|numeric',
             'reservation_date' => 'required|valid_date[Y-m-d]',
@@ -599,7 +661,6 @@ class SkController extends BaseController
             }
         }
 
-        // ── 4. Conflict / double-booking check ───────────────────────────
         $db->transStart();
 
         $conflict = $reservationModel
@@ -621,7 +682,6 @@ class SkController extends BaseController
             return redirect()->back()->withInput()->with('error', $msg);
         }
 
-        // ── 5. Insert ────────────────────────────────────────────────────
         $eTicket = $this->generateETicket();
 
         $data = [
@@ -880,7 +940,7 @@ class SkController extends BaseController
         header('Content-Disposition: attachment; filename=sk_reservations.csv');
 
         $output = fopen('php://output', 'w');
-        fputcsv($output, ['ID', 'User ID', 'Resource ID', 'Date', 'Start Time', 'End Time', 'Purpose', 'Status', 'Claimed', 'Claimed At']);
+        fputcsv($output, ['ID', 'User ID', 'Resource ID', 'Date', 'Start Time', 'End Time', 'Purpose', 'Status', 'Claimed', 'Claimed At', 'Session Ended At', 'Actual Duration (min)']);
 
         foreach ($reservations as $r) {
             fputcsv($output, [
@@ -889,7 +949,9 @@ class SkController extends BaseController
                 $r['start_time'],       $r['end_time'],
                 $r['purpose'],          $r['status'],
                 $r['claimed'] ? 'Yes' : 'No',
-                $r['claimed_at'] ?? '',
+                $r['claimed_at']              ?? '',
+                $r['session_ended_at']        ?? '',
+                $r['actual_duration_minutes'] ?? '',
             ]);
         }
 
@@ -1070,21 +1132,21 @@ class SkController extends BaseController
 
             fputcsv($output, [
                 $res['id'],
-                $res['e_ticket_code']             ?? '—',
-                $res['visitor_name']              ?? $res['full_name'] ?? 'Guest',
-                $res['visitor_email']             ?? $res['user_email'] ?? '—',
-                $res['resource_name']             ?? ('Resource #' . $res['resource_id']),
-                $pcNumbers                        ?: '—',
-                $res['reservation_date']          ?? '—',
-                $res['start_time']                ?? '—',
-                $res['end_time']                  ?? '—',
-                $res['purpose']                   ?? '—',
-                ucfirst($res['status']            ?? 'pending'),
-                $res['claimed_at']                ?? '—',
+                $res['e_ticket_code']           ?? '—',
+                $res['visitor_name']            ?? $res['full_name'] ?? 'Guest',
+                $res['visitor_email']           ?? $res['user_email'] ?? '—',
+                $res['resource_name']           ?? ('Resource #' . $res['resource_id']),
+                $pcNumbers                      ?: '—',
+                $res['reservation_date']        ?? '—',
+                $res['start_time']              ?? '—',
+                $res['end_time']                ?? '—',
+                $res['purpose']                 ?? '—',
+                ucfirst($res['status']          ?? 'pending'),
+                $res['claimed_at']              ?? '—',
                 $claimedDate,
                 $claimedTime,
-                $res['session_ended_at']          ?? '—',
-                $res['actual_duration_minutes']   ?? '—',
+                $res['session_ended_at']        ?? '—',
+                $res['actual_duration_minutes'] ?? '—',
             ]);
         }
 
@@ -1231,10 +1293,6 @@ PDF TEXT:
             return $this->response->setJSON(['ok' => false, 'error' => 'Network error reaching Groq: ' . $curlError]);
         }
 
-        if (empty($response)) {
-            return $this->response->setJSON(['ok' => false, 'error' => 'Groq returned an empty response.']);
-        }
-
         $groqData = json_decode($response, true);
 
         if ($httpStatus !== 200) {
@@ -1316,22 +1374,10 @@ PDF TEXT:
 
     private function tryDecompress(string $data): string
     {
-        if (strlen($data) >= 2) {
-            $result = @gzuncompress($data);
-            if ($result !== false && strlen($result) > 0) return $result;
-        }
-        if (strlen($data) >= 2) {
-            $result = @gzinflate($data);
-            if ($result !== false && strlen($result) > 0) return $result;
-        }
-        if (strlen($data) >= 10 && substr($data, 0, 2) === "\x1f\x8b") {
-            $result = @gzdecode($data);
-            if ($result !== false && strlen($result) > 0) return $result;
-        }
-        if (strlen($data) > 2) {
-            $result = @gzinflate(substr($data, 2));
-            if ($result !== false && strlen($result) > 0) return $result;
-        }
+        if (strlen($data) >= 2) { $r = @gzuncompress($data); if ($r !== false && strlen($r) > 0) return $r; }
+        if (strlen($data) >= 2) { $r = @gzinflate($data);   if ($r !== false && strlen($r) > 0) return $r; }
+        if (strlen($data) >= 10 && substr($data, 0, 2) === "\x1f\x8b") { $r = @gzdecode($data); if ($r !== false && strlen($r) > 0) return $r; }
+        if (strlen($data) > 2)  { $r = @gzinflate(substr($data, 2)); if ($r !== false && strlen($r) > 0) return $r; }
         return $data;
     }
 
@@ -1341,32 +1387,9 @@ PDF TEXT:
         preg_match_all('/BT\s*(.*?)\s*ET/s', $stream, $btBlocks);
         foreach ($btBlocks[1] as $block) {
             preg_match_all('/\(([^)\\\\]*(?:\\\\.[^)\\\\]*)*)\)\s*T[jJ]/m', $block, $tjM);
-            foreach ($tjM[1] as $s) {
-                $s = $this->decodePdfString($s);
-                if (strlen(trim($s)) > 0) $text .= $s . ' ';
-            }
+            foreach ($tjM[1] as $s) { $s = $this->decodePdfString($s); if (strlen(trim($s)) > 0) $text .= $s . ' '; }
             preg_match_all('/\[((?:[^[\]]*|\[.*?\])*)\]\s*TJ/s', $block, $arrM);
-            foreach ($arrM[1] as $arr) {
-                preg_match_all('/\(([^)\\\\]*(?:\\\\.[^)\\\\]*)*)\)/', $arr, $sub);
-                foreach ($sub[1] as $s) {
-                    $s = $this->decodePdfString($s);
-                    if (strlen(trim($s)) > 0) $text .= $s;
-                }
-                $text .= ' ';
-            }
-            preg_match_all('/<([0-9a-fA-F\s]+)>\s*T[jJ]/m', $block, $hexM);
-            foreach ($hexM[1] as $hex) {
-                $hex = preg_replace('/\s+/', '', $hex);
-                if (strlen($hex) % 2 !== 0) continue;
-                $decoded = @hex2bin($hex);
-                if ($decoded !== false) {
-                    if (substr($decoded, 0, 2) === "\xFE\xFF") {
-                        $decoded = mb_convert_encoding(substr($decoded, 2), 'UTF-8', 'UTF-16BE');
-                    }
-                    $readable = preg_replace('/[^\x20-\x7E\xA0-\xFF]/', ' ', $decoded);
-                    if (strlen(trim($readable)) > 1) $text .= $readable . ' ';
-                }
-            }
+            foreach ($arrM[1] as $arr) { preg_match_all('/\(([^)\\\\]*(?:\\\\.[^)\\\\]*)*)\)/', $arr, $sub); foreach ($sub[1] as $s) { $s = $this->decodePdfString($s); if (strlen(trim($s)) > 0) $text .= $s; } $text .= ' '; }
             $text = rtrim($text) . "\n";
         }
         return $text;
@@ -1374,35 +1397,18 @@ PDF TEXT:
 
     private function decodePdfString(string $s): string
     {
-        $s = str_replace(
-            ['\\n', '\\r', '\\t', '\\b', '\\f', '\\(', '\\)', '\\\\'],
-            ["\n",  "\r",  "\t",  "\x08", "\x0C", '(',  ')',   '\\'],
-            $s
-        );
-        $s = preg_replace_callback('/\\\\([0-7]{1,3})/', function ($m) {
-            return chr(octdec($m[1]));
-        }, $s);
-        if (substr($s, 0, 2) === "\xFE\xFF") {
-            $s = mb_convert_encoding(substr($s, 2), 'UTF-8', 'UTF-16BE');
-        }
-        $s = preg_replace('/[^\x20-\x7E\xA0-\xFF\n\r\t]/', ' ', $s);
-        return trim($s);
+        $s = str_replace(['\\n','\\r','\\t','\\b','\\f','\\(','\\)','\\\\'], ["\n","\r","\t","\x08","\x0C",'(',')',' \\'], $s);
+        $s = preg_replace_callback('/\\\\([0-7]{1,3})/', fn($m) => chr(octdec($m[1])), $s);
+        if (substr($s, 0, 2) === "\xFE\xFF") $s = mb_convert_encoding(substr($s, 2), 'UTF-8', 'UTF-16BE');
+        return trim(preg_replace('/[^\x20-\x7E\xA0-\xFF\n\r\t]/', ' ', $s));
     }
 
     private function extractAsciiFromPdf(string $content): string
     {
         preg_match_all('/[\x20-\x7E]{4,}/', $content, $runs);
         $filtered = array_filter($runs[0] ?? [], function ($s) {
-            $wordChars  = preg_match_all('/[a-zA-Z0-9\s]/', $s);
-            $totalChars = strlen($s);
-            return $totalChars > 0 && ($wordChars / $totalChars) > 0.5;
+            return strlen($s) > 0 && (preg_match_all('/[a-zA-Z0-9\s]/', $s) / strlen($s)) > 0.5;
         });
-        $text = implode(' ', $filtered);
-        $text = preg_replace(
-            '/\b(?:obj|endobj|stream|endstream|xref|trailer|startxref|BT|ET|Tf|Td|TD|Tm|TJ|Tj|TL|TS|Tc|Tw|Tz|Tr|PDF|Linearized|FlateDecode|DCTDecode|Length|Width|Height|BBox|Matrix|Filter|Subtype|Type|Font|Page|Pages|Resources|MediaBox|CropBox|Rotate|Annot|Annots|Action|URI|Link|Rect|Border)\b/',
-            ' ',
-            $text
-        );
-        return $text;
+        return preg_replace('/\b(?:obj|endobj|stream|endstream|xref|trailer|startxref|BT|ET|Tf|Td|TD|Tm|TJ|Tj|TL|TS|Tc|Tw|Tz|Tr|PDF|Linearized|FlateDecode|DCTDecode|Length|Width|Height|BBox|Matrix|Filter|Subtype|Type|Font|Page|Pages|Resources|MediaBox|CropBox|Rotate|Annot|Annots|Action|URI|Link|Rect|Border)\b/', ' ', implode(' ', $filtered));
     }
 }
