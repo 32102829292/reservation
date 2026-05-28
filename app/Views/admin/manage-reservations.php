@@ -44,13 +44,7 @@ $statusIcons = [
     'unclaimed' => 'fa-ticket',
 ];
 
-/**
- * Return the raw full name from the reservation row.
- * Priority: user join name (visitor_name populated by SQL alias) → full_name → visitor_name → 'Unknown'
- */
 function resolveResName(array $res): string {
-    // visitor_name is set by the SQL join as u.name for registered users,
-    // or the literal visitor_name column for walk-ins.
     $vn = trim($res['visitor_name'] ?? '');
     if ($vn !== '') return $vn;
     $fn = trim($res['full_name'] ?? '');
@@ -58,15 +52,9 @@ function resolveResName(array $res): string {
     return 'Unknown';
 }
 
-/**
- * Return the display name shown in table/card cells.
- * Walk-in visitors are prefixed with "Guest — " so staff can tell at a glance.
- */
 function resolveDisplayName(array $res): string {
     $raw = resolveResName($res);
-    if (isWalkIn($res)) {
-        return 'Guest — ' . $raw;
-    }
+    if (isWalkIn($res)) return 'Guest — ' . $raw;
     return $raw;
 }
 
@@ -248,6 +236,19 @@ $pendingCount = $counts['pending'];
         }
         .btn-export:hover { background: #312e81; }
 
+        /* ── Export chips ── */
+        .exp-chip {
+            display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px;
+            border: 1px solid var(--border); border-radius: 999px; font-size: 11px;
+            font-weight: 700; cursor: pointer; color: var(--text); background: var(--card);
+            transition: all .15s; user-select: none;
+        }
+        .exp-chip:hover { border-color: var(--indigo); color: var(--indigo); }
+        .exp-chip input[type=checkbox] { display: none; }
+        .exp-chip.active { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+        body.dark .exp-chip { background: #0b1628; border-color: rgba(99,102,241,.2); }
+        body.dark .exp-chip.active { background: var(--indigo); color: #fff; }
+
         /* ── Overlay ── */
         .overlay {
             display: none; position: fixed; inset: 0; z-index: 300;
@@ -368,6 +369,11 @@ $pendingCount = $counts['pending'];
         body.dark .visitor-role-badge.registered { background: rgba(99,102,241,.15) !important; border-color: rgba(196,181,253,.3) !important; }
         body.dark .stopped-at-pill    { background: rgba(239,68,68,.15) !important; border-color: rgba(239,68,68,.3) !important; }
         body.dark .guest-name-prefix  { background: rgba(194,65,12,.15) !important; border-color: rgba(251,146,60,.3) !important; color: #fb923c !important; }
+        body.dark .exp-chip           { background: #0b1628 !important; border-color: rgba(99,102,241,.2) !important; }
+        body.dark .exp-chip.active    { background: var(--indigo) !important; color: #fff !important; }
+        body.dark #exportModal .modal-box { background: #0b1628 !important; }
+        body.dark #exportDateFrom,
+        body.dark #exportDateTo       { background: #101e35 !important; border-color: rgba(99,102,241,.18) !important; color: #e2eaf8 !important; color-scheme: dark; }
     </style>
 </head>
 
@@ -404,7 +410,6 @@ $pendingCount = $counts['pending'];
                 </div>
             </div>
 
-            <!-- Walk-in quota strip -->
             <div id="dWalkInQuota" class="walkin-quota-strip">
                 <div id="wqIcon" class="wq-icon"><i class="fa-solid fa-person-walking"></i></div>
                 <div style="flex:1;min-width:0">
@@ -418,19 +423,15 @@ $pendingCount = $counts['pending'];
             </div>
 
             <div style="padding:0 24px 8px">
-                <!-- Requestor -->
                 <div class="drow">
                     <div class="dicon"><i class="fa-solid fa-user"></i></div>
                     <div style="flex:1;min-width:0">
                         <p class="dlabel">Requestor</p>
-                        <!-- rawName holds the actual name; guestPrefix shown only for walk-ins -->
                         <p id="dName" class="dvalue"></p>
                         <p id="dEmail" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
                         <span id="dRoleBadge" class="visitor-role-badge" style="display:none"></span>
                     </div>
                 </div>
-
-                <!-- Resource -->
                 <div class="drow">
                     <div class="dicon"><i class="fa-solid fa-desktop"></i></div>
                     <div>
@@ -439,8 +440,6 @@ $pendingCount = $counts['pending'];
                         <p id="dPc" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
                     </div>
                 </div>
-
-                <!-- Schedule -->
                 <div class="drow">
                     <div class="dicon"><i class="fa-solid fa-calendar-day"></i></div>
                     <div>
@@ -450,8 +449,6 @@ $pendingCount = $counts['pending'];
                         <span id="dStoppedAt" class="stopped-at-pill" style="display:none;"></span>
                     </div>
                 </div>
-
-                <!-- Purpose -->
                 <div class="drow">
                     <div class="dicon"><i class="fa-solid fa-pen-to-square"></i></div>
                     <div>
@@ -459,8 +456,6 @@ $pendingCount = $counts['pending'];
                         <p id="dPurpose" class="dvalue"></p>
                     </div>
                 </div>
-
-                <!-- Visitor Type -->
                 <div class="drow">
                     <div class="dicon"><i class="fa-solid fa-id-badge"></i></div>
                     <div>
@@ -468,8 +463,6 @@ $pendingCount = $counts['pending'];
                         <p id="dType" class="dvalue"></p>
                     </div>
                 </div>
-
-                <!-- Approved/Declined By -->
                 <div class="drow" id="dApprovedByRow" style="display:none">
                     <div class="dicon" id="dApprovedByIcon"><i class="fa-solid fa-user-check"></i></div>
                     <div>
@@ -479,8 +472,6 @@ $pendingCount = $counts['pending'];
                         <p id="dApprovedAt" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:2px"></p>
                     </div>
                 </div>
-
-                <!-- Submitted -->
                 <div class="drow">
                     <div class="dicon"><i class="fa-regular fa-clock"></i></div>
                     <div>
@@ -490,7 +481,6 @@ $pendingCount = $counts['pending'];
                 </div>
             </div>
 
-            <!-- QR ticket -->
             <div id="dQr" class="ticket-section" style="display:none;margin:0 24px 14px">
                 <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--text-sub);margin-bottom:12px">E-Ticket</p>
                 <canvas id="qrCanvas" style="border-radius:12px"></canvas>
@@ -498,14 +488,12 @@ $pendingCount = $counts['pending'];
                 <button onclick="downloadTicket()" style="margin-top:12px;display:flex;align-items:center;gap:8px;padding:8px 18px;background:var(--indigo);color:#fff;border-radius:10px;font-weight:800;font-size:12px;border:none;cursor:pointer;font-family:var(--font)"><i class="fa-solid fa-download" style="font-size:11px"></i> Download E-Ticket</button>
             </div>
 
-            <!-- Claimed indicator -->
             <div id="dClaimed" style="display:none;margin:0 24px 14px;background:#ede9fe;border:2px dashed #c4b5fd;border-radius:18px;padding:20px;text-align:center">
                 <i class="fa-solid fa-check-double" style="font-size:1.5rem;color:#7c3aed;display:block;margin-bottom:6px"></i>
                 <p style="font-weight:800;color:#7c3aed;font-size:13px">Ticket Already Claimed</p>
                 <p style="font-size:11px;color:#8b5cf6;margin-top:3px">This reservation has been used.</p>
             </div>
 
-            <!-- Print log strip (read-only) -->
             <div id="dPrintLog" style="display:none;align-items:center;gap:12px;">
                 <div style="width:36px;height:36px;background:#dcfce7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-print" style="color:#16a34a;font-size:13px"></i></div>
                 <div style="flex:1;min-width:0">
@@ -515,7 +503,6 @@ $pendingCount = $counts['pending'];
                 <span id="dPrintBadge" style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:999px;flex-shrink:0"></span>
             </div>
 
-            <!-- Print log form -->
             <div id="dPrintLogForm">
                 <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:12px;display:flex;align-items:center;gap:7px"><i class="fa-solid fa-print" style="color:var(--indigo)"></i> Log Print for this Reservation</p>
                 <div style="display:flex;align-items:flex-end;gap:10px">
@@ -528,7 +515,6 @@ $pendingCount = $counts['pending'];
                 <p id="printSaveMsg" style="font-size:12px;font-weight:700;margin-top:6px;min-height:18px;color:var(--text-sub)"></p>
             </div>
 
-            <!-- Actions -->
             <div id="dActions" style="padding:16px 24px;border-top:1px solid var(--border-subtle);display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"></div>
         </div>
     </div>
@@ -563,6 +549,106 @@ $pendingCount = $counts['pending'];
             <div style="padding:0 24px 24px;display:flex;gap:10px">
                 <button class="btn-cancel" onclick="closeModal('decline')"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Cancel</button>
                 <button id="confirmDeclineBtn" class="btn-confirm-decline"><i class="fa-solid fa-xmark"></i> Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════ EXPORT MODAL ════════ -->
+    <div id="exportModal" class="overlay" role="dialog" aria-modal="true">
+        <div class="overlay-bg" onclick="closeExportModal()"></div>
+        <div class="modal-box" style="max-width:460px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 14px">
+                <div>
+                    <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text-sub);margin-bottom:3px">Admin Portal</p>
+                    <h3 style="font-size:17px;font-weight:800;">Export Reservations</h3>
+                </div>
+                <button onclick="closeExportModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div style="padding:0 24px 20px;display:flex;flex-direction:column;gap:14px">
+
+                <!-- Date range -->
+                <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">
+                    <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                        <i class="fa-regular fa-calendar" style="color:var(--indigo)"></i> Date Range
+                    </p>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <div style="flex:1;min-width:120px">
+                            <label style="font-size:10px;font-weight:700;color:var(--text-sub);display:block;margin-bottom:4px">From</label>
+                            <input type="date" id="exportDateFrom" class="search-input" style="width:100%;font-size:12px;padding:7px 10px">
+                        </div>
+                        <div style="flex:1;min-width:120px">
+                            <label style="font-size:10px;font-weight:700;color:var(--text-sub);display:block;margin-bottom:4px">To</label>
+                            <input type="date" id="exportDateTo" class="search-input" style="width:100%;font-size:12px;padding:7px 10px">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status filter -->
+                <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">
+                    <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                        <i class="fa-solid fa-filter" style="color:var(--indigo)"></i> Status
+                    </p>
+                    <div style="display:flex;flex-wrap:wrap;gap:7px" id="exportStatusGroup">
+                        <label class="exp-chip"><input type="checkbox" value="all" onchange="handleAllChip(this)"> All</label>
+                        <label class="exp-chip"><input type="checkbox" value="pending"> Pending</label>
+                        <label class="exp-chip"><input type="checkbox" value="approved"> Approved</label>
+                        <label class="exp-chip"><input type="checkbox" value="claimed"> Claimed</label>
+                        <label class="exp-chip"><input type="checkbox" value="unclaimed"> Unclaimed</label>
+                        <label class="exp-chip"><input type="checkbox" value="declined"> Declined</label>
+                        <label class="exp-chip"><input type="checkbox" value="expired"> Expired</label>
+                    </div>
+                </div>
+
+                <!-- Visitor type -->
+                <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">
+                    <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                        <i class="fa-solid fa-users" style="color:var(--indigo)"></i> Visitor Type
+                    </p>
+                    <div style="display:flex;gap:7px;flex-wrap:wrap" id="exportTypeGroup">
+                        <label class="exp-chip"><input type="checkbox" value="all" onchange="handleTypeAllChip(this)"> All</label>
+                        <label class="exp-chip"><input type="checkbox" value="registered"> Registered Users</label>
+                        <label class="exp-chip"><input type="checkbox" value="walkin"> Walk-in Guests</label>
+                    </div>
+                </div>
+
+                <!-- Columns -->
+                <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">
+                    <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-sub);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                        <i class="fa-solid fa-table-columns" style="color:var(--indigo)"></i> Columns to Include
+                    </p>
+                    <div style="display:flex;flex-wrap:wrap;gap:7px" id="exportColGroup">
+                        <label class="exp-chip"><input type="checkbox" value="id" checked> ID</label>
+                        <label class="exp-chip"><input type="checkbox" value="name" checked> Name</label>
+                        <label class="exp-chip"><input type="checkbox" value="role" checked> Role</label>
+                        <label class="exp-chip"><input type="checkbox" value="email" checked> Email</label>
+                        <label class="exp-chip"><input type="checkbox" value="resource" checked> Resource</label>
+                        <label class="exp-chip"><input type="checkbox" value="pc"> PC Number</label>
+                        <label class="exp-chip"><input type="checkbox" value="date" checked> Date</label>
+                        <label class="exp-chip"><input type="checkbox" value="timeslot" checked> Time Slot</label>
+                        <label class="exp-chip"><input type="checkbox" value="purpose" checked> Purpose</label>
+                        <label class="exp-chip"><input type="checkbox" value="visitortype"> Visitor Type</label>
+                        <label class="exp-chip"><input type="checkbox" value="status" checked> Status</label>
+                        <label class="exp-chip"><input type="checkbox" value="approver" checked> Approved By</label>
+                        <label class="exp-chip"><input type="checkbox" value="approvaldate"> Approval Date</label>
+                        <label class="exp-chip"><input type="checkbox" value="printlog" checked> Print Log</label>
+                        <label class="exp-chip"><input type="checkbox" value="stoppedat"> Session Ended</label>
+                        <label class="exp-chip"><input type="checkbox" value="submitted"> Submitted At</label>
+                    </div>
+                </div>
+
+                <!-- Preview count -->
+                <div id="exportPreviewBar" style="background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:10px;padding:9px 14px;display:flex;align-items:center;gap:8px">
+                    <i class="fa-solid fa-circle-info" style="color:var(--indigo);font-size:12px"></i>
+                    <p id="exportPreviewText" style="font-size:12px;font-weight:700;color:var(--indigo)"></p>
+                </div>
+            </div>
+
+            <div style="padding:0 24px 24px;display:flex;gap:10px">
+                <button class="btn-cancel" onclick="closeExportModal()" style="flex:1"><i class="fa-solid fa-xmark" style="font-size:11px"></i> Cancel</button>
+                <button id="doExportBtn" onclick="doExport()" style="flex:2;padding:12px;background:var(--indigo);color:#fff;border-radius:var(--r-sm);font-weight:700;border:none;cursor:pointer;font-size:13px;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s">
+                    <i class="fa-solid fa-file-csv"></i> Download CSV
+                </button>
             </div>
         </div>
     </div>
@@ -676,8 +762,8 @@ $pendingCount = $counts['pending'];
                         <?php foreach ($processed as $res):
                             $s           = $res['_status'];
                             $isUnclaimed = $res['_unclaimed'];
-                            $rawName     = resolveResName($res);          // actual name from DB
-                            $name        = htmlspecialchars($rawName);    // safe for HTML
+                            $rawName     = resolveResName($res);
+                            $name        = htmlspecialchars($rawName);
                             $email       = htmlspecialchars(trim($res['visitor_email'] ?? $res['user_email'] ?? ''));
                             $resource    = htmlspecialchars($res['resource_name'] ?? 'Resource #' . ($res['resource_id'] ?? ''));
                             $pc          = htmlspecialchars($res['pc_number']     ?? $res['pc_numbers']   ?? '');
@@ -706,13 +792,12 @@ $pendingCount = $counts['pending'];
                             $roleClass   = $resIsWalkIn ? 'walkin' : 'registered';
                             $roleIcon    = $resIsWalkIn ? 'fa-person-walking' : 'fa-user-check';
                             $stoppedAt   = $res['session_ended_at'] ?? null;
-                            // search string includes 'guest' keyword for walk-ins so filtering by "guest" works
                             $searchStr   = strtolower($rawName . ' ' . $resource . ' ' . $purpose . ' ' . $email . ' ' . $approverName . ' ' . $roleLabel . ($resIsWalkIn ? ' guest walkin walk-in' : ''));
                             $mdata       = json_encode([
                                 'id'          => $res['id'],
                                 'status'      => $s,
-                                'name'        => $name,      // raw name without prefix
-                                'rawName'     => $rawName,   // used in modal heading
+                                'name'        => $name,
+                                'rawName'     => $rawName,
                                 'isWalkIn'    => $resIsWalkIn,
                                 'email'       => $email,
                                 'resource'    => $resource,
@@ -746,6 +831,7 @@ $pendingCount = $counts['pending'];
                                 data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
                                 data-search="<?= htmlspecialchars($searchStr, ENT_QUOTES) ?>"
                                 data-date="<?= $rawDate ?>"
+                                data-is-walkin="<?= $resIsWalkIn ? '1' : '0' ?>"
                                 data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
                                 data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
                                 data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
@@ -896,6 +982,7 @@ $pendingCount = $counts['pending'];
                         data-unclaimed="<?= $isUnclaimed ? '1' : '0' ?>"
                         data-search="<?= htmlspecialchars($searchStr, ENT_QUOTES) ?>"
                         data-date="<?= $rawDate ?>"
+                        data-is-walkin="<?= $resIsWalkIn ? '1' : '0' ?>"
                         data-pl-printed="<?= $plPrinted === null ? '' : ($plPrinted ? 'Yes' : 'No') ?>"
                         data-pl-pages="<?= $plPrinted ? $plPages : '' ?>"
                         data-pl-at="<?= htmlspecialchars($plAt, ENT_QUOTES) ?>"
@@ -996,6 +1083,10 @@ $pendingCount = $counts['pending'];
             document.getElementById(btnId).style.display = val ? 'block' : 'none';
         }
 
+        /* ══════════════════════════════════
+           PRINT LOG
+        ══════════════════════════════════ */
+
         async function savePrintLog() {
             const rid   = _currentReservationId;
             const pages = parseInt(document.getElementById('printPagesInput').value, 10) || 0;
@@ -1078,29 +1169,214 @@ $pendingCount = $counts['pending'];
             });
         }
 
-        function exportCSV() {
-            const visibleRows = allTableRows.filter(r => r.style.display !== 'none');
-            const headers = ['ID','User Name','Email','Role','Resource Name','PC Number','Date','Start Time','End Time','Purpose','Visitor Type','Status','Approved By','Approved At','Stopped At','Printed','Pages Printed','Submitted At'];
-            const escape  = v => { const s = String(v ?? ''); return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s; };
-            const lines   = [headers.map(escape).join(',')];
-            visibleRows.forEach(row => {
+        /* ══════════════════════════════════
+           EXPORT — modal + full CSV builder
+        ══════════════════════════════════ */
+
+        function exportCSV() { openExportModal(); }
+
+        function openExportModal() {
+            syncChipGroupAll('exportStatusGroup', true);
+            syncChipGroupAll('exportTypeGroup', true);
+            document.getElementById('exportDateFrom').value = '';
+            document.getElementById('exportDateTo').value   = '';
+            updateExportPreview();
+            document.getElementById('exportModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('open');
+            const anyOpen = document.querySelector('.overlay.open');
+            if (!anyOpen) document.body.style.overflow = '';
+        }
+
+        function syncChipGroupAll(groupId, forceAll) {
+            const group = document.getElementById(groupId);
+            if (!group) return;
+            group.querySelectorAll('label.exp-chip').forEach(chip => {
+                const cb = chip.querySelector('input');
+                if (forceAll) { cb.checked = true; chip.classList.add('active'); }
+                else { chip.classList.toggle('active', cb.checked); }
+            });
+        }
+
+        function handleAllChip(cb) {
+            const group = cb.closest('div');
+            const on    = cb.checked;
+            group.querySelectorAll('input[type=checkbox]').forEach(c => {
+                c.checked = on;
+                c.closest('label').classList.toggle('active', on);
+            });
+            updateExportPreview();
+        }
+
+        function handleTypeAllChip(cb) { handleAllChip(cb); }
+
+        document.addEventListener('change', function(e) {
+            const chip = e.target.closest('label.exp-chip');
+            if (!chip) return;
+            const group = chip.closest('[id$="Group"]');
+            if (!group) return;
+            const cb = e.target;
+            if (cb.value === 'all') return;
+            chip.classList.toggle('active', cb.checked);
+            const allCbk = group.querySelector('input[value="all"]');
+            if (allCbk) {
+                const others     = Array.from(group.querySelectorAll('input:not([value="all"])'));
+                const allChecked = others.every(c => c.checked);
+                allCbk.checked   = allChecked;
+                allCbk.closest('label').classList.toggle('active', allChecked);
+            }
+            if (group.id !== 'exportColGroup') updateExportPreview();
+        });
+
+        document.getElementById('exportDateFrom')?.addEventListener('change', updateExportPreview);
+        document.getElementById('exportDateTo')?.addEventListener('change',   updateExportPreview);
+
+        function getExportRows() {
+            const dateFrom = document.getElementById('exportDateFrom').value;
+            const dateTo   = document.getElementById('exportDateTo').value;
+            const statusGroup = document.getElementById('exportStatusGroup');
+            const allStatusOn = statusGroup.querySelector('input[value="all"]')?.checked;
+            const selStatuses = allStatusOn ? null : Array.from(statusGroup.querySelectorAll('input:not([value="all"]):checked')).map(c => c.value);
+            const typeGroup   = document.getElementById('exportTypeGroup');
+            const allTypeOn   = typeGroup.querySelector('input[value="all"]')?.checked;
+            const selTypes    = allTypeOn ? null : Array.from(typeGroup.querySelectorAll('input:not([value="all"]):checked')).map(c => c.value);
+
+            return allTableRows.filter(row => {
+                if (dateFrom && row.dataset.date < dateFrom) return false;
+                if (dateTo   && row.dataset.date > dateTo)   return false;
+                if (selStatuses) {
+                    const rs = row.dataset.status;
+                    const ok = selStatuses.some(s => s === 'declined' ? (rs === 'declined' || rs === 'canceled') : rs === s);
+                    if (!ok) return false;
+                }
+                if (selTypes) {
+                    const isWI = row.dataset.isWalkin === '1';
+                    if (selTypes.includes('registered') && !selTypes.includes('walkin')  && isWI)  return false;
+                    if (selTypes.includes('walkin')     && !selTypes.includes('registered') && !isWI) return false;
+                    if (!selTypes.includes('registered') && !selTypes.includes('walkin')) return false;
+                }
+                return true;
+            });
+        }
+
+        function updateExportPreview() {
+            const rows = getExportRows();
+            const el   = document.getElementById('exportPreviewText');
+            if (el) {
+                el.textContent = `${rows.length} record${rows.length !== 1 ? 's' : ''} will be exported`;
+                el.style.color = '';
+            }
+        }
+
+        function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+        function fmtStopTime(ts) {
+            if (!ts) return null;
+            try {
+                const d = new Date(ts);
+                if (isNaN(d)) return null;
+                return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            } catch(e) { return null; }
+        }
+
+        function doExport() {
+            const rows = getExportRows();
+            if (rows.length === 0) {
+                const el = document.getElementById('exportPreviewText');
+                el.textContent = 'No records match — adjust your filters.';
+                el.style.color = '#dc2626';
+                return;
+            }
+
+            const colGroup = document.getElementById('exportColGroup');
+            const selCols  = new Set(Array.from(colGroup.querySelectorAll('input:checked')).map(c => c.value));
+
+            const COL_MAP = [
+                { key:'id',           header:'ID',                     val:(d)      => d.id ?? '' },
+                { key:'name',         header:'Name',                   val:(d)      => d.rawName ?? d.name ?? '' },
+                { key:'role',         header:'Role',                   val:(d)      => d.roleLabel ?? '' },
+                { key:'email',        header:'Email',                  val:(d)      => d.email ?? '' },
+                { key:'resource',     header:'Resource',               val:(d)      => d.resource ?? '' },
+                { key:'pc',           header:'PC Number',              val:(d)      => d.pc ?? '' },
+                { key:'date',         header:'Reservation Date',       val:(d)      => d.date ?? '' },
+                { key:'timeslot',     header:'Time Slot',              val:(d)      => (d.start && d.end) ? `${d.start} – ${d.end}` : '' },
+                { key:'purpose',      header:'Purpose',                val:(d)      => d.purpose ?? '' },
+                { key:'visitortype',  header:'Visitor Type',           val:(d)      => d.type ?? '' },
+                { key:'status',       header:'Status',                 val:(d)      => cap(d.status ?? '') },
+                { key:'approver',     header:'Approved / Declined By', val:(d)      => d.approverName ?? '' },
+                { key:'approvaldate', header:'Approval Date',          val:(d)      => d.approvedAt ?? '' },
+                { key:'printlog',     header:'Print Log',              val:(d)      => {
+                    const pl = printLogMap[d.id];
+                    if (!pl) return '—';
+                    return pl.printed ? `Yes – ${pl.pages} page${pl.pages !== 1 ? 's' : ''}${pl.at ? ' (' + pl.at + ')' : ''}` : 'Not printed';
+                }},
+                { key:'stoppedat',    header:'Session Ended At',       val:(d)      => {
+                    if (!d.stoppedAt) return '';
+                    const fmt = fmtStopTime(d.stoppedAt);
+                    return fmt ? `Force-stopped at ${fmt}` : d.stoppedAt;
+                }},
+                { key:'submitted',    header:'Submitted At',           val:(d)      => d.created ?? '' },
+            ];
+
+            const activeCols = COL_MAP.filter(c => selCols.has(c.key));
+
+            const escape = v => {
+                const s = String(v ?? '').trim();
+                return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
+            };
+
+            const now     = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+
+            const fromVal = document.getElementById('exportDateFrom').value;
+            const toVal   = document.getElementById('exportDateTo').value;
+            let rangeStr  = 'All dates';
+            if (fromVal && toVal)   rangeStr = `${fromVal} to ${toVal}`;
+            else if (fromVal)       rangeStr = `From ${fromVal}`;
+            else if (toVal)         rangeStr = `Until ${toVal}`;
+
+            const titleBlock = [
+                `"eLibReserve Admin – Reservations Export"`,
+                `"Generated: ${dateStr} at ${timeStr}"`,
+                `"Date Range: ${rangeStr}"`,
+                `"Total Records: ${rows.length}"`,
+                `""`,
+            ];
+
+            const headerRow = activeCols.map(c => escape(c.header)).join(',');
+
+            const dataLines = rows.map(row => {
                 try {
                     const d = JSON.parse(row.getAttribute('onclick').replace(/^openDetail\(/, '').replace(/\)$/, ''));
-                    lines.push([
-                        d.id ?? '', d.rawName ?? d.name ?? '', d.email ?? '', d.roleLabel ?? '',
-                        d.resource ?? '', d.pc ?? '', d.date ?? '', d.start ?? '', d.end ?? '',
-                        d.purpose ?? '', d.type ?? '', d.status ?? '',
-                        d.approverName ?? '', d.approvedAt ?? '',
-                        d.stoppedAt ?? '',
-                        row.dataset.plPrinted ?? '', row.dataset.plPages ?? '', d.created ?? ''
-                    ].map(escape).join(','));
-                } catch (e) {}
-            });
-            const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-            const url  = URL.createObjectURL(blob), a = document.createElement('a');
-            a.href = url; a.download = `admin-reservations-${new Date().toISOString().slice(0, 10)}.csv`;
-            a.click(); URL.revokeObjectURL(url);
+                    return activeCols.map(c => escape(c.val(d, row))).join(',');
+                } catch(e) { return ''; }
+            }).filter(Boolean);
+
+            const allLines = [...titleBlock, headerRow, ...dataLines];
+
+            let filePart = 'all-dates';
+            if (fromVal && toVal)   filePart = `${fromVal}_to_${toVal}`;
+            else if (fromVal)       filePart = `from_${fromVal}`;
+            else if (toVal)         filePart = `until_${toVal}`;
+
+            const BOM  = '\uFEFF';
+            const blob = new Blob([BOM + allLines.join('\r\n')], { type:'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `eLibReserve-admin-reservations-${filePart}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            closeExportModal();
         }
+
+        /* ══════════════════════════════════
+           TABLE FILTERS / SORT
+        ══════════════════════════════════ */
 
         function setTab(btn, tab) { document.querySelectorAll('.qtab').forEach(t => t.classList.remove('active')); btn.classList.add('active'); curTab = tab; syncCards(tab); applyFilters(); }
         function filterByStatus(tab) { curTab = tab; document.querySelectorAll('.qtab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab)); syncCards(tab); applyFilters(); }
@@ -1144,6 +1420,10 @@ $pendingCount = $counts['pending'];
             });
         }
 
+        /* ══════════════════════════════════
+           DETAIL MODAL
+        ══════════════════════════════════ */
+
         const STATUS_META = {
             pending:   { icon: 'fa-clock',         bg: '#fef3c7', color: '#92400e', label: 'Pending — Awaiting approval' },
             approved:  { icon: 'fa-circle-check',  bg: '#dcfce7', color: '#166534', label: 'Approved' },
@@ -1154,19 +1434,9 @@ $pendingCount = $counts['pending'];
             unclaimed: { icon: 'fa-ticket',         bg: '#fff7ed', color: '#c2410c', label: 'Unclaimed — Approved but did not show up' },
         };
 
-        function fmtStopTime(ts) {
-            if (!ts) return null;
-            try {
-                const d = new Date(ts);
-                if (isNaN(d)) return null;
-                return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-            } catch (e) { return null; }
-        }
-
         function openDetail(d) {
             _currentReservationId = d.id;
 
-            /* ── Reset print log form ── */
             const plog = printLogMap[d.id];
             document.getElementById('printPagesInput').value = plog ? (plog.printed ? plog.pages : 0) : 0;
             document.getElementById('printSaveMsg').textContent = '';
@@ -1174,17 +1444,13 @@ $pendingCount = $counts['pending'];
             saveBtn.disabled = false;
             saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:11px"></i> Save';
 
-            /* ── Header ── */
             const m = STATUS_META[d.status] || STATUS_META.pending;
             document.getElementById('dId').textContent = 'Reservation #' + d.id;
 
-            /* ── Name display — show "Guest — Name" for walk-ins in modal ── */
+            /* Name display */
             const nameEl = document.getElementById('dName');
+            nameEl.textContent = '';
             if (d.isWalkIn) {
-                nameEl.innerHTML = '<span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#c2410c;background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:1px 5px;margin-right:6px;vertical-align:middle;">Guest</span>'
-                    + document.createTextNode(d.rawName || d.name).textContent.replace(/</g,'&lt;');
-                // Use innerHTML safely
-                nameEl.textContent = '';
                 const prefix = document.createElement('span');
                 prefix.className = 'guest-name-prefix';
                 prefix.textContent = 'Guest';
@@ -1196,7 +1462,6 @@ $pendingCount = $counts['pending'];
 
             document.getElementById('dEmail').textContent = d.email;
 
-            /* ── Role badge ── */
             const badge = document.getElementById('dRoleBadge');
             badge.style.display = 'inline-flex';
             badge.className = 'visitor-role-badge ' + (d.roleClass || 'registered');
@@ -1204,12 +1469,9 @@ $pendingCount = $counts['pending'];
 
             document.getElementById('dResource').textContent = d.resource;
             document.getElementById('dPc').textContent       = d.pc ? 'PC: ' + d.pc : '';
+            document.getElementById('dDate').textContent     = d.date;
+            document.getElementById('dTime').textContent     = d.start + ' – ' + d.end;
 
-            /* ── Schedule ── */
-            document.getElementById('dDate').textContent = d.date;
-            document.getElementById('dTime').textContent = d.start + ' – ' + d.end;
-
-            /* ── Force-stop time ── */
             const stoppedEl  = document.getElementById('dStoppedAt');
             const stoppedFmt = fmtStopTime(d.stoppedAt);
             if (stoppedFmt) {
@@ -1229,12 +1491,10 @@ $pendingCount = $counts['pending'];
             document.getElementById('dType').textContent    = d.type;
             document.getElementById('dCreated').textContent = d.created;
 
-            /* ── Status bar ── */
             const bar = document.getElementById('dStatusBar');
             bar.style.background = m.bg; bar.style.color = m.color;
             bar.innerHTML = `<i class="fa-solid ${m.icon}"></i> <span style="font-weight:700">${m.label}</span>`;
 
-            /* ── Approver row ── */
             const approverRow = document.getElementById('dApprovedByRow');
             if (d.approverName && ['approved','claimed','declined','expired','unclaimed'].includes(d.status)) {
                 approverRow.style.display = 'flex';
@@ -1252,10 +1512,8 @@ $pendingCount = $counts['pending'];
                 approverRow.style.display = 'none';
             }
 
-            /* ── Unclaimed banner ── */
             document.getElementById('dUnclaimedBanner').style.display = d.unclaimed ? 'flex' : 'none';
 
-            /* ── Walk-in quota strip ── */
             const quotaEl  = document.getElementById('dWalkInQuota');
             const dotsEl   = document.getElementById('wqDots');
             const labelEl  = document.getElementById('wqLabel');
@@ -1290,7 +1548,6 @@ $pendingCount = $counts['pending'];
                 quotaEl.classList.remove('show');
             }
 
-            /* ── QR / claimed indicator ── */
             const qrSec = document.getElementById('dQr');
             const clSec = document.getElementById('dClaimed');
             if (d.claimed || d.status === 'claimed') {
@@ -1303,13 +1560,9 @@ $pendingCount = $counts['pending'];
                 qrSec.style.display = 'none'; clSec.style.display = 'none';
             }
 
-            /* ── Print log read-only strip ── */
             refreshPrintLogStrip(d.id);
-
-            /* ── Print log FORM: hide for unclaimed ── */
             document.getElementById('dPrintLogForm').style.display = d.unclaimed ? 'none' : 'block';
 
-            /* ── Action buttons ── */
             const acts = document.getElementById('dActions');
             if (d.status === 'pending') {
                 acts.innerHTML = `
@@ -1367,7 +1620,11 @@ $pendingCount = $counts['pending'];
             if (key === 'approve') { const b = document.getElementById('confirmApproveBtn'); b.disabled = false; b.innerHTML = '<i class="fa-solid fa-check"></i> Approve'; }
             if (key === 'decline') { const b = document.getElementById('confirmDeclineBtn'); b.disabled = false; b.innerHTML = '<i class="fa-solid fa-xmark"></i> Decline'; }
         }
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('detail'); closeModal('approve'); closeModal('decline'); } });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeModal('detail'); closeModal('approve'); closeModal('decline'); closeExportModal();
+            }
+        });
 
         applyFilters();
 
