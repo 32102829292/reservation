@@ -1,7 +1,8 @@
 <?php
 /**
  * SK Officer Dashboard — Philippine Time (Asia/Manila) + visitor name fix
- * FIX: getActiveSessions() timezone offset corrected (no longer subtracts PHT_OFFSET_MS)
+ * FIX: getActiveSessions() no longer adds PHT_OFFSET_MS — uses Date.now() directly
+ *      so session times (parsed as local/PHT by the browser) are compared correctly.
  */
 
 /* ── Force Philippine Time for ALL date/time calls in this view ── */
@@ -1136,7 +1137,14 @@ $hhPHT = (int)$nowPHT->format('H');
             (r.name          || '').trim() ||
             'Guest';
 
-        const PHT_OFFSET_MS = 8 * 60 * 60 * 1000;
+        /* ══════════════════════════════════════════════════════════
+         * TIMEZONE NOTE:
+         * The browser in the Philippines parses bare datetime strings
+         * like "2026-05-28T09:00:00" as LOCAL time (PHT = UTC+8).
+         * Date.now() also returns UTC ms, but when converted to local
+         * it is already PHT. So we must NOT add any PHT offset — just
+         * compare Date.now() directly against locally-parsed timestamps.
+         * ══════════════════════════════════════════════════════════ */
 
         /* Dark mode */
         const _origToggle = window.layoutToggleDark;
@@ -1157,7 +1165,8 @@ $hhPHT = (int)$nowPHT->format('H');
 
         /* Login toast */
         (function() {
-            const key = 'sk_toast_' + new Date(Date.now() + PHT_OFFSET_MS).toISOString().slice(0, 10);
+            const todayKey = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+            const key = 'sk_toast_' + todayKey;
             if (sessionStorage.getItem(key)) return;
             sessionStorage.setItem(key, '1');
             const t = document.getElementById('loginToast');
@@ -1165,7 +1174,7 @@ $hhPHT = (int)$nowPHT->format('H');
             setTimeout(() => t.classList.remove('show'), 6000);
         })();
 
-        /* Timer banner */
+        /* Timer banner — uses PHP-emitted Unix timestamps, compare with Date.now()/1000 */
         (function() {
             const banner = document.getElementById('timerBanner');
             if (!banner) return;
@@ -1313,36 +1322,66 @@ $hhPHT = (int)$nowPHT->format('H');
         }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDateModal(); });
 
-        /* ══════════════════════════════════════════════════
+        /* ══════════════════════════════════════════════════════════
          * LIVE SESSIONS — TIMEZONE FIX
-         * DB stores times in PHT. JS Date() parses bare
-         * "YYYY-MM-DDTHH:MM:SS" strings as LOCAL time.
-         * Both sides must use the same reference frame.
-         * We shift nowMs by +PHT_OFFSET_MS so it matches
-         * the "fake-UTC" timestamps the DB strings produce.
-         * ══════════════════════════════════════════════════ */
+         *
+         * BEFORE (broken): used PHT_OFFSET_MS = 8*60*60*1000 and
+         *   compared  (nowMs + offset)  vs  locally-parsed sMs/eMs,
+         *   effectively making "now" appear 8 hours in the future,
+         *   so no sessions ever qualified as active.
+         *
+         * AFTER (fixed): Date.now() is compared directly against
+         *   new Date(dateStr + 'T' + timeStr).getTime(), which the
+         *   browser parses as local time (PHT). Both are in the same
+         *   reference frame — no offset needed.
+         * ══════════════════════════════════════════════════════════ */
         const TL_WARN = 5 * 60 * 1000, TL_CRIT = 2 * 60 * 1000;
         let sessionState = {};
 
+        /**
+         * Returns today's date string (YYYY-MM-DD) in local/PHT time.
+         * Uses en-CA locale which formats as YYYY-MM-DD reliably.
+         */
+        function getTodayLocal() {
+            return new Date().toLocaleDateString('en-CA');
+        }
+
+        /**
+         * Get all currently active sessions.
+         * A session is active when:
+         *  - reservation_date === today (local PHT)
+         *  - status === 'approved'
+         *  - claimed === true  (QR scanned)
+         *  - session_ended_at is empty (not force-stopped)
+         *  - current time is between start_time and end_time
+         */
         function getActiveSessions() {
-            const nowMs    = Date.now();
-            const nowAdj   = nowMs + PHT_OFFSET_MS; // treat PHT strings as if UTC
-            const todayPHT = new Date(nowAdj).toISOString().slice(0, 10);
+            const nowMs    = Date.now();          // ms, UTC — same ref frame as local parse
+            const todayPHT = getTodayLocal();     // 'YYYY-MM-DD' in browser local (= PHT)
 
             return allResData.filter(r => {
                 if (!r.start_time || !r.end_time) return false;
+
                 const rDate = (r.reservation_date || '').split('T')[0];
                 if (rDate !== todayPHT) return false;
+
                 if ((r.status || '').toLowerCase() !== 'approved') return false;
-                // Must be claimed (QR scanned) to count as an active session
-                const isClaimed = r.claimed == 1 || r.claimed === true ||
-                                  r.claimed === 'true' || r.claimed === 't';
+
+                // Must be claimed (QR scanned) to show as active
+                const isClaimed = r.claimed == 1   ||
+                                  r.claimed === true ||
+                                  r.claimed === 'true' ||
+                                  r.claimed === 't';
                 if (!isClaimed) return false;
-                // Parse DB time strings — JS treats them as local, so both
-                // sMs/eMs and nowAdj are shifted the same way → correct diff
+
+                // Skip force-stopped sessions
+                if (r.session_ended_at) return false;
+
+                // Parse as LOCAL time — browser in PHT → correct ms value
                 const sMs = new Date(rDate + 'T' + r.start_time).getTime();
                 const eMs = new Date(rDate + 'T' + r.end_time  ).getTime();
-                return sMs <= nowAdj && eMs >= nowAdj;
+
+                return sMs <= nowMs && eMs >= nowMs;
             });
         }
 
@@ -1376,8 +1415,7 @@ $hhPHT = (int)$nowPHT->format('H');
             const sessions = getActiveSessions();
             const grid = document.getElementById('sessionsGrid');
             const noS  = document.getElementById('noSessions');
-            const nowMs  = Date.now();
-            const nowAdj = nowMs + PHT_OFFSET_MS;
+            const nowMs = Date.now(); // ← plain Date.now(), no PHT offset
 
             if (!sessions.length) {
                 grid.innerHTML = '';
@@ -1391,8 +1429,8 @@ $hhPHT = (int)$nowPHT->format('H');
                 const eMs   = new Date(rDate + 'T' + r.end_time  ).getTime();
                 const sMs   = new Date(rDate + 'T' + r.start_time).getTime();
                 const totMs = eMs - sMs;
-                const remMs = eMs - nowAdj;
-                const elMs  = nowAdj - sMs;
+                const remMs = eMs - nowMs;   // time remaining
+                const elMs  = nowMs - sMs;   // elapsed time
                 const prog  = Math.min(100, Math.max(0, (elMs / totMs) * 100));
                 const cls   = sessionClass(remMs);
                 const name  = resolveVisitorName(r);
