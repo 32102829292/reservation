@@ -4,6 +4,7 @@
  * FIX: getActiveSessions() no longer adds PHT_OFFSET_MS — uses Date.now() directly
  *      so session times (parsed as local/PHT by the browser) are compared correctly.
  * UPDATE: Added "Stop Session" button to Live Monitor session cards.
+ * FIX 2: confirmStopSession() now POSTs to /sk/sessions/stop with reservation_id in body.
  */
 
 /* ── Force Philippine Time for ALL date/time calls in this view ── */
@@ -1200,15 +1201,6 @@ $hhPHT = (int)$nowPHT->format('H');
             (r.name          || '').trim() ||
             'Guest';
 
-        /* ══════════════════════════════════════════════════════════
-         * TIMEZONE NOTE:
-         * The browser in the Philippines parses bare datetime strings
-         * like "2026-05-28T09:00:00" as LOCAL time (PHT = UTC+8).
-         * Date.now() also returns UTC ms, but when converted to local
-         * it is already PHT. So we must NOT add any PHT offset — just
-         * compare Date.now() directly against locally-parsed timestamps.
-         * ══════════════════════════════════════════════════════════ */
-
         /* Dark mode */
         const _origToggle = window.layoutToggleDark;
         window.layoutToggleDark = function() {
@@ -1389,6 +1381,7 @@ $hhPHT = (int)$nowPHT->format('H');
 
         /* ══════════════════════════════════════════════════════════
          * STOP SESSION — Modal + API call
+         * FIX: POST to /sk/sessions/stop with reservation_id in body
          * ══════════════════════════════════════════════════════════ */
         let _stopPendingId   = null;
         let _stopPendingName = null;
@@ -1417,34 +1410,51 @@ $hhPHT = (int)$nowPHT->format('H');
 
         async function confirmStopSession() {
             if (!_stopPendingId) return;
-            const id  = _stopPendingId;
-            const btn = document.getElementById('stopModalConfirmBtn');
-            btn.disabled     = true;
-            btn.innerHTML    = `<svg style="animation:spin .7s linear infinite" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Stopping…`;
+            const id          = _stopPendingId;
+            const stoppedName = _stopPendingName; // save before closeStopModal() clears it
+            const btn         = document.getElementById('stopModalConfirmBtn');
+
+            btn.disabled  = true;
+            btn.innerHTML = `<svg style="animation:spin .7s linear infinite" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Stopping…`;
+
             try {
-                const res = await fetch(`/sk/sessions/${id}/stop`, {
+                const res = await fetch('/sk/sessions/stop', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': CSRF_TOKEN,
                         'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    },
+                    body: JSON.stringify({
+                        reservation_id: id,
+                        ended_at_ms:    Date.now()
+                    })
                 });
+
                 if (!res.ok) {
                     const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || `HTTP ${res.status}`);
+                    throw new Error(err.message || err.error || `HTTP ${res.status}`);
                 }
+
+                const data = await res.json();
+                if (!data.ok) {
+                    throw new Error(data.error || 'Server returned an error');
+                }
+
                 closeStopModal();
+
                 // Remove card immediately from live grid
                 document.getElementById(`tl-${id}`)?.remove();
                 const grid = document.getElementById('sessionsGrid');
-                if (!grid.children.length) {
-                    document.getElementById('noSessions').classList.remove('hidden');
+                if (grid && !grid.children.length) {
+                    document.getElementById('noSessions')?.classList.remove('hidden');
                 }
-                tlToast('success', `Session ended`, `${_stopPendingName ?? 'Session'} stopped by officer`);
+
+                tlToast('success', 'Session ended', `${stoppedName ?? 'Session'} stopped by officer`);
+
             } catch (e) {
-                btn.disabled     = false;
-                btn.textContent  = 'Stop Session';
+                btn.disabled         = false;
+                btn.textContent      = 'Stop Session';
                 btn.style.background = '#dc2626';
                 tlToast('expired', 'Could not stop session', e.message || 'Please try again');
             }
