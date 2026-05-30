@@ -33,6 +33,19 @@ $myBorrowings   = $myBorrowings   ?? [];
 $availableCount = $availableCount ?? 0;
 $totalBooks     = $totalBooks     ?? 0;
 
+$user_name = $user_name ?? '';
+if (is_array($user_name)) {
+    $user_name = $user_name['name'] ?? $user_name['username'] ?? $user_name['full_name'] ?? trim(($user_name['first_name'] ?? '') . ' ' . ($user_name['last_name'] ?? ''));
+}
+if ($user_name === '' && !empty($user)) {
+    if (is_array($user)) {
+        $user_name = $user['name'] ?? $user['username'] ?? $user['full_name'] ?? trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+    } elseif (is_string($user)) {
+        $user_name = $user;
+    }
+}
+$user_name = is_string($user_name) ? $user_name : '';
+
 $upcoming = null;
 if (!empty($reservations)) {
     $now = time();
