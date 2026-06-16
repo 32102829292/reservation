@@ -21,6 +21,12 @@ $avatarStyles = [
 // Compute pending count
 $pendingResidents = array_filter($residents, fn($r) => ($r['status'] ?? 'pending') === 'pending');
 $pendingCount     = count($pendingResidents);
+
+// ─── KEY FIX: Sequential numbering (row # NOT database ID) ───
+// Re-index residents to preserve insertion order for display numbering.
+// The sequential number shown in the UI is simply the 1-based position
+// in the $residents array — completely decoupled from the DB primary key.
+$residents = array_values($residents);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -103,6 +109,18 @@ $pendingCount     = count($pendingResidents);
         }
         .qtab:hover { background: var(--input-bg); }
         .qtab.active { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+
+        /* ── Sequential number badge ── */
+        .seq-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 26px; height: 22px; padding: 0 6px;
+            background: var(--indigo-light); color: var(--indigo);
+            border: 1px solid var(--indigo-border);
+            border-radius: 7px;
+            font-size: 10px; font-weight: 800; font-family: var(--mono);
+            line-height: 1; flex-shrink: 0;
+        }
+        body.dark .seq-badge { background: rgba(99,102,241,.15); color: #a5b4fc; border-color: rgba(99,102,241,.25); }
 
         /* ── Avatar ── */
         .res-avatar {
@@ -248,10 +266,20 @@ $pendingCount     = count($pendingResidents);
         @keyframes slideInRight{ from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:none} }
         .fade-up { animation: slideUp .35s ease both; }
 
-        /* ── Pending status pill ── */
+        /* ── Status pills ── */
         .status-pending  { background:#fef3c7;color:#92400e;border:1px solid #fde68a; }
         .status-approved { background:#dcfce7;color:#166534;border:1px solid #86efac; }
         .status-rejected { background:#fee2e2;color:#dc2626;border:1px solid #fca5a5; }
+
+        /* ── Notice banner (email-verified-but-approved) ── */
+        .notice-banner {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--r-lg);
+            padding: 12px 16px; margin-bottom: 14px;
+            font-size: 12px; font-weight: 600; color: #1e40af; line-height: 1.5;
+        }
+        .notice-banner i { flex-shrink: 0; margin-top: 2px; }
+        body.dark .notice-banner { background: rgba(30,64,175,.12); border-color: rgba(96,165,250,.25); color: #93c5fd; }
     </style>
 </head>
 
@@ -311,8 +339,14 @@ $pendingCount     = count($pendingResidents);
             <div id="dHero" style="margin:0 20px 14px;background:var(--indigo-light);border:1px solid var(--indigo-border);border-radius:18px;padding:16px;display:flex;align-items:center;gap:14px"></div>
             <!-- Verified bar -->
             <div id="dVerifiedBar" style="margin:0 20px 14px;padding:10px 14px;border-radius:14px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700"></div>
+            <!-- ── Approval-before-verification notice ── -->
+            <div id="dApprovedBeforeVerifyNotice" style="display:none;margin:0 20px 14px"></div>
             <!-- Fields -->
             <div style="padding:0 20px 8px">
+                <div class="drow">
+                    <div class="dicon"><i class="fa-solid fa-hashtag"></i></div>
+                    <div><p class="dlabel">Account #</p><p id="dSeq" class="dvalue" style="font-family:var(--mono)"></p></div>
+                </div>
                 <div class="drow">
                     <div class="dicon"><i class="fa-solid fa-envelope"></i></div>
                     <div><p class="dlabel">Email</p><p id="dEmail" class="dvalue" style="word-break:break-all"></p></div>
@@ -383,7 +417,7 @@ $pendingCount     = count($pendingResidents);
                 </div>
                 <h3 id="approveModalTitle" style="font-size:18px;font-weight:800;">Approve Resident Account?</h3>
                 <p style="color:var(--text-sub);font-size:13px;margin-top:6px;font-weight:500;line-height:1.6">
-                    The resident will receive an email notification and gain full access to the system.
+                    The resident will be granted full system access. If their email isn't verified yet, access activates once they verify it.
                 </p>
                 <p id="approveConfirmName" style="font-size:13px;margin-top:10px;font-weight:800;color:#16a34a"></p>
             </div>
@@ -468,7 +502,7 @@ $pendingCount     = count($pendingResidents);
             </div>
         </header>
 
-        <!-- Stat cards — now 4 cards including Pending -->
+        <!-- Stat cards -->
         <div class="stats-grid fade-up">
             <div class="stat-card" style="border-left-color:#3730a3" onclick="switchToTab('all')" title="Show all residents">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -542,13 +576,13 @@ $pendingCount     = count($pendingResidents);
             <table>
                 <thead>
                     <tr>
-                        <th style="width:48px">ID</th>
+                        <th style="width:52px">#</th>
                         <th>Resident</th>
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Registered</th>
                         <th>Reservations</th>
-                        <th>Verified</th>
+                        <th>Email</th>
                         <th>Status</th>
                         <th style="text-align:right;width:180px">Actions</th>
                     </tr>
@@ -566,6 +600,10 @@ $pendingCount     = count($pendingResidents);
                         </tr>
                     <?php else: ?>
                         <?php foreach ($residents as $idx => $r):
+                            // ── Sequential number: 1-based position in the array,
+                            //    completely independent of the database primary key ──
+                            $seqNum   = $idx + 1;
+
                             $name     = htmlspecialchars($r['full_name'] ?? $r['name'] ?? 'Unknown');
                             $email    = htmlspecialchars($r['email'] ?? '—');
                             $phone    = htmlspecialchars($r['phone'] ?? 'N/A');
@@ -577,26 +615,38 @@ $pendingCount     = count($pendingResidents);
                             $init     = strtoupper(substr($name, 0, 1));
                             $verTab   = $isVer ? 'verified' : 'unverified';
                             $searchStr= strtolower("$name $email " . ($r['phone'] ?? ''));
-                            $mdata    = json_encode([
-                                'id'           => $r['id'],
-                                'name'         => $name,
-                                'email'        => $email,
-                                'phone'        => $phone,
-                                'date'         => $date,
-                                'verified'     => $isVer,
-                                'status'       => $status,
-                                'reservations' => $resCount,
-                                'avatarStyle'  => $avatarStyle,
-                                'initials'     => $init,
+
+                            // ── Detect "approved before email verification" edge case ──
+                            // This happens when admin pre-approves, then user verifies later.
+                            // We surface a visual hint so the admin understands the state.
+                            $approvedBeforeVerify = ($status === 'approved' && !$isVer);
+
+                            $mdata = json_encode([
+                                'id'                   => $r['id'],
+                                'seq'                  => $seqNum,
+                                'name'                 => $name,
+                                'email'                => $email,
+                                'phone'                => $phone,
+                                'date'                 => $date,
+                                'verified'             => $isVer,
+                                'status'               => $status,
+                                'reservations'         => $resCount,
+                                'avatarStyle'          => $avatarStyle,
+                                'initials'             => $init,
+                                'approvedBeforeVerify' => $approvedBeforeVerify,
                             ]);
                         ?>
                         <tr class="res-row"
+                            data-seq="<?= $seqNum ?>"
                             data-verifytab="<?= $verTab ?>"
                             data-statustab="<?= htmlspecialchars($status) ?>"
                             data-search="<?= htmlspecialchars($searchStr) ?>">
+
+                            <!-- Sequential # column (NOT DB id) -->
                             <td>
-                                <span style="font-size:11px;font-weight:800;color:var(--text-sub);font-family:monospace">#<?= $r['id'] ?></span>
+                                <span class="seq-badge"><?= $seqNum ?></span>
                             </td>
+
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px">
                                     <div class="res-avatar" style="<?= $avatarStyle ?>"><?= $init ?></div>
@@ -627,7 +677,7 @@ $pendingCount     = count($pendingResidents);
                                     </span>
                                 <?php else: ?>
                                     <span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a">
-                                        <i class="fa-solid fa-circle-exclamation" style="font-size:9px"></i> Unverified
+                                        <i class="fa-solid fa-envelope" style="font-size:9px"></i> Pending
                                     </span>
                                 <?php endif; ?>
                             </td>
@@ -648,6 +698,12 @@ $pendingCount     = count($pendingResidents);
                                     <i class="fa-solid <?= $statusIcon ?>" style="font-size:9px"></i>
                                     <?= ucfirst($status) ?>
                                 </span>
+                                <?php if ($approvedBeforeVerify): ?>
+                                    <span title="Approved but email not yet verified — access activates on verification"
+                                        style="display:inline-flex;align-items:center;margin-left:4px;color:#3b82f6;font-size:10px;cursor:default">
+                                        <i class="fa-solid fa-envelope-circle-check"></i>
+                                    </span>
+                                <?php endif; ?>
                             </td>
                             <td style="text-align:right">
                                 <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap">
@@ -707,6 +763,7 @@ $pendingCount     = count($pendingResidents);
                 </div>
             <?php else: ?>
                 <?php foreach ($residents as $idx => $r):
+                    $seqNum   = $idx + 1;
                     $name     = htmlspecialchars($r['full_name'] ?? $r['name'] ?? 'Unknown');
                     $email    = htmlspecialchars($r['email'] ?? '—');
                     $phone    = htmlspecialchars($r['phone'] ?? 'N/A');
@@ -718,18 +775,7 @@ $pendingCount     = count($pendingResidents);
                     $init     = strtoupper(substr($name, 0, 1));
                     $verTab   = $isVer ? 'verified' : 'unverified';
                     $searchStr= strtolower("$name $email " . ($r['phone'] ?? ''));
-                    $mdata    = json_encode([
-                        'id'           => $r['id'],
-                        'name'         => $name,
-                        'email'        => $email,
-                        'phone'        => $phone,
-                        'date'         => $date,
-                        'verified'     => $isVer,
-                        'status'       => $status,
-                        'reservations' => $resCount,
-                        'avatarStyle'  => $avatarStyle,
-                        'initials'     => $init,
-                    ]);
+                    $approvedBeforeVerify = ($status === 'approved' && !$isVer);
                     $statusClass = match($status) {
                         'approved' => 'status-approved',
                         'rejected' => 'status-rejected',
@@ -740,15 +786,31 @@ $pendingCount     = count($pendingResidents);
                         'rejected' => 'fa-ban',
                         default    => 'fa-clock',
                     };
+                    $mdata = json_encode([
+                        'id'                   => $r['id'],
+                        'seq'                  => $seqNum,
+                        'name'                 => $name,
+                        'email'                => $email,
+                        'phone'                => $phone,
+                        'date'                 => $date,
+                        'verified'             => $isVer,
+                        'status'               => $status,
+                        'reservations'         => $resCount,
+                        'avatarStyle'          => $avatarStyle,
+                        'initials'             => $init,
+                        'approvedBeforeVerify' => $approvedBeforeVerify,
+                    ]);
                 ?>
                 <div class="res-card mobile-res-card"
+                    data-seq="<?= $seqNum ?>"
                     data-verifytab="<?= $verTab ?>"
                     data-statustab="<?= htmlspecialchars($status) ?>"
                     data-search="<?= htmlspecialchars($searchStr) ?>"
                     onclick='openDetail(<?= htmlspecialchars($mdata, ENT_QUOTES) ?>)'>
 
-                    <!-- Top row: avatar + name + verified badge -->
+                    <!-- Top row: seq# + avatar + name + email verified badge -->
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                        <span class="seq-badge"><?= $seqNum ?></span>
                         <div class="res-avatar" style="<?= $avatarStyle ?>"><?= $init ?></div>
                         <div style="flex:1;min-width:0">
                             <p style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= $name ?></p>
@@ -760,12 +822,20 @@ $pendingCount     = count($pendingResidents);
                             </span>
                         <?php else: ?>
                             <span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;flex-shrink:0">
-                                <i class="fa-solid fa-circle-exclamation" style="font-size:9px"></i> Unverified
+                                <i class="fa-solid fa-envelope" style="font-size:9px"></i> Unverified
                             </span>
                         <?php endif; ?>
                     </div>
 
-                    <!-- Meta row: date + reservations + status -->
+                    <!-- Approved-before-verified notice on mobile -->
+                    <?php if ($approvedBeforeVerify): ?>
+                        <div style="display:flex;align-items:center;gap:7px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:7px 10px;margin-bottom:8px;font-size:11px;font-weight:600;color:#1e40af">
+                            <i class="fa-solid fa-envelope-circle-check" style="font-size:11px;flex-shrink:0"></i>
+                            Pre-approved — access starts once email is verified
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Meta row: date + reservations + approval status -->
                     <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
                         <p style="font-size:11px;color:var(--text-sub);font-weight:600">
                             <i class="fa-regular fa-calendar" style="font-size:10px;margin-right:3px"></i><?= $date ?>
@@ -780,9 +850,11 @@ $pendingCount     = count($pendingResidents);
                         </span>
                     </div>
 
-                    <!-- Bottom row: ID + action buttons -->
+                    <!-- Bottom row: seq# label + action buttons -->
                     <div style="display:flex;gap:6px;padding-top:10px;border-top:1px solid var(--border-subtle);align-items:center" onclick="event.stopPropagation()">
-                        <p style="font-size:10px;font-weight:800;color:var(--border);font-family:monospace;flex:1">#<?= $r['id'] ?></p>
+                        <p style="font-size:10px;font-weight:800;color:var(--text-sub);font-family:var(--mono);flex:1">
+                            Account #<?= $seqNum ?>
+                        </p>
 
                         <?php if ($status === 'pending'): ?>
                             <button onclick="triggerApprove(<?= $r['id'] ?>,'<?= addslashes($name) ?>')"
@@ -814,7 +886,7 @@ $pendingCount     = count($pendingResidents);
             </button>
         </div>
 
-    </main><!-- /main-area -->
+    </main>
 
     <script>
     (function () {
@@ -850,7 +922,6 @@ $pendingCount     = count($pendingResidents);
             const q = searchInput.value.toLowerCase().trim();
 
             const match = el => {
-                // Verify tab filter
                 let tabOk = false;
                 if (curTab === 'all') {
                     tabOk = true;
@@ -864,15 +935,41 @@ $pendingCount     = count($pendingResidents);
             };
 
             let n = 0, m = 0;
-            allTableRows.forEach(r   => { const s = match(r); r.style.display = s ? '' : 'none'; if (s) n++; });
-            allMobileCards.forEach(c => { const s = match(c); c.style.display = s ? '' : 'none'; if (s) m++; });
+
+            /* ── Re-number visible rows sequentially ── */
+            let visibleDesktopSeq = 0;
+            allTableRows.forEach(r => {
+                const s = match(r);
+                r.style.display = s ? '' : 'none';
+                if (s) {
+                    visibleDesktopSeq++;
+                    const badge = r.querySelector('.seq-badge');
+                    if (badge) badge.textContent = visibleDesktopSeq;
+                    n++;
+                }
+            });
+
+            let visibleMobileSeq = 0;
+            allMobileCards.forEach(c => {
+                const s = match(c);
+                c.style.display = s ? '' : 'none';
+                if (s) {
+                    visibleMobileSeq++;
+                    // Update the seq-badge in top row
+                    const badge = c.querySelector('.seq-badge');
+                    if (badge) badge.textContent = visibleMobileSeq;
+                    // Update the "Account #N" label in footer row
+                    const lbl = c.querySelector('[data-seq-label]');
+                    if (lbl) lbl.textContent = `Account #${visibleMobileSeq}`;
+                    m++;
+                }
+            });
 
             const tot   = allTableRows.length || allMobileCards.length;
             const shown = allTableRows.length ? n : m;
             resultCount.textContent = `Showing ${shown} of ${tot} account${tot !== 1 ? 's' : ''}`;
 
             if (tableFooter) tableFooter.textContent = `${n} result${n !== 1 ? 's' : ''} displayed`;
-
             if (desktopNR) desktopNR.style.display = (n === 0 && allTableRows.length > 0)   ? ''      : 'none';
             if (mobileNR)  mobileNR.style.display  = (m === 0 && allMobileCards.length > 0) ? 'block' : 'none';
         }
@@ -907,21 +1004,40 @@ $pendingCount     = count($pendingResidents);
                 bar.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Email Verified</span>`;
             } else {
                 bar.style.cssText = 'margin:0 20px 14px;padding:10px 14px;border-radius:14px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;background:#fef3c7;color:#92400e';
-                bar.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i><span>Email Not Verified</span>`;
+                bar.innerHTML = `<i class="fa-solid fa-envelope"></i><span>Email Not Yet Verified</span>`;
+            }
+
+            /* ── Approved-before-verify notice ── */
+            const noticeEl = document.getElementById('dApprovedBeforeVerifyNotice');
+            if (d.approvedBeforeVerify) {
+                noticeEl.style.display = 'block';
+                noticeEl.innerHTML = `
+                    <div class="notice-banner">
+                        <i class="fa-solid fa-envelope-circle-check"></i>
+                        <span>This account was <strong>pre-approved</strong> before the resident verified their email.
+                        Full access activates automatically once they complete email verification — no further action needed.</span>
+                    </div>`;
+            } else {
+                noticeEl.style.display = 'none';
+                noticeEl.innerHTML = '';
             }
 
             /* Fields */
+            document.getElementById('dSeq').textContent          = `Account #${d.seq}`;
             document.getElementById('dEmail').textContent        = d.email;
             document.getElementById('dPhone').textContent        = d.phone || 'N/A';
             document.getElementById('dDate').textContent         = d.date;
             document.getElementById('dReservations').textContent = d.reservations + ' total reservation' + (d.reservations !== 1 ? 's' : '');
 
-            const statusLabels = { approved: '✅ Approved', rejected: '❌ Rejected', pending: '⏳ Pending Approval' };
+            const statusLabels = {
+                approved: '✅ Approved',
+                rejected: '❌ Rejected',
+                pending:  '⏳ Pending Approval',
+            };
             document.getElementById('dStatus').textContent = statusLabels[d.status] || d.status;
 
-            /* Actions — show Approve/Reject only when pending */
+            /* Actions */
             const safeName = d.name.replace(/'/g, "\\'");
-
             let pendingBtns = '';
             if (d.status === 'pending') {
                 pendingBtns = `
@@ -1016,7 +1132,6 @@ $pendingCount     = count($pendingResidents);
             const el = document.getElementById(overlayMap[key]);
             if (el) { el.classList.remove('open'); document.body.style.overflow = ''; }
 
-            /* Reset button states */
             const resetMap = {
                 delete:  ['confirmDeleteBtn',  '<i class="fa-solid fa-trash-can"></i> Delete Permanently'],
                 approve: ['confirmApproveBtn', '<i class="fa-solid fa-circle-check"></i> Approve'],
