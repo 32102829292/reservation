@@ -1,10 +1,3 @@
-<?php
-date_default_timezone_set('Asia/Manila');
-$page    = $page ?? 'new-reservation';
-$sk_name = session()->get('name') ?? 'SK Officer';
-$pendingUserCount = $pendingUserCount ?? 0;
-$avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
-?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -637,7 +630,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         body.dark .pin-box { background: #101e35; border-color: rgba(99,102,241,.25); color: #e2eaf8; }
         body.dark .pin-box.pin-ok  { background: rgba(22,163,74,.1);  border-color: #16a34a; }
         body.dark .pin-box.pin-err { background: rgba(220,38,38,.1);  border-color: #dc2626; }
-        /* availability dark */
         body.dark #availabilityStatus.av-checking { background: rgba(3,105,161,.12); border-color: rgba(186,230,253,.2); color: #7dd3fc; }
         body.dark #availabilityStatus.av-ok       { background: rgba(21,128,61,.12);  border-color: rgba(187,247,208,.2); color: #86efac; }
         body.dark #availabilityStatus.av-conflict { background: rgba(185,28,28,.12);  border-color: rgba(254,202,202,.2); color: #fca5a5; }
@@ -720,9 +712,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 <select name="resource_id" id="nativeResource" style="display:none" required></select>
                 <select name="purpose_select" id="nativePurpose" style="display:none"></select>
 
-                <!-- ════════════════════
-                     VISITOR TYPE TOGGLE
-                ════════════════════ -->
+                <!-- Visitor type -->
                 <div style="margin-bottom:20px">
                     <label class="field-label" style="margin-bottom:8px;display:block">Visitor Classification</label>
                     <div class="type-toggle">
@@ -736,9 +726,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 </div>
                 <hr class="divider">
 
-                <!-- ════════════════════
-                     PERSONAL DETAILS
-                ════════════════════ -->
+                <!-- Personal details -->
                 <div style="margin-bottom:20px">
                     <div class="section-head">
                         <div class="section-icon"><i class="fa-solid fa-id-badge" style="color:var(--indigo);font-size:.9rem"></i></div>
@@ -852,9 +840,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 </div>
                 <hr class="divider">
 
-                <!-- ════════════════════
-                     RESOURCE & SCHEDULE
-                ════════════════════ -->
+                <!-- Resource & Schedule -->
                 <div style="margin-bottom:20px">
                     <div class="section-head">
                         <div class="section-icon"><i class="fa-solid fa-calendar-days" style="color:var(--indigo);font-size:.9rem"></i></div>
@@ -872,19 +858,35 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                                 <div class="cs-opt cs-placeholder" data-value=""><span class="cs-opt-label">— Choose a resource —</span></div>
                                 <div class="cs-divider"></div>
                                 <?php foreach ($resources ?? [] as $res):
-                                    $rname = htmlspecialchars($res['name']);
-                                    $lower = strtolower($res['name']);
+                                    $rname  = htmlspecialchars($res['name']);
+                                    $lower  = strtolower($res['name']);
                                     $hasPcs = (strpos($lower,'computer')!==false||strpos($lower,'pc')!==false||strpos($lower,'lab')!==false)?'1':'0';
+                                    $isWifi = (strpos($lower,'wifi')!==false)?'1':'0';
                                 ?>
-                                <div class="cs-opt" data-value="<?= $res['id'] ?>" data-name="<?= $rname ?>" data-has-pcs="<?= $hasPcs ?>">
+                                <div class="cs-opt"
+                                     data-value="<?= $res['id'] ?>"
+                                     data-name="<?= $rname ?>"
+                                     data-has-pcs="<?= $hasPcs ?>"
+                                     data-is-wifi="<?= $isWifi ?>">
                                     <div class="cs-opt-icon" style="background:rgba(99,102,241,.1)">
+                                        <?php if ($isWifi === '1'): ?>
+                                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 5.5C4.1 2.8 8 2 8 2s3.9.8 7 3.5" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/><path d="M3.5 8C5.2 6.4 8 6 8 6s2.8.4 4.5 2" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/><path d="M6 10.5C6.7 9.9 8 9.7 8 9.7s1.3.2 2 .8" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="13" r="1" fill="#6366f1"/></svg>
+                                        <?php else: ?>
                                         <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="10" rx="2" stroke="#6366f1" stroke-width="1.3"/><path d="M5 15h6M8 12v3" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg>
+                                        <?php endif; ?>
                                     </div>
                                     <span class="cs-opt-label"><?= $rname ?></span>
+                                    <?php if ($isWifi === '1'): ?>
+                                    <span style="font-size:.6rem;font-weight:700;background:rgba(99,102,241,.1);color:#6366f1;padding:2px 7px;border-radius:20px;letter-spacing:.04em">NO LIMIT</span>
+                                    <?php endif; ?>
                                     <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </div>
                                 <?php endforeach; ?>
                             </div>
+                        </div>
+                        <div id="wifiNoticeBanner" style="display:none;margin-top:8px;padding:9px 13px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:9px;font-size:.78rem;font-weight:600;color:#4c1d95;align-items:center;gap:8px">
+                            <i class="fa-solid fa-wifi" style="color:#7c3aed;font-size:.8rem"></i>
+                            WiFi reservations have <strong>no booking limit</strong> — quota and fairness checks are skipped.
                         </div>
                     </div>
 
@@ -898,7 +900,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         <p style="font-size:.72rem;color:var(--indigo);font-weight:600;margin-top:10px">Selected: <span id="pcSelectedLabel">None</span></p>
                     </div>
 
-                    <!-- Date / time pickers -->
                     <div class="grid-3" style="margin-bottom:14px">
                         <div>
                             <label class="field-label">Date</label>
@@ -935,7 +936,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         </div>
                     </div>
 
-                    <!-- ══ LIVE AVAILABILITY STATUS ══ -->
                     <div id="availabilityStatus">
                         <div class="av-icon" id="avIcon"></div>
                         <div style="flex:1">
@@ -945,7 +945,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         <div id="avPill" style="padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:800;letter-spacing:.04em;white-space:nowrap"></div>
                     </div>
 
-                    <!-- Booked slots breakdown -->
                     <div id="bookedSlotsWrap">
                         <div class="bs-header">
                             <i class="fa-solid fa-clock" style="font-size:.65rem"></i>
@@ -954,7 +953,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                         <div id="bookedSlotsList"></div>
                     </div>
 
-                    <!-- Purpose -->
                     <div style="margin-bottom:14px;margin-top:14px">
                         <label class="field-label">Purpose of Visit</label>
                         <div class="cs-wrap" id="purposeWrap">
@@ -1007,9 +1005,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         </div>
     </main>
 
-    <!-- ══════════════════════════════════════════
-         CORE FORM JAVASCRIPT
-    ══════════════════════════════════════════ -->
+    <!-- Core Form JS -->
     <script>
         const allUsers = <?= json_encode($users ?? []) ?>;
         let currentType = 'User', selectedUser = null, selectedPcs = [];
@@ -1028,6 +1024,8 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 const el = document.getElementById(id); if (el) el.value = '';
             });
             document.getElementById('finalUserId').value = '';
+            // FIX: reset conflict state when switching type
+            window._avHasConflict = false;
             hideGuestBox();
             hideCodeSection();
             hideRegisteredWarning();
@@ -1123,18 +1121,21 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             });
         }
 
-        function getSelectedResourceVal()  { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
-        function getSelectedResourceName() { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.querySelector('.cs-opt-label')?.textContent.trim() : '—'; }
-        function getSelectedPurpose()      { const o = document.querySelector('#purposeDrop  .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
+        function getSelectedResourceVal()    { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
+        function getSelectedResourceName()   { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? o.querySelector('.cs-opt-label')?.textContent.trim() : '—'; }
+        function getSelectedResourceIsWifi() { const o = document.querySelector('#resourceDrop .cs-opt.cs-selected'); return o ? (o.dataset.isWifi === '1') : false; }
+        function getSelectedPurpose()        { const o = document.querySelector('#purposeDrop  .cs-opt.cs-selected'); return o ? o.dataset.value : ''; }
 
         initCS('resourceWrap', 'resourceDrop', 'resourceLabel', function(val, opt) {
             document.getElementById('nativeResource').innerHTML = `<option value="${val}" selected></option>`;
             const hasPcs = opt.dataset.hasPcs === '1';
+            const isWifi = opt.dataset.isWifi === '1';
             document.getElementById('pcSection').style.display = hasPcs ? 'block' : 'none';
+            const wifiBanner = document.getElementById('wifiNoticeBanner');
+            wifiBanner.style.display = isWifi ? 'flex' : 'none';
             selectedPcs = [];
             updatePcHidden();
             document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
-            // Trigger availability check when resource changes
             schedAvailabilityCheck();
         });
 
@@ -1144,7 +1145,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             if (val !== 'Others') document.getElementById('purposeOther').value = '';
         });
 
-        /* ─── Availability checker ─── */
+        /* ─── LIVE AVAILABILITY CHECKER ─── */
         window._avHasConflict = false;
         let _avTimer = null;
 
@@ -1283,7 +1284,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             wrap.style.display = 'block';
         }
 
-        // Hook date/time pickers → re-run check
         window._onDatePicked = schedAvailabilityCheck;
         window._onTimePicked = schedAvailabilityCheck;
 
@@ -1293,7 +1293,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 alert('⛔ This person is a registered resident. Please use the Registered User toggle and select them from the dropdown.');
                 return;
             }
-            if (currentType === 'Visitor' && window._guestBlocked) {
+            if (currentType === 'Visitor' && window._guestBlocked && !getSelectedResourceIsWifi()) {
                 const name = document.getElementById('visitorNameInput')?.value?.trim() || 'This visitor';
                 alert(`⛔ ${name} has reached the 3-reservation limit within the last 14 days and cannot make a new reservation.`);
                 return;
@@ -1327,13 +1327,13 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             const purposeOther = document.getElementById('purposeOther').value.trim();
             const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
 
-            if (!name)       return alert('Please enter a name.');
-            if (!resourceId) return alert('Please select a resource.');
+            if (!name)        return alert('Please enter a name.');
+            if (!resourceId)  return alert('Please select a resource.');
             if (showPcs && !selectedPcs.length) return alert('Please select at least one workstation.');
-            if (!date)       return alert('Please select a date.');
-            if (!startTime)  return alert('Please enter a start time.');
-            if (!endTime)    return alert('Please enter an end time.');
-            if (!purposeVal) return alert('Please select a purpose.');
+            if (!date)        return alert('Please select a date.');
+            if (!startTime)   return alert('Please enter a start time.');
+            if (!endTime)     return alert('Please enter an end time.');
+            if (!purposeVal)  return alert('Please select a purpose.');
             if (isUser && !selectedUser && !document.getElementById('finalUserId').value)
                 return alert('Please select a registered user from the dropdown.');
 
@@ -1343,9 +1343,8 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             document.getElementById('nativeResource').innerHTML = `<option value="${resourceId}" selected></option>`;
             document.getElementById('nativePurpose').innerHTML  = `<option value="${purposeVal}" selected></option>`;
 
-            const roleLabel = isUser ? 'Registered User' : 'Walk-in Visitor';
             const rows = [
-                ['Type',         roleLabel],
+                ['Type',         isUser ? 'Registered User' : 'Walk-in Visitor'],
                 ['Name',         name || '—'],
                 ['Email',        email || '—'],
                 ['Resource',     resourceName],
@@ -1356,6 +1355,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 ['Availability', '✓ No conflict detected'],
             ];
             if (!isUser) rows.splice(2, 0, ['Identity', 'Confirmed ✓']);
+            if (getSelectedResourceIsWifi()) rows.push(['Quota Check', '⚡ Skipped — WiFi resource']);
 
             document.getElementById('modalSummaryBox').innerHTML =
                 rows.map(([l,v]) => `<div class="mrow"><span class="mrow-label">${l}</span><span class="mrow-value">${v}</span></div>`).join('');
@@ -1401,9 +1401,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     </script>
 
-    <!-- ══════════════════════════════════════════
-         CUSTOM DATE / TIME PICKER
-    ══════════════════════════════════════════ -->
+    <!-- Custom Date / Time Picker -->
     <script>
     (function() {
         'use strict';
@@ -1437,7 +1435,7 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             let html=`<div class="cal-head"><div class="cal-nav-btn" id="_calPrev">&#8249;</div><div class="cal-month-label">${MONTHS[m]} ${y}</div><div class="cal-nav-btn" id="_calNext">&#8250;</div></div><div class="cal-grid">${DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
             for(let i=0;i<firstDow;i++) html+=`<div class="cal-day cal-other">${prevTotal-firstDow+1+i}</div>`;
             for(let d=1;d<=daysInM;d++){
-                const thisDate = new Date(y, m, d);
+                const thisDate = new Date(y,m,d);
                 const isPast  = thisDate < todayFlat;
                 const isToday = d===TODAY.getDate()&&m===TODAY.getMonth()&&y===TODAY.getFullYear();
                 const isSel   = selDate&&selDate.d===d&&selDate.m===m&&selDate.y===y;
@@ -1464,7 +1462,6 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             $('dateTrigger').classList.add('has-value');
             renderCal();
             setTimeout(closeAll,180);
-            // Trigger availability check
             if (window._onDatePicked) window._onDatePicked();
         }
         function clearDate(){ selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');renderCal(); }
@@ -1494,14 +1491,13 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
             if(st.ampm==='am'&&st.h===12)h24=0;
             if(st.ampm==='pm'&&st.h!==12)h24=st.h+12;
             const iso24=`${String(h24).padStart(2,'0')}:${String(st.min).padStart(2,'0')}`;
-            const labelId=which==='start'?'startLabel':'endLabel';
-            const inputId=which==='start'?'startTime':'endTime';
+            const labelId  =which==='start'?'startLabel':'endLabel';
+            const inputId  =which==='start'?'startTime':'endTime';
             const triggerId=which==='start'?'startTrigger':'endTrigger';
             $(labelId).textContent=label;
-            $(inputId).value=iso24;
+            document.getElementById(inputId).value=iso24;
             $(triggerId).classList.add('has-value');
             closeAll();
-            // Trigger availability check
             if (window._onTimePicked) window._onTimePicked();
         }
 
@@ -1509,7 +1505,10 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         $('startTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('startDrop','startTrigger');if(activeDrop==='startDrop')renderTime('start');});
         $('endTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('endDrop','endTrigger');if(activeDrop==='endDrop')renderTime('end');});
 
-        (function initDefaultTimes() {
+        // FIX: setTimeout ensures DOM is settled; use document.getElementById directly
+        // to guarantee the hidden inputs are written even with display:none !important.
+        // Fires schedAvailabilityCheck so the banner is ready as soon as resource is picked.
+        setTimeout(function() {
             ['start', 'end'].forEach(function(which) {
                 var st = tState[which];
                 var h24 = st.h;
@@ -1520,24 +1519,23 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
                 var labelId   = which === 'start' ? 'startLabel'   : 'endLabel';
                 var inputId   = which === 'start' ? 'startTime'    : 'endTime';
                 var triggerId = which === 'start' ? 'startTrigger' : 'endTrigger';
-                $(labelId).textContent = label;
-                $(inputId).value       = iso24;
-                $(triggerId).classList.add('has-value');
+                document.getElementById(labelId).textContent   = label;
+                document.getElementById(inputId).value         = iso24;
+                document.getElementById(triggerId).classList.add('has-value');
             });
-        })();
+            if (window.schedAvailabilityCheck) window.schedAvailabilityCheck();
+        }, 0);
 
         (function(){
             const t = new Date();
-            $('dateLabel').textContent = t.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-            $('dateTrigger').classList.add('has-value');
-            selDate = {d:t.getDate(),m:t.getMonth(),y:t.getFullYear()};
+            document.getElementById('dateLabel').textContent = t.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+            document.getElementById('dateTrigger').classList.add('has-value');
+            selDate = {d:t.getDate(), m:t.getMonth(), y:t.getFullYear()};
         })();
     })();
     </script>
 
-    <!-- ══════════════════════════════════════════
-         GUEST LIMIT CHECKER + CONFIRMATION CODE
-    ══════════════════════════════════════════ -->
+    <!-- Guest Limit Checker + Confirmation Code -->
     <script>
     (function () {
         const LIMIT     = 3;
@@ -1601,11 +1599,11 @@ $avatarLetter = strtoupper(mb_substr(trim($sk_name), 0, 1));
         window.generateConfirmCode = function () {
             const code = String(Math.floor(1000 + Math.random() * 9000));
             window._generatedCode = code;
-            document.getElementById('confirmCodeValue').value = code;
+            document.getElementById('confirmCodeValue').value    = code;
             document.getElementById('confirmCodeVerified').value = '0';
-            document.getElementById('codeDigits').textContent = code;
+            document.getElementById('codeDigits').textContent   = code;
             document.getElementById('codeDisplayWrap').style.display = 'flex';
-            document.getElementById('pinInputArea').style.display = 'block';
+            document.getElementById('pinInputArea').style.display    = 'block';
             ['pin0','pin1','pin2','pin3'].forEach(id => {
                 const el = document.getElementById(id);
                 el.value = ''; el.classList.remove('pin-ok','pin-err');
