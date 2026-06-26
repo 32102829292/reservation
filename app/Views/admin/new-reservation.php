@@ -172,8 +172,6 @@
             border-radius: var(--r-md);
             padding: 18px;
         }
-
-        /* FIX #3 & #4: PC button states */
         .pc-btn {
             padding: 9px 12px;
             border-radius: 9px;
@@ -195,8 +193,6 @@
             color: white;
             border-color: var(--indigo);
         }
-
-        /* Maintenance state — visually disabled, not selectable */
         .pc-btn.pc-maintenance {
             background: #fef3c7;
             color: #92400e;
@@ -211,8 +207,6 @@
             top: 3px;
             right: 4px;
         }
-
-        /* Reserved state — already booked for this slot */
         .pc-btn.pc-reserved {
             background: #fef2f2;
             color: #b91c1c;
@@ -227,8 +221,6 @@
             top: 3px;
             right: 4px;
         }
-
-        /* FIX #4: PC selection limit notice */
         .pc-limit-note {
             font-size: .7rem;
             color: var(--indigo);
@@ -575,7 +567,6 @@
         body.dark .cal-foot-btn:hover { color:#818cf8; background:rgba(99,102,241,.1); }
         body.dark .cal-foot-btn.today { color:#818cf8; }
 
-        /* FIX #2: Disabled time items */
         .dt-drop.tim { width:232px; padding:16px 14px 14px; }
         .tim-title { font-size:.65rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; text-align:center; margin-bottom:12px; }
         body:not(.dark) .tim-title { color:#94a3b8; }
@@ -593,8 +584,6 @@
         body.dark .tim-item { color:#8b95b0; }
         body.dark .tim-item:hover:not(.sel):not(.tim-disabled) { background:rgba(255,255,255,.06); color:#e2e8f0; }
         .tim-item.sel { background:var(--indigo)!important; color:#fff!important; font-weight:700; box-shadow:0 2px 8px rgba(99,102,241,.4); }
-
-        /* FIX #2: Past time slot disabled style */
         .tim-item.tim-disabled {
             opacity: .3;
             cursor: not-allowed;
@@ -612,8 +601,6 @@
         body.dark .ampm-btn { border:1px solid rgba(255,255,255,.07); color:#8b95b0; background:rgba(255,255,255,.04); }
         body.dark .ampm-btn:hover:not(.sel) { color:#e2e8f0; border-color:rgba(255,255,255,.14); }
         .ampm-btn.sel { background:var(--indigo)!important; color:#fff!important; border-color:var(--indigo)!important; box-shadow:0 2px 8px rgba(99,102,241,.4); }
-
-        /* FIX #2: Disabled AM/PM button */
         .ampm-btn.ampm-disabled {
             opacity: .3;
             cursor: not-allowed;
@@ -817,11 +804,6 @@
                 <div style="margin-bottom:20px">
                     <label class="field-label" style="margin-bottom:8px;display:block">Visitor Classification</label>
                     <div class="type-toggle">
-                        <!--
-                            FIX #1: ALL buttons inside the form MUST have type="button".
-                            Without it, clicking any button in a form defaults to type="submit"
-                            which causes a full page POST/GET and looks like a "reload".
-                        -->
                         <button type="button" class="type-btn active" id="btnUser" onclick="setType('User')">
                             <i class="fa-solid fa-user" style="font-size:.8rem"></i> Registered User
                         </button>
@@ -916,10 +898,6 @@
                                     </div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
-                                    <!--
-                                        FIX #1: type="button" is critical here.
-                                        Without it this submits the form.
-                                    -->
                                     <button type="button" onclick="generateConfirmCode()" id="genCodeBtn" class="gen-code-btn">
                                         <i class="fa-solid fa-arrows-rotate" style="font-size:.75rem"></i>
                                         Generate Code
@@ -1001,15 +979,6 @@
                         </div>
                     </div>
 
-                    <!--
-                        FIX #3 & #4: PC section rebuilt.
-                        - Maintenance PCs are rendered with class="pc-maintenance" and disabled attribute.
-                        - A legend explains the color coding.
-                        - The PC_MAX_SELECT constant controls the selection limit (set to 1 by default;
-                          adjust to your business rule or remove the limit check in togglePc() if unlimited).
-                        - Already-reserved PCs are fetched via AJAX when date/time changes and
-                          marked with class="pc-reserved" + disabled.
-                    -->
                     <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block">Assign Workstation(s)</label>
 
@@ -1039,12 +1008,6 @@
                                 $pcNum = htmlspecialchars($pc['pc_number']);
                             ?>
                                 <?php if ($isMaintenance): ?>
-                                    <!--
-                                        FIX #3: Maintenance PCs get type="button" (already present),
-                                        class="pc-maintenance", and the disabled attribute.
-                                        The disabled attribute prevents click events AND form submission.
-                                        The class provides the visual warning style.
-                                    -->
                                     <button
                                         type="button"
                                         class="pc-btn pc-maintenance"
@@ -1054,11 +1017,6 @@
                                         title="<?= $pcNum ?> is under maintenance"
                                     ><?= $pcNum ?></button>
                                 <?php else: ?>
-                                    <!--
-                                        FIX #1 & #4: type="button" prevents form submission.
-                                        data-status="available" lets JS know this PC starts available.
-                                        onclick calls togglePc() which enforces the selection limit.
-                                    -->
                                     <button
                                         type="button"
                                         class="pc-btn"
@@ -1175,10 +1133,6 @@
                     </div>
                 </div>
 
-                <!--
-                    FIX #1: type="button" prevents this from submitting the form
-                    when clicked (it's inside a <form> tag).
-                -->
                 <button type="button" onclick="previewReservation()" class="submit-btn">
                     <i class="fa-solid fa-eye" style="font-size:.85rem"></i> Preview & Confirm
                 </button>
@@ -1189,13 +1143,6 @@
     <script>
         const allUsers = <?= json_encode($users ?? []) ?>;
 
-        /*
-         * FIX #4: PC_MAX_SELECT controls how many PCs a single reservation can claim.
-         * Set to 1 to enforce one-PC-per-reservation.
-         * Set to a higher number (e.g. 3) if your business rules allow more.
-         * Set to Infinity to remove the limit entirely while still blocking
-         * maintenance and already-reserved PCs.
-         */
         const PC_MAX_SELECT = 1;
 
         let currentType = 'User', selectedUser = null, selectedPcs = [];
@@ -1261,20 +1208,11 @@
         userNameInput.addEventListener('blur', () => setTimeout(() => autocompleteList.style.display = 'none', 150));
 
         /* ─── PC workstation toggle ─── */
-        /*
-         * FIX #4: togglePc now:
-         *   1. Ignores maintenance PCs (double-safety; they also have disabled attribute).
-         *   2. Ignores already-reserved PCs.
-         *   3. Prevents selecting more than PC_MAX_SELECT PCs.
-         *   4. Prevents double-adding the same PC number.
-         */
         function togglePc(num, btn) {
-            /* Ignore disabled states */
             if (btn.classList.contains('pc-maintenance') || btn.classList.contains('pc-reserved') || btn.disabled) return;
 
             const idx = selectedPcs.indexOf(num);
             if (idx === -1) {
-                /* FIX #4: enforce maximum selection limit */
                 if (selectedPcs.length >= PC_MAX_SELECT) {
                     const noun = PC_MAX_SELECT === 1 ? 'workstation' : 'workstations';
                     alert(`You can only select up to ${PC_MAX_SELECT} ${noun} per reservation.\nDeselect one first.`);
@@ -1295,19 +1233,14 @@
             document.getElementById('pcMaxLabel').textContent = PC_MAX_SELECT === Infinity ? '∞' : PC_MAX_SELECT;
         }
 
-        /*
-         * FIX #4: Called after availability check returns reserved PC numbers.
-         * Marks those PCs as reserved and deselects any that were already chosen.
-         */
         function applyReservedPcs(reservedPcNumbers) {
             document.querySelectorAll('.pc-btn').forEach(btn => {
-                if (btn.classList.contains('pc-maintenance')) return; /* leave maintenance alone */
+                if (btn.classList.contains('pc-maintenance')) return;
                 const num = btn.dataset.pc;
                 if (reservedPcNumbers.includes(num)) {
                     btn.classList.add('pc-reserved');
                     btn.disabled = true;
                     btn.title = `${num} is already reserved for this slot`;
-                    /* deselect if it was selected */
                     const idx = selectedPcs.indexOf(num);
                     if (idx !== -1) {
                         selectedPcs.splice(idx, 1);
@@ -1341,7 +1274,7 @@
 
             trigger.addEventListener('click', e => {
                 e.stopPropagation();
-                e.preventDefault(); /* FIX #1: also prevent any default action */
+                e.preventDefault();
                 if (_csActive === dropId) { closeAllCS(); return; }
                 closeAllCS(); _csActive = dropId;
                 drop.style.display = 'block';
@@ -1351,7 +1284,7 @@
             opts.forEach(opt => {
                 opt.addEventListener('click', e => {
                     e.stopPropagation();
-                    e.preventDefault(); /* FIX #1 */
+                    e.preventDefault();
                     const val  = opt.dataset.value;
                     const text = opt.querySelector('.cs-opt-label')?.textContent.trim() || '';
                     opts.forEach(o => o.classList.remove('cs-selected'));
@@ -1381,7 +1314,6 @@
             document.getElementById('pcSection').style.display = hasPcs ? 'block' : 'none';
             const wifiBanner = document.getElementById('wifiNoticeBanner');
             wifiBanner.style.display = isWifi ? 'flex' : 'none';
-            /* Reset PC selection when resource changes */
             selectedPcs = [];
             updatePcHidden();
             document.querySelectorAll('.pc-btn:not(.pc-maintenance)').forEach(b => {
@@ -1399,6 +1331,7 @@
 
         /* ─── LIVE AVAILABILITY CHECKER ─── */
         window._avHasConflict = false;
+        window._avChecking    = false;   // ← FIX: tracks in-flight check
         let _avTimer = null;
 
         function schedAvailabilityCheck() {
@@ -1406,6 +1339,7 @@
             _avTimer = setTimeout(runAvailabilityCheck, 450);
         }
 
+        // ── FIX: runAvailabilityCheck fully replaced ──────────────────────────
         function runAvailabilityCheck() {
             const resourceId = getSelectedResourceVal();
             const date       = document.getElementById('resDate').value;
@@ -1419,8 +1353,14 @@
                 status.style.display = 'none';
                 slots.style.display  = 'none';
                 window._avHasConflict = false;
+                window._avChecking    = false;
+                // Always clear reserved PC state when resource/date is deselected
+                applyReservedPcs([]);
                 return;
             }
+
+            window._avChecking    = true;    // mark as in-flight
+            window._avHasConflict = false;
 
             setAvStatus('checking',
                 '<i class="fa-solid fa-circle-notch spin-icon" style="font-size:.75rem"></i>',
@@ -1441,15 +1381,15 @@
             })
             .then(r => r.json())
             .then(data => {
+                window._avChecking = false;   // done
+
                 const booked = data.booked_slots || [];
 
-                /*
-                 * FIX #4: If the API returns reserved PC numbers for the selected slot,
-                 * apply them to the PC grid so those buttons are disabled.
-                 */
-                if (data.reserved_pcs && Array.isArray(data.reserved_pcs)) {
-                    applyReservedPcs(data.reserved_pcs);
-                }
+                // Always apply reserved PCs — clear any that are no longer reserved
+                // Works even when the backend doesn't return the field (treats as empty)
+                applyReservedPcs(
+                    Array.isArray(data.reserved_pcs) ? data.reserved_pcs.map(String) : []
+                );
 
                 if (data.has_conflict) {
                     window._avHasConflict = true;
@@ -1486,6 +1426,7 @@
                 }
             })
             .catch(() => {
+                window._avChecking    = false;
                 window._avHasConflict = false;
                 setAvStatus('info',
                     '<i class="fa-solid fa-wifi" style="font-size:.78rem;color:#92400e"></i>',
@@ -1547,9 +1488,23 @@
         /* Hook pickers to re-run availability check */
         window._onDatePicked = schedAvailabilityCheck;
         window._onTimePicked = schedAvailabilityCheck;
+        window._avChecking   = false;   // initialise flag (also set above, belt-and-suspenders)
 
         /* ─── Preview / confirm ─── */
+        // ── FIX: previewReservation fully replaced ────────────────────────────
         function previewReservation() {
+            // Guard 1: block if availability check is still in flight
+            if (window._avChecking) {
+                alert('⏳ Still checking availability — please wait a moment and try again.');
+                return;
+            }
+
+            // Guard 2: block if a conflict was detected
+            if (window._avHasConflict) {
+                alert('⛔ This time slot has a confirmed booking conflict. Please choose a different time or date.');
+                return;
+            }
+
             if (currentType === 'Visitor' && window._guestIsRegistered) {
                 alert('⛔ This person is a registered resident. Please use the Registered User toggle and select them from the dropdown.');
                 return;
@@ -1557,10 +1512,6 @@
             if (currentType === 'Visitor' && window._guestBlocked && !getSelectedResourceIsWifi()) {
                 const name = document.getElementById('visitorNameInput')?.value?.trim() || 'This guest';
                 alert(`⛔ ${name} has reached the 3-reservation limit within the last 3 days and cannot make a new reservation.`);
-                return;
-            }
-            if (window._avHasConflict) {
-                alert('⛔ This time slot has a confirmed booking conflict. Please choose a different time or date.');
                 return;
             }
             if (currentType === 'Visitor') {
@@ -1604,6 +1555,11 @@
             document.getElementById('nativeResource').innerHTML = `<option value="${resourceId}" selected></option>`;
             document.getElementById('nativePurpose').innerHTML  = `<option value="${purposeVal}" selected></option>`;
 
+            // FIX: reflect real conflict status in modal — not hardcoded text
+            const avLabel = window._avHasConflict
+                ? '⛔ Conflict detected'
+                : '✓ No conflict detected';
+
             const rows = [
                 ['Type',         isUser ? 'Registered User' : 'Walk-in Visitor'],
                 ['Name',         name || '—'],
@@ -1613,7 +1569,7 @@
                 ['Date',         document.getElementById('dateLabel').textContent],
                 ['Time',         `${document.getElementById('startLabel').textContent} – ${document.getElementById('endLabel').textContent}`],
                 ['Purpose',      purposeFinal || '—'],
-                ['Availability', '✓ No conflict detected'],
+                ['Availability', avLabel],
             ];
             if (!isUser) rows.splice(2, 0, ['Identity', 'Confirmed ✓']);
             if (getSelectedResourceIsWifi()) rows.push(['Quota Check', '⚡ Skipped — WiFi resource']);
@@ -1667,25 +1623,13 @@
     (function() {
         'use strict';
 
-        /*
-         * FIX #2: SERVER_NOW is injected from PHP so all time comparisons
-         * use server time, not the visitor's browser clock.
-         *
-         * Add this to your PHP controller/view before this script:
-         *   $data['server_now'] = date('Y-m-d H:i');
-         * Then echo it as a JS variable:
-         *   <script>window.SERVER_NOW = "<?= date('Y-m-d H:i') ?>";<\/script>
-         *
-         * Here we parse it. If SERVER_NOW is not set we fall back to browser
-         * time only as a last resort — but always prefer server time.
-         */
         const _serverNowStr = (typeof window.SERVER_NOW === 'string' && window.SERVER_NOW)
             ? window.SERVER_NOW
             : new Date().toISOString().slice(0, 16);
 
         const SERVER_NOW  = new Date(_serverNowStr);
-        const TODAY_STR   = _serverNowStr.slice(0, 10);   /* "YYYY-MM-DD" */
-        const NOW_H24     = SERVER_NOW.getHours();         /* 0-23 in server time */
+        const TODAY_STR   = _serverNowStr.slice(0, 10);
+        const NOW_H24     = SERVER_NOW.getHours();
         const NOW_MIN     = SERVER_NOW.getMinutes();
 
         const TODAY = new Date();
@@ -1755,12 +1699,7 @@
             $('dateTrigger').classList.add('has-value');
             renderCal();
 
-            /*
-             * FIX #2: After picking a date, force the time pickers to re-render
-             * so they show/hide past slots based on whether today is selected.
-             */
             window._selectedDateStr = iso;
-            /* If start/end dropdowns are open, re-render them */
             if ($('startDrop').style.display === 'block') renderTime('start');
             if ($('endDrop').style.display   === 'block') renderTime('end');
 
@@ -1770,23 +1709,14 @@
         function clearDate(){ selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');window._selectedDateStr='';renderCal(); }
         function gotoToday(){ calView={y:TODAY.getFullYear(),m:TODAY.getMonth()};pickDay(TODAY.getDate()); }
 
-        /*
-         * FIX #2: isPastTime returns true when the given hour/minute/ampm
-         * combination represents a time that has already passed on today's date.
-         * When the selected date is in the future this always returns false.
-         */
         function isPastTime(h, min, ampm) {
             const dateStr = window._selectedDateStr || $('resDate').value || TODAY_STR;
-            if (dateStr !== TODAY_STR) return false; /* future date — nothing is past */
+            if (dateStr !== TODAY_STR) return false;
 
-            /* Convert picker 12h time to 24h */
             let h24 = h;
             if (ampm === 'am' && h === 12) h24 = 0;
             if (ampm === 'pm' && h !== 12) h24 = h + 12;
 
-            /* A slot is "past" if it started before now (using ≤ so the current
-               minute is also unavailable — prevents picking a slot that's already
-               underway). */
             return h24 < NOW_H24 || (h24 === NOW_H24 && min <= NOW_MIN);
         }
 
@@ -1794,15 +1724,12 @@
             const dropId=which==='start'?'startDrop':'endDrop';
             const st=tState[which];
 
-            /* FIX #2: Determine which AM/PM periods are fully in the past for today. */
             const isToday = (window._selectedDateStr || $('resDate').value || TODAY_STR) === TODAY_STR;
-            /* AM is disabled only if every AM hour has passed (i.e. it's PM now) */
             const amAllPast  = isToday && NOW_H24 >= 12;
-            /* PM is never fully past until midnight */
             const pmAllPast  = false;
 
             const hItems = Array.from({length:12},(_,i)=>i+1).map(h => {
-                const past = isPastTime(h, 0, st.ampm);   /* check on the :00 mark */
+                const past = isPastTime(h, 0, st.ampm);
                 const cls  = [
                     'tim-item',
                     st.h === h ? 'sel' : '',
@@ -1845,9 +1772,8 @@
                 if(sM)sM.scrollIntoView({block:'center',behavior:'instant'});
             },0);
 
-            /* Hour click — only non-disabled items respond */
             $(dropId).querySelectorAll('.tim-item').forEach(el => {
-                if (el.dataset.past === 'true') return; /* FIX #2: skip past slots */
+                if (el.dataset.past === 'true') return;
                 el.addEventListener('click', e => {
                     e.stopPropagation();
                     tState[which][el.dataset.part] = +el.dataset.val;
@@ -1855,7 +1781,6 @@
                 });
             });
 
-            /* AM/PM click — only non-disabled */
             $(dropId).querySelectorAll('.ampm-btn:not(.ampm-disabled)').forEach(el => {
                 el.addEventListener('click', e => {
                     e.stopPropagation();
@@ -1864,8 +1789,6 @@
                 });
             });
 
-            /* FIX #1: type="button" on tim-set-btn is set in the template above.
-               Also add explicit preventDefault here for belt-and-suspenders. */
             $(`_timSet_${which}`).addEventListener('click', e => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -1876,11 +1799,6 @@
         function applyTime(which){
             const st=tState[which];
 
-            /*
-             * FIX #2: Prevent setting a past time for today.
-             * The user should not be able to click "Set Time" if the chosen
-             * slot is in the past.
-             */
             if (isPastTime(st.h, st.min, st.ampm)) {
                 alert('⚠️ The selected time has already passed. Please choose a future time.');
                 return;
@@ -1903,19 +1821,19 @@
 
         $('dateTrigger').addEventListener('click',e=>{
             e.stopPropagation();
-            e.preventDefault(); /* FIX #1 */
+            e.preventDefault();
             toggle('calDrop','dateTrigger');
             if(activeDrop==='calDrop')renderCal();
         });
         $('startTrigger').addEventListener('click',e=>{
             e.stopPropagation();
-            e.preventDefault(); /* FIX #1 */
+            e.preventDefault();
             toggle('startDrop','startTrigger');
             if(activeDrop==='startDrop')renderTime('start');
         });
         $('endTrigger').addEventListener('click',e=>{
             e.stopPropagation();
-            e.preventDefault(); /* FIX #1 */
+            e.preventDefault();
             toggle('endDrop','endTrigger');
             if(activeDrop==='endDrop')renderTime('end');
         });
@@ -1925,16 +1843,10 @@
             ['start', 'end'].forEach(function(which) {
                 var st = tState[which];
 
-                /*
-                 * FIX #2: If the default time is in the past (e.g. page loads at 10 PM
-                 * and default start is 9 AM), advance to a safe default instead of
-                 * silently showing a past time.
-                 */
                 if (isPastTime(st.h, st.min, st.ampm)) {
-                    /* Round up to the next 30-minute boundary from now */
                     var nextMin  = NOW_MIN < 30 ? 30 : 0;
                     var nextH24  = NOW_MIN < 30 ? NOW_H24 : NOW_H24 + 1;
-                    if (nextH24 >= 24) nextH24 = 23; /* clamp to end of day */
+                    if (nextH24 >= 24) nextH24 = 23;
                     st.ampm = nextH24 >= 12 ? 'pm' : 'am';
                     st.h    = nextH24 % 12 || 12;
                     st.min  = nextMin;
@@ -1967,19 +1879,6 @@
     })();
     </script>
 
-    <!--
-        FIX #2: Inject server time as a JS global BEFORE the picker script.
-        Place this directly above the "Custom Date / Time Picker" <script> block
-        in your layout or controller view, or echo it from PHP here.
-
-        In your CodeIgniter controller, pass:
-            $data['server_now'] = date('Y-m-d H:i');
-
-        Then in the view (right above the picker script block):
-            <script>window.SERVER_NOW = "<?= date('Y-m-d H:i') ?>";</script>
-
-        We include it inline here as a fallback using PHP short-echo:
-    -->
     <script>window.SERVER_NOW = "<?= date('Y-m-d H:i') ?>";</script>
 
     <!-- Guest Limit Checker + Registered Warning + Confirmation Code -->
