@@ -2,9 +2,13 @@
 $page      = 'manage-sk';
 $adminName = $admin_name ?? session()->get('name') ?? 'Administrator';
 
-$pCount = count($pending  ?? []);
-$aCount = count($approved ?? []);
-$rCount = count($rejected ?? []);
+$pendingList  = is_array($pending ?? null)  ? ($pending  ?? []) : [];
+$approvedList = is_array($approved ?? null) ? ($approved ?? []) : [];
+$rejectedList = is_array($rejected ?? null) ? ($rejected ?? []) : [];
+
+$pCount = is_countable($pendingList)  ? count($pendingList)  : 0;
+$aCount = is_countable($approvedList) ? count($approvedList) : 0;
+$rCount = is_countable($rejectedList) ? count($rejectedList) : 0;
 $total  = $pCount + $aCount + $rCount;
 
 $avatarStyles = [
@@ -16,9 +20,9 @@ $avatarStyles = [
 ];
 
 $allMerged = array_merge(
-    array_map(fn($s) => array_merge($s, ['_status' => 'pending']),  $pending  ?? []),
-    array_map(fn($s) => array_merge($s, ['_status' => 'approved']), $approved ?? []),
-    array_map(fn($s) => array_merge($s, ['_status' => 'rejected']), $rejected ?? [])
+    array_map(fn($s) => array_merge($s, ['_status' => 'pending']),  $pendingList  ?? []),
+    array_map(fn($s) => array_merge($s, ['_status' => 'approved']), $approvedList ?? []),
+    array_map(fn($s) => array_merge($s, ['_status' => 'rejected']), $rejectedList ?? [])
 );
 
 $sIcon          = ['pending' => 'fa-clock', 'approved' => 'fa-check', 'rejected' => 'fa-xmark'];
@@ -527,7 +531,7 @@ $pendingSkCount = $pCount;
             <table>
                 <thead>
                     <tr>
-                        <th style="width:48px">ID</th>
+                        <th style="width:48px">#</th>
                         <th>Account</th>
                         <th>Email</th>
                         <th>Applied</th>
@@ -556,8 +560,10 @@ $pendingSkCount = $pCount;
                             $ver   = !empty($sk['is_verified']) ? 'Yes' : 'No';
                             $avatarStyle = $avatarStyles[$idx % count($avatarStyles)];
                             $init  = strtoupper(substr($name, 0, 1));
+                            $rowNum = $idx + 1; // FIX: sequential display number instead of raw database id
                             $mdata = json_encode([
                                 'id'          => $sk['id'],
+                                'rowNum'      => $rowNum,
                                 'status'      => $s,
                                 'name'        => $name,
                                 'email'       => $email,
@@ -572,7 +578,7 @@ $pendingSkCount = $pCount;
                             data-status="<?= $s ?>"
                             data-search="<?= htmlspecialchars(strtolower("$name $email")) ?>">
                             <td>
-                                <span style="font-size:11px;font-weight:800;color:var(--text-sub);font-family:monospace">#<?= $sk['id'] ?></span>
+                                <span style="font-size:11px;font-weight:800;color:var(--text-sub);font-family:monospace">#<?= $rowNum ?></span>
                             </td>
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px">
@@ -658,8 +664,10 @@ $pendingSkCount = $pCount;
                     $ver   = !empty($sk['is_verified']) ? 'Yes' : 'No';
                     $avatarStyle = $avatarStyles[$idx % count($avatarStyles)];
                     $init  = strtoupper(substr($name, 0, 1));
+                    $rowNum = $idx + 1; // FIX: sequential display number instead of raw database id
                     $mdata = json_encode([
                         'id'          => $sk['id'],
+                        'rowNum'      => $rowNum,
                         'status'      => $s,
                         'name'        => $name,
                         'email'       => $email,
@@ -705,7 +713,7 @@ $pendingSkCount = $pCount;
                                 <i class="fa-solid fa-xmark" style="font-size:10px"></i> Reject
                             </button>
                         <?php else: ?>
-                            <p style="font-size:10px;font-weight:800;color:var(--border);font-family:monospace;flex:1">#<?= $sk['id'] ?></p>
+                            <p style="font-size:10px;font-weight:800;color:var(--border);font-family:monospace;flex:1">#<?= $rowNum ?></p>
                         <?php endif; ?>
                         <button onclick="triggerDelete(<?= $sk['id'] ?>,'<?= addslashes($name) ?>')"
                             style="height:36px;padding:0 14px;border-radius:10px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s">
