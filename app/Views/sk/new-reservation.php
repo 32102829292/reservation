@@ -12,187 +12,77 @@
     <?php include(APPPATH . 'Views/partials/head_meta.php'); ?>
 
     <style>
-        /* ══════════════════════════════
-           BASE LAYOUT
-        ══════════════════════════════ */
         .main-area { padding: 24px 20px; }
         @media(max-width:639px) { .main-area { padding: 16px 14px; } }
 
-        /* ══════════════════════════════
-           PAGE HEADER
-        ══════════════════════════════ */
         .page-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            gap: 16px;
-            flex-wrap: wrap;
+            display: flex; align-items: flex-start; justify-content: space-between;
+            margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
         }
-        .page-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 4px;
-            flex-shrink: 0;
-        }
-        .greeting-name {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: -.04em;
-            line-height: 1.1;
-        }
-        .eyebrow {
-            font-size: .7rem;
-            font-weight: 700;
-            letter-spacing: .2em;
-            text-transform: uppercase;
-            color: #94a3b8;
-            margin-bottom: 4px;
-        }
-        @media(max-width:480px) {
-            .greeting-name { font-size: 1.35rem; }
-            .page-header-actions { width: 100%; justify-content: flex-end; }
-        }
+        .page-header-actions { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-shrink: 0; }
+        .greeting-name { font-size: 1.6rem; font-weight: 800; color: #0f172a; letter-spacing: -.04em; line-height: 1.1; }
+        .eyebrow { font-size: .7rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
+        @media(max-width:480px) { .greeting-name { font-size: 1.35rem; } .page-header-actions { width: 100%; justify-content: flex-end; } }
 
-        /* ══════════════════════════════
-           FORM CARD
-        ══════════════════════════════ */
         .form-card {
-            background: var(--card);
-            border-radius: var(--r-lg);
-            border: 1px solid rgba(99, 102, 241, .08);
-            box-shadow: var(--shadow-sm);
-            padding: 28px 32px;
-            max-width: 780px;
-            margin: 0 auto;
+            background: var(--card); border-radius: var(--r-lg);
+            border: 1px solid rgba(99, 102, 241, .08); box-shadow: var(--shadow-sm);
+            padding: 28px 32px; max-width: 780px; margin: 0 auto;
         }
         @media(max-width:639px) { .form-card { padding: 18px 16px; } }
 
-        /* ══════════════════════════════
-           SECTION COMPONENTS
-        ══════════════════════════════ */
-        .section-head {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 18px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid rgba(99, 102, 241, .07);
-        }
-        .section-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--indigo-light);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
+        .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid rgba(99, 102, 241, .07); }
+        .section-icon { width: 36px; height: 36px; background: var(--indigo-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .section-title { font-size: .9rem; font-weight: 700; color: #0f172a; }
         .divider { border: none; border-top: 1px solid rgba(99, 102, 241, .07); margin: 20px 0; }
 
-        /* ══════════════════════════════
-           FIELD GRIDS
-        ══════════════════════════════ */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-        @media(max-width:639px) {
-            .grid-2 { grid-template-columns: 1fr; gap: 12px; }
-            .grid-3 { grid-template-columns: 1fr; gap: 12px; }
-        }
-        @media(min-width:400px) and (max-width:639px) {
-            .grid-3 { grid-template-columns: 1fr 1fr; }
-        }
+        @media(max-width:639px) { .grid-2 { grid-template-columns: 1fr; gap: 12px; } .grid-3 { grid-template-columns: 1fr; gap: 12px; } }
+        @media(min-width:400px) and (max-width:639px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
 
-        /* ══════════════════════════════
-           TYPE TOGGLE
-        ══════════════════════════════ */
-        .type-toggle {
-            display: flex;
-            background: #f1f5f9;
-            padding: 5px;
-            border-radius: var(--r-md);
-            gap: 4px;
-        }
+        .type-toggle { display: flex; background: #f1f5f9; padding: 5px; border-radius: var(--r-md); gap: 4px; }
         .type-btn {
-            flex: 1;
-            padding: 10px 14px;
-            border-radius: var(--r-sm);
-            cursor: pointer;
-            font-weight: 700;
-            font-size: .82rem;
-            transition: all var(--ease);
-            color: #64748b;
-            border: none;
-            background: transparent;
-            font-family: var(--font);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            flex: 1; padding: 10px 14px; border-radius: var(--r-sm); cursor: pointer;
+            font-weight: 700; font-size: .82rem; transition: all var(--ease); color: #64748b;
+            border: none; background: transparent; font-family: var(--font);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .type-btn.active { background: var(--indigo); color: white; box-shadow: 0 4px 12px rgba(55,48,163,.25); }
 
-        /* ══════════════════════════════
-           AUTOCOMPLETE
-        ══════════════════════════════ */
         .autocomplete-wrap { position: relative; }
         .autocomplete-list {
-            position: absolute;
-            z-index: 50;
-            background: white;
-            border: 1px solid rgba(99, 102, 241, .15);
-            border-radius: var(--r-md);
-            box-shadow: var(--shadow-lg);
-            max-height: 220px;
-            overflow-y: auto;
-            width: 100%;
-            top: calc(100% + 4px);
-            left: 0;
+            position: absolute; z-index: 50; background: white;
+            border: 1px solid rgba(99, 102, 241, .15); border-radius: var(--r-md);
+            box-shadow: var(--shadow-lg); max-height: 220px; overflow-y: auto;
+            width: 100%; top: calc(100% + 4px); left: 0;
         }
         .autocomplete-item { padding: 12px 16px; cursor: pointer; font-size: .87rem; transition: background .15s; font-weight: 500; }
         .autocomplete-item:hover { background: var(--indigo-light); color: var(--indigo); }
         .autocomplete-item .sub { font-size: .72rem; color: #94a3b8; margin-top: 2px; }
 
-        /* ══════════════════════════════
-           PC SECTION
-        ══════════════════════════════ */
-        .pc-section {
-            background: var(--indigo-light);
-            border: 1px solid var(--indigo-border);
-            border-radius: var(--r-md);
-            padding: 18px;
-        }
+        /* PC SECTION — matches admin */
+        .pc-section { background: var(--indigo-light); border: 1px solid var(--indigo-border); border-radius: var(--r-md); padding: 18px; }
         .pc-btn {
-            padding: 9px 12px;
-            border-radius: 9px;
-            font-size: .75rem;
-            font-weight: 700;
-            border: 1px solid var(--indigo-border);
-            background: white;
-            color: #475569;
-            cursor: pointer;
-            transition: all var(--ease);
+            padding: 9px 12px; border-radius: 9px; font-size: .75rem; font-weight: 700;
+            border: 1px solid var(--indigo-border); background: white; color: #475569;
+            cursor: pointer; transition: all var(--ease); position: relative;
         }
-        .pc-btn:hover { border-color: var(--indigo); color: var(--indigo); }
+        .pc-btn:hover:not(:disabled):not(.pc-maintenance):not(.pc-reserved) { border-color: var(--indigo); color: var(--indigo); }
         .pc-btn.selected { background: var(--indigo); color: white; border-color: var(--indigo); }
+        .pc-btn.pc-maintenance { background: #fef3c7; color: #92400e; border-color: #fde68a; cursor: not-allowed; opacity: .7; }
+        .pc-btn.pc-maintenance::after { content: '🔧'; font-size: .6rem; position: absolute; top: 3px; right: 4px; }
+        .pc-btn.pc-reserved { background: #fef2f2; color: #b91c1c; border-color: #fecaca; cursor: not-allowed; opacity: .7; }
+        .pc-btn.pc-reserved::after { content: '✖'; font-size: .6rem; position: absolute; top: 3px; right: 4px; }
 
-        /* ══════════════════════════════
-           AVAILABILITY STATUS
-        ══════════════════════════════ */
+        .pc-limit-note { font-size: .7rem; color: var(--indigo); font-weight: 600; margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+        .pc-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; margin-bottom: 6px; }
+        .pc-legend-item { display: flex; align-items: center; gap: 5px; font-size: .68rem; font-weight: 600; color: #64748b; }
+        .pc-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
         #availabilityStatus {
-            display: none;
-            margin-top: 10px;
-            padding: 11px 14px;
-            border-radius: 10px;
-            font-size: .82rem;
-            font-weight: 600;
-            align-items: center;
-            gap: 10px;
-            transition: all .2s;
+            display: none; margin-top: 10px; padding: 11px 14px; border-radius: 10px;
+            font-size: .82rem; font-weight: 600; align-items: center; gap: 10px; transition: all .2s;
         }
         #availabilityStatus.av-checking { display:flex; background:#f0f9ff; border:1px solid #bae6fd; color:#0369a1; }
         #availabilityStatus.av-ok       { display:flex; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; }
@@ -204,217 +94,66 @@
         .av-conflict .av-icon { background:#fee2e2; }
         .av-info     .av-icon { background:#fef9c3; }
 
-        /* Booked slots table */
-        #bookedSlotsWrap {
-            display: none;
-            margin-top: 10px;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(99,102,241,.1);
-        }
-        .bs-header {
-            display: flex; align-items: center; gap: 8px;
-            padding: 9px 13px; background: #f8fafc;
-            border-bottom: 1px solid rgba(99,102,241,.08);
-            font-size: .7rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: .1em; color: #94a3b8;
-        }
-        .bs-row {
-            display: flex; align-items: center;
-            padding: 9px 13px;
-            border-bottom: 1px solid rgba(99,102,241,.05);
-            font-size: .8rem; background: white;
-        }
+        #bookedSlotsWrap { display: none; margin-top: 10px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(99,102,241,.1); }
+        .bs-header { display: flex; align-items: center; gap: 8px; padding: 9px 13px; background: #f8fafc; border-bottom: 1px solid rgba(99,102,241,.08); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #94a3b8; }
+        .bs-row { display: flex; align-items: center; padding: 9px 13px; border-bottom: 1px solid rgba(99,102,241,.05); font-size: .8rem; background: white; }
         .bs-row:last-child { border-bottom: none; }
+        .bs-row:hover { background: #f8fafc; }
         .bs-col { flex: 1; }
         .bs-status-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:.68rem; font-weight:700; }
         .bs-pill-approved { background:#dcfce7; color:#15803d; }
         .bs-pill-pending  { background:#fef3c7; color:#92400e; }
         .bs-conflict-row  { background:#fef2f2 !important; }
 
-        /* ══════════════════════════════
-           SUBMIT BUTTON
-        ══════════════════════════════ */
         .submit-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            padding: 14px;
-            background: var(--indigo);
-            color: white;
-            border-radius: var(--r-sm);
-            font-size: .9rem;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            font-family: var(--font);
-            transition: all var(--ease);
-            box-shadow: 0 4px 12px rgba(55,48,163,.28);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 14px; background: var(--indigo); color: white;
+            border-radius: var(--r-sm); font-size: .9rem; font-weight: 700;
+            border: none; cursor: pointer; font-family: var(--font);
+            transition: all var(--ease); box-shadow: 0 4px 12px rgba(55,48,163,.28);
         }
         .submit-btn:hover { background: #312e81; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(55,48,163,.35); }
 
-        /* ══════════════════════════════
-           FLASH MESSAGES
-        ══════════════════════════════ */
-        .flash-ok {
-            display: flex; align-items: center; gap: 12px;
-            margin-bottom: 16px; padding: 13px 18px;
-            background: var(--indigo-light); border: 1px solid var(--indigo-border);
-            color: var(--indigo); font-weight: 600; border-radius: var(--r-md); font-size: .875rem;
-        }
-        .flash-err {
-            display: flex; align-items: center; gap: 12px;
-            margin-bottom: 16px; padding: 13px 18px;
-            background: #fef2f2; border: 1px solid #fecaca;
-            color: #dc2626; font-weight: 600; border-radius: var(--r-md); font-size: .875rem;
-        }
+        .flash-ok { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 13px 18px; background: var(--indigo-light); border: 1px solid var(--indigo-border); color: var(--indigo); font-weight: 600; border-radius: var(--r-md); font-size: .875rem; }
+        .flash-err { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 13px 18px; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; font-weight: 600; border-radius: var(--r-md); font-size: .875rem; }
 
-        /* ══════════════════════════════
-           HEADER BUTTONS
-        ══════════════════════════════ */
-        .icon-btn {
-            width: 44px; height: 44px;
-            background: white; border: 1px solid rgba(99,102,241,.12);
-            border-radius: var(--r-sm); display: flex; align-items: center;
-            justify-content: center; color: #64748b; cursor: pointer;
-            transition: all var(--ease); box-shadow: var(--shadow-sm);
-            flex-shrink: 0;
-        }
+        .icon-btn { width: 44px; height: 44px; background: white; border: 1px solid rgba(99,102,241,.12); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: all var(--ease); box-shadow: var(--shadow-sm); flex-shrink: 0; }
         .icon-btn:hover { background: var(--indigo-light); border-color: var(--indigo-border); color: var(--indigo); }
-        .back-btn {
-            display: flex; align-items: center; gap: 7px;
-            padding: 10px 16px; background: white;
-            border: 1px solid rgba(99,102,241,.15); border-radius: var(--r-sm);
-            font-size: .82rem; font-weight: 700; color: #475569;
-            text-decoration: none; transition: all var(--ease); box-shadow: var(--shadow-sm);
-            white-space: nowrap;
-        }
+        .back-btn { display: flex; align-items: center; gap: 7px; padding: 10px 16px; background: white; border: 1px solid rgba(99,102,241,.15); border-radius: var(--r-sm); font-size: .82rem; font-weight: 700; color: #475569; text-decoration: none; transition: all var(--ease); box-shadow: var(--shadow-sm); white-space: nowrap; }
         .back-btn:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-light); }
 
-        /* ══════════════════════════════
-           REGISTERED-USER WARNING BOX
-        ══════════════════════════════ */
-        .reg-warn-box {
-            display: none;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 13px 16px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            background: #fff7ed;
-            border: 1px solid #fdba74;
-            color: #9a3412;
-            font-size: .82rem;
-            font-weight: 600;
-        }
-        body.dark .reg-warn-box {
-            background: rgba(234,88,12,.1);
-            border-color: rgba(251,146,60,.3);
-            color: #fb923c;
-        }
+        .reg-warn-box { display: none; align-items: flex-start; gap: 12px; padding: 13px 16px; border-radius: 10px; margin-bottom: 12px; background: #fff7ed; border: 1px solid #fdba74; color: #9a3412; font-size: .82rem; font-weight: 600; }
+        body.dark .reg-warn-box { background: rgba(234,88,12,.1); border-color: rgba(251,146,60,.3); color: #fb923c; }
 
-        /* ══════════════════════════════
-           CONFIRM MODAL
-        ══════════════════════════════ */
-        .modal-back {
-            display: none; position: fixed; inset: 0;
-            background: rgba(15,23,42,.52); backdrop-filter: blur(6px);
-            z-index: 300; padding: 1.5rem; overflow-y: auto;
-            align-items: center; justify-content: center;
-        }
+        .modal-back { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.52); backdrop-filter: blur(6px); z-index: 300; padding: 1.5rem; overflow-y: auto; align-items: center; justify-content: center; }
         .modal-back.show { display: flex; animation: fadeIn .15s ease; }
-        .modal-card {
-            background: white; border-radius: var(--r-xl);
-            width: 100%; max-width: 480px; padding: 24px;
-            max-height: calc(100dvh - 3rem); overflow-y: auto;
-            margin: auto; animation: slideUp .2s ease; box-shadow: var(--shadow-lg);
-        }
+        .modal-card { background: white; border-radius: var(--r-xl); width: 100%; max-width: 480px; padding: 24px; max-height: calc(100dvh - 3rem); overflow-y: auto; margin: auto; animation: slideUp .2s ease; box-shadow: var(--shadow-lg); }
         .sheet-handle { display: none; width: 36px; height: 4px; background: #e2e8f0; border-radius: 999px; margin: 0 auto 16px; }
         @media(max-width:639px) {
             .modal-back { padding: 0; align-items: flex-end !important; }
-            .modal-card {
-                border-radius: var(--r-xl) var(--r-xl) 0 0;
-                max-width: 100%; max-height: 92dvh;
-                animation: sheetUp .25s cubic-bezier(.34,1.2,.64,1) both;
-                padding: 20px 16px 32px;
-            }
+            .modal-card { border-radius: var(--r-xl) var(--r-xl) 0 0; max-width: 100%; max-height: 92dvh; animation: sheetUp .25s cubic-bezier(.34,1.2,.64,1) both; padding: 20px 16px 32px; }
             .sheet-handle { display: block; }
         }
         .mrow { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid rgba(99,102,241,.06); gap: 12px; }
         .mrow:last-child { border-bottom: none; }
         .mrow-label { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #94a3b8; flex-shrink: 0; padding-top: 1px; }
         .mrow-value { font-weight: 600; color: #0f172a; font-size: .83rem; text-align: right; word-break: break-word; }
-        .qr-section {
-            background: var(--indigo-light); border: 1.5px dashed var(--indigo-border);
-            border-radius: var(--r-md); padding: 20px;
-            display: flex; flex-direction: column; align-items: center; gap: 12px;
-        }
+        .qr-section { background: var(--indigo-light); border: 1.5px dashed var(--indigo-border); border-radius: var(--r-md); padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 
-        /* ══════════════════════════════
-           CONFIRMATION CODE WIDGET
-        ══════════════════════════════ */
-        .confirm-code-box {
-            background: rgba(99,102,241,.06);
-            border: 1px solid rgba(99,102,241,.22);
-            border-radius: 14px;
-            padding: 18px 20px;
-            margin-top: 4px;
-        }
+        .confirm-code-box { background: rgba(99,102,241,.06); border: 1px solid rgba(99,102,241,.22); border-radius: 14px; padding: 18px 20px; margin-top: 4px; }
         .confirm-code-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-        .confirm-code-icon {
-            width: 34px; height: 34px;
-            background: var(--indigo-light);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        .gen-code-btn {
-            display: inline-flex; align-items: center; gap: 7px;
-            padding: 9px 18px;
-            background: var(--indigo); color: white;
-            border-radius: 9px; font-size: .78rem; font-weight: 700;
-            border: none; cursor: pointer; font-family: var(--font);
-            transition: background .15s;
-        }
+        .confirm-code-icon { width: 34px; height: 34px; background: var(--indigo-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .gen-code-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; background: var(--indigo); color: white; border-radius: 9px; font-size: .78rem; font-weight: 700; border: none; cursor: pointer; font-family: var(--font); transition: background .15s; }
         .gen-code-btn:hover { background: #4338ca; }
-        .code-display-pill {
-            display: inline-flex; align-items: center; gap: 10px;
-            background: white;
-            border: 2px solid var(--indigo);
-            border-radius: 12px;
-            padding: 8px 20px;
-            margin-left: 10px;
-        }
-        .code-digits {
-            font-family: var(--mono);
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--indigo);
-            letter-spacing: .22em;
-        }
+        .code-display-pill { display: inline-flex; align-items: center; gap: 10px; background: white; border: 2px solid var(--indigo); border-radius: 12px; padding: 8px 20px; margin-left: 10px; }
+        .code-digits { font-family: var(--mono); font-size: 1.6rem; font-weight: 800; color: var(--indigo); letter-spacing: .22em; }
         .pin-row { display: flex; gap: 10px; margin-top: 12px; margin-bottom: 8px; }
-        .pin-box {
-            width: 52px; height: 56px;
-            text-align: center;
-            font-size: 1.3rem; font-weight: 800;
-            font-family: var(--mono);
-            border: 2px solid rgba(99,102,241,.25);
-            border-radius: 12px;
-            background: white; color: #0f172a;
-            outline: none;
-            transition: border-color .15s, box-shadow .15s;
-            caret-color: var(--indigo);
-        }
+        .pin-box { width: 52px; height: 56px; text-align: center; font-size: 1.3rem; font-weight: 800; font-family: var(--mono); border: 2px solid rgba(99,102,241,.25); border-radius: 12px; background: white; color: #0f172a; outline: none; transition: border-color .15s, box-shadow .15s; caret-color: var(--indigo); }
         .pin-box:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
         .pin-box.pin-ok  { border-color: #16a34a; background: #f0fdf4; }
         .pin-box.pin-err { border-color: #dc2626; background: #fef2f2; }
         .pin-feedback { font-size: .78rem; font-weight: 700; min-height: 20px; margin-top: 2px; }
 
-        /* ══════════════════════════════
-           ANIMATIONS
-        ══════════════════════════════ */
         @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
         @keyframes sheetUp { from { opacity:0; transform:translateY(60px); } to { opacity:1; transform:none; } }
         @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
@@ -425,52 +164,35 @@
         .shake     { animation: shake .35s ease; }
         .spin-icon { animation: spin 1s linear infinite; display: inline-block; }
 
-        /* ══════════════════════════════
-           CUSTOM DATE / TIME PICKERS
-        ══════════════════════════════ */
+        /* CUSTOM DATE/TIME PICKERS */
         #resDate, #startTime, #endTime { display: none !important; }
-
-        .dt-trigger {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 8px; width: 100%; padding: 10px 13px;
-            background: var(--card); border: 1px solid rgba(99,102,241,.15);
-            border-radius: var(--r-sm); font-family: var(--font);
-            font-size: .87rem; font-weight: 500; color: #94a3b8;
-            cursor: pointer; transition: border .2s, box-shadow .2s;
-            user-select: none; -webkit-user-select: none;
-        }
+        .dt-trigger { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 10px 13px; background: var(--card); border: 1px solid rgba(99,102,241,.15); border-radius: var(--r-sm); font-family: var(--font); font-size: .87rem; font-weight: 500; color: #94a3b8; cursor: pointer; transition: border .2s, box-shadow .2s; user-select: none; -webkit-user-select: none; }
         .dt-trigger.has-value { color: var(--text, #0f172a); }
         .dt-trigger:hover { border-color: rgba(99,102,241,.35); }
         .dt-trigger.open { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
         .dt-trigger svg { flex-shrink: 0; opacity: .45; }
         .dt-trigger.open svg { opacity: .8; }
-
         .dt-drop { position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 9999; border-radius: 14px; animation: dtDrop .15s cubic-bezier(.4,0,.2,1); }
         @keyframes dtDrop { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
         body:not(.dark) .dt-drop { background:#fff; border:1px solid rgba(99,102,241,.18); box-shadow:0 20px 50px rgba(15,23,42,.18); }
         body.dark      .dt-drop { background:#0e1828; border:1px solid rgba(99,102,241,.22); box-shadow:0 20px 60px rgba(0,0,0,.65); }
-
         .dt-drop.cal { width: 288px; padding: 18px 16px 14px; }
         @media(max-width:380px) { .dt-drop.cal { width: 260px; } }
-
         .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
         .cal-month-label { font-size:.88rem; font-weight:700; cursor:pointer; padding:4px 8px; border-radius:7px; transition:background .15s; }
         body:not(.dark) .cal-month-label { color:#0f172a; }
         body:not(.dark) .cal-month-label:hover { background:#f1f5f9; }
         body.dark .cal-month-label { color:#e2e8f0; }
         body.dark .cal-month-label:hover { background:rgba(99,102,241,.12); }
-
         .cal-nav-btn { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.75rem; transition:all .15s; }
         body:not(.dark) .cal-nav-btn { background:#f8fafc; border:1px solid #e2e8f0; color:#64748b; }
         body:not(.dark) .cal-nav-btn:hover { border-color:var(--indigo); color:var(--indigo); background:var(--indigo-light); }
         body.dark .cal-nav-btn { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); color:#94a3b8; }
         body.dark .cal-nav-btn:hover { border-color:var(--indigo); color:#a5b4fc; background:rgba(99,102,241,.1); }
-
         .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
         .cal-dow { font-size:.6rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; text-align:center; padding:3px 0 9px; }
         body:not(.dark) .cal-dow { color:#94a3b8; }
         body.dark .cal-dow { color:#4f5a72; }
-
         .cal-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:.8rem; font-weight:500; cursor:pointer; transition:all .12s; border:1px solid transparent; }
         body:not(.dark) .cal-day { color:#475569; }
         body.dark .cal-day { color:#8b95b0; }
@@ -483,7 +205,6 @@
         body:not(.dark) .cal-day.cal-today { color:var(--indigo); font-weight:700; }
         body.dark .cal-day.cal-today { color:#818cf8; font-weight:700; }
         .cal-day.cal-selected { background:var(--indigo)!important; color:#fff!important; font-weight:700; border-color:var(--indigo)!important; box-shadow:0 2px 10px rgba(99,102,241,.4); }
-
         .cal-footer { display:flex; justify-content:space-between; margin-top:12px; padding-top:12px; }
         body:not(.dark) .cal-footer { border-top:1px solid #f1f5f9; }
         body.dark .cal-footer { border-top:1px solid rgba(255,255,255,.06); }
@@ -494,7 +215,6 @@
         body.dark .cal-foot-btn { color:#4f5a72; }
         body.dark .cal-foot-btn:hover { color:#818cf8; background:rgba(99,102,241,.1); }
         body.dark .cal-foot-btn.today { color:#818cf8; }
-
         .dt-drop.tim { width:232px; padding:16px 14px 14px; }
         .tim-title { font-size:.65rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; text-align:center; margin-bottom:12px; }
         body:not(.dark) .tim-title { color:#94a3b8; }
@@ -508,10 +228,11 @@
         body.dark .tim-col::-webkit-scrollbar-thumb { background:rgba(99,102,241,.3); border-radius:4px; }
         .tim-item { padding:7px 6px; border-radius:7px; font-size:.81rem; font-weight:500; text-align:center; cursor:pointer; transition:all .1s; border:1px solid transparent; }
         body:not(.dark) .tim-item { color:#64748b; }
-        body:not(.dark) .tim-item:hover:not(.sel) { background:#f1f5f9; color:#0f172a; }
+        body:not(.dark) .tim-item:hover:not(.sel):not(.tim-disabled) { background:#f1f5f9; color:#0f172a; }
         body.dark .tim-item { color:#8b95b0; }
-        body.dark .tim-item:hover:not(.sel) { background:rgba(255,255,255,.06); color:#e2e8f0; }
+        body.dark .tim-item:hover:not(.sel):not(.tim-disabled) { background:rgba(255,255,255,.06); color:#e2e8f0; }
         .tim-item.sel { background:var(--indigo)!important; color:#fff!important; font-weight:700; box-shadow:0 2px 8px rgba(99,102,241,.4); }
+        .tim-item.tim-disabled { opacity: .3; cursor: not-allowed; text-decoration: line-through; pointer-events: none; }
         .tim-sep { font-size:1rem; font-weight:700; padding:6px 0; align-self:flex-start; margin-top:4px; }
         body:not(.dark) .tim-sep { color:#cbd5e1; }
         body.dark .tim-sep { color:#4f5a72; }
@@ -522,43 +243,22 @@
         body.dark .ampm-btn { border:1px solid rgba(255,255,255,.07); color:#8b95b0; background:rgba(255,255,255,.04); }
         body.dark .ampm-btn:hover:not(.sel) { color:#e2e8f0; border-color:rgba(255,255,255,.14); }
         .ampm-btn.sel { background:var(--indigo)!important; color:#fff!important; border-color:var(--indigo)!important; box-shadow:0 2px 8px rgba(99,102,241,.4); }
+        .ampm-btn.ampm-disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
         .tim-set-btn { width:100%; margin-top:12px; padding:9px; background:var(--indigo); color:#fff; border:none; border-radius:9px; font-size:.8rem; font-weight:700; font-family:var(--font); cursor:pointer; transition:background .15s; }
         .tim-set-btn:hover { background:#4f46e5; }
         .picker-wrap { position: relative; }
 
-        /* ══════════════════════════════
-           CUSTOM SELECT (CS)
-        ══════════════════════════════ */
+        /* CUSTOM SELECT */
         .cs-wrap { position: relative; }
-        .cs-trigger {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 8px; width: 100%; padding: .75rem 1rem;
-            background: var(--card); border: 1px solid rgba(99,102,241,.15);
-            border-radius: var(--r-sm); font-family: var(--font);
-            font-size: .88rem; font-weight: 500; color: #94a3b8;
-            cursor: pointer; transition: border .18s, box-shadow .18s;
-            user-select: none; -webkit-user-select: none; outline: none;
-        }
+        .cs-trigger { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: .75rem 1rem; background: var(--card); border: 1px solid rgba(99,102,241,.15); border-radius: var(--r-sm); font-family: var(--font); font-size: .88rem; font-weight: 500; color: #94a3b8; cursor: pointer; transition: border .18s, box-shadow .18s; user-select: none; -webkit-user-select: none; outline: none; }
         .cs-trigger.has-value { color: #0f172a; }
         .cs-trigger:hover { border-color: rgba(99,102,241,.35); }
         .cs-trigger.open { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
         .cs-arrow { width: 16px; height: 16px; flex-shrink: 0; opacity: .4; transition: transform .18s, opacity .18s; }
         .cs-trigger.open .cs-arrow { transform: rotate(180deg); opacity: .75; }
-        .cs-drop {
-            position: absolute; bottom: calc(100% + 5px); left: 0; right: 0;
-            z-index: 9999; background: white;
-            border: 1px solid rgba(99,102,241,.18); border-radius: var(--r-md);
-            box-shadow: 0 16px 40px rgba(15,23,42,.14);
-            overflow: hidden; display: none;
-            animation: csDropIn .14s cubic-bezier(.4,0,.2,1);
-        }
+        .cs-drop { position: absolute; bottom: calc(100% + 5px); left: 0; right: 0; z-index: 9999; background: white; border: 1px solid rgba(99,102,241,.18); border-radius: var(--r-md); box-shadow: 0 16px 40px rgba(15,23,42,.14); overflow: hidden; display: none; animation: csDropIn .14s cubic-bezier(.4,0,.2,1); }
         @keyframes csDropIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
-        .cs-opt {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 13px; font-size: .87rem; font-weight: 500;
-            color: #0f172a; cursor: pointer; transition: background .1s;
-            border-bottom: 1px solid rgba(99,102,241,.06);
-        }
+        .cs-opt { display: flex; align-items: center; gap: 10px; padding: 10px 13px; font-size: .87rem; font-weight: 500; color: #0f172a; cursor: pointer; transition: background .1s; border-bottom: 1px solid rgba(99,102,241,.06); }
         .cs-opt:last-child { border-bottom: none; }
         .cs-opt:hover { background: var(--indigo-light); color: var(--indigo); }
         .cs-opt.cs-placeholder { color: #94a3b8; font-weight: 400; font-size: .82rem; }
@@ -569,9 +269,7 @@
         .cs-opt.cs-selected .cs-check { opacity: 1; }
         .cs-divider { height: 1px; background: rgba(99,102,241,.08); margin: 3px 0; }
 
-        /* ══════════════════════════════
-           DARK MODE
-        ══════════════════════════════ */
+        /* DARK MODE */
         body.dark .greeting-name { color: #e2eaf8; }
         body.dark .eyebrow { color: #4a6fa5; }
         body.dark .icon-btn { background: #101e35; border-color: rgba(99,102,241,.18); color: #7fb3e8; }
@@ -583,9 +281,7 @@
         body.dark .section-head { border-color: rgba(99,102,241,.1); }
         body.dark .section-icon { background: rgba(55,48,163,.2); }
         body.dark .section-title { color: #e2eaf8; }
-        body.dark .field-input,
-        body.dark input.field-input,
-        body.dark select.field-input { background: #101e35; border-color: rgba(99,102,241,.18); color: #e2eaf8; }
+        body.dark .field-input, body.dark input.field-input, body.dark select.field-input { background: #101e35; border-color: rgba(99,102,241,.18); color: #e2eaf8; }
         body.dark .field-input:focus { background: #0b1628; border-color: var(--indigo); }
         body.dark .field-input[readonly] { background: #060e1e; color: #4a6fa5; }
         body.dark .field-input::placeholder { color: #4a6fa5; }
@@ -595,8 +291,10 @@
         body.dark .type-btn { color: #7fb3e8; }
         body.dark .pc-section { background: rgba(55,48,163,.1); border-color: rgba(99,102,241,.2); }
         body.dark .pc-btn { background: #101e35; border-color: rgba(99,102,241,.22); color: #7fb3e8; }
-        body.dark .pc-btn:hover { border-color: var(--indigo); color: #a5b4fc; }
+        body.dark .pc-btn:hover:not(:disabled):not(.pc-maintenance):not(.pc-reserved) { border-color: var(--indigo); color: #a5b4fc; }
         body.dark .pc-btn.selected { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+        body.dark .pc-btn.pc-maintenance { background: rgba(245,158,11,.12); color: #fbbf24; border-color: rgba(245,158,11,.25); }
+        body.dark .pc-btn.pc-reserved { background: rgba(239,68,68,.1); color: #f87171; border-color: rgba(239,68,68,.2); }
         body.dark .autocomplete-list { background: #0b1628; border-color: rgba(99,102,241,.18); }
         body.dark .autocomplete-item:hover { background: rgba(99,102,241,.12); color: #a5b4fc; }
         body.dark .autocomplete-item .sub { color: #4a6fa5; }
@@ -639,6 +337,7 @@
         body.dark .bs-row { background: #0b1628; border-color: rgba(99,102,241,.07); color: #e2eaf8; }
         body.dark .bs-row:hover { background: #101e35; }
         body.dark .bs-conflict-row { background: rgba(185,28,28,.1) !important; }
+        body.dark .pc-limit-note { color: #a5b4fc; }
     </style>
 </head>
 
@@ -661,7 +360,7 @@
                 <p style="font-size:.6rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--indigo)">E-Ticket Preview</p>
                 <canvas id="qrCanvas" style="border-radius:10px"></canvas>
                 <p id="qrText" style="font-size:.7rem;color:#94a3b8;font-family:var(--mono);text-align:center;word-break:break-all"></p>
-                <button onclick="downloadQR()" style="display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-size:.78rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font)">
+                <button type="button" onclick="downloadQR()" style="display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-size:.78rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font)">
                     <i class="fa-solid fa-download" style="font-size:.7rem"></i> Download E-Ticket
                 </button>
             </div>
@@ -762,7 +461,8 @@
                                     <span style="font-size:.68rem;color:#94a3b8;font-weight:400;margin-left:4px">(optional)</span>
                                 </label>
                                 <input type="email" id="visitorEmailInput" class="field-input"
-                                       placeholder="Enter email if available">
+                                       placeholder="Enter email if available"
+                                       oninput="schedGuestCheck()" onblur="runGuestCheck()">
                             </div>
                         </div>
 
@@ -890,14 +590,60 @@
                         </div>
                     </div>
 
+                    <!-- PC Section — now matches admin with legend, limit note, maintenance & reserved states -->
                     <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block">Assign Workstation(s)</label>
+
+                        <div class="pc-legend">
+                            <div class="pc-legend-item">
+                                <div class="pc-legend-dot" style="background:white;border:1.5px solid rgba(99,102,241,.35)"></div>
+                                Available
+                            </div>
+                            <div class="pc-legend-item">
+                                <div class="pc-legend-dot" style="background:var(--indigo)"></div>
+                                Selected
+                            </div>
+                            <div class="pc-legend-item">
+                                <div class="pc-legend-dot" style="background:#fef3c7;border:1.5px solid #fde68a"></div>
+                                Maintenance 🔧
+                            </div>
+                            <div class="pc-legend-item">
+                                <div class="pc-legend-dot" style="background:#fef2f2;border:1.5px solid #fecaca"></div>
+                                Reserved ✖
+                            </div>
+                        </div>
+
                         <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
-                            <?php foreach ($pcs ?? [] as $pc): ?>
-                                <button type="button" onclick="togglePc('<?= htmlspecialchars($pc['pc_number']) ?>',this)" data-pc="<?= htmlspecialchars($pc['pc_number']) ?>" class="pc-btn"><?= htmlspecialchars($pc['pc_number']) ?></button>
+                            <?php foreach ($pcs ?? [] as $pc):
+                                $isMaintenance = ($pc['status'] === 'maintenance');
+                                $pcNum = htmlspecialchars($pc['pc_number']);
+                            ?>
+                                <?php if ($isMaintenance): ?>
+                                    <button
+                                        type="button"
+                                        class="pc-btn pc-maintenance"
+                                        data-pc="<?= $pcNum ?>"
+                                        data-status="maintenance"
+                                        disabled
+                                        title="<?= $pcNum ?> is under maintenance"
+                                    ><?= $pcNum ?></button>
+                                <?php else: ?>
+                                    <button
+                                        type="button"
+                                        class="pc-btn"
+                                        data-pc="<?= $pcNum ?>"
+                                        data-status="available"
+                                        onclick="togglePc('<?= $pcNum ?>',this)"
+                                        title="Select <?= $pcNum ?>"
+                                    ><?= $pcNum ?></button>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         </div>
-                        <p style="font-size:.72rem;color:var(--indigo);font-weight:600;margin-top:10px">Selected: <span id="pcSelectedLabel">None</span></p>
+
+                        <div class="pc-limit-note">
+                            <i class="fa-solid fa-circle-info" style="font-size:.65rem"></i>
+                            <span>Select up to <strong id="pcMaxLabel">1</strong> workstation. Selected: <span id="pcSelectedLabel">None</span></span>
+                        </div>
                     </div>
 
                     <div class="grid-3" style="margin-bottom:14px">
@@ -963,31 +709,11 @@
                             <div class="cs-drop" id="purposeDrop">
                                 <div class="cs-opt cs-placeholder" data-value=""><span class="cs-opt-label">— Select purpose —</span></div>
                                 <div class="cs-divider"></div>
-                                <div class="cs-opt" data-value="Work">
-                                    <div class="cs-opt-icon" style="background:rgba(99,102,241,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="1.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 5V4a3 3 0 016 0v1" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-                                    <span class="cs-opt-label">Work</span>
-                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                </div>
-                                <div class="cs-opt" data-value="Personal">
-                                    <div class="cs-opt-icon" style="background:rgba(236,72,153,.09)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#db2777" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#db2777" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-                                    <span class="cs-opt-label">Personal</span>
-                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                </div>
-                                <div class="cs-opt" data-value="Study">
-                                    <div class="cs-opt-icon" style="background:rgba(20,184,166,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 4l7-2 7 2-7 2z" stroke="#0d9488" stroke-width="1.3" stroke-linejoin="round"/><path d="M4 6v4c0 1.1 1.8 2 4 2s4-.9 4-2V6" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/><path d="M15 4v4" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-                                    <span class="cs-opt-label">Study</span>
-                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                </div>
-                                <div class="cs-opt" data-value="SK Activity">
-                                    <div class="cs-opt-icon" style="background:rgba(245,158,11,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6" stroke="#d97706" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
-                                    <span class="cs-opt-label">SK Activity</span>
-                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                </div>
-                                <div class="cs-opt" data-value="Others">
-                                    <div class="cs-opt-icon" style="background:rgba(100,116,139,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.2" fill="#64748b"/><circle cx="8" cy="8" r="1.2" fill="#64748b"/><circle cx="12" cy="8" r="1.2" fill="#64748b"/></svg></div>
-                                    <span class="cs-opt-label">Others</span>
-                                    <svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                </div>
+                                <div class="cs-opt" data-value="Work"><div class="cs-opt-icon" style="background:rgba(99,102,241,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="1.5" stroke="#6366f1" stroke-width="1.3"/><path d="M5 5V4a3 3 0 016 0v1" stroke="#6366f1" stroke-width="1.3" stroke-linecap="round"/></svg></div><span class="cs-opt-label">Work</span><svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                                <div class="cs-opt" data-value="Personal"><div class="cs-opt-icon" style="background:rgba(236,72,153,.09)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#db2777" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#db2777" stroke-width="1.3" stroke-linecap="round"/></svg></div><span class="cs-opt-label">Personal</span><svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                                <div class="cs-opt" data-value="Study"><div class="cs-opt-icon" style="background:rgba(20,184,166,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 4l7-2 7 2-7 2z" stroke="#0d9488" stroke-width="1.3" stroke-linejoin="round"/><path d="M4 6v4c0 1.1 1.8 2 4 2s4-.9 4-2V6" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/><path d="M15 4v4" stroke="#0d9488" stroke-width="1.3" stroke-linecap="round"/></svg></div><span class="cs-opt-label">Study</span><svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                                <div class="cs-opt" data-value="SK Activity"><div class="cs-opt-icon" style="background:rgba(245,158,11,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6" stroke="#d97706" stroke-width="1.3" stroke-linejoin="round"/></svg></div><span class="cs-opt-label">SK Activity</span><svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                                <div class="cs-opt" data-value="Others"><div class="cs-opt-icon" style="background:rgba(100,116,139,.1)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.2" fill="#64748b"/><circle cx="8" cy="8" r="1.2" fill="#64748b"/><circle cx="12" cy="8" r="1.2" fill="#64748b"/></svg></div><span class="cs-opt-label">Others</span><svg class="cs-check" viewBox="0 0 14 14" fill="none"><polyline points="2 7 6 11 12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
                             </div>
                         </div>
                     </div>
@@ -1005,9 +731,16 @@
         </div>
     </main>
 
-    <!-- Core Form JS -->
+    <!-- Server time injection (must be before picker script) -->
+    <script>window.SERVER_NOW = "<?= date('Y-m-d H:i') ?>";</script>
+
     <script>
         const allUsers = <?= json_encode($users ?? []) ?>;
+
+        /* PC_MAX_SELECT: set to 1 to match admin's one-PC-per-reservation rule.
+           Increase or set to Infinity to remove the limit. */
+        const PC_MAX_SELECT = 1;
+
         let currentType = 'User', selectedUser = null, selectedPcs = [];
 
         /* ─── Visitor type toggle ─── */
@@ -1017,21 +750,21 @@
             const isUser = type === 'User';
             document.getElementById('btnUser').classList.toggle('active', isUser);
             document.getElementById('btnVisitor').classList.toggle('active', !isUser);
-            document.getElementById('userFields').style.display   = isUser ? 'grid' : 'none';
+            document.getElementById('userFields').style.display    = isUser ? 'grid' : 'none';
             document.getElementById('visitorFields').style.display = isUser ? 'none' : 'block';
             selectedUser = null;
             ['userNameInput','userEmailDisplay','visitorNameInput','visitorEmailInput'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = '';
             });
             document.getElementById('finalUserId').value = '';
-            // FIX: reset conflict state when switching type
             window._avHasConflict = false;
-            hideGuestBox();
-            hideCodeSection();
-            hideRegisteredWarning();
+            selectedPcs = [];
+            updatePcHidden();
+            document.querySelectorAll('.pc-btn:not(.pc-maintenance):not(.pc-reserved)').forEach(b => b.classList.remove('selected'));
+            if (type !== 'Visitor') { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); }
         }
 
-        /* ─── Registered user autocomplete ─── */
+        /* ─── User autocomplete ─── */
         const userNameInput    = document.getElementById('userNameInput');
         const autocompleteList = document.getElementById('autocompleteList');
 
@@ -1064,16 +797,48 @@
         });
         userNameInput.addEventListener('blur', () => setTimeout(() => autocompleteList.style.display = 'none', 150));
 
-        /* ─── PC workstation toggle ─── */
+        /* ─── PC workstation toggle (with limit + reserved/maintenance guards) ─── */
         function togglePc(num, btn) {
+            if (btn.classList.contains('pc-maintenance') || btn.classList.contains('pc-reserved') || btn.disabled) return;
             const idx = selectedPcs.indexOf(num);
-            if (idx === -1) { selectedPcs.push(num); btn.classList.add('selected'); }
-            else            { selectedPcs.splice(idx, 1); btn.classList.remove('selected'); }
+            if (idx === -1) {
+                if (selectedPcs.length >= PC_MAX_SELECT) {
+                    const noun = PC_MAX_SELECT === 1 ? 'workstation' : 'workstations';
+                    alert(`You can only select up to ${PC_MAX_SELECT} ${noun} per reservation.\nDeselect one first.`);
+                    return;
+                }
+                selectedPcs.push(num);
+                btn.classList.add('selected');
+            } else {
+                selectedPcs.splice(idx, 1);
+                btn.classList.remove('selected');
+            }
             updatePcHidden();
         }
+
         function updatePcHidden() {
             document.getElementById('finalPcs').value = JSON.stringify(selectedPcs);
             document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
+            document.getElementById('pcMaxLabel').textContent = PC_MAX_SELECT === Infinity ? '∞' : PC_MAX_SELECT;
+        }
+
+        function applyReservedPcs(reservedPcNumbers) {
+            document.querySelectorAll('.pc-btn').forEach(btn => {
+                if (btn.classList.contains('pc-maintenance')) return;
+                const num = btn.dataset.pc;
+                if (reservedPcNumbers.includes(num)) {
+                    btn.classList.add('pc-reserved');
+                    btn.disabled = true;
+                    btn.title = `${num} is already reserved for this slot`;
+                    const idx = selectedPcs.indexOf(num);
+                    if (idx !== -1) { selectedPcs.splice(idx, 1); btn.classList.remove('selected'); }
+                } else {
+                    btn.classList.remove('pc-reserved');
+                    btn.disabled = false;
+                    btn.title = `Select ${num}`;
+                }
+            });
+            updatePcHidden();
         }
 
         /* ─── Custom Select ─── */
@@ -1095,6 +860,7 @@
 
             trigger.addEventListener('click', e => {
                 e.stopPropagation();
+                e.preventDefault();
                 if (_csActive === dropId) { closeAllCS(); return; }
                 closeAllCS(); _csActive = dropId;
                 drop.style.display = 'block';
@@ -1104,6 +870,7 @@
             opts.forEach(opt => {
                 opt.addEventListener('click', e => {
                     e.stopPropagation();
+                    e.preventDefault();
                     const val  = opt.dataset.value;
                     const text = opt.querySelector('.cs-opt-label')?.textContent.trim() || '';
                     opts.forEach(o => o.classList.remove('cs-selected'));
@@ -1131,11 +898,13 @@
             const hasPcs = opt.dataset.hasPcs === '1';
             const isWifi = opt.dataset.isWifi === '1';
             document.getElementById('pcSection').style.display = hasPcs ? 'block' : 'none';
-            const wifiBanner = document.getElementById('wifiNoticeBanner');
-            wifiBanner.style.display = isWifi ? 'flex' : 'none';
+            document.getElementById('wifiNoticeBanner').style.display = isWifi ? 'flex' : 'none';
             selectedPcs = [];
             updatePcHidden();
-            document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.pc-btn:not(.pc-maintenance)').forEach(b => {
+                b.classList.remove('selected', 'pc-reserved');
+                b.disabled = false;
+            });
             schedAvailabilityCheck();
         });
 
@@ -1145,7 +914,7 @@
             if (val !== 'Others') document.getElementById('purposeOther').value = '';
         });
 
-        /* ─── LIVE AVAILABILITY CHECKER ─── */
+        /* ─── Live Availability Checker ─── */
         window._avHasConflict = false;
         let _avTimer = null;
 
@@ -1163,10 +932,8 @@
             const slots      = document.getElementById('bookedSlotsWrap');
 
             if (!resourceId || !date) {
-                status.className = '';
-                status.style.display = 'none';
-                slots.style.display  = 'none';
-                window._avHasConflict = false;
+                status.className = ''; status.style.display = 'none';
+                slots.style.display = 'none'; window._avHasConflict = false;
                 return;
             }
 
@@ -1177,88 +944,48 @@
                 ''
             );
 
-            const params = new URLSearchParams({
-                resource_id: resourceId,
-                date:        date,
-                start_time:  startTime || '',
-                end_time:    endTime   || '',
-            });
-
-            fetch('/sk/check-availability?' + params.toString(), {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
+            const params = new URLSearchParams({ resource_id: resourceId, date, start_time: startTime || '', end_time: endTime || '' });
+            fetch('/sk/check-availability?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(r => r.json())
             .then(data => {
                 const booked = data.booked_slots || [];
+                if (data.reserved_pcs && Array.isArray(data.reserved_pcs)) applyReservedPcs(data.reserved_pcs);
 
                 if (data.has_conflict) {
                     window._avHasConflict = true;
-                    setAvStatus('conflict',
-                        '<i class="fa-solid fa-ban" style="font-size:.78rem;color:#b91c1c"></i>',
-                        'Time slot conflict detected',
-                        'Your selected time overlaps with an existing booking. Please choose a different time.',
-                        'UNAVAILABLE'
-                    );
+                    setAvStatus('conflict', '<i class="fa-solid fa-ban" style="font-size:.78rem;color:#b91c1c"></i>', 'Time slot conflict detected', 'Your selected time overlaps with an existing booking. Please choose a different time.', 'UNAVAILABLE');
                 } else if (startTime && endTime) {
                     window._avHasConflict = false;
-                    setAvStatus('ok',
-                        '<i class="fa-solid fa-circle-check" style="font-size:.78rem;color:#15803d"></i>',
-                        'Time slot is available',
-                        booked.length
-                            ? `${booked.length} other booking(s) on this date — none overlap your selected time.`
-                            : 'No other bookings on this date. All yours!',
-                        'AVAILABLE'
-                    );
+                    setAvStatus('ok', '<i class="fa-solid fa-circle-check" style="font-size:.78rem;color:#15803d"></i>', 'Time slot is available', booked.length ? `${booked.length} other booking(s) on this date — none overlap your selected time.` : 'No other bookings on this date. All yours!', 'AVAILABLE');
                 } else {
                     window._avHasConflict = false;
-                    setAvStatus('info',
-                        '<i class="fa-solid fa-calendar-check" style="font-size:.78rem;color:#92400e"></i>',
-                        booked.length ? `${booked.length} booking(s) on this date` : 'No bookings yet on this date',
-                        'Select start & end time to check if your slot is free.',
-                        booked.length ? `${booked.length} BOOKED` : 'FREE'
-                    );
+                    setAvStatus('info', '<i class="fa-solid fa-calendar-check" style="font-size:.78rem;color:#92400e"></i>', booked.length ? `${booked.length} booking(s) on this date` : 'No bookings yet on this date', 'Select start & end time to check if your slot is free.', booked.length ? `${booked.length} BOOKED` : 'FREE');
                 }
-
-                if (booked.length > 0) {
-                    renderBookedSlots(booked, startTime, endTime);
-                } else {
-                    slots.style.display = 'none';
-                }
+                if (booked.length > 0) renderBookedSlots(booked, startTime, endTime);
+                else slots.style.display = 'none';
             })
             .catch(() => {
                 window._avHasConflict = false;
-                setAvStatus('info',
-                    '<i class="fa-solid fa-wifi" style="font-size:.78rem;color:#92400e"></i>',
-                    'Could not check availability',
-                    'Network error. Please continue manually.',
-                    ''
-                );
-                slots.style.display = 'none';
+                setAvStatus('info', '<i class="fa-solid fa-wifi" style="font-size:.78rem;color:#92400e"></i>', 'Could not check availability', 'Network error. Please continue manually.', '');
+                document.getElementById('bookedSlotsWrap').style.display = 'none';
             });
         }
 
         function setAvStatus(type, iconHtml, title, sub, pill) {
             const status = document.getElementById('availabilityStatus');
-            const pillColors = {
-                ok:       { bg: '#dcfce7', color: '#15803d' },
-                conflict: { bg: '#fee2e2', color: '#b91c1c' },
-                info:     { bg: '#fef3c7', color: '#92400e' },
-                checking: { bg: '#e0f2fe', color: '#0369a1' },
-            };
-            document.getElementById('avIcon').innerHTML   = iconHtml;
+            const pillColors = { ok: { bg: '#dcfce7', color: '#15803d' }, conflict: { bg: '#fee2e2', color: '#b91c1c' }, info: { bg: '#fef3c7', color: '#92400e' }, checking: { bg: '#e0f2fe', color: '#0369a1' } };
+            document.getElementById('avIcon').innerHTML    = iconHtml;
             document.getElementById('avTitle').textContent = title;
             document.getElementById('avSub').textContent   = sub;
             status.className = 'av-' + type;
             const avPill = document.getElementById('avPill');
             if (pill) {
                 const c = pillColors[type] || {};
-                avPill.style.background = c.bg    || '#e2e8f0';
+                avPill.style.background = c.bg || '#e2e8f0';
                 avPill.style.color      = c.color || '#475569';
                 avPill.textContent      = pill;
                 avPill.style.display    = 'inline-block';
-            } else {
-                avPill.style.display = 'none';
-            }
+            } else { avPill.style.display = 'none'; }
         }
 
         function renderBookedSlots(slots, myStart, myEnd) {
@@ -1272,13 +999,7 @@
                 const statusClass = s.status === 'approved' ? 'bs-pill-approved' : 'bs-pill-pending';
                 const statusLabel = s.status === 'approved' ? '✔ Approved' : '⏳ Pending';
                 const rowClass    = isConflict ? 'bs-row bs-conflict-row' : 'bs-row';
-                html += `<div class="${rowClass}">
-                    <div class="bs-col"><span class="bs-status-pill ${statusClass}">${statusLabel}</span></div>
-                    <div class="bs-col" style="font-family:var(--mono);font-size:.78rem;font-weight:600">${start} – ${end}</div>
-                    <div class="bs-col" style="text-align:right">
-                        ${isConflict ? '<span style="font-size:.68rem;font-weight:700;color:#b91c1c;background:#fee2e2;padding:2px 7px;border-radius:20px">⚡ CONFLICT</span>' : ''}
-                    </div>
-                </div>`;
+                html += `<div class="${rowClass}"><div class="bs-col"><span class="bs-status-pill ${statusClass}">${statusLabel}</span></div><div class="bs-col" style="font-family:var(--mono);font-size:.78rem;font-weight:600">${start} – ${end}</div><div class="bs-col" style="text-align:right">${isConflict ? '<span style="font-size:.68rem;font-weight:700;color:#b91c1c;background:#fee2e2;padding:2px 7px;border-radius:20px">⚡ CONFLICT</span>' : ''}</div></div>`;
             });
             list.innerHTML = html;
             wrap.style.display = 'block';
@@ -1295,7 +1016,7 @@
             }
             if (currentType === 'Visitor' && window._guestBlocked && !getSelectedResourceIsWifi()) {
                 const name = document.getElementById('visitorNameInput')?.value?.trim() || 'This visitor';
-                alert(`⛔ ${name} has reached the 3-reservation limit within the last 14 days and cannot make a new reservation.`);
+                alert(`⛔ ${name} has reached the reservation limit within the last 14 days and cannot make a new reservation.`);
                 return;
             }
             if (window._avHasConflict) {
@@ -1305,8 +1026,7 @@
             if (currentType === 'Visitor') {
                 const codeSection = document.getElementById('confirmCodeSection');
                 if (codeSection && codeSection.style.display !== 'none') {
-                    const verified = document.getElementById('confirmCodeVerified')?.value;
-                    if (verified !== '1') {
+                    if (document.getElementById('confirmCodeVerified')?.value !== '1') {
                         alert('⚠️ Please generate a confirmation code and have the visitor verify it before proceeding.');
                         document.getElementById('genCodeBtn')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return;
@@ -1327,13 +1047,13 @@
             const purposeOther = document.getElementById('purposeOther').value.trim();
             const purposeFinal = purposeVal === 'Others' && purposeOther ? `Others — ${purposeOther}` : purposeVal;
 
-            if (!name)        return alert('Please enter a name.');
-            if (!resourceId)  return alert('Please select a resource.');
+            if (!name)       return alert('Please enter a name.');
+            if (!resourceId) return alert('Please select a resource.');
             if (showPcs && !selectedPcs.length) return alert('Please select at least one workstation.');
-            if (!date)        return alert('Please select a date.');
-            if (!startTime)   return alert('Please enter a start time.');
-            if (!endTime)     return alert('Please enter an end time.');
-            if (!purposeVal)  return alert('Please select a purpose.');
+            if (!date)       return alert('Please select a date.');
+            if (!startTime)  return alert('Please enter a start time.');
+            if (!endTime)    return alert('Please enter an end time.');
+            if (!purposeVal) return alert('Please select a purpose.');
             if (isUser && !selectedUser && !document.getElementById('finalUserId').value)
                 return alert('Please select a registered user from the dropdown.');
 
@@ -1394,17 +1114,26 @@
             document.getElementById('confirmModal').classList.remove('show');
             document.body.style.overflow = '';
             const btn = document.getElementById('confirmBtn');
-            btn.disabled = false;
-            btn.style.display = 'flex';
+            btn.disabled = false; btn.style.display = 'flex';
             btn.innerHTML = '<i class="fa-solid fa-check" style="font-size:.8rem"></i> Confirm & Save';
         }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     </script>
 
-    <!-- Custom Date / Time Picker -->
+    <!-- Custom Date / Time Picker (with server-time past-slot disabling) -->
     <script>
     (function() {
         'use strict';
+
+        const _serverNowStr = (typeof window.SERVER_NOW === 'string' && window.SERVER_NOW)
+            ? window.SERVER_NOW
+            : new Date().toISOString().slice(0, 16);
+
+        const SERVER_NOW = new Date(_serverNowStr);
+        const TODAY_STR  = _serverNowStr.slice(0, 10);
+        const NOW_H24    = SERVER_NOW.getHours();
+        const NOW_MIN    = SERVER_NOW.getMinutes();
+
         const TODAY = new Date();
         let calView  = { y: TODAY.getFullYear(), m: TODAY.getMonth() };
         let selDate  = null;
@@ -1413,7 +1142,8 @@
         const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
         const DOWS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
         const MINS   = [0,5,10,15,20,25,30,35,40,45,50,55];
-        function $(id){ return document.getElementById(id); }
+
+        function $(id) { return document.getElementById(id); }
 
         function closeAll() {
             ['calDrop','startDrop','endDrop'].forEach(id => { const el=$(id); if(el) el.style.display='none'; });
@@ -1423,8 +1153,16 @@
         function toggle(dropId, triggerId) {
             if (activeDrop === dropId) { closeAll(); return; }
             closeAll(); activeDrop = dropId;
-            $(dropId).style.display = 'block';
+            const drop = $(dropId);
+            drop.style.left = '0'; drop.style.right = '';
+            drop.style.display = 'block';
             $(triggerId).classList.add('open');
+            const rect = drop.getBoundingClientRect();
+            const vw = window.innerWidth;
+            if (rect.right > vw - 8) {
+                const overflow = rect.right - (vw - 8);
+                drop.style.left = Math.max(-rect.left + 8, -overflow) + 'px';
+            }
         }
         document.addEventListener('click', e => { if (!e.target.closest('.picker-wrap')) closeAll(); });
 
@@ -1435,12 +1173,12 @@
             let html=`<div class="cal-head"><div class="cal-nav-btn" id="_calPrev">&#8249;</div><div class="cal-month-label">${MONTHS[m]} ${y}</div><div class="cal-nav-btn" id="_calNext">&#8250;</div></div><div class="cal-grid">${DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
             for(let i=0;i<firstDow;i++) html+=`<div class="cal-day cal-other">${prevTotal-firstDow+1+i}</div>`;
             for(let d=1;d<=daysInM;d++){
-                const thisDate = new Date(y,m,d);
-                const isPast  = thisDate < todayFlat;
-                const isToday = d===TODAY.getDate()&&m===TODAY.getMonth()&&y===TODAY.getFullYear();
-                const isSel   = selDate&&selDate.d===d&&selDate.m===m&&selDate.y===y;
-                const classes = ['cal-day', isPast?'cal-past':'', isToday&&!isSel?'cal-today':'', isSel?'cal-selected':''].filter(Boolean).join(' ');
-                html += `<div class="${classes}"${isPast ? '' : ` data-d="${d}"`}>${d}</div>`;
+                const thisDate=new Date(y,m,d);
+                const isPast=thisDate<todayFlat;
+                const isToday=d===TODAY.getDate()&&m===TODAY.getMonth()&&y===TODAY.getFullYear();
+                const isSel=selDate&&selDate.d===d&&selDate.m===m&&selDate.y===y;
+                const classes=['cal-day',isPast?'cal-past':'',isToday&&!isSel?'cal-today':'',isSel?'cal-selected':''].filter(Boolean).join(' ');
+                html+=`<div class="${classes}"${isPast?'':` data-d="${d}"`}>${d}</div>`;
             }
             const trail=(7-(firstDow+daysInM)%7)%7;
             for(let i=1;i<=trail;i++) html+=`<div class="cal-day cal-other">${i}</div>`;
@@ -1460,67 +1198,136 @@
             $('resDate').value=iso;
             $('dateLabel').textContent=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
             $('dateTrigger').classList.add('has-value');
+            window._selectedDateStr = iso;
             renderCal();
+            if ($('startDrop').style.display==='block') renderTime('start');
+            if ($('endDrop').style.display==='block')   renderTime('end');
             setTimeout(closeAll,180);
             if (window._onDatePicked) window._onDatePicked();
         }
-        function clearDate(){ selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');renderCal(); }
+        function clearDate(){ selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');window._selectedDateStr='';renderCal(); }
         function gotoToday(){ calView={y:TODAY.getFullYear(),m:TODAY.getMonth()};pickDay(TODAY.getDate()); }
 
-        function renderTime(which){
-            const dropId=which==='start'?'startDrop':'endDrop';
-            const st=tState[which];
-            const hItems=Array.from({length:12},(_,i)=>i+1).map(h=>`<div class="tim-item${st.h===h?' sel':''}" data-part="h" data-val="${h}">${String(h).padStart(2,'0')}</div>`).join('');
-            const mItems=MINS.map(mn=>`<div class="tim-item${st.min===mn?' sel':''}" data-part="min" data-val="${mn}">${String(mn).padStart(2,'0')}</div>`).join('');
-            $(dropId).innerHTML=`<div class="tim-title">Select Time</div><div class="tim-cols"><div class="tim-col" id="_tc_h_${which}">${hItems}</div><div class="tim-sep">:</div><div class="tim-col" id="_tc_m_${which}">${mItems}</div><div class="ampm-col"><div class="ampm-btn${st.ampm==='am'?' sel':''}" data-ampm="am">AM</div><div class="ampm-btn${st.ampm==='pm'?' sel':''}" data-ampm="pm">PM</div></div></div><button class="tim-set-btn" id="_timSet_${which}">Set Time</button>`;
-            setTimeout(()=>{
+        function isPastTime(h, min, ampm) {
+            const dateStr = window._selectedDateStr || $('resDate').value || TODAY_STR;
+            if (dateStr !== TODAY_STR) return false;
+            let h24 = h;
+            if (ampm === 'am' && h === 12) h24 = 0;
+            if (ampm === 'pm' && h !== 12) h24 = h + 12;
+            return h24 < NOW_H24 || (h24 === NOW_H24 && min <= NOW_MIN);
+        }
+
+        function renderTime(which) {
+            const dropId = which==='start'?'startDrop':'endDrop';
+            const st = tState[which];
+            const isToday = (window._selectedDateStr || $('resDate').value || TODAY_STR) === TODAY_STR;
+            const amAllPast = isToday && NOW_H24 >= 12;
+
+            const hItems = Array.from({length:12},(_,i)=>i+1).map(h => {
+                const past = isPastTime(h, 0, st.ampm);
+                return `<div class="tim-item${st.h===h?' sel':''}${past?' tim-disabled':''}" data-part="h" data-val="${h}" data-past="${past}">${String(h).padStart(2,'0')}</div>`;
+            }).join('');
+
+            const mItems = MINS.map(mn => {
+                const past = isPastTime(st.h, mn, st.ampm);
+                return `<div class="tim-item${st.min===mn?' sel':''}${past?' tim-disabled':''}" data-part="min" data-val="${mn}" data-past="${past}">${String(mn).padStart(2,'0')}</div>`;
+            }).join('');
+
+            const amCls = ['ampm-btn', st.ampm==='am'?'sel':'', amAllPast?'ampm-disabled':''].filter(Boolean).join(' ');
+            const pmCls = ['ampm-btn', st.ampm==='pm'?'sel':''].filter(Boolean).join(' ');
+
+            $(dropId).innerHTML = `
+                <div class="tim-title">Select Time</div>
+                <div class="tim-cols">
+                    <div class="tim-col" id="_tc_h_${which}">${hItems}</div>
+                    <div class="tim-sep">:</div>
+                    <div class="tim-col" id="_tc_m_${which}">${mItems}</div>
+                    <div class="ampm-col">
+                        <div class="${amCls}" data-ampm="am">AM</div>
+                        <div class="${pmCls}" data-ampm="pm">PM</div>
+                    </div>
+                </div>
+                <button class="tim-set-btn" id="_timSet_${which}" type="button">Set Time</button>
+            `;
+
+            setTimeout(() => {
                 const sH=$(dropId).querySelector('#_tc_h_'+which+' .sel');
                 const sM=$(dropId).querySelector('#_tc_m_'+which+' .sel');
                 if(sH)sH.scrollIntoView({block:'center',behavior:'instant'});
                 if(sM)sM.scrollIntoView({block:'center',behavior:'instant'});
             },0);
-            $(dropId).querySelectorAll('.tim-item').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();tState[which][el.dataset.part]=+el.dataset.val;renderTime(which);}));
-            $(dropId).querySelectorAll('.ampm-btn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();tState[which].ampm=el.dataset.ampm;renderTime(which);}));
-            $(`_timSet_${which}`).addEventListener('click',e=>{e.stopPropagation();applyTime(which);});
+
+            $(dropId).querySelectorAll('.tim-item').forEach(el => {
+                if (el.dataset.past === 'true') return;
+                el.addEventListener('click', e => {
+                    e.stopPropagation();
+                    tState[which][el.dataset.part] = +el.dataset.val;
+                    renderTime(which);
+                });
+            });
+
+            $(dropId).querySelectorAll('.ampm-btn:not(.ampm-disabled)').forEach(el => {
+                el.addEventListener('click', e => {
+                    e.stopPropagation();
+                    tState[which].ampm = el.dataset.ampm;
+                    renderTime(which);
+                });
+            });
+
+            $(`_timSet_${which}`).addEventListener('click', e => {
+                e.stopPropagation();
+                e.preventDefault();
+                applyTime(which);
+            });
         }
 
-        function applyTime(which){
-            const st=tState[which];
-            const label=`${String(st.h).padStart(2,'0')}:${String(st.min).padStart(2,'0')} ${st.ampm.toUpperCase()}`;
-            let h24=st.h;
+        function applyTime(which) {
+            const st = tState[which];
+            if (isPastTime(st.h, st.min, st.ampm)) {
+                alert('⚠️ The selected time has already passed. Please choose a future time.');
+                return;
+            }
+            const label = `${String(st.h).padStart(2,'0')}:${String(st.min).padStart(2,'0')} ${st.ampm.toUpperCase()}`;
+            let h24 = st.h;
             if(st.ampm==='am'&&st.h===12)h24=0;
             if(st.ampm==='pm'&&st.h!==12)h24=st.h+12;
-            const iso24=`${String(h24).padStart(2,'0')}:${String(st.min).padStart(2,'0')}`;
-            const labelId  =which==='start'?'startLabel':'endLabel';
-            const inputId  =which==='start'?'startTime':'endTime';
-            const triggerId=which==='start'?'startTrigger':'endTrigger';
-            $(labelId).textContent=label;
-            document.getElementById(inputId).value=iso24;
+            const iso24 = `${String(h24).padStart(2,'0')}:${String(st.min).padStart(2,'0')}`;
+            const labelId   = which==='start'?'startLabel':'endLabel';
+            const inputId   = which==='start'?'startTime':'endTime';
+            const triggerId = which==='start'?'startTrigger':'endTrigger';
+            $(labelId).textContent = label;
+            document.getElementById(inputId).value = iso24;
             $(triggerId).classList.add('has-value');
             closeAll();
             if (window._onTimePicked) window._onTimePicked();
         }
 
-        $('dateTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('calDrop','dateTrigger');if(activeDrop==='calDrop')renderCal();});
-        $('startTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('startDrop','startTrigger');if(activeDrop==='startDrop')renderTime('start');});
-        $('endTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('endDrop','endTrigger');if(activeDrop==='endDrop')renderTime('end');});
+        $('dateTrigger').addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); toggle('calDrop','dateTrigger'); if(activeDrop==='calDrop')renderCal(); });
+        $('startTrigger').addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); toggle('startDrop','startTrigger'); if(activeDrop==='startDrop')renderTime('start'); });
+        $('endTrigger').addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); toggle('endDrop','endTrigger'); if(activeDrop==='endDrop')renderTime('end'); });
 
-        // FIX: setTimeout ensures DOM is settled; use document.getElementById directly
-        // to guarantee the hidden inputs are written even with display:none !important.
-        // Fires schedAvailabilityCheck so the banner is ready as soon as resource is picked.
+        /* Initialise defaults, advancing past-time slots if today */
         setTimeout(function() {
             ['start', 'end'].forEach(function(which) {
                 var st = tState[which];
+                if (isPastTime(st.h, st.min, st.ampm)) {
+                    var nextMin  = NOW_MIN < 30 ? 30 : 0;
+                    var nextH24  = NOW_MIN < 30 ? NOW_H24 : NOW_H24 + 1;
+                    if (nextH24 >= 24) nextH24 = 23;
+                    st.ampm = nextH24 >= 12 ? 'pm' : 'am';
+                    st.h    = nextH24 % 12 || 12;
+                    st.min  = nextMin;
+                }
                 var h24 = st.h;
-                if (st.ampm === 'am' && st.h === 12) h24 = 0;
-                if (st.ampm === 'pm' && st.h !== 12) h24 = st.h + 12;
-                var iso24     = String(h24).padStart(2, '0') + ':' + String(st.min).padStart(2, '0');
-                var label     = String(st.h).padStart(2, '0') + ':' + String(st.min).padStart(2, '0') + ' ' + st.ampm.toUpperCase();
-                var labelId   = which === 'start' ? 'startLabel'   : 'endLabel';
-                var inputId   = which === 'start' ? 'startTime'    : 'endTime';
-                var triggerId = which === 'start' ? 'startTrigger' : 'endTrigger';
-                document.getElementById(labelId).textContent   = label;
-                document.getElementById(inputId).value         = iso24;
+                if (st.ampm==='am'&&st.h===12) h24=0;
+                if (st.ampm==='pm'&&st.h!==12) h24=st.h+12;
+                var iso24     = String(h24).padStart(2,'0')+':'+String(st.min).padStart(2,'0');
+                var label     = String(st.h).padStart(2,'0')+':'+String(st.min).padStart(2,'0')+' '+st.ampm.toUpperCase();
+                var labelId   = which==='start'?'startLabel':'endLabel';
+                var inputId   = which==='start'?'startTime':'endTime';
+                var triggerId = which==='start'?'startTrigger':'endTrigger';
+                document.getElementById(labelId).textContent = label;
+                document.getElementById(inputId).value       = iso24;
                 document.getElementById(triggerId).classList.add('has-value');
             });
             if (window.schedAvailabilityCheck) window.schedAvailabilityCheck();
@@ -1528,14 +1335,16 @@
 
         (function(){
             const t = new Date();
+            window._selectedDateStr = TODAY_STR;
             document.getElementById('dateLabel').textContent = t.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
             document.getElementById('dateTrigger').classList.add('has-value');
             selDate = {d:t.getDate(), m:t.getMonth(), y:t.getFullYear()};
         })();
+
     })();
     </script>
 
-    <!-- Guest Limit Checker + Confirmation Code -->
+    <!-- Guest Limit Checker + Registered Warning + Confirmation Code -->
     <script>
     (function () {
         const LIMIT     = 3;
@@ -1554,12 +1363,16 @@
         window.runGuestCheck = function () {
             clearTimeout(window._guestTimer);
             if (currentType === 'User') { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); return; }
-            const name = (document.getElementById('visitorNameInput')?.value || '').trim();
-            if (!name) { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); return; }
+            const name  = (document.getElementById('visitorNameInput')?.value  || '').trim();
+            const email = (document.getElementById('visitorEmailInput')?.value || '').trim();
+            if (!name && !email) { hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); return; }
 
-            fetch(`${CHECK_URL}?name=${encodeURIComponent(name)}&visitor_type=${encodeURIComponent(currentType)}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
+            const params = new URLSearchParams();
+            if (name)  params.append('name',  name);
+            if (email) params.append('email', email);
+            params.append('visitor_type', currentType);
+
+            fetch(`${CHECK_URL}?${params}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(r => r.json())
             .then(data => {
                 if (data.is_registered) {
@@ -1573,17 +1386,14 @@
                 hideRegisteredWarning();
                 if (data.skip_quota) { hideGuestBox(); hideCodeSection(); return; }
                 renderGuestBox(data);
-                if (data.is_new && !data.blocked) { showCodeSection(); }
-                else { hideCodeSection(); }
+                if (data.is_new && !data.blocked) showCodeSection();
+                else hideCodeSection();
             })
-            .catch(() => {
-                window._guestIsRegistered = false;
-                hideGuestBox(); hideCodeSection(); hideRegisteredWarning();
-            });
+            .catch(() => { window._guestIsRegistered = false; hideGuestBox(); hideCodeSection(); hideRegisteredWarning(); });
         };
 
         window.showRegisteredWarning = function (name) {
-            const box   = document.getElementById('registeredWarnBox');
+            const box = document.getElementById('registeredWarnBox');
             const title = document.getElementById('regWarnTitle');
             if (!box) return;
             if (title) title.textContent = `"${name}" is a registered resident`;
@@ -1644,25 +1454,20 @@
             }
         };
 
-        function showCodeSection() {
-            const s = document.getElementById('confirmCodeSection');
-            if (s) s.style.display = 'block';
-        }
+        function showCodeSection() { const s = document.getElementById('confirmCodeSection'); if (s) s.style.display = 'block'; }
 
         function hideCodeSection() {
-            const s = document.getElementById('confirmCodeSection');
-            if (s) s.style.display = 'none';
+            const s = document.getElementById('confirmCodeSection'); if (s) s.style.display = 'none';
             window._generatedCode = null;
-            const cv  = document.getElementById('confirmCodeVerified');  if (cv)  cv.value = '0';
-            const cdv = document.getElementById('confirmCodeValue');      if (cdv) cdv.value = '';
-            const wrap = document.getElementById('codeDisplayWrap');     if (wrap) wrap.style.display = 'none';
-            const pin  = document.getElementById('pinInputArea');         if (pin)  pin.style.display  = 'none';
+            const cv  = document.getElementById('confirmCodeVerified'); if (cv)  cv.value = '0';
+            const cdv = document.getElementById('confirmCodeValue');     if (cdv) cdv.value = '';
+            const wrap = document.getElementById('codeDisplayWrap');    if (wrap) wrap.style.display = 'none';
+            const pin  = document.getElementById('pinInputArea');        if (pin)  pin.style.display  = 'none';
             ['pin0','pin1','pin2','pin3'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) { el.value = ''; el.classList.remove('pin-ok','pin-err'); }
             });
-            const fb = document.getElementById('pinFeedback');
-            if (fb) { fb.textContent = ''; }
+            const fb = document.getElementById('pinFeedback'); if (fb) fb.textContent = '';
         }
         window.hideCodeSection = hideCodeSection;
 
@@ -1690,8 +1495,7 @@
                 inner.style.background = '#fef2f2'; inner.style.borderColor = '#fecaca';
                 icon.style.background  = '#fee2e2'; icon.innerHTML = '<i class="fa-solid fa-ban" style="color:#dc2626"></i>';
                 title.style.color = '#dc2626'; title.textContent = 'Reservation limit reached';
-                sub.style.color   = '#dc2626';
-                sub.textContent   = `All ${limit} slots used in the last 14 days.` + (data.reset ? ` Resets on ${data.reset}.` : '');
+                sub.style.color   = '#dc2626'; sub.textContent = `All ${limit} slots used in the last 14 days.` + (data.reset ? ` Resets on ${data.reset}.` : '');
                 pill.style.background = '#dc2626'; pill.style.color = '#fff'; pill.textContent = 'BLOCKED';
                 bar.style.background  = '#ef4444';
             } else if (count === limit - 1) {

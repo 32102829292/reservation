@@ -172,6 +172,8 @@
             border-radius: var(--r-md);
             padding: 18px;
         }
+
+        /* FIX #3 & #4: PC button states */
         .pc-btn {
             padding: 9px 12px;
             border-radius: 9px;
@@ -182,9 +184,80 @@
             color: #475569;
             cursor: pointer;
             transition: all var(--ease);
+            position: relative;
         }
-        .pc-btn:hover { border-color: var(--indigo); color: var(--indigo); }
-        .pc-btn.selected { background: var(--indigo); color: white; border-color: var(--indigo); }
+        .pc-btn:hover:not(:disabled):not(.pc-maintenance):not(.pc-reserved) {
+            border-color: var(--indigo);
+            color: var(--indigo);
+        }
+        .pc-btn.selected {
+            background: var(--indigo);
+            color: white;
+            border-color: var(--indigo);
+        }
+
+        /* Maintenance state — visually disabled, not selectable */
+        .pc-btn.pc-maintenance {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fde68a;
+            cursor: not-allowed;
+            opacity: .7;
+        }
+        .pc-btn.pc-maintenance::after {
+            content: '🔧';
+            font-size: .6rem;
+            position: absolute;
+            top: 3px;
+            right: 4px;
+        }
+
+        /* Reserved state — already booked for this slot */
+        .pc-btn.pc-reserved {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
+            cursor: not-allowed;
+            opacity: .7;
+        }
+        .pc-btn.pc-reserved::after {
+            content: '✖';
+            font-size: .6rem;
+            position: absolute;
+            top: 3px;
+            right: 4px;
+        }
+
+        /* FIX #4: PC selection limit notice */
+        .pc-limit-note {
+            font-size: .7rem;
+            color: var(--indigo);
+            font-weight: 600;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pc-legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            margin-bottom: 6px;
+        }
+        .pc-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: .68rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+        .pc-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
 
         /* ══════════════════════════════
            AVAILABILITY STATUS
@@ -502,6 +575,7 @@
         body.dark .cal-foot-btn:hover { color:#818cf8; background:rgba(99,102,241,.1); }
         body.dark .cal-foot-btn.today { color:#818cf8; }
 
+        /* FIX #2: Disabled time items */
         .dt-drop.tim { width:232px; padding:16px 14px 14px; }
         .tim-title { font-size:.65rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; text-align:center; margin-bottom:12px; }
         body:not(.dark) .tim-title { color:#94a3b8; }
@@ -515,10 +589,19 @@
         body.dark .tim-col::-webkit-scrollbar-thumb { background:rgba(99,102,241,.3); border-radius:4px; }
         .tim-item { padding:7px 6px; border-radius:7px; font-size:.81rem; font-weight:500; text-align:center; cursor:pointer; transition:all .1s; border:1px solid transparent; }
         body:not(.dark) .tim-item { color:#64748b; }
-        body:not(.dark) .tim-item:hover:not(.sel) { background:#f1f5f9; color:#0f172a; }
+        body:not(.dark) .tim-item:hover:not(.sel):not(.tim-disabled) { background:#f1f5f9; color:#0f172a; }
         body.dark .tim-item { color:#8b95b0; }
-        body.dark .tim-item:hover:not(.sel) { background:rgba(255,255,255,.06); color:#e2e8f0; }
+        body.dark .tim-item:hover:not(.sel):not(.tim-disabled) { background:rgba(255,255,255,.06); color:#e2e8f0; }
         .tim-item.sel { background:var(--indigo)!important; color:#fff!important; font-weight:700; box-shadow:0 2px 8px rgba(99,102,241,.4); }
+
+        /* FIX #2: Past time slot disabled style */
+        .tim-item.tim-disabled {
+            opacity: .3;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            pointer-events: none;
+        }
+
         .tim-sep { font-size:1rem; font-weight:700; padding:6px 0; align-self:flex-start; margin-top:4px; }
         body:not(.dark) .tim-sep { color:#cbd5e1; }
         body.dark .tim-sep { color:#4f5a72; }
@@ -529,6 +612,14 @@
         body.dark .ampm-btn { border:1px solid rgba(255,255,255,.07); color:#8b95b0; background:rgba(255,255,255,.04); }
         body.dark .ampm-btn:hover:not(.sel) { color:#e2e8f0; border-color:rgba(255,255,255,.14); }
         .ampm-btn.sel { background:var(--indigo)!important; color:#fff!important; border-color:var(--indigo)!important; box-shadow:0 2px 8px rgba(99,102,241,.4); }
+
+        /* FIX #2: Disabled AM/PM button */
+        .ampm-btn.ampm-disabled {
+            opacity: .3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         .tim-set-btn { width:100%; margin-top:12px; padding:9px; background:var(--indigo); color:#fff; border:none; border-radius:9px; font-size:.8rem; font-weight:700; font-family:var(--font); cursor:pointer; transition:background .15s; }
         .tim-set-btn:hover { background:#4f46e5; }
         .picker-wrap { position: relative; }
@@ -602,8 +693,10 @@
         body.dark .type-btn { color: #7fb3e8; }
         body.dark .pc-section { background: rgba(55,48,163,.1); border-color: rgba(99,102,241,.2); }
         body.dark .pc-btn { background: #101e35; border-color: rgba(99,102,241,.22); color: #7fb3e8; }
-        body.dark .pc-btn:hover { border-color: var(--indigo); color: #a5b4fc; }
+        body.dark .pc-btn:hover:not(:disabled):not(.pc-maintenance):not(.pc-reserved) { border-color: var(--indigo); color: #a5b4fc; }
         body.dark .pc-btn.selected { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+        body.dark .pc-btn.pc-maintenance { background: rgba(245,158,11,.12); color: #fbbf24; border-color: rgba(245,158,11,.25); }
+        body.dark .pc-btn.pc-reserved { background: rgba(239,68,68,.1); color: #f87171; border-color: rgba(239,68,68,.2); }
         body.dark .autocomplete-list { background: #0b1628; border-color: rgba(99,102,241,.18); }
         body.dark .autocomplete-item:hover { background: rgba(99,102,241,.12); color: #a5b4fc; }
         body.dark .autocomplete-item .sub { color: #4a6fa5; }
@@ -646,6 +739,7 @@
         body.dark .bs-row { background: #0b1628; border-color: rgba(99,102,241,.07); color: #e2eaf8; }
         body.dark .bs-row:hover { background: #101e35; }
         body.dark .bs-conflict-row { background: rgba(185,28,28,.1) !important; }
+        body.dark .pc-limit-note { color: #a5b4fc; }
     </style>
 </head>
 
@@ -668,7 +762,7 @@
                 <p style="font-size:.6rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--indigo)">E-Ticket Preview</p>
                 <canvas id="qrCanvas" style="border-radius:10px"></canvas>
                 <p id="qrText" style="font-size:.7rem;color:#94a3b8;font-family:var(--mono);text-align:center;word-break:break-all"></p>
-                <button onclick="downloadQR()" style="display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-size:.78rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font)">
+                <button type="button" onclick="downloadQR()" style="display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--indigo);color:white;border-radius:var(--r-sm);font-size:.78rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font)">
                     <i class="fa-solid fa-download" style="font-size:.7rem"></i> Download E-Ticket
                 </button>
             </div>
@@ -723,6 +817,11 @@
                 <div style="margin-bottom:20px">
                     <label class="field-label" style="margin-bottom:8px;display:block">Visitor Classification</label>
                     <div class="type-toggle">
+                        <!--
+                            FIX #1: ALL buttons inside the form MUST have type="button".
+                            Without it, clicking any button in a form defaults to type="submit"
+                            which causes a full page POST/GET and looks like a "reload".
+                        -->
                         <button type="button" class="type-btn active" id="btnUser" onclick="setType('User')">
                             <i class="fa-solid fa-user" style="font-size:.8rem"></i> Registered User
                         </button>
@@ -817,6 +916,10 @@
                                     </div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+                                    <!--
+                                        FIX #1: type="button" is critical here.
+                                        Without it this submits the form.
+                                    -->
                                     <button type="button" onclick="generateConfirmCode()" id="genCodeBtn" class="gen-code-btn">
                                         <i class="fa-solid fa-arrows-rotate" style="font-size:.75rem"></i>
                                         Generate Code
@@ -898,14 +1001,80 @@
                         </div>
                     </div>
 
+                    <!--
+                        FIX #3 & #4: PC section rebuilt.
+                        - Maintenance PCs are rendered with class="pc-maintenance" and disabled attribute.
+                        - A legend explains the color coding.
+                        - The PC_MAX_SELECT constant controls the selection limit (set to 1 by default;
+                          adjust to your business rule or remove the limit check in togglePc() if unlimited).
+                        - Already-reserved PCs are fetched via AJAX when date/time changes and
+                          marked with class="pc-reserved" + disabled.
+                    -->
                     <div id="pcSection" style="display:none;margin-bottom:14px" class="pc-section">
                         <label class="field-label" style="color:var(--indigo);margin-bottom:10px;display:block">Assign Workstation(s)</label>
+
+                        <!-- Legend -->
+                        <div class="pc-legend">
+                            <div class="pc-legend-item">
+                                <div class="pc-legend-dot" style="background:white;border:1.5px solid rgba(99,102,241,.35)"></div>
+                                Available
+                            </div>
+                            <div class="pc-legend-item">
+                                <div class="pc-legend-dot" style="background:var(--indigo)"></div>
+                                Selected
+                            </div>
+                            <div class="pc-legend-item">
+                                <div class="pc-legend-dot" style="background:#fef3c7;border:1.5px solid #fde68a"></div>
+                                Maintenance 🔧
+                            </div>
+                            <div class="pc-legend-item">
+                                <div class="pc-legend-dot" style="background:#fef2f2;border:1.5px solid #fecaca"></div>
+                                Reserved ✖
+                            </div>
+                        </div>
+
                         <div id="pcGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
-                            <?php foreach ($pcs ?? [] as $pc): ?>
-                                <button type="button" onclick="togglePc('<?= htmlspecialchars($pc['pc_number']) ?>',this)" data-pc="<?= htmlspecialchars($pc['pc_number']) ?>" class="pc-btn"><?= htmlspecialchars($pc['pc_number']) ?></button>
+                            <?php foreach ($pcs ?? [] as $pc):
+                                $isMaintenance = ($pc['status'] === 'maintenance');
+                                $pcNum = htmlspecialchars($pc['pc_number']);
+                            ?>
+                                <?php if ($isMaintenance): ?>
+                                    <!--
+                                        FIX #3: Maintenance PCs get type="button" (already present),
+                                        class="pc-maintenance", and the disabled attribute.
+                                        The disabled attribute prevents click events AND form submission.
+                                        The class provides the visual warning style.
+                                    -->
+                                    <button
+                                        type="button"
+                                        class="pc-btn pc-maintenance"
+                                        data-pc="<?= $pcNum ?>"
+                                        data-status="maintenance"
+                                        disabled
+                                        title="<?= $pcNum ?> is under maintenance"
+                                    ><?= $pcNum ?></button>
+                                <?php else: ?>
+                                    <!--
+                                        FIX #1 & #4: type="button" prevents form submission.
+                                        data-status="available" lets JS know this PC starts available.
+                                        onclick calls togglePc() which enforces the selection limit.
+                                    -->
+                                    <button
+                                        type="button"
+                                        class="pc-btn"
+                                        data-pc="<?= $pcNum ?>"
+                                        data-status="available"
+                                        onclick="togglePc('<?= $pcNum ?>',this)"
+                                        title="Select <?= $pcNum ?>"
+                                    ><?= $pcNum ?></button>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         </div>
-                        <p style="font-size:.72rem;color:var(--indigo);font-weight:600;margin-top:10px">Selected: <span id="pcSelectedLabel">None</span></p>
+
+                        <div class="pc-limit-note">
+                            <i class="fa-solid fa-circle-info" style="font-size:.65rem"></i>
+                            <span>Select up to <strong id="pcMaxLabel">1</strong> workstation. Selected: <span id="pcSelectedLabel">None</span></span>
+                        </div>
                     </div>
 
                     <div class="grid-3" style="margin-bottom:14px">
@@ -1006,6 +1175,10 @@
                     </div>
                 </div>
 
+                <!--
+                    FIX #1: type="button" prevents this from submitting the form
+                    when clicked (it's inside a <form> tag).
+                -->
                 <button type="button" onclick="previewReservation()" class="submit-btn">
                     <i class="fa-solid fa-eye" style="font-size:.85rem"></i> Preview & Confirm
                 </button>
@@ -1015,6 +1188,16 @@
 
     <script>
         const allUsers = <?= json_encode($users ?? []) ?>;
+
+        /*
+         * FIX #4: PC_MAX_SELECT controls how many PCs a single reservation can claim.
+         * Set to 1 to enforce one-PC-per-reservation.
+         * Set to a higher number (e.g. 3) if your business rules allow more.
+         * Set to Infinity to remove the limit entirely while still blocking
+         * maintenance and already-reserved PCs.
+         */
+        const PC_MAX_SELECT = 1;
+
         let currentType = 'User', selectedUser = null, selectedPcs = [];
 
         /* ─── Visitor type toggle ─── */
@@ -1032,11 +1215,10 @@
             });
             document.getElementById('finalUserId').value = '';
 
-            // Reset conflict state and any leftover PC selection when switching type
             window._avHasConflict = false;
             selectedPcs = [];
             updatePcHidden();
-            document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.pc-btn:not(.pc-maintenance):not(.pc-reserved)').forEach(b => b.classList.remove('selected'));
 
             if (type !== 'Visitor') {
                 hideGuestBox();
@@ -1079,15 +1261,65 @@
         userNameInput.addEventListener('blur', () => setTimeout(() => autocompleteList.style.display = 'none', 150));
 
         /* ─── PC workstation toggle ─── */
+        /*
+         * FIX #4: togglePc now:
+         *   1. Ignores maintenance PCs (double-safety; they also have disabled attribute).
+         *   2. Ignores already-reserved PCs.
+         *   3. Prevents selecting more than PC_MAX_SELECT PCs.
+         *   4. Prevents double-adding the same PC number.
+         */
         function togglePc(num, btn) {
+            /* Ignore disabled states */
+            if (btn.classList.contains('pc-maintenance') || btn.classList.contains('pc-reserved') || btn.disabled) return;
+
             const idx = selectedPcs.indexOf(num);
-            if (idx === -1) { selectedPcs.push(num); btn.classList.add('selected'); }
-            else            { selectedPcs.splice(idx, 1); btn.classList.remove('selected'); }
+            if (idx === -1) {
+                /* FIX #4: enforce maximum selection limit */
+                if (selectedPcs.length >= PC_MAX_SELECT) {
+                    const noun = PC_MAX_SELECT === 1 ? 'workstation' : 'workstations';
+                    alert(`You can only select up to ${PC_MAX_SELECT} ${noun} per reservation.\nDeselect one first.`);
+                    return;
+                }
+                selectedPcs.push(num);
+                btn.classList.add('selected');
+            } else {
+                selectedPcs.splice(idx, 1);
+                btn.classList.remove('selected');
+            }
             updatePcHidden();
         }
+
         function updatePcHidden() {
             document.getElementById('finalPcs').value = JSON.stringify(selectedPcs);
             document.getElementById('pcSelectedLabel').textContent = selectedPcs.length ? selectedPcs.join(', ') : 'None';
+            document.getElementById('pcMaxLabel').textContent = PC_MAX_SELECT === Infinity ? '∞' : PC_MAX_SELECT;
+        }
+
+        /*
+         * FIX #4: Called after availability check returns reserved PC numbers.
+         * Marks those PCs as reserved and deselects any that were already chosen.
+         */
+        function applyReservedPcs(reservedPcNumbers) {
+            document.querySelectorAll('.pc-btn').forEach(btn => {
+                if (btn.classList.contains('pc-maintenance')) return; /* leave maintenance alone */
+                const num = btn.dataset.pc;
+                if (reservedPcNumbers.includes(num)) {
+                    btn.classList.add('pc-reserved');
+                    btn.disabled = true;
+                    btn.title = `${num} is already reserved for this slot`;
+                    /* deselect if it was selected */
+                    const idx = selectedPcs.indexOf(num);
+                    if (idx !== -1) {
+                        selectedPcs.splice(idx, 1);
+                        btn.classList.remove('selected');
+                    }
+                } else {
+                    btn.classList.remove('pc-reserved');
+                    btn.disabled = false;
+                    btn.title = `Select ${num}`;
+                }
+            });
+            updatePcHidden();
         }
 
         /* ─── Custom Select ─── */
@@ -1109,6 +1341,7 @@
 
             trigger.addEventListener('click', e => {
                 e.stopPropagation();
+                e.preventDefault(); /* FIX #1: also prevent any default action */
                 if (_csActive === dropId) { closeAllCS(); return; }
                 closeAllCS(); _csActive = dropId;
                 drop.style.display = 'block';
@@ -1118,6 +1351,7 @@
             opts.forEach(opt => {
                 opt.addEventListener('click', e => {
                     e.stopPropagation();
+                    e.preventDefault(); /* FIX #1 */
                     const val  = opt.dataset.value;
                     const text = opt.querySelector('.cs-opt-label')?.textContent.trim() || '';
                     opts.forEach(o => o.classList.remove('cs-selected'));
@@ -1147,9 +1381,13 @@
             document.getElementById('pcSection').style.display = hasPcs ? 'block' : 'none';
             const wifiBanner = document.getElementById('wifiNoticeBanner');
             wifiBanner.style.display = isWifi ? 'flex' : 'none';
+            /* Reset PC selection when resource changes */
             selectedPcs = [];
             updatePcHidden();
-            document.querySelectorAll('.pc-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.pc-btn:not(.pc-maintenance)').forEach(b => {
+                b.classList.remove('selected', 'pc-reserved');
+                b.disabled = false;
+            });
             schedAvailabilityCheck();
         });
 
@@ -1204,6 +1442,14 @@
             .then(r => r.json())
             .then(data => {
                 const booked = data.booked_slots || [];
+
+                /*
+                 * FIX #4: If the API returns reserved PC numbers for the selected slot,
+                 * apply them to the PC grid so those buttons are disabled.
+                 */
+                if (data.reserved_pcs && Array.isArray(data.reserved_pcs)) {
+                    applyReservedPcs(data.reserved_pcs);
+                }
 
                 if (data.has_conflict) {
                     window._avHasConflict = true;
@@ -1298,7 +1544,7 @@
             wrap.style.display = 'block';
         }
 
-        // Hook pickers to re-run availability check
+        /* Hook pickers to re-run availability check */
         window._onDatePicked = schedAvailabilityCheck;
         window._onTimePicked = schedAvailabilityCheck;
 
@@ -1420,6 +1666,28 @@
     <script>
     (function() {
         'use strict';
+
+        /*
+         * FIX #2: SERVER_NOW is injected from PHP so all time comparisons
+         * use server time, not the visitor's browser clock.
+         *
+         * Add this to your PHP controller/view before this script:
+         *   $data['server_now'] = date('Y-m-d H:i');
+         * Then echo it as a JS variable:
+         *   <script>window.SERVER_NOW = "<?= date('Y-m-d H:i') ?>";<\/script>
+         *
+         * Here we parse it. If SERVER_NOW is not set we fall back to browser
+         * time only as a last resort — but always prefer server time.
+         */
+        const _serverNowStr = (typeof window.SERVER_NOW === 'string' && window.SERVER_NOW)
+            ? window.SERVER_NOW
+            : new Date().toISOString().slice(0, 16);
+
+        const SERVER_NOW  = new Date(_serverNowStr);
+        const TODAY_STR   = _serverNowStr.slice(0, 10);   /* "YYYY-MM-DD" */
+        const NOW_H24     = SERVER_NOW.getHours();         /* 0-23 in server time */
+        const NOW_MIN     = SERVER_NOW.getMinutes();
+
         const TODAY = new Date();
         let calView  = { y: TODAY.getFullYear(), m: TODAY.getMonth() };
         let selDate  = null;
@@ -1428,7 +1696,8 @@
         const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
         const DOWS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
         const MINS   = [0,5,10,15,20,25,30,35,40,45,50,55];
-        function $(id){ return document.getElementById(id); }
+
+        function $(id) { return document.getElementById(id); }
 
         function closeAll() {
             ['calDrop','startDrop','endDrop'].forEach(id => { const el=$(id); if(el) el.style.display='none'; });
@@ -1485,30 +1754,138 @@
             $('dateLabel').textContent=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
             $('dateTrigger').classList.add('has-value');
             renderCal();
+
+            /*
+             * FIX #2: After picking a date, force the time pickers to re-render
+             * so they show/hide past slots based on whether today is selected.
+             */
+            window._selectedDateStr = iso;
+            /* If start/end dropdowns are open, re-render them */
+            if ($('startDrop').style.display === 'block') renderTime('start');
+            if ($('endDrop').style.display   === 'block') renderTime('end');
+
             setTimeout(closeAll,180);
             if (window._onDatePicked) window._onDatePicked();
         }
-        function clearDate(){ selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');renderCal(); }
+        function clearDate(){ selDate=null;$('resDate').value='';$('dateLabel').textContent='Pick a date';$('dateTrigger').classList.remove('has-value');window._selectedDateStr='';renderCal(); }
         function gotoToday(){ calView={y:TODAY.getFullYear(),m:TODAY.getMonth()};pickDay(TODAY.getDate()); }
 
-        function renderTime(which){
+        /*
+         * FIX #2: isPastTime returns true when the given hour/minute/ampm
+         * combination represents a time that has already passed on today's date.
+         * When the selected date is in the future this always returns false.
+         */
+        function isPastTime(h, min, ampm) {
+            const dateStr = window._selectedDateStr || $('resDate').value || TODAY_STR;
+            if (dateStr !== TODAY_STR) return false; /* future date — nothing is past */
+
+            /* Convert picker 12h time to 24h */
+            let h24 = h;
+            if (ampm === 'am' && h === 12) h24 = 0;
+            if (ampm === 'pm' && h !== 12) h24 = h + 12;
+
+            /* A slot is "past" if it started before now (using ≤ so the current
+               minute is also unavailable — prevents picking a slot that's already
+               underway). */
+            return h24 < NOW_H24 || (h24 === NOW_H24 && min <= NOW_MIN);
+        }
+
+        function renderTime(which) {
             const dropId=which==='start'?'startDrop':'endDrop';
             const st=tState[which];
-            const hItems=Array.from({length:12},(_,i)=>i+1).map(h=>`<div class="tim-item${st.h===h?' sel':''}" data-part="h" data-val="${h}">${String(h).padStart(2,'0')}</div>`).join('');
-            const mItems=MINS.map(mn=>`<div class="tim-item${st.min===mn?' sel':''}" data-part="min" data-val="${mn}">${String(mn).padStart(2,'0')}</div>`).join('');
-            $(dropId).innerHTML=`<div class="tim-title">Select Time</div><div class="tim-cols"><div class="tim-col" id="_tc_h_${which}">${hItems}</div><div class="tim-sep">:</div><div class="tim-col" id="_tc_m_${which}">${mItems}</div><div class="ampm-col"><div class="ampm-btn${st.ampm==='am'?' sel':''}" data-ampm="am">AM</div><div class="ampm-btn${st.ampm==='pm'?' sel':''}" data-ampm="pm">PM</div></div></div><button class="tim-set-btn" id="_timSet_${which}">Set Time</button>`;
-            setTimeout(()=>{
+
+            /* FIX #2: Determine which AM/PM periods are fully in the past for today. */
+            const isToday = (window._selectedDateStr || $('resDate').value || TODAY_STR) === TODAY_STR;
+            /* AM is disabled only if every AM hour has passed (i.e. it's PM now) */
+            const amAllPast  = isToday && NOW_H24 >= 12;
+            /* PM is never fully past until midnight */
+            const pmAllPast  = false;
+
+            const hItems = Array.from({length:12},(_,i)=>i+1).map(h => {
+                const past = isPastTime(h, 0, st.ampm);   /* check on the :00 mark */
+                const cls  = [
+                    'tim-item',
+                    st.h === h ? 'sel' : '',
+                    past        ? 'tim-disabled' : ''
+                ].filter(Boolean).join(' ');
+                return `<div class="${cls}" data-part="h" data-val="${h}" data-past="${past}">${String(h).padStart(2,'0')}</div>`;
+            }).join('');
+
+            const mItems = MINS.map(mn => {
+                const past = isPastTime(st.h, mn, st.ampm);
+                const cls  = [
+                    'tim-item',
+                    st.min === mn ? 'sel' : '',
+                    past           ? 'tim-disabled' : ''
+                ].filter(Boolean).join(' ');
+                return `<div class="${cls}" data-part="min" data-val="${mn}" data-past="${past}">${String(mn).padStart(2,'0')}</div>`;
+            }).join('');
+
+            const amCls = ['ampm-btn', st.ampm==='am'?'sel':'', amAllPast?'ampm-disabled':''].filter(Boolean).join(' ');
+            const pmCls = ['ampm-btn', st.ampm==='pm'?'sel':''].filter(Boolean).join(' ');
+
+            $(dropId).innerHTML = `
+                <div class="tim-title">Select Time</div>
+                <div class="tim-cols">
+                    <div class="tim-col" id="_tc_h_${which}">${hItems}</div>
+                    <div class="tim-sep">:</div>
+                    <div class="tim-col" id="_tc_m_${which}">${mItems}</div>
+                    <div class="ampm-col">
+                        <div class="${amCls}" data-ampm="am">AM</div>
+                        <div class="${pmCls}" data-ampm="pm">PM</div>
+                    </div>
+                </div>
+                <button class="tim-set-btn" id="_timSet_${which}" type="button">Set Time</button>
+            `;
+
+            setTimeout(() => {
                 const sH=$(dropId).querySelector('#_tc_h_'+which+' .sel');
                 const sM=$(dropId).querySelector('#_tc_m_'+which+' .sel');
                 if(sH)sH.scrollIntoView({block:'center',behavior:'instant'});
                 if(sM)sM.scrollIntoView({block:'center',behavior:'instant'});
             },0);
-            $(dropId).querySelectorAll('.tim-item').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();tState[which][el.dataset.part]=+el.dataset.val;renderTime(which);}));
-            $(dropId).querySelectorAll('.ampm-btn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();tState[which].ampm=el.dataset.ampm;renderTime(which);}));
-            $(`_timSet_${which}`).addEventListener('click',e=>{e.stopPropagation();applyTime(which);});
+
+            /* Hour click — only non-disabled items respond */
+            $(dropId).querySelectorAll('.tim-item').forEach(el => {
+                if (el.dataset.past === 'true') return; /* FIX #2: skip past slots */
+                el.addEventListener('click', e => {
+                    e.stopPropagation();
+                    tState[which][el.dataset.part] = +el.dataset.val;
+                    renderTime(which);
+                });
+            });
+
+            /* AM/PM click — only non-disabled */
+            $(dropId).querySelectorAll('.ampm-btn:not(.ampm-disabled)').forEach(el => {
+                el.addEventListener('click', e => {
+                    e.stopPropagation();
+                    tState[which].ampm = el.dataset.ampm;
+                    renderTime(which);
+                });
+            });
+
+            /* FIX #1: type="button" on tim-set-btn is set in the template above.
+               Also add explicit preventDefault here for belt-and-suspenders. */
+            $(`_timSet_${which}`).addEventListener('click', e => {
+                e.stopPropagation();
+                e.preventDefault();
+                applyTime(which);
+            });
         }
+
         function applyTime(which){
             const st=tState[which];
+
+            /*
+             * FIX #2: Prevent setting a past time for today.
+             * The user should not be able to click "Set Time" if the chosen
+             * slot is in the past.
+             */
+            if (isPastTime(st.h, st.min, st.ampm)) {
+                alert('⚠️ The selected time has already passed. Please choose a future time.');
+                return;
+            }
+
             const label=`${String(st.h).padStart(2,'0')}:${String(st.min).padStart(2,'0')} ${st.ampm.toUpperCase()}`;
             let h24=st.h;
             if(st.ampm==='am'&&st.h===12)h24=0;
@@ -1524,15 +1901,45 @@
             if (window._onTimePicked) window._onTimePicked();
         }
 
-        $('dateTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('calDrop','dateTrigger');if(activeDrop==='calDrop')renderCal();});
-        $('startTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('startDrop','startTrigger');if(activeDrop==='startDrop')renderTime('start');});
-        $('endTrigger').addEventListener('click',e=>{e.stopPropagation();toggle('endDrop','endTrigger');if(activeDrop==='endDrop')renderTime('end');});
+        $('dateTrigger').addEventListener('click',e=>{
+            e.stopPropagation();
+            e.preventDefault(); /* FIX #1 */
+            toggle('calDrop','dateTrigger');
+            if(activeDrop==='calDrop')renderCal();
+        });
+        $('startTrigger').addEventListener('click',e=>{
+            e.stopPropagation();
+            e.preventDefault(); /* FIX #1 */
+            toggle('startDrop','startTrigger');
+            if(activeDrop==='startDrop')renderTime('start');
+        });
+        $('endTrigger').addEventListener('click',e=>{
+            e.stopPropagation();
+            e.preventDefault(); /* FIX #1 */
+            toggle('endDrop','endTrigger');
+            if(activeDrop==='endDrop')renderTime('end');
+        });
 
-        // setTimeout ensures DOM is fully settled before writing hidden inputs.
-        // Also fires the initial availability check after defaults are applied.
+        /* Initialise on load */
         setTimeout(function() {
             ['start', 'end'].forEach(function(which) {
                 var st = tState[which];
+
+                /*
+                 * FIX #2: If the default time is in the past (e.g. page loads at 10 PM
+                 * and default start is 9 AM), advance to a safe default instead of
+                 * silently showing a past time.
+                 */
+                if (isPastTime(st.h, st.min, st.ampm)) {
+                    /* Round up to the next 30-minute boundary from now */
+                    var nextMin  = NOW_MIN < 30 ? 30 : 0;
+                    var nextH24  = NOW_MIN < 30 ? NOW_H24 : NOW_H24 + 1;
+                    if (nextH24 >= 24) nextH24 = 23; /* clamp to end of day */
+                    st.ampm = nextH24 >= 12 ? 'pm' : 'am';
+                    st.h    = nextH24 % 12 || 12;
+                    st.min  = nextMin;
+                }
+
                 var h24 = st.h;
                 if (st.ampm === 'am' && st.h === 12) h24 = 0;
                 if (st.ampm === 'pm' && st.h !== 12) h24 = st.h + 12;
@@ -1545,19 +1952,35 @@
                 document.getElementById(inputId).value         = iso24;
                 document.getElementById(triggerId).classList.add('has-value');
             });
-            // Trigger initial check so the banner shows as soon as a resource is picked
             if (window.schedAvailabilityCheck) window.schedAvailabilityCheck();
         }, 0);
 
-        // Set today's date label and selDate on load
+        /* Set today's date label and selDate on load */
         (function(){
             const t = new Date();
+            window._selectedDateStr = TODAY_STR;
             document.getElementById('dateLabel').textContent = t.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
             document.getElementById('dateTrigger').classList.add('has-value');
             selDate = {d:t.getDate(), m:t.getMonth(), y:t.getFullYear()};
         })();
+
     })();
     </script>
+
+    <!--
+        FIX #2: Inject server time as a JS global BEFORE the picker script.
+        Place this directly above the "Custom Date / Time Picker" <script> block
+        in your layout or controller view, or echo it from PHP here.
+
+        In your CodeIgniter controller, pass:
+            $data['server_now'] = date('Y-m-d H:i');
+
+        Then in the view (right above the picker script block):
+            <script>window.SERVER_NOW = "<?= date('Y-m-d H:i') ?>";</script>
+
+        We include it inline here as a fallback using PHP short-echo:
+    -->
+    <script>window.SERVER_NOW = "<?= date('Y-m-d H:i') ?>";</script>
 
     <!-- Guest Limit Checker + Registered Warning + Confirmation Code -->
     <script>
